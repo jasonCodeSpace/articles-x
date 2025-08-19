@@ -19,6 +19,25 @@ const HarvestedArticleSchema = z.object({
 
 export type HarvestedArticle = z.infer<typeof HarvestedArticleSchema>
 
+// Interface for tweet data to be stored in tweets table
+export interface TweetData {
+  tweet_id: string
+  rest_id?: string
+  author_handle: string
+  author_name: string
+  author_profile_image?: string
+  tweet_text: string
+  created_at_twitter: string
+  has_article: boolean
+  article_url?: string
+  article_title?: string
+  article_excerpt?: string
+  article_featured_image?: string
+  article_rest_id?: string
+  list_id: string
+  raw_data: any // Complete raw tweet data
+}
+
 export interface DatabaseArticle {
   title: string
   slug: string
@@ -162,7 +181,67 @@ export function harvestedToDatabase(harvested: HarvestedArticle): DatabaseArticl
 }
 
 /**
- * Batch upsert articles to database
+ * Convert Twitter tweet to TweetData format for storage in tweets table
+ */
+export function mapTweetToTweetData(tweet: TwitterTweet, listId: string): TweetData {
+  // Extract user info from core.user_results.result.legacy (new API structure) or fallback to user (old structure)
+  const userLegacy = tweet.core?.user_results?.result?.legacy
+  const userFallback = tweet.user
+  
+  const authorHandle = userLegacy?.screen_name || userFallback?.screen_name || 'unknown'
+  const authorName = userLegacy?.name || userFallback?.name || authorHandle
+  const authorProfileImage = userLegacy?.profile_image_url_https || userFallback?.profile_image_url_https
+  
+  // Extract tweet info
+  const tweetId = tweet.id_str || tweet.rest_id || ''
+  const createdAt = tweet.legacy?.created_at || tweet.created_at || ''
+  const tweetText = tweet.full_text || tweet.text || ''
+  
+  // Check if tweet has article data
+  const articleResult = tweet.article_results?.result || tweet.article?.article_results?.result
+  const hasArticle = !!articleResult
+  
+  let articleData: Partial<TweetData> = {}
+  
+  if (hasArticle && articleResult) {
+    // Extract article information
+    const restId = articleResult.rest_id
+    let articleUrl: string
+    
+    if (articleResult.url) {
+      articleUrl = articleResult.url
+    } else if (articleResult.rest_id) {
+      articleUrl = `https://x.com/i/articles/${restId}`
+    } else {
+      articleUrl = `https://x.com/${authorHandle}/status/${tweetId}`
+    }
+    
+    articleData = {
+      article_url: articleUrl,
+      article_title: articleResult.title || tweetText.slice(0, 100) || 'Untitled Article',
+      article_excerpt: articleResult.preview_text || articleResult.description || tweetText.slice(0, 200),
+      article_featured_image: articleResult.cover_media?.media_info?.original_img_url,
+      article_rest_id: restId,
+    }
+  }
+  
+  return {
+    tweet_id: tweetId,
+    rest_id: tweet.rest_id,
+    author_handle: authorHandle,
+    author_name: authorName,
+    author_profile_image: authorProfileImage,
+    tweet_text: tweetText,
+    created_at_twitter: createdAt,
+    has_article: hasArticle,
+    list_id: listId,
+    raw_data: tweet, // Store complete raw tweet data
+    ...articleData,
+  }
+}
+
+/**
+ * Batch upsert articles to the database
  */
 export async function batchUpsertArticles(
   harvestedArticles: HarvestedArticle[],
@@ -273,6 +352,115 @@ export async function batchUpsertArticles(
 }
 
 /**
+ * Batch upsert tweets to the database
+ */
+export async function batchUpsertTweets(
+  tweetDataArray: TweetData[],
+  dryRun = false
+): Promise<{ inserted: number; updated: number; skipped: number }> {
+  if (dryRun) {
+    console.log(`[DRY RUN] Would process ${tweetDataArray.length} tweets`)
+    return { inserted: 0, updated: 0, skipped: 0 }
+  }
+
+  const supabase = await createClient()
+  let inserted = 0
+  let updated = 0
+  let skipped = 0
+
+  // Process tweets in batches of 50 to avoid overwhelming the database
+  const batchSize = 50
+  for (let i = 0; i < tweetDataArray.length; i += batchSize) {
+    const batch = tweetDataArray.slice(i, i + batchSize)
+    
+    for (const tweetData of batch) {
+      try {
+        // Check if tweet already exists
+        const { data: existingTweet, error: checkError } = await supabase
+          .from('tweets')
+          .select('tweet_id')
+          .eq('tweet_id', tweetData.tweet_id)
+          .single()
+
+        if (checkError && checkError.code !== 'PGRST116') {
+          console.error(`Error checking existing tweet ${tweetData.tweet_id}:`, checkError)
+          skipped++
+          continue
+        }
+
+        if (existingTweet) {
+          // Update existing tweet
+          const { error: updateError } = await supabase
+            .from('tweets')
+            .update({
+              author_handle: tweetData.author_handle,
+              author_name: tweetData.author_name,
+              author_profile_image: tweetData.author_profile_image,
+              tweet_text: tweetData.tweet_text,
+              has_article: tweetData.has_article,
+              article_url: tweetData.article_url,
+              article_title: tweetData.article_title,
+              article_excerpt: tweetData.article_excerpt,
+              article_featured_image: tweetData.article_featured_image,
+              article_rest_id: tweetData.article_rest_id,
+              list_id: tweetData.list_id,
+              raw_data: tweetData.raw_data,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('tweet_id', tweetData.tweet_id)
+
+          if (updateError) {
+            console.error(`Error updating tweet ${tweetData.tweet_id}:`, updateError)
+            skipped++
+          } else {
+            updated++
+          }
+        } else {
+          // Insert new tweet
+          const { error: insertError } = await supabase
+            .from('tweets')
+            .insert({
+              tweet_id: tweetData.tweet_id,
+              rest_id: tweetData.rest_id,
+              author_handle: tweetData.author_handle,
+              author_name: tweetData.author_name,
+              author_profile_image: tweetData.author_profile_image,
+              tweet_text: tweetData.tweet_text,
+              created_at_twitter: tweetData.created_at_twitter,
+              has_article: tweetData.has_article,
+              article_url: tweetData.article_url,
+              article_title: tweetData.article_title,
+              article_excerpt: tweetData.article_excerpt,
+              article_featured_image: tweetData.article_featured_image,
+              article_rest_id: tweetData.article_rest_id,
+              list_id: tweetData.list_id,
+              raw_data: tweetData.raw_data,
+            })
+
+          if (insertError) {
+            console.error(`Error inserting tweet ${tweetData.tweet_id}:`, insertError)
+            skipped++
+          } else {
+            inserted++
+          }
+        }
+      } catch (error) {
+        console.error(`Error processing tweet ${tweetData.tweet_id}:`, error)
+        skipped++
+      }
+    }
+
+    // Add a small delay between batches to avoid rate limiting
+    if (i + batchSize < tweetDataArray.length) {
+      await sleep(100)
+    }
+  }
+
+  console.log(`Tweet batch processing complete: ${inserted} inserted, ${updated} updated, ${skipped} skipped`)
+  return { inserted, updated, skipped }
+}
+
+/**
  * Process tweets from multiple lists and return ingest statistics
  */
 export async function ingestTweetsFromLists(
@@ -287,6 +475,7 @@ export async function ingestTweetsFromLists(
   }
 
   const allHarvestedArticles: HarvestedArticle[] = []
+  const allTweetData: TweetData[] = []
 
   // Process each list
   for (const [listId, tweets] of listTweets) {
@@ -298,26 +487,31 @@ export async function ingestTweetsFromLists(
     }
 
     try {
-      // Filter tweets to articles and map them
-      const harvestedArticles: HarvestedArticle[] = []
+      // Process all tweets for storage in tweets table
+      const tweetDataForList: TweetData[] = []
       
       for (const tweet of tweets) {
         try {
+          // Convert tweet to TweetData for storage
+          const tweetData = mapTweetToTweetData(tweet, listId)
+          tweetDataForList.push(tweetData)
+          
+          // Also try to extract article if it exists
           const article = mapTweetToArticle(tweet)
           if (article) {
-            harvestedArticles.push(article)
+            allHarvestedArticles.push(article)
+            listStats.articlesHarvested++
           }
         } catch (error) {
-          const errorMsg = `Error mapping tweet ${tweet.id_str}: ${error}`
+          const errorMsg = `Error processing tweet ${tweet.id_str}: ${error}`
           console.error(errorMsg)
           listStats.errors.push(errorMsg)
         }
       }
 
-      listStats.articlesHarvested = harvestedArticles.length
-      allHarvestedArticles.push(...harvestedArticles)
+      allTweetData.push(...tweetDataForList)
 
-      console.log(`List ${listId}: Found ${tweets.length} tweets, harvested ${harvestedArticles.length} articles`)
+      console.log(`List ${listId}: Found ${tweets.length} tweets, harvested ${listStats.articlesHarvested} articles`)
       
     } catch (error) {
       const errorMsg = `Error processing list ${listId}: ${error}`
@@ -328,7 +522,18 @@ export async function ingestTweetsFromLists(
     stats.lists.push(listStats)
   }
 
-  // Batch upsert all harvested articles
+  // First, batch upsert all tweets to tweets table
+  if (allTweetData.length > 0) {
+    try {
+      console.log(`Saving ${allTweetData.length} tweets to database...`)
+      const tweetStats = await batchUpsertTweets(allTweetData, dryRun)
+      console.log(`Tweet storage complete: ${tweetStats.inserted} inserted, ${tweetStats.updated} updated, ${tweetStats.skipped} skipped`)
+    } catch (error) {
+      console.error('Error saving tweets to database:', error)
+    }
+  }
+
+  // Then, batch upsert harvested articles to articles table
   if (allHarvestedArticles.length > 0) {
     const upsertStats = await batchUpsertArticles(allHarvestedArticles, dryRun)
     stats.inserted = upsertStats.inserted

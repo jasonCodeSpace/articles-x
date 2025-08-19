@@ -9,14 +9,35 @@ jobs:
   call:
     runs-on: ubuntu-latest
     steps:
+      - name: Check CRON_SECRET
+        run: |
+          if [ -z "$CRON_SECRET" ]; then
+            echo "❌ CRON_SECRET is not set in repository secrets"
+            echo "Please add CRON_SECRET to GitHub repository secrets:"
+            echo "1. Go to https://github.com/haocheng0919/articles-x/settings/secrets/actions"
+            echo "2. Click 'New repository secret'"
+            echo "3. Name: CRON_SECRET"
+            echo "4. Value: [your secret value from Vercel environment variables]"
+            exit 1
+          else
+            echo "✅ CRON_SECRET is configured"
+          fi
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+      
       - name: Hit ingest endpoint (POST with header)
         run: |
           echo "🚀 Triggering ingest for all 26 Twitter lists..."
+          echo "📅 Current time: $(date -u)"
+          
           response=$(curl -sS -X POST "https://articles-x.vercel.app/api/ingest" \
             -H "x-cron-secret: $CRON_SECRET" \
             -H "Accept: application/json" \
-            -w "\nHTTP_STATUS:%{http_code}")
+            -H "User-Agent: GitHub-Actions-Cron" \
+            -w "\nHTTP_STATUS:%{http_code}" \
+            --max-time 300)
           
+          echo "📝 Response:"
           echo "$response"
           
           # Extract HTTP status code
@@ -27,6 +48,10 @@ jobs:
             echo "✅ Ingest completed successfully"
           else
             echo "❌ Ingest failed with HTTP status: $http_code"
+            echo "🔍 Please check:"
+            echo "   - CRON_SECRET matches Vercel environment variable"
+            echo "   - API endpoint is accessible"
+            echo "   - Twitter API credentials are valid"
             exit 1
           fi
         env:

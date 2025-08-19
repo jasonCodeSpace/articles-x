@@ -96,7 +96,6 @@ export type TwitterTweet = z.infer<typeof TweetSchema>
 interface TwitterClientConfig {
   apiKey: string
   apiHost: string
-  maxPagesPerList: number
   timeoutMs: number
 }
 
@@ -219,14 +218,14 @@ export class TwitterClient {
   }
 
   /**
-   * Fetch all pages of a list timeline up to maxPagesPerList
+   * Fetch all pages of a list timeline (no page limit - gets all available tweets)
    */
   async fetchAllListPages(listId: string): Promise<TwitterTweet[]> {
     const allTweets: TwitterTweet[] = []
     let cursor: string | undefined
     let pageCount = 0
 
-    while (pageCount < this.config.maxPagesPerList) {
+    while (true) {
       try {
         console.log(`Fetching page ${pageCount + 1} for list ${listId}${cursor ? ` (cursor: ${cursor.slice(0, 20)}...)` : ''}`)
         
@@ -387,7 +386,6 @@ export class TwitterClient {
 export function createTwitterClient(): TwitterClient {
   const apiKey = process.env.RAPIDAPI_KEY
   const apiHost = process.env.RAPIDAPI_HOST || 'twitter241.p.rapidapi.com'
-  const maxPagesPerList = parseInt(process.env.MAX_PAGES_PER_LIST || '10')
   const timeoutMs = parseInt(process.env.TWITTER_TIMEOUT_MS || '15000')
 
   if (!apiKey) {
@@ -397,7 +395,6 @@ export function createTwitterClient(): TwitterClient {
   return new TwitterClient({
     apiKey,
     apiHost,
-    maxPagesPerList,
     timeoutMs,
   })
 }

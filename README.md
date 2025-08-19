@@ -58,7 +58,6 @@ SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 # Twitter API Configuration  
 RAPIDAPI_KEY=your_rapidapi_key
 RAPIDAPI_HOST=twitter241.p.rapidapi.com
-MAX_PAGES_PER_LIST=10
 TWITTER_TIMEOUT_MS=15000
 
 # Security

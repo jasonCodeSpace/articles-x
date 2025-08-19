@@ -2,11 +2,17 @@ export const runtime = 'nodejs'
 
 import { NextRequest, NextResponse } from 'next/server'
 
+function authorized(req: NextRequest) {
+  const expected = process.env.CRON_SECRET
+  const byQuery = req.nextUrl.searchParams.get('secret')
+  const byHeader = req.headers.get('authorization')?.replace('Bearer ', '') // 支持两种方式
+  return !!expected && (byQuery === expected || byHeader === expected)
+}
+
 export async function GET(request: NextRequest) {
   try {
-    // Verify this is coming from Vercel Cron
-    const authHeader = request.headers.get('authorization')
-    if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    // Verify this is coming from Vercel Cron (支持查询参数或Authorization头)
+    if (!authorized(request)) {
       console.error('❌ Unauthorized cron request - invalid secret')
       return NextResponse.json({ 
         success: false, 
@@ -81,5 +87,23 @@ export async function GET(request: NextRequest) {
 
 // Also support POST for flexibility
 export async function POST(request: NextRequest) {
-  return GET(request)
+  try {
+    // Same authorization check for POST requests
+    if (!authorized(request)) {
+      console.error('❌ Unauthorized POST cron request - invalid secret')
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Unauthorized' 
+      }, { status: 401 })
+    }
+    
+    // Call the GET handler for the actual logic
+    return GET(request)
+  } catch (error) {
+    console.error('💥 POST cron request failed:', error)
+    return NextResponse.json({
+      success: false,
+      error: 'POST request failed'
+    }, { status: 500 })
+  }
 }

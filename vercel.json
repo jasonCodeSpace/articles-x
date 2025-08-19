@@ -1,7 +1,7 @@
 {
   "crons": [
     {
-      "path": "/api/cron/ingest?secret=ac61f680c71c56ba2785a4e409a2e327a10542caadaf720dfa25e4f3ecec558b",
+      "path": "/api/ingest?secret=ac61f680c71c56ba2785a4e409a2e327a10542caadaf720dfa25e4f3ecec558b",
       "schedule": "*/15 * * * *"
     }
   ]

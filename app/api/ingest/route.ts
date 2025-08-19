@@ -30,35 +30,36 @@ interface IngestResponse {
   processingTimeMs: number
 }
 
-export async function POST(request: NextRequest) {
+function isAuthorized(req: NextRequest) {
+  const expected = process.env.CRON_SECRET
+  const byQuery = req.nextUrl.searchParams.get('secret')
+  const byHeader = req.headers.get('x-cron-secret')
+  return !!expected && (byQuery === expected || byHeader === expected)
+}
+
+async function runIngest(request: NextRequest): Promise<NextResponse> {
   const startTime = Date.now()
   
   try {
-    // Validate cron secret
-    const cronSecret = request.headers.get('x-cron-secret')
-    if (!cronSecret || cronSecret !== process.env.CRON_SECRET) {
-      return NextResponse.json(
-        { success: false, message: 'Unauthorized: Invalid cron secret' },
-        { status: 401 }
-      )
-    }
-
     // Parse query parameters
     const searchParams = request.nextUrl.searchParams
     const dryRun = searchParams.get('dryRun') === '1'
 
-    // Parse request body (optional)
+    // Parse request body (optional for POST)
     let requestBody: IngestRequest = {}
-    try {
-      const body = await request.text()
-      if (body) {
-        requestBody = JSON.parse(body)
+    if (request.method === 'POST') {
+      try {
+        const body = await request.text()
+        if (body) {
+          requestBody = JSON.parse(body)
+        }
+      } catch (error) {
+        console.warn('Failed to parse request body:', error)
       }
-    } catch (error) {
-      console.warn('Failed to parse request body:', error)
     }
 
     console.log('🚀 Starting ingest process...', {
+      method: request.method,
       dryRun,
       customListIds: requestBody.listIds?.length || 0
     })
@@ -154,6 +155,7 @@ export async function POST(request: NextRequest) {
 
     // Log summary
     console.log('📈 Ingest Summary:', {
+      method: request.method,
       dryRun,
       inserted: ingestStats.inserted,
       updated: ingestStats.updated,
@@ -186,24 +188,41 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Only allow POST requests
-export async function GET() {
-  return NextResponse.json(
-    { success: false, message: 'Method not allowed. Use POST.' },
-    { status: 405 }
-  )
+// GET method for Vercel Cron and manual testing
+export async function GET(request: NextRequest) {
+  if (!isAuthorized(request)) {
+    return NextResponse.json(
+      { success: false, message: 'Unauthorized: Invalid secret' },
+      { status: 401 }
+    )
+  }
+  
+  return runIngest(request)
 }
 
+// POST method for programmatic calls
+export async function POST(request: NextRequest) {
+  if (!isAuthorized(request)) {
+    return NextResponse.json(
+      { success: false, message: 'Unauthorized: Invalid secret' },
+      { status: 401 }
+    )
+  }
+  
+  return runIngest(request)
+}
+
+// Disallow other HTTP methods
 export async function PUT() {
   return NextResponse.json(
-    { success: false, message: 'Method not allowed. Use POST.' },
+    { success: false, message: 'Method not allowed. Use GET or POST.' },
     { status: 405 }
   )
 }
 
 export async function DELETE() {
   return NextResponse.json(
-    { success: false, message: 'Method not allowed. Use POST.' },
+    { success: false, message: 'Method not allowed. Use GET or POST.' },
     { status: 405 }
   )
 }

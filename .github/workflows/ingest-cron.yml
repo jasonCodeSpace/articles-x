@@ -1,0 +1,37 @@
+name: Ingest Cron
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"   # 每 15 分钟，UTC 时间
+  workflow_dispatch: {}       # 允许手动触发
+
+jobs:
+  call:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Hit ingest endpoint (POST with header)
+        run: |
+          echo "🚀 Triggering ingest for all 26 Twitter lists..."
+          response=$(curl -sS -X POST "https://articles-x.vercel.app/api/ingest" \
+            -H "x-cron-secret: $CRON_SECRET" \
+            -H "Accept: application/json" \
+            -w "\nHTTP_STATUS:%{http_code}")
+          
+          echo "$response"
+          
+          # Extract HTTP status code
+          http_code=$(echo "$response" | grep "HTTP_STATUS:" | cut -d: -f2)
+          
+          # Check if request was successful
+          if [ "$http_code" -eq 200 ]; then
+            echo "✅ Ingest completed successfully"
+          else
+            echo "❌ Ingest failed with HTTP status: $http_code"
+            exit 1
+          fi
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+
+concurrency:
+  group: ingest-cron
+  cancel-in-progress: false  # 不取消正在运行的任务，避免数据处理中断

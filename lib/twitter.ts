@@ -1,11 +1,44 @@
 import { z } from 'zod'
+import axios from 'axios'
 
 // Zod schemas for Twitter API response validation
 const TwitterUserSchema = z.object({
-  id_str: z.string(),
+  id_str: z.string().optional(),
+  rest_id: z.string().optional(),
   screen_name: z.string(),
   name: z.string().optional(),
   profile_image_url_https: z.string().optional(),
+  following: z.boolean().optional(),
+  can_dm: z.boolean().optional(),
+  can_media_tag: z.boolean().optional(),
+  created_at: z.string().optional(),
+  default_profile: z.boolean().optional(),
+  default_profile_image: z.boolean().optional(),
+  description: z.string().optional(),
+  entities: z.object({
+    description: z.object({
+      urls: z.array(z.any()).optional(),
+    }).optional(),
+  }).optional(),
+  fast_followers_count: z.number().optional(),
+  favourites_count: z.number().optional(),
+  followers_count: z.number().optional(),
+  friends_count: z.number().optional(),
+  has_custom_timelines: z.boolean().optional(),
+  is_translator: z.boolean().optional(),
+  listed_count: z.number().optional(),
+  location: z.string().optional(),
+  media_count: z.number().optional(),
+  normal_followers_count: z.number().optional(),
+  pinned_tweet_ids_str: z.array(z.string()).optional(),
+  possibly_sensitive: z.boolean().optional(),
+  profile_banner_url: z.string().optional(),
+  profile_interstitial_type: z.string().optional(),
+  statuses_count: z.number().optional(),
+  translator_type: z.string().optional(),
+  verified: z.boolean().optional(),
+  want_retweets: z.boolean().optional(),
+  withheld_in_countries: z.array(z.string()).optional(),
 })
 
 const ArticleResultSchema = z.object({
@@ -30,23 +63,86 @@ const ArticleResultSchema = z.object({
   }).optional(),
 }).optional()
 
-const TweetSchema = z.object({
+const TweetLegacySchema = z.object({
   id_str: z.string(),
-  rest_id: z.string().optional(),
   full_text: z.string().optional(),
   text: z.string().optional(),
   created_at: z.string(),
+  user: TwitterUserSchema.optional(),
+  user_id_str: z.string().optional(),
+  reply_count: z.number().optional(),
+  retweet_count: z.number().optional(),
+  favorite_count: z.number().optional(),
+  quote_count: z.number().optional(),
+  bookmark_count: z.number().optional(),
+  retweeted: z.boolean().optional(),
+  lang: z.string().optional(),
+  possibly_sensitive: z.boolean().optional(),
+  in_reply_to_status_id_str: z.string().optional(),
+  in_reply_to_user_id_str: z.string().optional(),
+  in_reply_to_screen_name: z.string().optional(),
+  quoted_status_id_str: z.string().optional(),
+  quoted_status_permalink: z.object({
+    url: z.string().optional(),
+    expanded: z.string().optional(),
+    display: z.string().optional(),
+  }).optional(),
+  entities: z.object({
+    hashtags: z.array(z.object({
+      text: z.string(),
+      indices: z.array(z.number()),
+    })).optional(),
+    urls: z.array(z.object({
+      url: z.string(),
+      expanded_url: z.string(),
+      display_url: z.string(),
+      indices: z.array(z.number()),
+    })).optional(),
+    user_mentions: z.array(z.object({
+      screen_name: z.string(),
+      name: z.string(),
+      id_str: z.string(),
+      indices: z.array(z.number()),
+    })).optional(),
+    media: z.array(z.object({
+      id_str: z.string(),
+      media_url_https: z.string(),
+      url: z.string(),
+      display_url: z.string(),
+      expanded_url: z.string(),
+      type: z.string(),
+      sizes: z.record(z.string(), z.object({
+        w: z.number(),
+        h: z.number(),
+        resize: z.string(),
+      })),
+    })).optional(),
+  }).optional(),
+})
+
+const TweetSchema = z.object({
+  __typename: z.string().optional(),
+  rest_id: z.string().optional(),
   core: z.object({
     user_results: z.object({
       result: z.object({
+        __typename: z.string().optional(),
+        id: z.string().optional(),
+        rest_id: z.string().optional(),
+        affiliates_highlighted_label: z.object({}).optional(),
+        has_graduated_access: z.boolean().optional(),
+        is_blue_verified: z.boolean().optional(),
+        profile_image_shape: z.string().optional(),
         legacy: TwitterUserSchema,
+        tipjar_settings: z.object({
+          is_enabled: z.boolean().optional(),
+          bitcoin_handle: z.string().optional(),
+          ethereum_handle: z.string().optional(),
+        }).optional(),
       }),
     }).optional(),
   }).optional(),
-  user: TwitterUserSchema.optional(),
-  legacy: z.object({
-    created_at: z.string().optional(),
-  }).optional(),
+  legacy: TweetLegacySchema.optional(),
   // Support both nested article structures
   article: z.object({
     article_results: ArticleResultSchema,
@@ -57,35 +153,35 @@ const TweetSchema = z.object({
 
 
 const TimelineResponseSchema = z.object({
-  data: z.object({
-    list: z.object({
-      tweets_timeline: z.object({
-        timeline: z.object({
-          instructions: z.array(z.object({
-            type: z.string(),
-            entries: z.array(z.object({
-              entryId: z.string(),
-              content: z.union([
-                z.object({
-                  entryType: z.literal('TimelineTimelineItem'),
-                  itemContent: z.object({
-                    itemType: z.literal('TimelineTweet'),
-                    tweet_results: z.object({
-                      result: TweetSchema,
-                    }),
-                  }),
+  cursor: z.union([z.string(), z.object({}).passthrough()]).optional(),
+  result: z.object({
+    timeline: z.object({
+      instructions: z.array(z.object({
+        type: z.string().optional(),
+        entries: z.array(z.object({
+          entryId: z.string(),
+          sortIndex: z.string().optional(),
+          content: z.union([
+            z.object({
+              entryType: z.literal('TimelineTimelineItem'),
+              __typename: z.string().optional(),
+              itemContent: z.object({
+                itemType: z.literal('TimelineTweet'),
+                tweet_results: z.object({
+                  result: TweetSchema,
                 }),
-                z.object({
-                  entryType: z.literal('TimelineTimelineCursor'),
-                  value: z.string(),
-                  cursorType: z.string(),
-                }),
-                z.object({}).passthrough(), // Allow other entry types
-              ]),
-            })),
-          })),
-        }),
-      }),
+              }),
+            }),
+            z.object({
+              entryType: z.literal('TimelineTimelineCursor'),
+              __typename: z.string().optional(),
+              value: z.string(),
+              cursorType: z.string(),
+            }),
+            z.object({}).passthrough(), // Allow other entry types
+          ]),
+        })),
+      })),
     }),
   }),
 })
@@ -182,12 +278,11 @@ export class TwitterClient {
       }
 
       const response = await this.fetchWithRetry(url.toString(), {
-        method: 'GET',
         headers: {
-          'x-rapidapi-host': this.config.apiHost,
-          'x-rapidapi-key': this.config.apiKey,
+          'X-RapidAPI-Host': this.config.apiHost,
+          'X-RapidAPI-Key': this.config.apiKey,
         },
-        signal: AbortSignal.timeout(this.config.timeoutMs),
+        timeout: this.config.timeoutMs,
       })
 
       if (!response.ok) {
@@ -201,7 +296,7 @@ export class TwitterClient {
         throw error
       }
 
-      const data = await response.json()
+      const data = await response.json() as TwitterTimelineResponse
       
       // Validate response structure
       const parsed = TimelineResponseSchema.safeParse(data)
@@ -271,10 +366,11 @@ export class TwitterClient {
     const tweets: TwitterTweet[] = []
 
     try {
-      const instructions = data?.data?.list?.tweets_timeline?.timeline?.instructions || []
+      const instructions = data?.result?.timeline?.instructions || []
       
       for (const instruction of instructions) {
-        if (instruction.type === 'TimelineAddEntries' && instruction.entries) {
+        // Check if instruction has entries (some instructions may not have type field)
+        if (instruction.entries) {
           for (const entry of instruction.entries) {
             if (entry.content?.entryType === 'TimelineTimelineItem') {
               const itemContent = entry.content.itemContent as { itemType?: string; tweet_results?: { result?: unknown } }
@@ -305,7 +401,7 @@ export class TwitterClient {
    */
   private extractNextCursor(data: TwitterTimelineResponse): string | undefined {
     try {
-      const instructions = data?.data?.list?.tweets_timeline?.timeline?.instructions || []
+      const instructions = data?.result?.timeline?.instructions || []
       
       for (const instruction of instructions) {
         if (instruction.type === 'TimelineAddEntries' && instruction.entries) {
@@ -331,24 +427,35 @@ export class TwitterClient {
    */
   private async fetchWithRetry(
     url: string, 
-    options: RequestInit, 
+    options: { headers: Record<string, string>; timeout: number }, 
     maxRetries = 3
-  ): Promise<Response> {
+  ): Promise<{ ok: boolean; status: number; statusText: string; json: () => Promise<unknown> }> {
     let lastError: Error
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        const response = await fetch(url, options)
+        const response = await axios.get(url, {
+          headers: options.headers,
+          timeout: options.timeout,
+          validateStatus: () => true // Don't throw on HTTP error status
+        })
+        
+        const responseWrapper = {
+          ok: response.status >= 200 && response.status < 300,
+          status: response.status,
+          statusText: response.statusText,
+          json: async () => response.data
+        }
 
         // If successful or client error (not 429), return immediately
-        if (response.ok || (response.status >= 400 && response.status < 500 && response.status !== 429)) {
-          return response
+        if (responseWrapper.ok || (responseWrapper.status >= 400 && responseWrapper.status < 500 && responseWrapper.status !== 429)) {
+          return responseWrapper
         }
 
         // For 429 or 5xx errors, implement exponential backoff
-        if (response.status === 429 || response.status >= 500) {
+        if (responseWrapper.status === 429 || responseWrapper.status >= 500) {
           const delay = Math.min(1000 * Math.pow(2, attempt - 1), 30000) // Max 30s delay
-          console.warn(`Attempt ${attempt}/${maxRetries} failed with ${response.status}. Retrying in ${delay}ms...`)
+          console.warn(`Attempt ${attempt}/${maxRetries} failed with ${responseWrapper.status}. Retrying in ${delay}ms...`)
           
           if (attempt < maxRetries) {
             await this.sleep(delay)
@@ -356,7 +463,7 @@ export class TwitterClient {
           }
         }
 
-        return response
+        return responseWrapper
         
       } catch (error) {
         lastError = error as Error

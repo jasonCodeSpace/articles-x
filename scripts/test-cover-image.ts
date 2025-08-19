@@ -5,10 +5,12 @@ import { TwitterTweet } from '../lib/twitter'
 
 // Sample tweet data with cover_media structure
 const sampleTweetWithCoverImage: TwitterTweet = {
-  id_str: '1234567890',
   rest_id: '1234567890',
-  full_text: 'Check out this article about PumpFun!',
-  created_at: 'Wed Oct 25 20:30:15 +0000 2023',
+  legacy: {
+    id_str: '1234567890',
+    full_text: 'Check out this article about PumpFun!',
+    created_at: 'Wed Oct 25 20:30:15 +0000 2023'
+  },
   core: {
     user_results: {
       result: {

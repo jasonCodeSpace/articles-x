@@ -35,7 +35,7 @@ export interface TweetData {
   article_featured_image?: string
   article_rest_id?: string
   list_id: string
-  raw_data: any // Complete raw tweet data
+  raw_data: Record<string, unknown> // Complete raw tweet data
 }
 
 export interface DatabaseArticle {
@@ -78,21 +78,21 @@ export function mapTweetToArticle(tweet: TwitterTweet): HarvestedArticle | null 
       return null
     }
 
-    // Extract user info from core.user_results.result.legacy (new API structure) or fallback to user (old structure)
+    // Extract user info from core.user_results.result.legacy (new API structure) or fallback to legacy.user (old structure)
     const userLegacy = tweet.core?.user_results?.result?.legacy
-    const userFallback = tweet.user
+    const userFallback = tweet.legacy?.user
     
     const authorHandle = userLegacy?.screen_name || userFallback?.screen_name
     const authorName = userLegacy?.name || userFallback?.name || authorHandle || 'Unknown'
     const authorProfileImage = userLegacy?.profile_image_url_https || userFallback?.profile_image_url_https
     
     // Extract tweet info
-    const tweetId = tweet.id_str || tweet.rest_id
-    const createdAt = tweet.legacy?.created_at || tweet.created_at
-    const tweetText = tweet.full_text || tweet.text || ''
+    const tweetId = tweet.legacy?.id_str || tweet.rest_id
+    const createdAt = tweet.legacy?.created_at
+    const tweetText = tweet.legacy?.full_text || tweet.legacy?.text || ''
     
-    if (!authorHandle || !tweetId) {
-      console.warn(`Tweet missing required data - handle: ${authorHandle}, id: ${tweetId}`)
+    if (!authorHandle || !tweetId || !createdAt) {
+      console.warn(`Tweet missing required data - handle: ${authorHandle}, id: ${tweetId}, createdAt: ${createdAt}`)
       return null
     }
 
@@ -184,18 +184,19 @@ export function harvestedToDatabase(harvested: HarvestedArticle): DatabaseArticl
  * Convert Twitter tweet to TweetData format for storage in tweets table
  */
 export function mapTweetToTweetData(tweet: TwitterTweet, listId: string): TweetData {
-  // Extract user info from core.user_results.result.legacy (new API structure) or fallback to user (old structure)
+  // Extract user info from core.user_results.result.legacy (new API structure) or fallback to legacy.user (current structure)
   const userLegacy = tweet.core?.user_results?.result?.legacy
-  const userFallback = tweet.user
+  const userFromTweetLegacy = tweet.legacy?.user
   
-  const authorHandle = userLegacy?.screen_name || userFallback?.screen_name || 'unknown'
-  const authorName = userLegacy?.name || userFallback?.name || authorHandle
-  const authorProfileImage = userLegacy?.profile_image_url_https || userFallback?.profile_image_url_https
+  const authorHandle = userLegacy?.screen_name || userFromTweetLegacy?.screen_name || 'unknown'
+  const authorName = userLegacy?.name || userFromTweetLegacy?.name || authorHandle
+  const authorProfileImage = userLegacy?.profile_image_url_https || userFromTweetLegacy?.profile_image_url_https
   
-  // Extract tweet info
-  const tweetId = tweet.id_str || tweet.rest_id || ''
-  const createdAt = tweet.legacy?.created_at || tweet.created_at || ''
-  const tweetText = tweet.full_text || tweet.text || ''
+  // Extract tweet info from legacy object (current API structure)
+  const tweetLegacy = tweet.legacy
+  const tweetId = tweetLegacy?.id_str || tweet.rest_id || ''
+  const createdAt = tweetLegacy?.created_at || ''
+  const tweetText = tweetLegacy?.full_text || tweetLegacy?.text || ''
   
   // Check if tweet has article data
   const articleResult = tweet.article_results?.result || tweet.article?.article_results?.result
@@ -503,7 +504,8 @@ export async function ingestTweetsFromLists(
             listStats.articlesHarvested++
           }
         } catch (error) {
-          const errorMsg = `Error processing tweet ${tweet.id_str}: ${error}`
+          const tweetId = tweet.legacy?.id_str || tweet.rest_id || 'unknown'
+          const errorMsg = `Error processing tweet ${tweetId}: ${error}`
           console.error(errorMsg)
           listStats.errors.push(errorMsg)
         }

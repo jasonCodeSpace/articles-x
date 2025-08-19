@@ -137,7 +137,20 @@ export async function POST(request: NextRequest) {
       .limit(10)
 
     // Group by author and count
-    const authorCounts = topAuthors?.reduce((acc: any, tweet: any) => {
+    interface AuthorCount {
+      author_handle: string
+      author_name: string
+      author_profile_image?: string
+      count: number
+    }
+
+    interface TweetAuthor {
+      author_handle: string
+      author_name: string
+      author_profile_image?: string
+    }
+
+    const authorCounts = topAuthors?.reduce((acc: Record<string, AuthorCount>, tweet: TweetAuthor) => {
       const handle = tweet.author_handle
       if (!acc[handle]) {
         acc[handle] = {
@@ -152,7 +165,7 @@ export async function POST(request: NextRequest) {
     }, {}) || {}
 
     const topAuthorsList = Object.values(authorCounts)
-      .sort((a: any, b: any) => b.count - a.count)
+      .sort((a: AuthorCount, b: AuthorCount) => b.count - a.count)
       .slice(0, 10)
 
     // Get recent activity (last 7 days)

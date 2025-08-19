@@ -1,0 +1,21 @@
+name: Test Manual Trigger
+
+on:
+  workflow_dispatch:
+    inputs:
+      test_message:
+        description: 'Test message'
+        required: false
+        default: 'Manual test trigger'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Test step
+        run: |
+          echo "✅ GitHub Actions is working!"
+          echo "Test message: ${{ github.event.inputs.test_message }}"
+          echo "Current time: $(date -u)"
+          echo "Repository: ${{ github.repository }}"
+          echo "Actor: ${{ github.actor }}"

@@ -37,9 +37,8 @@ export function ArticleCard({ article, className }: ArticleCardProps) {
   const publishedDate = article.published_at || article.created_at
   const relativeTime = formatDistanceToNow(new Date(publishedDate), { addSuffix: true })
 
-  // Generate article URL - use explicit article_url or fallback
+  // Generate article URL - prioritize article_url
   const articleUrl = article.article_url || 
-    article.featured_image_url || 
     `https://x.com/search?q=${encodeURIComponent(article.title)}`
 
   // Generate author handle for display

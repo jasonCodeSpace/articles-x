@@ -3,6 +3,7 @@ export const runtime = 'nodejs'
 import { NextRequest, NextResponse } from 'next/server'
 import { createTwitterClient, TwitterTweet } from '@/lib/twitter'
 import { ingestTweetsFromLists } from '@/lib/ingest'
+import { getActiveTwitterListIds } from '@/lib/twitter-lists'
 
 interface IngestRequest {
   dryRun?: boolean
@@ -62,16 +63,37 @@ export async function POST(request: NextRequest) {
       customListIds: requestBody.listIds?.length || 0
     })
 
-    // Get list IDs from environment or request body
-    const twitterListIds = requestBody.listIds || 
-      (process.env.TWITTER_LIST_IDS?.split(',').map(id => id.trim()).filter(Boolean)) || 
-      []
+    // Get list IDs from request body, environment, or database (in order of preference)
+    let twitterListIds = requestBody.listIds
 
-    if (twitterListIds.length === 0) {
+    if (!twitterListIds || twitterListIds.length === 0) {
+      // Try environment variable as fallback
+      const envListIds = process.env.TWITTER_LIST_IDS?.split(',').map(id => id.trim()).filter(Boolean)
+      if (envListIds && envListIds.length > 0) {
+        twitterListIds = envListIds
+      } else {
+        // Get all active Twitter lists from database
+        try {
+          twitterListIds = await getActiveTwitterListIds()
+          console.log(`📋 Retrieved ${twitterListIds.length} active Twitter lists from database`)
+        } catch (error) {
+          console.error('Error fetching active Twitter lists from database:', error)
+          return NextResponse.json(
+            { 
+              success: false, 
+              message: 'Failed to fetch active Twitter lists from database. Ensure database is properly configured.' 
+            },
+            { status: 500 }
+          )
+        }
+      }
+    }
+
+    if (!twitterListIds || twitterListIds.length === 0) {
       return NextResponse.json(
         { 
           success: false, 
-          message: 'No Twitter list IDs configured. Set TWITTER_LIST_IDS environment variable or provide listIds in request body.' 
+          message: 'No active Twitter lists found. Please add Twitter lists to the database or provide listIds in request body.' 
         },
         { status: 400 }
       )

@@ -12,7 +12,10 @@
     "test:coverage": "jest --coverage",
     "seed:dry-run": "tsx scripts/seed-dry-run.ts",
     "test:ingest": "tsx scripts/test-ingest.ts",
-    "add-sample-data": "tsx scripts/add-sample-data.ts"
+    "add-sample-data": "tsx scripts/add-sample-data.ts",
+    "init:twitter-lists": "tsx scripts/init-twitter-lists.ts",
+    "trigger:all-lists": "tsx scripts/test-trigger-all-lists.ts --local",
+    "trigger:all-lists:dry": "tsx scripts/test-trigger-all-lists.ts --local --dry-run"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.10",

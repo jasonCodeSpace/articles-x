@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 
 export interface TwitterList {
   id: string
@@ -69,7 +70,22 @@ export async function getTwitterLists(): Promise<TwitterList[]> {
 }
 
 export async function getActiveTwitterListIds(): Promise<string[]> {
-  const supabase = await createClient()
+  // Always use direct Supabase client with service role key for scheduler context
+  // Server client uses anon key which doesn't have sufficient permissions
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  
+  console.log('Environment check:', {
+    supabaseUrl: supabaseUrl ? 'Set' : 'Not set',
+    serviceKey: serviceKey ? 'Set' : 'Not set'
+  })
+  
+  if (!supabaseUrl || !serviceKey) {
+    throw new Error('Missing Supabase environment variables')
+  }
+  
+  const supabase = createSupabaseClient(supabaseUrl, serviceKey)
+  console.log('Using direct Supabase client with service role key for getActiveTwitterListIds')
   
   const { data, error } = await supabase
     .from('twitter_lists')
@@ -82,7 +98,10 @@ export async function getActiveTwitterListIds(): Promise<string[]> {
     throw new Error('Failed to fetch active Twitter list IDs')
   }
   
-  return data?.map((item: { list_id: string }) => item.list_id) || []
+  const listIds = data?.map((item: { list_id: string }) => item.list_id) || []
+  console.log(`Found ${listIds.length} active Twitter lists using direct client with service role key`)
+  
+  return listIds
 }
 
 export async function updateTwitterList(listId: string, updates: Partial<Omit<TwitterList, 'id' | 'created_at' | 'updated_at'>>): Promise<TwitterList> {

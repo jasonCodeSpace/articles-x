@@ -1,0 +1,134 @@
+{
+  "data": {
+    "list": {
+      "tweets_timeline": {
+        "timeline": {
+          "instructions": [
+            {
+              "type": "TimelineAddEntries",
+              "entries": [
+                {
+                  "entryId": "tweet-1234567890",
+                  "sortIndex": "1234567890",
+                  "content": {
+                    "entryType": "TimelineTimelineItem",
+                    "itemContent": {
+                      "itemType": "TimelineTweet",
+                      "tweet_results": {
+                        "result": {
+                          "id_str": "1234567890",
+                          "full_text": "Check out this amazing article about the future of AI! It explores how machine learning will transform industries in the next decade.",
+                          "created_at": "Wed Oct 05 21:25:35 +0000 2023",
+                          "user": {
+                            "id_str": "987654321",
+                            "screen_name": "tech_writer",
+                            "name": "Tech Writer Pro"
+                          },
+                          "article_results": {
+                            "result": {
+                              "rest_id": "article123456",
+                              "title": "The Future of AI: How Machine Learning Will Transform Industries",
+                              "description": "An in-depth look at the revolutionary impact of artificial intelligence on business, healthcare, education, and more. Discover the trends shaping our tomorrow.",
+                              "url": "https://example.com/articles/future-of-ai"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "entryId": "tweet-2345678901",
+                  "sortIndex": "2345678901",
+                  "content": {
+                    "entryType": "TimelineTimelineItem",
+                    "itemContent": {
+                      "itemType": "TimelineTweet",
+                      "tweet_results": {
+                        "result": {
+                          "id_str": "2345678901",
+                          "full_text": "Just published my thoughts on sustainable technology practices. This is a must-read for anyone in the tech industry!",
+                          "created_at": "Thu Oct 06 14:30:22 +0000 2023",
+                          "user": {
+                            "id_str": "876543210",
+                            "screen_name": "green_tech_guru",
+                            "name": "Sarah Green"
+                          },
+                          "article_results": {
+                            "result": {
+                              "rest_id": "article789012",
+                              "title": "Sustainable Technology: Building a Greener Digital Future",
+                              "description": "Explore how technology companies are adopting sustainable practices to reduce environmental impact while maintaining innovation and growth."
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "entryId": "tweet-3456789012",
+                  "sortIndex": "3456789012",
+                  "content": {
+                    "entryType": "TimelineTimelineItem",
+                    "itemContent": {
+                      "itemType": "TimelineTweet",
+                      "tweet_results": {
+                        "result": {
+                          "id_str": "3456789012",
+                          "full_text": "New research findings on quantum computing are absolutely fascinating! Thread below 🧵",
+                          "created_at": "Fri Oct 07 09:15:44 +0000 2023",
+                          "user": {
+                            "id_str": "765432109",
+                            "screen_name": "quantum_researcher",
+                            "name": "Dr. Quantum"
+                          },
+                          "article_results": {
+                            "result": {
+                              "rest_id": "article345678"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "entryId": "tweet-4567890123",
+                  "sortIndex": "4567890123",
+                  "content": {
+                    "entryType": "TimelineTimelineItem",
+                    "itemContent": {
+                      "itemType": "TimelineTweet",
+                      "tweet_results": {
+                        "result": {
+                          "id_str": "4567890123",
+                          "full_text": "Regular tweet without article content - should be filtered out",
+                          "created_at": "Sat Oct 08 16:45:12 +0000 2023",
+                          "user": {
+                            "id_str": "654321098",
+                            "screen_name": "regular_user",
+                            "name": "John Doe"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "entryId": "cursor-bottom",
+                  "sortIndex": "0000000000",
+                  "content": {
+                    "entryType": "TimelineTimelineCursor",
+                    "value": "DAACDAABCgABF_-W-KEKAAIXz5Ps6AoAAhctntG6Cg",
+                    "cursorType": "Bottom"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  }
+}

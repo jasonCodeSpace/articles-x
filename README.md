@@ -1,36 +1,145 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Articles X
+
+A modern article platform built with Next.js, Supabase, and TypeScript.
+
+## Features
+
+- 🔐 **Secure Authentication** - Email magic link/OTP authentication via Supabase
+- 📚 **Article Management** - Full CRUD operations with RLS security
+- 🎨 **Modern UI** - Built with shadcn/ui and Tailwind CSS
+- 🛡️ **Row Level Security** - Fine-grained access control
+- 📱 **Responsive Design** - Works on all devices
+- ⚡ **TypeScript** - Full type safety throughout
 
 ## Getting Started
 
-First, run the development server:
+### 1. Environment Setup
+
+Copy the example environment file and add your Supabase credentials:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.example .env.local
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Update `.env.local` with your Supabase project details:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 2. Database Setup
 
-## Learn More
+Run the migration in your Supabase SQL Editor:
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+# Copy and paste the contents of this file into Supabase SQL Editor:
+supabase/migrations/001_create_articles_table.sql
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 3. Install Dependencies & Run
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm install
+npm run dev
+```
 
-## Deploy on Vercel
+Open [http://localhost:3000](http://localhost:3000) to see the application.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### 4. Test Database Connection
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Run the seed dry-run script to verify your setup:
+
+```bash
+npm run seed:dry-run
+```
+
+## Database Schema
+
+### Articles Table
+
+The `public.articles` table includes:
+
+- **Content**: `title`, `slug`, `content`, `excerpt`
+- **Metadata**: `author_id`, `author_name`, `status`, `published_at`
+- **Engagement**: `likes_count`, `views_count`, `comments_count`
+- **SEO**: `meta_title`, `meta_description`, `featured_image_url`
+- **Organization**: `tags`, `category`
+- **Timestamps**: `created_at`, `updated_at` (auto-updated)
+
+### Row Level Security (RLS)
+
+The articles table implements strict RLS policies:
+
+#### ✅ **Read Access (SELECT)**
+- **Anonymous users**: Can read published articles only (`status = 'published'`)
+- **Authenticated users**: Can read published articles only (`status = 'published'`)
+- **Service role**: Can read all articles (bypasses RLS)
+
+#### ❌ **Write Access (INSERT/UPDATE/DELETE)**
+- **Anonymous users**: **Blocked** - No write access
+- **Authenticated users**: **Blocked** - No write access
+- **Service role**: **Full access** - Can perform all operations
+
+#### Why This Design?
+
+This security model ensures:
+- **Public safety**: Only published content is visible to users
+- **Write protection**: Prevents unauthorized content creation/modification
+- **Admin control**: Only service role (admin functions) can manage content
+- **Performance**: Efficient queries with proper indexes
+
+#### Implementation Details
+
+```sql
+-- Allow anyone to read published articles
+CREATE POLICY "Anyone can read published articles"
+ON public.articles FOR SELECT
+USING (status = 'published');
+
+-- Block all writes for regular users
+CREATE POLICY "Block all writes for regular users"
+ON public.articles FOR ALL
+TO authenticated, anon
+USING (false) WITH CHECK (false);
+```
+
+**Note**: The service role automatically bypasses RLS policies, giving it full access to all operations.
+
+## Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run start` - Start production server
+- `npm run lint` - Run ESLint
+- `npm run seed:dry-run` - Test database connection and RLS policies
+
+## Tech Stack
+
+- **Framework**: Next.js 15 (App Router)
+- **Database**: Supabase (PostgreSQL)
+- **Authentication**: Supabase Auth
+- **Styling**: Tailwind CSS + shadcn/ui
+- **Language**: TypeScript
+- **Validation**: Zod
+
+## Project Structure
+
+```
+articles-x/
+├── app/
+│   ├── (protected)/        # Protected routes
+│   ├── auth/              # Auth callbacks
+│   ├── login/             # Login page
+│   └── layout.tsx         # Root layout
+├── components/
+│   ├── ui/                # shadcn/ui components
+│   └── logout-button.tsx  # Custom components
+├── lib/
+│   └── supabase/          # Supabase clients
+├── scripts/
+│   └── seed-dry-run.ts    # Database testing script
+└── supabase/
+    └── migrations/        # SQL migrations
+```

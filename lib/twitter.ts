@@ -203,15 +203,17 @@ export class TwitterClient {
       for (const instruction of instructions) {
         if (instruction.type === 'TimelineAddEntries' && instruction.entries) {
           for (const entry of instruction.entries) {
-            if (entry.content?.entryType === 'TimelineTimelineItem' && 
-                entry.content?.itemContent?.itemType === 'TimelineTweet') {
-              const tweet = entry.content.itemContent.tweet_results?.result
-              if (tweet) {
-                const parsed = TweetSchema.safeParse(tweet)
-                if (parsed.success) {
-                  tweets.push(parsed.data)
-                } else {
-                  console.warn('Failed to parse tweet:', parsed.error)
+            if (entry.content?.entryType === 'TimelineTimelineItem') {
+              const itemContent = entry.content.itemContent as { itemType?: string; tweet_results?: { result?: unknown } }
+              if (itemContent?.itemType === 'TimelineTweet') {
+                const tweet = itemContent.tweet_results?.result
+                if (tweet) {
+                  const parsed = TweetSchema.safeParse(tweet)
+                  if (parsed.success) {
+                    tweets.push(parsed.data)
+                  } else {
+                    console.warn('Failed to parse tweet:', parsed.error)
+                  }
                 }
               }
             }
@@ -235,9 +237,11 @@ export class TwitterClient {
       for (const instruction of instructions) {
         if (instruction.type === 'TimelineAddEntries' && instruction.entries) {
           for (const entry of instruction.entries) {
-            if (entry.content?.entryType === 'TimelineTimelineCursor' && 
-                entry.content?.cursorType === 'Bottom') {
-              return entry.content.value
+            if (entry.content?.entryType === 'TimelineTimelineCursor') {
+              const cursorContent = entry.content as { cursorType?: string; value?: string }
+              if (cursorContent?.cursorType === 'Bottom') {
+                return cursorContent.value
+              }
             }
           }
         }

@@ -22,6 +22,10 @@ async function seedDryRun() {
   console.log('=====================================')
   
   try {
+    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+      throw new Error('Missing required environment variables')
+    }
+    
     // Create Supabase client with service role key
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
       auth: {

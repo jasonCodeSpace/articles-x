@@ -5,8 +5,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { AlertCircle, Mail, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
+import { Suspense } from 'react'
 
-export default function AuthCodeError() {
+function AuthCodeErrorContent() {
   const searchParams = useSearchParams()
   const error = searchParams.get('error')
   const errorDescription = searchParams.get('error_description')
@@ -123,5 +124,13 @@ export default function AuthCodeError() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function AuthCodeError() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <AuthCodeErrorContent />
+    </Suspense>
   )
 }

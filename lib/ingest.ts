@@ -14,6 +14,7 @@ const HarvestedArticleSchema = z.object({
   rest_id: z.string().optional(),
   original_url: z.string().url().optional(),
   created_at: z.string(), // Twitter's created_at format
+  featured_image_url: z.string().optional(),
 })
 
 export type HarvestedArticle = z.infer<typeof HarvestedArticleSchema>
@@ -94,6 +95,9 @@ export function mapTweetToArticle(tweet: TwitterTweet): HarvestedArticle | null 
     // Extract title and description (prefer preview_text over description)
     const title = articleResult.title || tweetText.slice(0, 100) || 'Untitled Article'
     const excerpt = articleResult.preview_text || articleResult.description || tweetText.slice(0, 200) || undefined
+    
+    // Extract cover image URL from cover_media.media_info.original_img_url
+    const featuredImageUrl = articleResult.cover_media?.media_info?.original_img_url
 
     const harvestedArticle: HarvestedArticle = {
       article_url: articleUrl,
@@ -106,6 +110,7 @@ export function mapTweetToArticle(tweet: TwitterTweet): HarvestedArticle | null 
       rest_id: restId,
       original_url: articleResult.url,
       created_at: createdAt,
+      featured_image_url: featuredImageUrl,
     }
 
     // Validate the harvested data
@@ -150,6 +155,7 @@ export function harvestedToDatabase(harvested: HarvestedArticle): DatabaseArticl
     published_at: publishedAt,
     meta_title: harvested.title,
     meta_description: excerpt,
+    featured_image_url: harvested.featured_image_url,
     tags: ['twitter', 'imported'],
     category: 'twitter-import',
   }
@@ -223,6 +229,7 @@ export async function batchUpsertArticles(
               author_name: dbArticle.author_name,
               meta_title: dbArticle.meta_title,
               meta_description: dbArticle.meta_description,
+              featured_image_url: dbArticle.featured_image_url,
               tags: dbArticle.tags,
               category: dbArticle.category,
             })

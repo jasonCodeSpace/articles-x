@@ -5,23 +5,51 @@ const TwitterUserSchema = z.object({
   id_str: z.string(),
   screen_name: z.string(),
   name: z.string().optional(),
+  profile_image_url_https: z.string().optional(),
 })
 
 const ArticleResultSchema = z.object({
   result: z.object({
     rest_id: z.string(),
+    id: z.string().optional(),
     title: z.string().optional(),
+    preview_text: z.string().optional(),
     description: z.string().optional(),
     url: z.string().optional(),
+    cover_media: z.object({
+      media_info: z.object({
+        original_img_url: z.string().optional(),
+      }).optional(),
+    }).optional(),
+    lifecycle_state: z.object({
+      modified_at_secs: z.number().optional(),
+    }).optional(),
+    metadata: z.object({
+      first_published_at_secs: z.number().optional(),
+    }).optional(),
   }).optional(),
 }).optional()
 
 const TweetSchema = z.object({
   id_str: z.string(),
+  rest_id: z.string().optional(),
   full_text: z.string().optional(),
   text: z.string().optional(),
   created_at: z.string(),
+  core: z.object({
+    user_results: z.object({
+      result: z.object({
+        legacy: TwitterUserSchema,
+      }),
+    }).optional(),
+  }).optional(),
   user: TwitterUserSchema.optional(),
+  legacy: z.object({
+    created_at: z.string().optional(),
+  }).optional(),
+  article: z.object({
+    article_results: ArticleResultSchema,
+  }).optional(),
   article_results: ArticleResultSchema,
 })
 
@@ -91,9 +119,60 @@ interface TwitterApiError extends Error {
 
 export class TwitterClient {
   private config: TwitterClientConfig
+  private requestQueue: Array<() => Promise<any>> = []
+  private isProcessingQueue = false
+  private lastRequestTime = 0
+  private readonly REQUEST_INTERVAL_MS = 1000 / 9 // 9 requests per second = ~111ms between requests
 
   constructor(config: TwitterClientConfig) {
     this.config = config
+  }
+
+  /**
+   * Rate-limited request executor
+   */
+  private async executeWithRateLimit<T>(requestFn: () => Promise<T>): Promise<T> {
+    return new Promise((resolve, reject) => {
+      this.requestQueue.push(async () => {
+        try {
+          const result = await requestFn()
+          resolve(result)
+        } catch (error) {
+          reject(error)
+        }
+      })
+      
+      this.processQueue()
+    })
+  }
+
+  /**
+   * Process the request queue with rate limiting
+   */
+  private async processQueue(): Promise<void> {
+    if (this.isProcessingQueue || this.requestQueue.length === 0) {
+      return
+    }
+
+    this.isProcessingQueue = true
+
+    while (this.requestQueue.length > 0) {
+      const now = Date.now()
+      const timeSinceLastRequest = now - this.lastRequestTime
+      
+      if (timeSinceLastRequest < this.REQUEST_INTERVAL_MS) {
+        const waitTime = this.REQUEST_INTERVAL_MS - timeSinceLastRequest
+        await this.sleep(waitTime)
+      }
+
+      const requestFn = this.requestQueue.shift()
+      if (requestFn) {
+        this.lastRequestTime = Date.now()
+        await requestFn()
+      }
+    }
+
+    this.isProcessingQueue = false
   }
 
   /**
@@ -102,46 +181,48 @@ export class TwitterClient {
   async fetchListTimeline(
     options: FetchListTimelineOptions
   ): Promise<{ tweets: TwitterTweet[]; nextCursor?: string }> {
-    const url = new URL('https://twitter241.p.rapidapi.com/list-timeline')
-    url.searchParams.set('listId', options.listId)
-    
-    if (options.cursor) {
-      url.searchParams.set('cursor', options.cursor)
-    }
-
-    const response = await this.fetchWithRetry(url.toString(), {
-      method: 'GET',
-      headers: {
-        'x-rapidapi-host': this.config.apiHost,
-        'x-rapidapi-key': this.config.apiKey,
-      },
-      signal: AbortSignal.timeout(this.config.timeoutMs),
-    })
-
-    if (!response.ok) {
-      const error = new Error(`Twitter API error: ${response.status} ${response.statusText}`) as TwitterApiError
-      error.status = response.status
-      try {
-        error.response = await response.json()
-      } catch {
-        // Ignore JSON parse errors
+    return this.executeWithRateLimit(async () => {
+      const url = new URL('https://twitter241.p.rapidapi.com/list-timeline')
+      url.searchParams.set('listId', options.listId)
+      
+      if (options.cursor) {
+        url.searchParams.set('cursor', options.cursor)
       }
-      throw error
-    }
 
-    const data = await response.json()
-    
-    // Validate response structure
-    const parsed = TimelineResponseSchema.safeParse(data)
-    if (!parsed.success) {
-      console.warn('Twitter API response validation failed:', parsed.error)
-      // Continue with best-effort parsing
-    }
+      const response = await this.fetchWithRetry(url.toString(), {
+        method: 'GET',
+        headers: {
+          'x-rapidapi-host': this.config.apiHost,
+          'x-rapidapi-key': this.config.apiKey,
+        },
+        signal: AbortSignal.timeout(this.config.timeoutMs),
+      })
 
-    const tweets = this.extractTweetsFromResponse(data)
-    const nextCursor = this.extractNextCursor(data)
+      if (!response.ok) {
+        const error = new Error(`Twitter API error: ${response.status} ${response.statusText}`) as TwitterApiError
+        error.status = response.status
+        try {
+          error.response = await response.json()
+        } catch {
+          // Ignore JSON parse errors
+        }
+        throw error
+      }
 
-    return { tweets, nextCursor }
+      const data = await response.json()
+      
+      // Validate response structure
+      const parsed = TimelineResponseSchema.safeParse(data)
+      if (!parsed.success) {
+        console.warn('Twitter API response validation failed:', parsed.error)
+        // Continue with best-effort parsing
+      }
+
+      const tweets = this.extractTweetsFromResponse(data)
+      const nextCursor = this.extractNextCursor(data)
+
+      return { tweets, nextCursor }
+    })
   }
 
   /**

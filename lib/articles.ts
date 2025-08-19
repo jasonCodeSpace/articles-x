@@ -33,11 +33,14 @@ export async function fetchArticles(options: FetchArticlesOptions = {}): Promise
         content,
         excerpt,
         author_name,
+        author_handle,
+        author_profile_image,
         featured_image_url,
         published_at,
         created_at,
         tags,
-        category
+        category,
+        article_url
       `)
       .eq('status', 'published') // Only fetch published articles
       .limit(limit)

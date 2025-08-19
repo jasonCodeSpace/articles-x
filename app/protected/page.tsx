@@ -2,7 +2,12 @@ import { Suspense } from 'react'
 import { fetchArticles, getArticleCategories, getArticleStats } from '@/lib/articles'
 import { ArticleFeed } from '@/components/article-feed'
 import { FeedLoading } from '@/components/feed-loading'
+import { SchedulerStatus } from '@/components/scheduler-status'
+import { TwitterListsManager } from '@/components/twitter-lists-manager'
 import { FileText } from 'lucide-react'
+
+// Initialize scheduler on server startup
+import '@/lib/init-scheduler'
 
 export const dynamic = 'force-dynamic'
 
@@ -15,34 +20,40 @@ export default async function HomePage() {
   ])
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-white">Articles Feed</h1>
-          <p className="mt-2 text-gray-300">
-            Read the best articles from X — noise-free.
-          </p>
-        </div>
-        
-        {/* Quick Stats */}
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 px-4 py-2 bg-gray-800/60 backdrop-blur-sm border border-gray-700/50 rounded-xl">
-            <FileText className="h-5 w-5 text-blue-400" />
-            <span className="text-sm font-medium text-white">
-              {stats.total} Articles
-            </span>
+    <div className="min-h-screen relative">
+      {/* Subtle background effects */}
+      <div className="absolute inset-0 bg-gradient-to-b from-blue-500/5 via-transparent to-purple-500/5 pointer-events-none" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none animate-pulse" />
+      
+      {/* X.com style main content */}
+      <div className="border-x border-gray-800 min-h-screen bg-black/90 backdrop-blur-sm relative z-10">
+        {/* Header - X.com style */}
+        <div className="sticky top-14 z-40 bg-black/90 backdrop-blur-md border-b border-gray-800/50 shadow-lg shadow-black/20">
+          <div className="px-4 py-3">
+            <h1 className="text-xl font-black text-white bg-gradient-to-r from-white to-blue-400 bg-clip-text text-transparent">Home</h1>
           </div>
         </div>
-      </div>
 
-      {/* Article Feed */}
-      <Suspense fallback={<FeedLoading />}>
-        <ArticleFeed 
-          initialArticles={articles}
-          initialCategories={categories}
-        />
-      </Suspense>
+        {/* Scheduler Status */}
+        <div className="px-4 py-4 border-b border-gray-800/50">
+          <SchedulerStatus />
+        </div>
+
+        {/* Twitter Lists Management */}
+        <div className="px-4 py-4 border-b border-gray-800/50">
+          <TwitterListsManager />
+        </div>
+
+        {/* Article Feed */}
+        <div className="relative z-10">
+          <Suspense fallback={<FeedLoading />}>
+            <ArticleFeed 
+              initialArticles={articles}
+              initialCategories={categories}
+            />
+          </Suspense>
+        </div>
+      </div>
     </div>
   )
 }

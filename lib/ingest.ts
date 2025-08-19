@@ -9,6 +9,7 @@ const HarvestedArticleSchema = z.object({
   excerpt: z.string().optional(),
   author_name: z.string().min(1),
   author_handle: z.string().min(1),
+  author_profile_image: z.string().optional(),
   tweet_id: z.string(),
   rest_id: z.string().optional(),
   original_url: z.string().url().optional(),
@@ -24,6 +25,8 @@ const _DatabaseArticleSchema = z.object({
   content: z.string(),
   excerpt: z.string().optional(),
   author_name: z.string(),
+  author_handle: z.string().optional(),
+  author_profile_image: z.string().optional(),
   status: z.enum(['draft', 'published']),
   published_at: z.string().optional(),
   meta_title: z.string().optional(),
@@ -52,43 +55,48 @@ export interface IngestStats {
  */
 export function mapTweetToArticle(tweet: TwitterTweet): HarvestedArticle | null {
   try {
-    // Must have article_results to be considered an article
-    const articleResult = tweet.article_results?.result
+    // Check for article data in multiple possible locations
+    let articleResult = tweet.article_results?.result || tweet.article?.article_results?.result
     if (!articleResult) {
       return null
     }
 
-    // Extract basic info
-    const tweetId = tweet.id_str
-    const authorHandle = tweet.user?.screen_name
-    const authorName = tweet.user?.name || tweet.user?.screen_name || 'Unknown'
-    const createdAt = tweet.created_at
+    // Extract user info from core.user_results.result.legacy (new API structure) or fallback to user (old structure)
+    const userLegacy = tweet.core?.user_results?.result?.legacy
+    const userFallback = tweet.user
+    
+    const authorHandle = userLegacy?.screen_name || userFallback?.screen_name
+    const authorName = userLegacy?.name || userFallback?.name || authorHandle || 'Unknown'
+    const authorProfileImage = userLegacy?.profile_image_url_https || userFallback?.profile_image_url_https
+    
+    // Extract tweet info
+    const tweetId = tweet.id_str || tweet.rest_id
+    const createdAt = tweet.legacy?.created_at || tweet.created_at
     const tweetText = tweet.full_text || tweet.text || ''
     
-    if (!authorHandle) {
-      console.warn(`Tweet ${tweetId} missing author handle`)
+    if (!authorHandle || !tweetId) {
+      console.warn(`Tweet missing required data - handle: ${authorHandle}, id: ${tweetId}`)
       return null
     }
 
     // Build article URL using priority order
     let articleUrl: string
-    let restId: string | undefined
+    const restId = articleResult.rest_id // Always extract rest_id if available
 
     if (articleResult.url) {
       // (a) Explicit URL if present
       articleUrl = articleResult.url
     } else if (articleResult.rest_id) {
       // (b) https://x.com/i/articles/{rest_id}
-      restId = articleResult.rest_id
       articleUrl = `https://x.com/i/articles/${restId}`
     } else {
       // (c) Source post URL https://x.com/{author_handle}/status/{tweet_id}
       articleUrl = `https://x.com/${authorHandle}/status/${tweetId}`
     }
 
-    // Extract title and description
+    // Extract title and description (prefer preview_text over description)
     const title = articleResult.title || tweetText.slice(0, 100) || 'Untitled Article'
-    const excerpt = articleResult.description || tweetText.slice(0, 200) || undefined
+    const excerpt = articleResult.preview_text || articleResult.description || tweetText.slice(0, 200) || undefined
 
     const harvestedArticle: HarvestedArticle = {
       article_url: articleUrl,
@@ -96,6 +104,7 @@ export function mapTweetToArticle(tweet: TwitterTweet): HarvestedArticle | null 
       excerpt,
       author_name: authorName,
       author_handle: authorHandle,
+      author_profile_image: authorProfileImage,
       tweet_id: tweetId,
       rest_id: restId,
       original_url: articleResult.url,
@@ -138,6 +147,8 @@ export function harvestedToDatabase(harvested: HarvestedArticle): DatabaseArticl
     content,
     excerpt,
     author_name: harvested.author_name,
+    author_handle: harvested.author_handle,
+    author_profile_image: harvested.author_profile_image || undefined,
     status: 'published' as const,
     published_at: publishedAt,
     meta_title: harvested.title,

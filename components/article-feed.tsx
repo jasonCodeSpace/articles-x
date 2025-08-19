@@ -35,33 +35,8 @@ export function ArticleFeed({ initialArticles, initialCategories }: ArticleFeedP
   }
 
   return (
-    <div className="space-y-6">
-      {/* Toolbar */}
-      <div className="bg-gray-800/60 backdrop-blur-sm rounded-xl border border-gray-700/50 shadow-xl">
-        <FeedToolbar
-          onSearchChange={handleSearch}
-          onSortChange={handleSort}
-          onCategoryChange={handleCategoryChange}
-          currentSort={sortOption}
-          currentCategory={selectedCategory}
-          searchValue={searchQuery}
-          categories={categories}
-          isLoading={isLoading}
-        />
-      </div>
-
-      {/* Results Count */}
-      {!error && (
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-gray-300">
-            Showing {filteredArticles.length} article{filteredArticles.length !== 1 ? 's' : ''}
-            {searchQuery && ` matching "${searchQuery}"`}
-            {selectedCategory !== 'all' && ` in ${selectedCategory}`}
-          </p>
-        </div>
-      )}
-
-      {/* Feed Content */}
+    <div>
+      {/* X.com style feed - single column */}
       {error === 'no-results' ? (
         <FeedEmptyState
           type="no-results"
@@ -81,12 +56,12 @@ export function ArticleFeed({ initialArticles, initialCategories }: ArticleFeedP
           onClearSearch={clearSearch}
         />
       ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="divide-y divide-gray-800">
           {filteredArticles.map((article) => (
             <ArticleCard
               key={article.id}
               article={article}
-              className="h-full"
+              className="border-0 rounded-none bg-transparent hover:bg-gray-950/50 transition-colors"
             />
           ))}
         </div>

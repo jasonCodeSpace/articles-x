@@ -37,7 +37,7 @@ export function ArticleFeed({ initialArticles, initialCategories }: ArticleFeedP
   return (
     <div className="space-y-6">
       {/* Toolbar */}
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+      <div className="bg-gray-800/60 backdrop-blur-sm rounded-xl border border-gray-700/50 shadow-xl">
         <FeedToolbar
           onSearchChange={handleSearch}
           onSortChange={handleSort}
@@ -53,7 +53,7 @@ export function ArticleFeed({ initialArticles, initialCategories }: ArticleFeedP
       {/* Results Count */}
       {!error && (
         <div className="flex items-center justify-between">
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-300">
             Showing {filteredArticles.length} article{filteredArticles.length !== 1 ? 's' : ''}
             {searchQuery && ` matching "${searchQuery}"`}
             {selectedCategory !== 'all' && ` in ${selectedCategory}`}

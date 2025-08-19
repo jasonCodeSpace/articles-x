@@ -53,51 +53,55 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
-      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMwMDAiIGZpbGwtb3BhY2l0eT0iMC4wNCIgZmlsbC1ydWxlPSJub256ZXJvIj48Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSIyIi8+PC9nPjwvZz48L3N2Zz4=')] opacity-40"></div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 flex items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-gray-900 to-black opacity-80"></div>
       
-      <div className="relative w-full max-w-md space-y-8">
-        {/* Header */}
-        <div className="text-center">
-          <div className="mx-auto w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
-            <Mail className="h-8 w-8 text-white" />
-          </div>
-          <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-            Welcome to Articles X
-          </h2>
-          <p className="mt-3 text-gray-600 text-lg">
-            Discover curated articles from Twitter
-          </p>
-        </div>
-        
-        {/* Login Card */}
-        <Card className="backdrop-blur-sm bg-white/90 border-0 shadow-xl shadow-blue-500/10">
-          <CardHeader className="pb-6">
-            <CardTitle className="text-xl text-gray-900 font-semibold">Sign in with email</CardTitle>
-            <CardDescription className="text-gray-600">
-              We&apos;ll send you a secure magic link to access your account
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+      <div className="relative w-full max-w-md">
+        {/* Main Card */}
+        <Card className="backdrop-blur-xl bg-gray-800/90 border border-gray-700/50 shadow-2xl shadow-blue-500/10 rounded-3xl overflow-hidden">
+          <CardContent className="p-8">
+            {/* Header */}
+            <div className="text-center mb-8">
+              <div className="flex items-center justify-center gap-3 mb-6">
+                <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center">
+                  <span className="text-2xl font-bold text-black">X</span>
+                </div>
+                <h1 className="text-3xl font-bold text-white">Xarticle</h1>
+              </div>
+              
+              <h2 className="text-2xl font-bold text-white mb-3">
+                Create your Xarticle account
+              </h2>
+              <p className="text-gray-300 text-base mb-6">
+                Read the best articles from X — noise-free.
+              </p>
+              
+              {/* Features */}
+              <div className="flex items-center justify-center gap-6 text-sm text-gray-400 mb-8">
+                <span>No bots</span>
+                <span>Curated</span>
+                <span>Bilingual EN / 中文</span>
+              </div>
+            </div>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                   <Input
                     type="email"
-                    placeholder="Enter your email address"
+                    placeholder="you@domain.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     disabled={isLoading}
-                    className="pl-11 h-12 bg-white border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                    className="pl-12 h-14 bg-gray-700/50 border-gray-600 focus:border-blue-500 focus:ring-blue-500 rounded-xl text-white placeholder-gray-400 text-base"
                   />
                 </div>
               </div>
               
               <Button 
                 type="submit" 
-                className="w-full h-12 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200" 
+                className="w-full h-14 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition-all duration-200 text-base" 
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -107,7 +111,7 @@ export default function Login() {
                   </div>
                 ) : (
                   <div className="flex items-center">
-                    Send Magic Link
+                    Send magic link
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </div>
                 )}
@@ -115,12 +119,12 @@ export default function Login() {
               
               {/* Success Message */}
               {message && (
-                <div className="rounded-xl bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 p-4">
+                <div className="rounded-xl bg-green-900/30 border border-green-700/50 p-4">
                   <div className="flex items-center">
-                    <CheckCircle className="h-5 w-5 text-green-600 mr-3" />
+                    <CheckCircle className="h-5 w-5 text-green-400 mr-3" />
                     <div>
-                      <p className="text-sm font-medium text-green-800">{message}</p>
-                      <p className="text-xs text-green-700 mt-1">
+                      <p className="text-sm font-medium text-green-300">{message}</p>
+                      <p className="text-xs text-green-400 mt-1">
                         The link will expire in 1 hour for security.
                       </p>
                     </div>
@@ -130,12 +134,12 @@ export default function Login() {
               
               {/* Error Message */}
               {error && (
-                <div className="rounded-xl bg-gradient-to-r from-red-50 to-pink-50 border border-red-200 p-4">
+                <div className="rounded-xl bg-red-900/30 border border-red-700/50 p-4">
                   <div className="flex items-center">
-                    <XCircle className="h-5 w-5 text-red-600 mr-3" />
+                    <XCircle className="h-5 w-5 text-red-400 mr-3" />
                     <div>
-                      <p className="text-sm font-medium text-red-800">{error}</p>
-                      <p className="text-xs text-red-700 mt-1">
+                      <p className="text-sm font-medium text-red-300">{error}</p>
+                      <p className="text-xs text-red-400 mt-1">
                         Please try again or contact support if the issue persists.
                       </p>
                     </div>
@@ -146,12 +150,19 @@ export default function Login() {
           </CardContent>
         </Card>
 
-        {/* Footer */}
-        <div className="text-center">
-          <p className="text-xs text-gray-500">
-            By signing in, you agree to our Terms of Service and Privacy Policy
-          </p>
-        </div>
+            {/* Footer */}
+            <div className="text-center mt-8">
+              <p className="text-xs text-gray-400">
+                By signing up, you agree to our{' '}
+                 <a href="#" className="text-blue-400 hover:text-blue-300 underline">
+                   Terms of Service
+                 </a>{' '}
+                 •{' '}
+                 <a href="#" className="text-blue-400 hover:text-blue-300 underline">
+                   PrivPolicy
+                 </a>
+              </p>
+            </div>
       </div>
     </div>
   )

@@ -37,16 +37,15 @@ export function ArticleCard({ article, className }: ArticleCardProps) {
   const publishedDate = article.published_at || article.created_at
   const relativeTime = formatDistanceToNow(new Date(publishedDate), { addSuffix: true })
 
-  // Generate article URL - prioritize article_url
-  const articleUrl = article.article_url || 
-    `https://x.com/search?q=${encodeURIComponent(article.title)}`
+  // Use the actual article URL directly
+  const articleUrl = article.article_url || '#'
 
   // Generate author handle for display
   const authorHandle = article.author_handle || 
     article.author_name.toLowerCase().replace(/\s+/g, '_')
 
   return (
-    <Card className={`group hover:shadow-lg transition-shadow duration-200 ${className}`}>
+    <Card className={`group hover:shadow-xl transition-all duration-200 bg-gray-800/60 backdrop-blur-sm border-gray-700/50 hover:border-gray-600/50 ${className}`}>
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-3">
           {/* Author Info with Profile Image */}
@@ -64,15 +63,15 @@ export function ArticleCard({ article, className }: ArticleCardProps) {
             </Avatar>
             <div className="flex flex-col">
               {/* Author Name */}
-              <span className="font-semibold text-base text-gray-900">
+              <span className="font-semibold text-base text-white">
                 {article.author_name}
               </span>
               {/* Author Handle */}
-              <span className="text-sm text-gray-600 font-medium">
+              <span className="text-sm text-gray-300 font-medium">
                 @{authorHandle}
               </span>
               {/* Timestamp */}
-              <div className="flex items-center gap-1 text-xs text-gray-500 mt-1">
+              <div className="flex items-center gap-1 text-xs text-gray-400 mt-1">
                 <Clock className="h-3 w-3" />
                 <time dateTime={publishedDate}>
                   {relativeTime}
@@ -105,13 +104,13 @@ export function ArticleCard({ article, className }: ArticleCardProps) {
         <div className="space-y-4">
           {/* Article Title */}
           <div className="space-y-3">
-            <h3 className="font-bold text-xl leading-tight text-gray-900 line-clamp-2">
+            <h3 className="font-bold text-xl leading-tight text-white line-clamp-2">
               {article.title}
             </h3>
             
             {/* Article Preview Text */}
             {article.excerpt && (
-              <p className="text-sm text-gray-700 leading-relaxed line-clamp-3">
+              <p className="text-sm text-gray-300 leading-relaxed line-clamp-3">
                 {article.excerpt}
               </p>
             )}
@@ -119,7 +118,7 @@ export function ArticleCard({ article, className }: ArticleCardProps) {
 
           {/* Cover Image */}
           {article.featured_image_url && (
-            <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-gray-100">
+            <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-gray-900/50">
               <img
                 src={article.featured_image_url}
                 alt={`Cover image for ${article.title}`}
@@ -135,13 +134,13 @@ export function ArticleCard({ article, className }: ArticleCardProps) {
               {article.tags.slice(0, 3).map((tag) => (
                 <span
                   key={tag}
-                  className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200"
+                  className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-500/20 text-blue-300 border border-blue-500/30"
                 >
                   #{tag}
                 </span>
               ))}
               {article.tags.length > 3 && (
-                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-50 text-gray-600 border border-gray-200">
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-700/50 text-gray-300 border border-gray-600/50">
                   +{article.tags.length - 3} more
                 </span>
               )}
@@ -157,18 +156,18 @@ export function ArticleCard({ article, className }: ArticleCardProps) {
 
 export function ArticleCardSkeleton({ className }: { className?: string }) {
   return (
-    <Card className={`animate-pulse ${className}`}>
+    <Card className={`animate-pulse bg-gray-800/60 backdrop-blur-sm border-gray-700/50 ${className}`}>
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="h-12 w-12 rounded-full bg-gray-200" />
+            <div className="h-12 w-12 rounded-full bg-gray-700" />
             <div className="flex flex-col gap-2">
-              <div className="h-5 w-28 bg-gray-200 rounded" />
-              <div className="h-4 w-20 bg-gray-200 rounded" />
-              <div className="h-3 w-16 bg-gray-200 rounded" />
+              <div className="h-5 w-28 bg-gray-700 rounded" />
+              <div className="h-4 w-20 bg-gray-700 rounded" />
+              <div className="h-3 w-16 bg-gray-700 rounded" />
             </div>
           </div>
-          <div className="h-9 w-24 bg-gray-200 rounded" />
+          <div className="h-9 w-24 bg-gray-700 rounded" />
         </div>
       </CardHeader>
 
@@ -176,30 +175,30 @@ export function ArticleCardSkeleton({ className }: { className?: string }) {
         <div className="space-y-4">
           {/* Title Skeleton */}
           <div className="space-y-2">
-            <div className="h-6 w-full bg-gray-200 rounded" />
-            <div className="h-6 w-3/4 bg-gray-200 rounded" />
+            <div className="h-6 w-full bg-gray-700 rounded" />
+            <div className="h-6 w-3/4 bg-gray-700 rounded" />
           </div>
           
           {/* Preview Text Skeleton */}
           <div className="space-y-2">
-            <div className="h-4 w-full bg-gray-200 rounded" />
-            <div className="h-4 w-5/6 bg-gray-200 rounded" />
-            <div className="h-4 w-4/5 bg-gray-200 rounded" />
+            <div className="h-4 w-full bg-gray-700 rounded" />
+            <div className="h-4 w-5/6 bg-gray-700 rounded" />
+            <div className="h-4 w-4/5 bg-gray-700 rounded" />
           </div>
 
           {/* Cover Image Skeleton */}
-          <div className="aspect-video w-full bg-gray-200 rounded-lg" />
+          <div className="aspect-video w-full bg-gray-700 rounded-lg" />
 
           {/* Tags Skeleton */}
           <div className="flex flex-wrap gap-1">
-            <div className="h-6 w-16 bg-gray-200 rounded-full" />
-            <div className="h-6 w-20 bg-gray-200 rounded-full" />
-            <div className="h-6 w-14 bg-gray-200 rounded-full" />
+            <div className="h-6 w-16 bg-gray-700 rounded-full" />
+            <div className="h-6 w-20 bg-gray-700 rounded-full" />
+            <div className="h-6 w-14 bg-gray-700 rounded-full" />
           </div>
 
           {/* Article Link Skeleton */}
-          <div className="pt-2 border-t border-gray-100">
-            <div className="h-4 w-32 bg-gray-200 rounded" />
+          <div className="pt-2 border-t border-gray-600">
+            <div className="h-4 w-32 bg-gray-700 rounded" />
           </div>
         </div>
       </CardContent>

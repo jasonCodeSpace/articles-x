@@ -64,7 +64,7 @@ export function FeedToolbar({
   const currentCategoryOption = categoryOptions.find(opt => opt.value === currentCategory) || categoryOptions[0]
 
   return (
-    <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between p-4 bg-white border-b border-gray-200">
+    <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between p-4 bg-transparent border-b border-gray-700/50">
       {/* Left side - Search */}
       <form onSubmit={handleSearchSubmit} className="flex-1 max-w-md">
         <div className="relative">
@@ -77,7 +77,7 @@ export function FeedToolbar({
               setSearchInput(e.target.value)
               handleSearchChange(e.target.value)
             }}
-            className="pl-10 pr-4"
+            className="pl-10 pr-4 bg-gray-900/50 border-gray-600/50 text-white placeholder:text-gray-400 focus:border-blue-400"
             disabled={isLoading}
           />
         </div>

@@ -25,7 +25,7 @@ const TweetSchema = z.object({
   article_results: ArticleResultSchema,
 })
 
-const TimelineNodeSchema = z.object({
+const _TimelineNodeSchema = z.object({
   content: z.object({
     itemContent: z.object({
       tweet_results: z.object({
@@ -86,7 +86,7 @@ interface FetchListTimelineOptions {
 
 interface TwitterApiError extends Error {
   status?: number
-  response?: any
+  response?: unknown
 }
 
 export class TwitterClient {
@@ -194,7 +194,7 @@ export class TwitterClient {
   /**
    * Extract tweets from Twitter API response
    */
-  private extractTweetsFromResponse(data: any): TwitterTweet[] {
+  private extractTweetsFromResponse(data: TwitterTimelineResponse): TwitterTweet[] {
     const tweets: TwitterTweet[] = []
 
     try {
@@ -228,7 +228,7 @@ export class TwitterClient {
   /**
    * Extract next cursor from Twitter API response
    */
-  private extractNextCursor(data: any): string | undefined {
+  private extractNextCursor(data: TwitterTimelineResponse): string | undefined {
     try {
       const instructions = data?.data?.list?.tweets_timeline?.timeline?.instructions || []
       

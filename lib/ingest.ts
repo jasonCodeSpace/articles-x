@@ -18,7 +18,7 @@ const HarvestedArticleSchema = z.object({
 export type HarvestedArticle = z.infer<typeof HarvestedArticleSchema>
 
 // Article database schema for upsert
-const DatabaseArticleSchema = z.object({
+const _DatabaseArticleSchema = z.object({
   title: z.string(),
   slug: z.string(),
   content: z.string(),
@@ -33,7 +33,7 @@ const DatabaseArticleSchema = z.object({
   category: z.string().optional(),
 })
 
-export type DatabaseArticle = z.infer<typeof DatabaseArticleSchema>
+export type DatabaseArticle = z.infer<typeof _DatabaseArticleSchema>
 
 export interface IngestStats {
   inserted: number
@@ -345,7 +345,7 @@ function parseTwitterDate(twitterDate: string): string {
     // Twitter dates are in format: "Wed Oct 05 21:25:35 +0000 2022"
     const date = new Date(twitterDate)
     return date.toISOString()
-  } catch (error) {
+  } catch {
     console.warn(`Failed to parse Twitter date ${twitterDate}, using current time`)
     return new Date().toISOString()
   }

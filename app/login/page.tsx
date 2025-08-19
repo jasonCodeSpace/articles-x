@@ -75,7 +75,7 @@ export default function Login() {
           <CardHeader className="pb-6">
             <CardTitle className="text-xl text-gray-900 font-semibold">Sign in with email</CardTitle>
             <CardDescription className="text-gray-600">
-              We'll send you a secure magic link to access your account
+              We&apos;ll send you a secure magic link to access your account
             </CardDescription>
           </CardHeader>
           <CardContent>

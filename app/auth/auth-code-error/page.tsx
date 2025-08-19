@@ -72,11 +72,11 @@ export default function AuthCodeError() {
                     {errorInfo.suggestion}
                   </p>
                   <p className="text-xs text-red-700 mt-2">
-                    Magic links expire after 1 hour for security. If you're having trouble, try:
+                    Magic links expire after 1 hour for security. If you&apos;re having trouble, try:
                   </p>
                   <ul className="text-xs text-red-700 mt-2 ml-4 list-disc">
                     <li>Check if the link in your email is complete</li>
-                    <li>Make sure you're using the latest email</li>
+                    <li>Make sure you&apos;re using the latest email</li>
                     <li>Clear your browser cache and try again</li>
                   </ul>
                 </div>

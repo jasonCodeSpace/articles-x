@@ -1,7 +1,7 @@
 export const runtime = 'nodejs'
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createTwitterClient } from '@/lib/twitter'
+import { createTwitterClient, TwitterTweet } from '@/lib/twitter'
 import { ingestTweetsFromLists } from '@/lib/ingest'
 
 interface IngestRequest {
@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
 
     // Create Twitter client
     const twitterClient = createTwitterClient()
-    const listTweets = new Map<string, any[]>()
+    const listTweets = new Map<string, TwitterTweet[]>()
     let totalTweetsFound = 0
 
     // Fetch tweets from each list

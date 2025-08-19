@@ -33,7 +33,7 @@ export default function AuthSuccess() {
             Welcome to Articles X!
           </h2>
           <p className="mt-3 text-gray-600 text-lg">
-            You're successfully signed in
+            You&apos;re successfully signed in
           </p>
         </div>
         
@@ -45,7 +45,7 @@ export default function AuthSuccess() {
               Authentication Successful
             </CardTitle>
             <CardDescription className="text-gray-600">
-              You're now ready to explore curated articles from Twitter
+              You&apos;re now ready to explore curated articles from Twitter
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -54,7 +54,7 @@ export default function AuthSuccess() {
               <div className="text-center">
                 <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-3" />
                 <p className="text-sm font-medium text-green-800 mb-2">
-                  🎉 You're all set!
+                  🎉 You&apos;re all set!
                 </p>
                 <p className="text-xs text-green-700">
                   Redirecting you to the articles feed in a few seconds...

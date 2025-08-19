@@ -2,8 +2,7 @@ import { Suspense } from 'react'
 import { fetchArticles, getArticleCategories, getArticleStats } from '@/lib/articles'
 import { ArticleFeed } from '@/components/article-feed'
 import { FeedLoading } from '@/components/feed-loading'
-import { Card, CardContent } from '@/components/ui/card'
-import { FileText, TrendingUp, Users } from 'lucide-react'
+import { FileText } from 'lucide-react'
 
 export default async function HomePage() {
   // Fetch data in parallel

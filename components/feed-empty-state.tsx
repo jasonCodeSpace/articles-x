@@ -19,7 +19,7 @@ export function FeedEmptyState({ type, searchQuery, onRetry, onClearSearch }: Em
           </div>
           <h3 className="text-lg font-semibold text-gray-900 mb-2">No Articles Yet</h3>
           <p className="text-sm text-gray-600 mb-4">
-            Articles will appear here once they're imported from Twitter lists.
+            Articles will appear here once they&apos;re imported from Twitter lists.
           </p>
           <p className="text-xs text-gray-500">
             The ingest process runs every 20 minutes to collect new articles.
@@ -62,7 +62,7 @@ export function FeedEmptyState({ type, searchQuery, onRetry, onClearSearch }: Em
           </div>
           <h3 className="text-lg font-semibold text-gray-900 mb-2">Something went wrong</h3>
           <p className="text-sm text-gray-600 mb-4">
-            We couldn't load the articles. Please try again.
+            We couldn&apos;t load the articles. Please try again.
           </p>
           {onRetry && (
             <Button onClick={onRetry}>

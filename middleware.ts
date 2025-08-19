@@ -47,10 +47,10 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // If user is logged in and trying to access login page, redirect to main page
-  if (user && request.nextUrl.pathname === '/login') {
+  // If user is logged in and trying to access login page or root, redirect to protected page
+  if (user && (request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/')) {
     const url = request.nextUrl.clone()
-    url.pathname = '/'
+    url.pathname = '/protected'
     return NextResponse.redirect(url)
   }
 

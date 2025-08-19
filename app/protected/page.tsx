@@ -4,6 +4,8 @@ import { ArticleFeed } from '@/components/article-feed'
 import { FeedLoading } from '@/components/feed-loading'
 import { FileText } from 'lucide-react'
 
+export const dynamic = 'force-dynamic'
+
 export default async function HomePage() {
   // Fetch data in parallel
   const [articles, categories, stats] = await Promise.all([

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Clock, Play, Square, RefreshCw, CheckCircle, XCircle } from 'lucide-react'
+import { Clock, Play, Square, RefreshCw, XCircle } from 'lucide-react'
 
 interface SchedulerStats {
   isRunning: boolean
@@ -28,7 +28,7 @@ export function SchedulerStatus() {
       } else {
         setError('Failed to fetch scheduler status')
       }
-    } catch (err) {
+    } catch {
       setError('Network error')
     } finally {
       setLoading(false)
@@ -48,7 +48,7 @@ export function SchedulerStatus() {
       } else {
         setError(`Failed to ${action} scheduler`)
       }
-    } catch (err) {
+    } catch {
       setError('Network error')
     }
   }

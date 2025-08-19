@@ -84,7 +84,7 @@ export async function getActiveTwitterListIds(): Promise<string[]> {
   return data?.map((item: { list_id: string }) => item.list_id) || []
 }
 
-export async function updateTwitterList(listId: string, updates: Partial<TwitterList>): Promise<TwitterList> {
+export async function updateTwitterList(listId: string, updates: Partial<Omit<TwitterList, 'id' | 'created_at' | 'updated_at'>>): Promise<TwitterList> {
   const supabase = await createClient()
   
   const { data, error } = await supabase
@@ -127,7 +127,7 @@ export async function toggleTwitterListStatus(listId: string): Promise<TwitterLi
 export async function markListAsScanned(listId: string, articlesFound?: number): Promise<void> {
   const supabase = await createClient()
   
-  const updateData: any = {
+  const updateData: { last_scanned_at: string; updated_at: string; articles_found?: number } = {
     last_scanned_at: new Date().toISOString(),
     updated_at: new Date().toISOString()
   }

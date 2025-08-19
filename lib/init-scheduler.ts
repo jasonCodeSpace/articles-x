@@ -6,7 +6,7 @@ if (typeof window === 'undefined') {
   console.log('🚀 Initializing Twitter List Scheduler...')
   
   // Create and start the scheduler
-  const scheduler = createScheduler()
+  createScheduler()
   
   if (process.env.SCHEDULER_ENABLED === 'true') {
     console.log('📅 Auto-starting scheduler based on environment configuration')

@@ -1,7 +1,7 @@
 'use client'
 
 import { ArticleCard, Article } from '@/components/article-card'
-import { FeedToolbar } from '@/components/feed-toolbar'
+
 import { FeedEmptyState } from '@/components/feed-empty-state'
 import { FeedLoading } from '@/components/feed-loading'
 import { useArticleFeed } from '@/hooks/use-article-feed'
@@ -17,12 +17,6 @@ export function ArticleFeed({ initialArticles, initialCategories }: ArticleFeedP
     isLoading,
     error,
     searchQuery,
-    sortOption,
-    selectedCategory,
-    categories,
-    handleSearch,
-    handleSort,
-    handleCategoryChange,
     clearSearch,
     retry
   } = useArticleFeed({

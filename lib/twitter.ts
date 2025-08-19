@@ -53,15 +53,7 @@ const TweetSchema = z.object({
   article_results: ArticleResultSchema,
 })
 
-const _TimelineNodeSchema = z.object({
-  content: z.object({
-    itemContent: z.object({
-      tweet_results: z.object({
-        result: TweetSchema,
-      }).optional(),
-    }).optional(),
-  }).optional(),
-})
+
 
 const TimelineResponseSchema = z.object({
   data: z.object({
@@ -119,7 +111,7 @@ interface TwitterApiError extends Error {
 
 export class TwitterClient {
   private config: TwitterClientConfig
-  private requestQueue: Array<() => Promise<any>> = []
+  private requestQueue: Array<() => Promise<unknown>> = []
   private isProcessingQueue = false
   private lastRequestTime = 0
   private readonly REQUEST_INTERVAL_MS = 1000 / 9 // 9 requests per second = ~111ms between requests

@@ -18,25 +18,22 @@ const HarvestedArticleSchema = z.object({
 
 export type HarvestedArticle = z.infer<typeof HarvestedArticleSchema>
 
-// Article database schema for upsert
-const _DatabaseArticleSchema = z.object({
-  title: z.string(),
-  slug: z.string(),
-  content: z.string(),
-  excerpt: z.string().optional(),
-  author_name: z.string(),
-  author_handle: z.string().optional(),
-  author_profile_image: z.string().optional(),
-  status: z.enum(['draft', 'published']),
-  published_at: z.string().optional(),
-  meta_title: z.string().optional(),
-  meta_description: z.string().optional(),
-  featured_image_url: z.string().optional(),
-  tags: z.array(z.string()).default([]),
-  category: z.string().optional(),
-})
-
-export type DatabaseArticle = z.infer<typeof _DatabaseArticleSchema>
+export interface DatabaseArticle {
+  title: string
+  slug: string
+  content: string
+  excerpt?: string
+  author_name: string
+  author_handle?: string
+  author_profile_image?: string
+  status: 'draft' | 'published'
+  published_at?: string
+  meta_title?: string
+  meta_description?: string
+  featured_image_url?: string
+  tags: string[]
+  category?: string
+}
 
 export interface IngestStats {
   inserted: number
@@ -56,7 +53,7 @@ export interface IngestStats {
 export function mapTweetToArticle(tweet: TwitterTweet): HarvestedArticle | null {
   try {
     // Check for article data in multiple possible locations
-    let articleResult = tweet.article_results?.result || tweet.article?.article_results?.result
+    const articleResult = tweet.article_results?.result || tweet.article?.article_results?.result
     if (!articleResult) {
       return null
     }

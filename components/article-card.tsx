@@ -1,8 +1,7 @@
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Button } from '@/components/ui/button'
-import { ExternalLink, Clock } from 'lucide-react'
+import { ExternalLink } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
+import Image from 'next/image'
 
 export interface Article {
   id: string
@@ -95,9 +94,11 @@ export function ArticleCard({ article, className }: ArticleCardProps) {
             {/* Featured image */}
             {article.featured_image_url && (
               <div className="mt-3 rounded-2xl overflow-hidden border border-gray-800 group-hover:border-gray-600 transition-all duration-300">
-                <img
+                <Image
                   src={article.featured_image_url}
                   alt={`Cover image for ${article.title}`}
+                  width={400}
+                  height={400}
                   className="w-full h-auto max-h-[400px] object-cover group-hover:scale-105 transition-transform duration-300"
                   loading="lazy"
                 />

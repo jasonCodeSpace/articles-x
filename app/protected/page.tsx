@@ -1,10 +1,10 @@
 import { Suspense } from 'react'
-import { fetchArticles, getArticleCategories, getArticleStats } from '@/lib/articles'
+import { fetchArticles, getArticleCategories } from '@/lib/articles'
 import { ArticleFeed } from '@/components/article-feed'
 import { FeedLoading } from '@/components/feed-loading'
 import { SchedulerStatus } from '@/components/scheduler-status'
 import { TwitterListsManager } from '@/components/twitter-lists-manager'
-import { FileText } from 'lucide-react'
+
 
 // Initialize scheduler on server startup
 import '@/lib/init-scheduler'
@@ -13,10 +13,9 @@ export const dynamic = 'force-dynamic'
 
 export default async function HomePage() {
   // Fetch data in parallel
-  const [articles, categories, stats] = await Promise.all([
+  const [articles, categories] = await Promise.all([
     fetchArticles({ limit: 50 }),
-    getArticleCategories(),
-    getArticleStats()
+    getArticleCategories()
   ])
 
   return (

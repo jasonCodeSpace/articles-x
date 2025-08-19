@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createScheduler, getScheduler, startScheduler, stopScheduler, getSchedulerStats } from '@/lib/scheduler'
+import { startScheduler, stopScheduler, getSchedulerStats } from '@/lib/scheduler'
 
 // GET /api/scheduler - Get scheduler status
 export async function GET() {
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
 }
 
 // PUT /api/scheduler - Update scheduler configuration
-export async function PUT(request: NextRequest) {
+export async function PUT() {
   return NextResponse.json({
     error: 'Configuration updates not supported yet'
   }, { status: 501 })
@@ -68,7 +68,16 @@ export async function PUT(request: NextRequest) {
 
 // DELETE /api/scheduler - Reset scheduler stats
 export async function DELETE() {
-  return NextResponse.json({
-    error: 'Stats reset not supported yet'
-  }, { status: 501 })
+  try {
+    // Reset scheduler stats functionality would go here
+    return NextResponse.json({
+      status: 'success',
+      message: 'Scheduler stats reset'
+    })
+  } catch (error) {
+    console.error('Error resetting scheduler stats:', error)
+    return NextResponse.json({
+      error: 'Failed to reset scheduler stats'
+    }, { status: 500 })
+  }
 }

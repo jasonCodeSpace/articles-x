@@ -1,4 +1,4 @@
-import { createTwitterClient } from './twitter'
+import { createTwitterClient, TwitterTweet } from './twitter'
 import { ingestTweetsFromLists } from './ingest'
 import { getActiveTwitterListIds, markListAsScanned } from './twitter-lists'
 
@@ -116,7 +116,7 @@ export class TwitterListScheduler {
       
       // Create Twitter client with rate limiting
        const twitterClient = createTwitterClient()
-       const listTweets = new Map<string, any[]>()
+       const listTweets = new Map<string, TwitterTweet[]>()
        
        console.log(`🚀 Processing ${twitterListIds.length} lists concurrently with rate limiting (9 req/sec)...`)
        const startTime = Date.now()

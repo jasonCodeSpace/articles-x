@@ -149,18 +149,7 @@ export function ArticleCard({ article, className }: ArticleCardProps) {
             </div>
           )}
 
-          {/* Additional Article Link at Bottom */}
-          <div className="pt-2 border-t border-gray-100">
-            <a
-              href={articleUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors"
-            >
-              <span>Read full article</span>
-              <ExternalLink className="h-3 w-3" />
-            </a>
-          </div>
+
         </div>
       </CardContent>
     </Card>

@@ -7,7 +7,7 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
--- Create articles table
+-- Create articles table with all fields including author profile information
 CREATE TABLE IF NOT EXISTS public.articles (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     
@@ -20,6 +20,11 @@ CREATE TABLE IF NOT EXISTS public.articles (
     -- Metadata
     author_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
     author_name TEXT NOT NULL,
+    author_handle TEXT,
+    author_profile_image TEXT,
+    
+    -- Article source
+    article_url TEXT,
     
     -- Engagement metrics
     likes_count INTEGER NOT NULL DEFAULT 0 CHECK (likes_count >= 0),
@@ -53,6 +58,8 @@ CREATE INDEX IF NOT EXISTS articles_created_at_idx ON public.articles (created_a
 CREATE INDEX IF NOT EXISTS articles_likes_count_idx ON public.articles (likes_count);
 CREATE INDEX IF NOT EXISTS articles_category_idx ON public.articles (category);
 CREATE INDEX IF NOT EXISTS articles_tags_idx ON public.articles USING GIN (tags);
+CREATE INDEX IF NOT EXISTS articles_author_handle_idx ON public.articles (author_handle);
+CREATE INDEX IF NOT EXISTS articles_article_url_idx ON public.articles (article_url);
 
 -- Create compound indexes for common queries
 CREATE INDEX IF NOT EXISTS articles_status_published_at_idx ON public.articles (status, published_at DESC);
@@ -69,6 +76,10 @@ CREATE TRIGGER update_articles_updated_at
 ALTER TABLE public.articles ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies
+
+-- Drop existing policies if they exist
+DROP POLICY IF EXISTS "Anyone can read published articles" ON public.articles;
+DROP POLICY IF EXISTS "Block all writes for regular users" ON public.articles;
 
 -- Allow anyone to read published articles
 CREATE POLICY "Anyone can read published articles"
@@ -99,3 +110,6 @@ COMMENT ON COLUMN public.articles.status IS 'Article status: draft, published, o
 COMMENT ON COLUMN public.articles.published_at IS 'When the article was published (null for drafts)';
 COMMENT ON COLUMN public.articles.likes_count IS 'Number of likes (managed by triggers/functions)';
 COMMENT ON COLUMN public.articles.tags IS 'Array of tags for categorization';
+COMMENT ON COLUMN public.articles.author_handle IS 'Author''s social media handle (e.g., @username)';
+COMMENT ON COLUMN public.articles.author_profile_image IS 'URL to author''s profile image';
+COMMENT ON COLUMN public.articles.article_url IS 'Direct link to the original article';

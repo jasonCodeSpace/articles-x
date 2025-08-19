@@ -47,6 +47,7 @@ const TweetSchema = z.object({
   legacy: z.object({
     created_at: z.string().optional(),
   }).optional(),
+  // Support both nested article structures
   article: z.object({
     article_results: ArticleResultSchema,
   }).optional(),

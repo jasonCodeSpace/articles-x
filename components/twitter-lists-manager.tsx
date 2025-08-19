@@ -13,7 +13,7 @@ interface TwitterList {
   description?: string
   owner_username?: string
   member_count?: number
-  is_active: boolean
+  status: 'active' | 'inactive'
   last_scanned_at?: string
   created_at: string
   updated_at: string
@@ -87,7 +87,7 @@ export function TwitterListsManager() {
       // Update the list in state
       setLists(prev => prev.map(list => 
         list.list_id === listId 
-          ? { ...list, is_active: !currentStatus }
+          ? { ...list, status: currentStatus ? 'inactive' : 'active' }
           : list
       ))
       
@@ -215,12 +215,12 @@ export function TwitterListsManager() {
                     <h3 className="font-medium text-white">{list.name}</h3>
                     <span 
                       className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        list.is_active 
+                        list.status === 'active' 
                           ? 'bg-green-600 text-white' 
                           : 'bg-gray-600 text-gray-300'
                       }`}
                     >
-                      {list.is_active ? 'Active' : 'Inactive'}
+                      {list.status === 'active' ? 'Active' : 'Inactive'}
                     </span>
                   </div>
                   
@@ -245,15 +245,15 @@ export function TwitterListsManager() {
                 
                 <div className="flex items-center gap-3">
                   <button
-                    onClick={() => toggleListStatus(list.list_id, list.is_active)}
+                    onClick={() => toggleListStatus(list.list_id, list.status === 'active')}
                     disabled={updating === list.list_id}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 ${
-                      list.is_active ? 'bg-blue-600' : 'bg-gray-600'
+                      list.status === 'active' ? 'bg-blue-600' : 'bg-gray-600'
                     }`}
                   >
                     <span
                       className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        list.is_active ? 'translate-x-6' : 'translate-x-1'
+                        list.status === 'active' ? 'translate-x-6' : 'translate-x-1'
                       }`}
                     />
                   </button>

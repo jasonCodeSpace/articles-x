@@ -57,7 +57,7 @@ export async function PATCH(request: NextRequest) {
       )
     }
     
-    await updateTwitterList(listId, { is_active: isActive })
+    await updateTwitterList(listId, { status: isActive ? 'active' : 'inactive' })
     
     return NextResponse.json({
       success: true,

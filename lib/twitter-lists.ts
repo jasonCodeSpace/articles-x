@@ -7,8 +7,9 @@ export interface TwitterList {
   description?: string
   owner_username?: string
   member_count?: number
-  is_active: boolean
+  status: 'active' | 'inactive'
   last_scanned_at?: string
+  articles_found?: number
   created_at: string
   updated_at: string
 }
@@ -73,7 +74,7 @@ export async function getActiveTwitterListIds(): Promise<string[]> {
   const { data, error } = await supabase
     .from('twitter_lists')
     .select('list_id')
-    .eq('is_active', true)
+    .eq('status', 'active')
     .order('created_at', { ascending: true })
   
   if (error) {
@@ -111,7 +112,7 @@ export async function toggleTwitterListStatus(listId: string): Promise<TwitterLi
   // First get the current status
   const { data: currentList, error: fetchError } = await supabase
     .from('twitter_lists')
-    .select('is_active')
+    .select('status')
     .eq('list_id', listId)
     .single()
   
@@ -121,7 +122,8 @@ export async function toggleTwitterListStatus(listId: string): Promise<TwitterLi
   }
   
   // Toggle the status
-  return updateTwitterList(listId, { is_active: !currentList.is_active })
+  const newStatus = currentList.status === 'active' ? 'inactive' : 'active'
+  return updateTwitterList(listId, { status: newStatus })
 }
 
 export async function markListAsScanned(listId: string, articlesFound?: number): Promise<void> {
@@ -152,7 +154,7 @@ export async function getTwitterListStats(): Promise<TwitterListStats> {
   
   const { data, error } = await supabase
     .from('twitter_lists')
-    .select('is_active, last_scanned_at')
+    .select('status, last_scanned_at')
   
   if (error) {
     console.error('Error fetching Twitter list stats:', error)
@@ -160,7 +162,7 @@ export async function getTwitterListStats(): Promise<TwitterListStats> {
   }
   
   const total_lists = data?.length || 0
-  const active_lists = data?.filter(list => list.is_active).length || 0
+  const active_lists = data?.filter(list => list.status === 'active').length || 0
   const inactive_lists = total_lists - active_lists
   
   // Find the most recent scan time
@@ -206,7 +208,7 @@ export async function initializeDefaultTwitterLists(): Promise<void> {
           list_id: list.list_id,
           name: list.name,
           description: list.description,
-          is_active: true,
+          status: 'active',
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         }))

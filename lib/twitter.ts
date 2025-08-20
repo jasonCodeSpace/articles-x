@@ -210,7 +210,7 @@ export class TwitterClient {
   private requestQueue: Array<() => Promise<unknown>> = []
   private isProcessingQueue = false
   private lastRequestTime = 0
-  private readonly REQUEST_INTERVAL_MS = 1000 / 9 // 9 requests per second = ~111ms between requests
+  private readonly REQUEST_INTERVAL_MS = 100 // 10 requests per second = 100ms between requests
 
   constructor(config: TwitterClientConfig) {
     this.config = config
@@ -343,7 +343,7 @@ export class TwitterClient {
         }
 
         // Small delay between requests to be respectful
-        await this.sleep(1000)
+        await this.sleep(100)
         
       } catch (error) {
         console.error(`Error fetching page ${pageCount + 1} for list ${listId}:`, error)

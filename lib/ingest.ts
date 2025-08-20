@@ -53,6 +53,11 @@ export interface DatabaseArticle {
   featured_image_url?: string
   tags: string[]
   category?: string
+  tweet_url?: string
+  tweet_published_at?: string
+  tweet_id?: string
+  article_published_at?: string
+  article_url?: string
 }
 
 export interface IngestStats {
@@ -161,6 +166,9 @@ export function harvestedToDatabase(harvested: HarvestedArticle): DatabaseArticl
   
   // Parse Twitter date to ISO string
   const publishedAt = parseTwitterDate(harvested.created_at)
+  
+  // Generate tweet URL from tweet_id
+  const tweetUrl = `https://twitter.com/${harvested.author_handle}/status/${harvested.tweet_id}`
 
   return {
     title: harvested.title,
@@ -177,6 +185,11 @@ export function harvestedToDatabase(harvested: HarvestedArticle): DatabaseArticl
     featured_image_url: harvested.featured_image_url,
     tags: ['twitter', 'imported'],
     category: 'twitter-import',
+    tweet_url: tweetUrl,
+    tweet_published_at: publishedAt,
+    tweet_id: harvested.tweet_id,
+    article_published_at: publishedAt, // Assuming article published at same time as tweet
+    article_url: harvested.article_url,
   }
 }
 
@@ -307,11 +320,18 @@ export async function batchUpsertArticles(
               content: dbArticle.content,
               excerpt: dbArticle.excerpt,
               author_name: dbArticle.author_name,
+              author_handle: dbArticle.author_handle,
+              author_profile_image: dbArticle.author_profile_image,
               meta_title: dbArticle.meta_title,
               meta_description: dbArticle.meta_description,
               featured_image_url: dbArticle.featured_image_url,
               tags: dbArticle.tags,
               category: dbArticle.category,
+              tweet_url: dbArticle.tweet_url,
+              tweet_published_at: dbArticle.tweet_published_at,
+              tweet_id: dbArticle.tweet_id,
+              article_published_at: dbArticle.article_published_at,
+              article_url: dbArticle.article_url,
             })
             .eq('id', existingArticle.id)
 

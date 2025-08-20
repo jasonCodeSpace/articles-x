@@ -18,7 +18,7 @@ export async function fetchArticles(options: FetchArticlesOptions = {}): Promise
     limit = 100,
     sort = 'newest',
     search,
-    // category param is ignored server-side to avoid errors when column doesn't exist
+    category,
   } = options
 
   try {
@@ -30,6 +30,7 @@ export async function fetchArticles(options: FetchArticlesOptions = {}): Promise
         id,
         title,
         slug,
+        content,
         excerpt,
         author_name,
         author_handle,
@@ -38,6 +39,7 @@ export async function fetchArticles(options: FetchArticlesOptions = {}): Promise
         published_at,
         created_at,
         tags,
+        category,
         article_url
       `)
       .eq('status', 'published') // Only fetch published articles
@@ -48,8 +50,10 @@ export async function fetchArticles(options: FetchArticlesOptions = {}): Promise
       query = query.ilike('title', `%${search.trim()}%`)
     }
 
-    // Do NOT apply category filter here to maintain compatibility with DBs missing the category column.
-    // Category filtering is handled client-side in useArticleFeed.
+    // Apply category filter (server-side)
+    if (category && category.trim()) {
+      query = query.eq('category', category.trim())
+    }
 
     // Apply sorting
     if (sort === 'newest') {

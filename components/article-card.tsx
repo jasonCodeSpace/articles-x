@@ -7,7 +7,8 @@ export interface Article {
   id: string
   title: string
   slug: string
-  content: string
+  // content is not guaranteed to exist in all deployments; mark optional to avoid type errors
+  content?: string
   excerpt?: string
   author_name: string
   author_handle?: string
@@ -16,6 +17,7 @@ export interface Article {
   published_at?: string
   created_at: string
   tags: string[]
+  // category might be absent in some DBs, keep optional
   category?: string
   article_url?: string
 }

@@ -282,7 +282,8 @@ const TWITTER_URLS = [
   'https://x.com/Teslarati/status/1955669496888242578',
   'https://x.com/CowellCrypto/status/1864330098502975764',
   'https://x.com/CryptoEights/status/1916155768660963837',
-  'https://x.com/NiallHarbison/status/1878442079023763585'
+  'https://x.com/NiallHarbison/status/1878442079023763585',
+  'https://x.com/MiyaHedge/status/1951693447770902832' 
 ]
 
 // Avoid magic numbers: delay between API requests can be configured via env
@@ -495,7 +496,11 @@ function processTweetInfo(tweet: TwitterTweet, originalUrl: string): ProcessedTw
   
   // Extract tweet info
   const tweetId = tweet.legacy?.id_str || (tweet as any).rest_id || ''
-  const postPublishedAt = tweet.legacy?.created_at || new Date().toISOString()
+  const postPublishedAt = tweet.legacy?.created_at ? new Date(tweet.legacy.created_at).toISOString() : new Date().toISOString()
+  
+  // Build the post link regardless of article presence
+  const screenNameSafe = (authorHandle || '').replace(/^@/, '')
+  const defaultArticleUrl = tweetId ? `https://twitter.com/${screenNameSafe}/status/${tweetId}` : undefined
   
   // Check for article data
   const articleResult = (tweet as any).article_results?.result || (tweet as any).article?.article_results?.result
@@ -504,20 +509,13 @@ function processTweetInfo(tweet: TwitterTweet, originalUrl: string): ProcessedTw
   let articleTitle: string | undefined
   let articlePreviewText: string | undefined
   let articleCoverImage: string | undefined
-  let articlePublishedAt: string | undefined
-  let articleUrl: string | undefined
+  let articlePublishedAt: string | undefined = postPublishedAt
+  let articleUrl: string | undefined = defaultArticleUrl
   
   if (articleResult) {
     articleTitle = articleResult.title
     articlePreviewText = articleResult.preview_text || articleResult.description
     articleCoverImage = articleResult.cover_media?.media_info?.original_img_url
-    articleUrl = articleResult.url
-    
-    // Convert article published timestamp to readable format
-    if (articleResult.metadata?.first_published_at_secs) {
-      const publishedDate = new Date(articleResult.metadata.first_published_at_secs * 1000)
-      articlePublishedAt = publishedDate.toISOString()
-    }
   }
   
   return {
@@ -587,27 +585,27 @@ async function saveTweetInfoToSupabase(tweetInfos: ProcessedTweetInfo[]): Promis
     .map(info => ({
       title: info.articleTitle!,
       slug: generateSlug(info.articleTitle!),
-      content: info.articlePreviewText || '',
-      excerpt: info.articlePreviewText,
+      description: info.articlePreviewText || '',
       author_name: info.authorName,
       author_handle: info.authorHandle,
-      author_profile_image: info.authorProfileImage,
-      status: 'published' as const,
-      published_at: info.articlePublishedAt,
-      featured_image_url: info.articleCoverImage,
-      tags: ['batch_import'],
-      category: 'crypto',
-      tweet_url: info.postDirectUrl,
-      tweet_published_at: info.postPublishedAt,
-      tweet_id: info.tweetId,
+      author_avatar: info.authorProfileImage,
+      image: info.articleCoverImage,
+      published_time: info.postPublishedAt,
       article_published_at: info.articlePublishedAt,
-      article_url: info.articleUrl
+      article_url: info.articleUrl,
+      published_at: info.articlePublishedAt
     }))
+
+  // De-duplicate by slug to avoid Postgres error: "ON CONFLICT DO UPDATE command cannot affect row a second time"
+  const uniqueArticlesData = Array.from(new Map(articlesData.map(a => [a.slug, a])).values())
+  if (uniqueArticlesData.length !== articlesData.length) {
+    console.warn(`Detected ${articlesData.length - uniqueArticlesData.length} duplicate slugs in batch; de-duplicated before upsert`)
+  }
   
-  if (articlesData.length > 0) {
+  if (uniqueArticlesData.length > 0) {
     const { data: articlesResult, error: articlesError } = await supabase
       .from('articles')
-      .upsert(articlesData, { onConflict: 'slug' })
+      .upsert(uniqueArticlesData, { onConflict: 'slug' })
       .select()
     
     if (articlesError) {
@@ -636,13 +634,46 @@ function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
+// 新增：清空 Supabase 的 articles 表
+async function clearArticlesTable(): Promise<void> {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  
+  if (!supabaseUrl || !serviceKey) {
+    throw new Error('Missing Supabase environment variables')
+  }
+  
+  const supabase = createClient(supabaseUrl, serviceKey)
+  console.log('⚠️ Deleting all rows from articles table...')
+  const { error } = await supabase
+    .from('articles')
+    .delete()
+    .or('slug.is.null,slug.not.is.null')
+  
+  if (error) {
+    console.error('Error deleting articles:', error)
+    throw error
+  }
+  console.log('✅ All rows deleted from articles table')
+}
+
 /**
  * Main function to process all Twitter URLs
  */
 export async function batchProcessTwitterUrls(): Promise<void> {
+  // 先清空 articles 再进行抓取与入库
+  const shouldSkipClear = process.env.SKIP_CLEAR === '1'
+  if (!shouldSkipClear) {
+    await clearArticlesTable()
+  } else {
+    console.log('⚠️ SKIP_CLEAR=1 detected, skipping clearing articles table')
+  }
   const limit = process.env.BATCH_LIMIT ? Number(process.env.BATCH_LIMIT) : undefined
-  const urlsToProcess = limit && limit > 0 ? TWITTER_URLS.slice(0, limit) : TWITTER_URLS
-  console.log(`🚀 Starting batch processing of ${urlsToProcess.length} Twitter URLs${limit ? ` (BATCH_LIMIT=${limit})` : ''}...`)
+  const customUrlsEnv = process.env.CUSTOM_TWITTER_URLS
+  const customUrls = customUrlsEnv ? customUrlsEnv.split(',').map(u => u.trim()).filter(Boolean) : []
+  const baseUrls = customUrls.length > 0 ? customUrls : TWITTER_URLS
+  const urlsToProcess = limit && limit > 0 ? baseUrls.slice(0, limit) : baseUrls
+  console.log(`🚀 Starting batch processing of ${urlsToProcess.length} Twitter URLs${limit ? ` (BATCH_LIMIT=${limit})` : ''}${customUrls.length > 0 ? ' [CUSTOM_TWITTER_URLS]' : ''}...`)
   
   const processedTweets: ProcessedTweetInfo[] = []
   const errors: string[] = []

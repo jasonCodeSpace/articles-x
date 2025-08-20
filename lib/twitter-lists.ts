@@ -125,25 +125,6 @@ export async function updateTwitterList(listId: string, updates: Partial<Omit<Tw
   return data
 }
 
-export async function toggleTwitterListStatus(listId: string): Promise<TwitterList> {
-  const supabase = await createClient()
-  
-  // First get the current status
-  const { data: currentList, error: fetchError } = await supabase
-    .from('twitter_lists')
-    .select('status')
-    .eq('list_id', listId)
-    .single()
-  
-  if (fetchError) {
-    console.error('Error fetching Twitter list:', fetchError)
-    throw new Error('Failed to fetch Twitter list')
-  }
-  
-  // Toggle the status
-  const newStatus = currentList.status === 'active' ? 'inactive' : 'active'
-  return updateTwitterList(listId, { status: newStatus })
-}
 
 export async function markListAsScanned(listId: string, articlesFound?: number): Promise<void> {
   const supabase = await createClient()
@@ -206,40 +187,3 @@ export async function getTwitterListStats(): Promise<TwitterListStats> {
   }
 }
 
-export async function initializeDefaultTwitterLists(): Promise<void> {
-  const supabase = await createClient()
-  
-  // Check if lists already exist
-  const { data: existingLists } = await supabase
-    .from('twitter_lists')
-    .select('list_id')
-  
-  const existingListIds = new Set(existingLists?.map(list => list.list_id) || [])
-  
-  // Insert only new lists
-  const newLists = DEFAULT_TWITTER_LISTS.filter(list => !existingListIds.has(list.list_id))
-  
-  if (newLists.length > 0) {
-    const { error } = await supabase
-      .from('twitter_lists')
-      .insert(
-        newLists.map(list => ({
-          list_id: list.list_id,
-          name: list.name,
-          description: list.description,
-          status: 'active',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }))
-      )
-    
-    if (error) {
-      console.error('Error initializing default Twitter lists:', error)
-      throw new Error('Failed to initialize default Twitter lists')
-    }
-    
-    console.log(`📋 Initialized ${newLists.length} new Twitter lists`)
-  } else {
-    console.log('📋 All default Twitter lists already exist')
-  }
-}

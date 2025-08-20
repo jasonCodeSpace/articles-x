@@ -10,12 +10,8 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "seed:dry-run": "tsx scripts/seed-dry-run.ts",
-    "test:ingest": "tsx scripts/test-ingest.ts",
     "add-sample-data": "tsx scripts/add-sample-data.ts",
-    "init:twitter-lists": "tsx scripts/init-twitter-lists.ts",
-    "trigger:all-lists": "tsx scripts/test-trigger-all-lists.ts --local",
-    "trigger:all-lists:dry": "tsx scripts/test-trigger-all-lists.ts --local --dry-run"
+    "init:twitter-lists": "tsx scripts/init-twitter-lists.ts"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.10",
@@ -41,7 +37,6 @@
     "@tailwindcss/postcss": "^4",
     "@types/jest": "^30.0.0",
     "@types/node": "^20",
-    "@types/node-fetch": "^2.6.13",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",

@@ -83,17 +83,114 @@ function extractTweetId(url: string): string | null {
  */
 async function fetchTweetData(tweetId: string): Promise<TwitterTweet | null> {
   try {
-    const twitterClient = createTwitterClient()
-    // Note: This is a simplified approach. In a real implementation,
-    // you would need to use the appropriate Twitter API endpoint for individual tweets
-    // For now, we'll simulate this or use existing list-based fetching
     console.log(`Fetching tweet data for ID: ${tweetId}`)
     
-    // TODO: Implement individual tweet fetching
-    // This would require extending the TwitterClient with a fetchTweet method
-    return null
+    const url = `https://twitter241.p.rapidapi.com/tweet?pid=${tweetId}`
+    const options = {
+      method: 'GET',
+      headers: {
+        'x-rapidapi-key': 'ab9b25a33dmsh9bbd3a16233f27dp1d0125jsn3cc5b2112be6',
+        'x-rapidapi-host': 'twitter241.p.rapidapi.com'
+      }
+    }
+
+    const response = await fetch(url, options)
+    if (!response.ok) {
+      console.error(`HTTP error! status: ${response.status}`)
+      return null
+    }
+
+    const data = await response.json()
+    return processTweetApiResponse(data, tweetId)
   } catch (error) {
     console.error(`Error fetching tweet ${tweetId}:`, error)
+    return null
+  }
+}
+
+/**
+ * Process the new API response format and convert to TwitterTweet
+ */
+function processTweetApiResponse(data: any, tweetId: string): TwitterTweet | null {
+  try {
+    // Handle the new Twitter API v2 response structure
+    if (!data || !data.data || !data.data.threaded_conversation_with_injections_v2) {
+      console.log('Invalid tweet data structure')
+      return null
+    }
+
+    const instructions = data.data.threaded_conversation_with_injections_v2.instructions
+    if (!instructions || instructions.length === 0) {
+      console.log('No instructions found')
+      return null
+    }
+
+    const entries = instructions[0].entries
+    if (!entries || entries.length === 0) {
+      console.log('No entries found')
+      return null
+    }
+
+    // Find the main tweet entry
+    let tweetEntry = null
+    for (const entry of entries) {
+      if (entry.content && entry.content.itemContent && entry.content.itemContent.tweet_results) {
+        tweetEntry = entry.content.itemContent.tweet_results.result
+        break
+      }
+    }
+
+    if (!tweetEntry || !tweetEntry.legacy) {
+      console.log('Tweet entry not found')
+      return null
+    }
+
+    // Extract user information
+    let authorInfo = {
+      name: 'Unknown',
+      screen_name: 'unknown',
+      profile_image_url_https: ''
+    }
+    
+    if (tweetEntry.core && tweetEntry.core.user_results && tweetEntry.core.user_results.result && tweetEntry.core.user_results.result.legacy) {
+      const userLegacy = tweetEntry.core.user_results.result.legacy
+      authorInfo = {
+        name: userLegacy.name || 'Unknown',
+        screen_name: userLegacy.screen_name || 'unknown',
+        profile_image_url_https: userLegacy.profile_image_url_https || ''
+      }
+    }
+
+    // Convert to TwitterTweet format
+    const twitterTweet: TwitterTweet = {
+      rest_id: tweetId,
+      legacy: {
+        id_str: tweetId,
+        full_text: tweetEntry.legacy.full_text || '',
+        created_at: tweetEntry.legacy.created_at || new Date().toISOString(),
+        user_id_str: tweetEntry.legacy.user_id_str || tweetId,
+        retweet_count: tweetEntry.legacy.retweet_count || 0,
+        favorite_count: tweetEntry.legacy.favorite_count || 0,
+        reply_count: tweetEntry.legacy.reply_count || 0,
+        quote_count: tweetEntry.legacy.quote_count || 0,
+        entities: tweetEntry.legacy.entities || {}
+      },
+      core: {
+        user_results: {
+          result: {
+            legacy: {
+              screen_name: authorInfo.screen_name,
+              name: authorInfo.name,
+              profile_image_url_https: authorInfo.profile_image_url_https
+            }
+          }
+        }
+      }
+    }
+
+    return twitterTweet
+  } catch (error) {
+    console.error('Error processing tweet API response:', error)
     return null
   }
 }

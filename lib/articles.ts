@@ -79,30 +79,6 @@ export async function fetchArticles(options: FetchArticlesOptions = {}): Promise
   }
 }
 
-/**
- * Get article statistics
- */
-export async function getArticleStats() {
-  try {
-    const supabase = await createClient()
-    
-    const { count, error } = await supabase
-      .from('articles')
-      .select('*', { count: 'exact', head: true })
-      .eq('status', 'published')
-
-    if (error) {
-      console.error('Error fetching article stats:', error)
-      return { total: 0 }
-    }
-
-    return { total: count || 0 }
-    
-  } catch (error) {
-    console.error('Unexpected error fetching stats:', error)
-    return { total: 0 }
-  }
-}
 
 /**
  * Get available categories

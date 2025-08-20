@@ -8,6 +8,7 @@ import { getActiveTwitterListIds } from '@/lib/twitter-lists'
 interface IngestRequest {
   dryRun?: boolean
   listIds?: string[]
+  maxLists?: number
 }
 
 interface IngestResponse {
@@ -90,6 +91,13 @@ async function runIngest(request: NextRequest): Promise<NextResponse> {
       }
     }
 
+    // Limit number of lists for performance (configurable via query param)
+    const maxLists = requestBody?.maxLists || parseInt(searchParams.get('maxLists') || '10')
+    if (twitterListIds && twitterListIds.length > maxLists) {
+      console.log(`Limiting to first ${maxLists} lists for performance`)
+      twitterListIds = twitterListIds.slice(0, maxLists)
+    }
+
     if (!twitterListIds || twitterListIds.length === 0) {
       return NextResponse.json(
         { 
@@ -107,11 +115,11 @@ async function runIngest(request: NextRequest): Promise<NextResponse> {
     const listTweets = new Map<string, TwitterTweet[]>()
     let totalTweetsFound = 0
 
-    // Fetch tweets from each list
+    // Fetch tweets from each list (limited to 2 pages per list for performance)
     for (const listId of twitterListIds) {
       try {
         console.log(`🐦 Fetching tweets from list: ${listId}`)
-        const tweets = await twitterClient.fetchAllListPages(listId)
+        const tweets = await twitterClient.fetchAllListPages(listId, 2)
         
         listTweets.set(listId, tweets)
         totalTweetsFound += tweets.length
@@ -119,7 +127,7 @@ async function runIngest(request: NextRequest): Promise<NextResponse> {
         console.log(`✅ List ${listId}: Found ${tweets.length} tweets`)
         
         // Small delay between lists to be respectful to the API
-        await sleep(2000)
+        await sleep(1000)
         
       } catch (error) {
         console.error(`❌ Error fetching list ${listId}:`, error)

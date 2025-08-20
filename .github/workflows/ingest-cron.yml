@@ -8,6 +8,7 @@ on:
 jobs:
   call:
     runs-on: ubuntu-latest
+    timeout-minutes: 15  # 增加整个 job 的超时时间到 15 分钟
     steps:
       - name: Check CRON_SECRET
         run: |
@@ -35,7 +36,7 @@ jobs:
             -H "Accept: application/json" \
             -H "User-Agent: GitHub-Actions-Cron" \
             -w "\nHTTP_STATUS:%{http_code}" \
-            --max-time 300)
+            --max-time 600)  # 增加 curl 超时到 10 分钟
           
           echo "📝 Response:"
           echo "$response"

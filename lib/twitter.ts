@@ -315,12 +315,12 @@ export class TwitterClient {
   /**
    * Fetch all pages of a list timeline (no page limit - gets all available tweets)
    */
-  async fetchAllListPages(listId: string): Promise<TwitterTweet[]> {
+  async fetchAllListPages(listId: string, maxPages: number = 10): Promise<TwitterTweet[]> {
     const allTweets: TwitterTweet[] = []
     let cursor: string | undefined
     let pageCount = 0
 
-    while (true) {
+    while (pageCount < maxPages) {
       try {
         console.log(`Fetching page ${pageCount + 1} for list ${listId}${cursor ? ` (cursor: ${cursor.slice(0, 20)}...)` : ''}`)
         
@@ -333,6 +333,12 @@ export class TwitterClient {
         // If no next cursor, we've reached the end
         if (!cursor) {
           console.log(`Reached end of list ${listId} at page ${pageCount}`)
+          break
+        }
+
+        // Check if we've reached the page limit
+        if (pageCount >= maxPages) {
+          console.log(`Reached page limit (${maxPages}) for list ${listId}`)
           break
         }
 

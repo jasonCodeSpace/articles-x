@@ -1,8 +1,8 @@
-name: Ingest Cron
+name: Daily Ingest Cron
 
 on:
   schedule:
-    - cron: "*/15 * * * *"   # 每 15 分钟，UTC 时间
+    - cron: "*/15 * * * *"   # 每日定时任务：每15分钟执行一次 (00:00, 00:15, 00:30, 00:45, 01:00... 23:45)，UTC时间
   workflow_dispatch: {}       # 允许手动触发
 
 jobs:
@@ -28,8 +28,9 @@ jobs:
       
       - name: Hit ingest endpoint (POST with header)
         run: |
-          echo "🚀 Triggering ingest for all 26 Twitter lists..."
-          echo "📅 Current time: $(date -u)"
+          echo "🚀 Daily scheduled ingest - Triggering ingest for all Twitter lists..."
+          echo "📅 Current UTC time: $(date -u)"
+          echo "⏰ This runs every 15 minutes (96 times per day): 00:00, 00:15, 00:30, 00:45, etc."
           
           response=$(curl -sS -X POST "https://articles-x.vercel.app/api/ingest" \
             -H "x-cron-secret: $CRON_SECRET" \

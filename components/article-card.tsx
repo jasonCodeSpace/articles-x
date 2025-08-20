@@ -10,10 +10,16 @@ export interface Article {
   // content is not guaranteed to exist in all deployments; mark optional to avoid type errors
   content?: string
   excerpt?: string
+  // description may exist in DB; make optional and display when available
+  description?: string
   author_name: string
   author_handle?: string
   author_profile_image?: string
+  // Some deployments may use author_avatar instead of author_profile_image
+  author_avatar?: string
   featured_image_url?: string
+  // Some deployments may use image instead of featured_image_url
+  image?: string
   published_at?: string
   created_at: string
   tags: string[]
@@ -45,6 +51,13 @@ export function ArticleCard({ article, className }: ArticleCardProps) {
   const authorHandle = article.author_handle || 
     article.author_name.toLowerCase().replace(/\s+/g, '_')
 
+  // Prefer description, then excerpt, then a small slice of content
+  const descriptionText = article.description || article.excerpt || article.content
+
+  // Field fallbacks for images
+  const avatarUrl = article.author_profile_image || article.author_avatar
+  const coverUrl = article.featured_image_url || article.image
+
   return (
     <div className={`px-3 py-2 border-b border-gray-800 hover:bg-gray-950/50 transition-all duration-200 group cursor-pointer ${className}`}>
       {/* Compact article card layout */}
@@ -52,9 +65,9 @@ export function ArticleCard({ article, className }: ArticleCardProps) {
         {/* Smaller Avatar */}
         <div className="flex-shrink-0">
           <Avatar className="h-8 w-8 ring-1 ring-transparent group-hover:ring-blue-500/30 transition-all duration-200">
-            {article.author_profile_image ? (
+            {avatarUrl ? (
               <AvatarImage 
-                src={article.author_profile_image} 
+                src={avatarUrl} 
                 alt={`${article.author_name} profile picture`}
                 className="transition-all duration-200"
               />
@@ -76,7 +89,7 @@ export function ArticleCard({ article, className }: ArticleCardProps) {
               @{authorHandle}
             </span>
             <span className="text-gray-500">·</span>
-            <time className="text-gray-500 hover:underline cursor-pointer" dateTime={publishedDate}>
+            <time className="text-gray-500 hover:underline cursor-pointer" dateTime={publishedDate} title={new Date(publishedDate).toLocaleString()}>
               {relativeTime.replace(' ago', '')}
             </time>
           </div>
@@ -90,18 +103,18 @@ export function ArticleCard({ article, className }: ArticleCardProps) {
                   {article.title}
                 </h3>
                 
-                {article.excerpt && (
+                {descriptionText && (
                   <p className="text-gray-400 text-xs leading-4 mt-1 line-clamp-2">
-                    {article.excerpt}
+                    {descriptionText}
                   </p>
                 )}
               </div>
               
               {/* Small featured image on the right */}
-              {article.featured_image_url && (
+              {coverUrl && (
                 <div className="flex-shrink-0">
                   <Image
-                    src={article.featured_image_url}
+                    src={coverUrl}
                     alt={`Cover for ${article.title}`}
                     width={64}
                     height={64}
@@ -129,10 +142,17 @@ export function ArticleCard({ article, className }: ArticleCardProps) {
               </div>
             )}
             
-            {/* Compact Tags */}
-            {article.tags && article.tags.length > 0 && (
+            {/* Category and Tags */}
+            {(article.category || (article.tags && article.tags.length > 0)) && (
               <div className="flex flex-wrap gap-1 mt-1">
-                {article.tags.slice(0, 2).map((tag) => (
+                {article.category && (
+                  <span
+                    className="inline-flex items-center rounded-full bg-gray-800 text-gray-300 border border-gray-700 px-2 py-0.5 text-xs"
+                  >
+                    {article.category}
+                  </span>
+                )}
+                {article.tags?.slice(0, 2).map((tag) => (
                   <span
                     key={tag}
                     className="text-blue-400 hover:text-blue-300 hover:underline cursor-pointer text-xs"
@@ -171,7 +191,7 @@ export function ArticleCardSkeleton({ className }: { className?: string }) {
           {/* Content skeleton with image */}
           <div className="flex gap-2">
             <div className="flex-1 space-y-1">
-              <div className="h-4 w-full bg-gray-700 rounded" />
+              <div className="h-4 w/full bg-gray-700 rounded" />
               <div className="h-4 w-3/4 bg-gray-700 rounded" />
               <div className="h-3 w-1/2 bg-gray-700 rounded" />
             </div>

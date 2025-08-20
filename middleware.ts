@@ -6,9 +6,28 @@ export async function middleware(request: NextRequest) {
     request,
   })
 
+  const pathname = request.nextUrl.pathname
+  const isAuthRoute = pathname.startsWith('/login') || pathname.startsWith('/auth')
+  const isPublicFile = pathname.startsWith('/_next') ||
+                       pathname.startsWith('/favicon.ico') ||
+                       pathname.startsWith('/api')
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY
+
+  // If env is missing, avoid throwing and redirect protected routes to login
+  if (!supabaseUrl || !supabaseAnonKey) {
+    if (!isAuthRoute && !isPublicFile) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/login'
+      return NextResponse.redirect(url)
+    }
+    return NextResponse.next({ request })
+  }
+
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    supabaseUrl,
+    supabaseAnonKey,
     {
       cookies: {
         getAll() {
@@ -32,14 +51,6 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // Protect all routes except login, auth callback, and static files
-  const isAuthRoute = request.nextUrl.pathname.startsWith('/login') || 
-                      request.nextUrl.pathname.startsWith('/auth')
-  
-  const isPublicFile = request.nextUrl.pathname.startsWith('/_next') ||
-                       request.nextUrl.pathname.startsWith('/favicon.ico') ||
-                       request.nextUrl.pathname.startsWith('/api')
-
   // If user is not logged in and trying to access protected routes
   if (!user && !isAuthRoute && !isPublicFile) {
     const url = request.nextUrl.clone()
@@ -48,7 +59,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // If user is logged in and trying to access login page or root, redirect to protected page
-  if (user && (request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/')) {
+  if (user && (pathname === '/login' || pathname === '/')) {
     const url = request.nextUrl.clone()
     url.pathname = '/articles'
     return NextResponse.redirect(url)

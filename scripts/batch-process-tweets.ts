@@ -285,6 +285,9 @@ const TWITTER_URLS = [
   'https://x.com/NiallHarbison/status/1878442079023763585'
 ]
 
+// Avoid magic numbers: delay between API requests can be configured via env
+const REQUEST_DELAY_MS = Number(process.env.RAPIDAPI_DELAY_MS || 1000)
+
 interface ProcessedTweetInfo {
   // Author information
   authorName: string
@@ -320,24 +323,32 @@ function extractTweetId(url: string): string | null {
  */
 async function fetchTweetData(tweetId: string): Promise<TwitterTweet | null> {
   try {
-    console.log(`Fetching tweet data for ID: ${tweetId}`)
-    
-    const url = `https://twitter241.p.rapidapi.com/tweet?pid=${tweetId}`
+    if (!process.env.RAPIDAPI_KEY) {
+      console.error('Missing RAPIDAPI_KEY environment variable')
+      return null
+    }
+
+    const host = process.env.RAPIDAPI_HOST || 'twitter241.p.rapidapi.com'
+    const url = `https://${host}/tweet-v2?pid=${tweetId}`
     const options = {
       method: 'GET',
       headers: {
-        'x-rapidapi-key': 'ab9b25a33dmsh9bbd3a16233f27dp1d0125jsn3cc5b2112be6',
-        'x-rapidapi-host': 'twitter241.p.rapidapi.com'
+        'x-rapidapi-key': process.env.RAPIDAPI_KEY,
+        'x-rapidapi-host': host
       }
     }
 
-    const response = await fetch(url, options)
+    const response = await fetch(url, options as any)
     if (!response.ok) {
       console.error(`HTTP error! status: ${response.status}`)
       return null
     }
 
     const data = await response.json()
+    if (process.env.DEBUG_TWEET_PARSING === '1') {
+      const tcwi = data?.data?.threaded_conversation_with_injections_v2 ?? data?.data?.threaded_conversation_with_injections
+      console.log('[DEBUG] has_tcwi:', !!tcwi, 'has_instructions:', Array.isArray(tcwi?.instructions), 'has_tweetResult:', !!data?.data?.tweetResult)
+    }
     return processTweetApiResponse(data, tweetId)
   } catch (error) {
     console.error(`Error fetching tweet ${tweetId}:`, error)
@@ -348,34 +359,63 @@ async function fetchTweetData(tweetId: string): Promise<TwitterTweet | null> {
 /**
  * Process the new API response format and convert to TwitterTweet
  */
-function processTweetApiResponse(data: any, tweetId: string): TwitterTweet | null {
-  try {
-    // Handle the new Twitter API v2 response structure
-    if (!data || !data.data || !data.data.threaded_conversation_with_injections_v2) {
-      console.log('Invalid tweet data structure')
-      return null
-    }
+// Helper to extract the tweet entry from various possible RapidAPI/Twitter shapes
+function extractTweetEntryFromData(data: any): any {
+  const tcwi = data?.data?.threaded_conversation_with_injections_v2 ?? data?.data?.threaded_conversation_with_injections
+  const instructions = tcwi?.instructions
+  const results: any[] = []
 
-    const instructions = data.data.threaded_conversation_with_injections_v2.instructions
-    if (!instructions || instructions.length === 0) {
-      console.log('No instructions found')
-      return null
-    }
+  const tryPush = (maybe: any) => {
+    if (!maybe) return
+    // Some variants wrap the tweet inside { tweet: {...} }
+    const node = maybe.tweet ?? maybe
+    if (node?.legacy || node?.core) results.push(node)
+  }
 
-    const entries = instructions[0].entries
-    if (!entries || entries.length === 0) {
-      console.log('No entries found')
-      return null
-    }
-
-    // Find the main tweet entry
-    let tweetEntry = null
-    for (const entry of entries) {
-      if (entry.content && entry.content.itemContent && entry.content.itemContent.tweet_results) {
-        tweetEntry = entry.content.itemContent.tweet_results.result
-        break
+  if (Array.isArray(instructions)) {
+    for (const instr of instructions) {
+      const entries = Array.isArray(instr?.entries) ? instr.entries : []
+      for (const entry of entries) {
+        const content = entry?.content
+        const itemContent = content?.itemContent
+        const tweetResults = itemContent?.tweet_results
+        if (tweetResults?.result) {
+          tryPush(tweetResults.result)
+        }
+        // Some responses use modules with items
+        const items = Array.isArray(content?.items) ? content.items : []
+        for (const it of items) {
+          const ic = it?.item?.itemContent ?? it?.itemContent
+          const tr = ic?.tweet_results
+          if (tr?.result) tryPush(tr.result)
+        }
       }
     }
+  }
+
+  if (results.length > 0) return results[0]
+
+  // Fallbacks observed in some RapidAPI variants
+  if (data?.data?.tweetResult?.result) return data.data.tweetResult.result
+  if (data?.data?.tweet_results?.result) return data.data.tweet_results.result
+  if (data?.result?.tweetResult?.result) return data.result.tweetResult.result
+
+  return null
+}
+
+function processTweetApiResponse(data: any, tweetId: string): TwitterTweet | null {
+  try {
+    const tweetEntryRaw = extractTweetEntryFromData(data)
+    if (!tweetEntryRaw) {
+      console.log('Invalid tweet data structure')
+      if (process.env.DEBUG_TWEET_PARSING === '1') {
+        console.log('[DEBUG] top-level keys:', Object.keys(data || {}))
+        console.log('[DEBUG] data.keys:', Object.keys(data?.data || {}))
+      }
+      return null
+    }
+
+    const tweetEntry = (tweetEntryRaw.tweet ?? tweetEntryRaw) as any
 
     if (!tweetEntry || !tweetEntry.legacy) {
       console.log('Tweet entry not found')
@@ -388,9 +428,16 @@ function processTweetApiResponse(data: any, tweetId: string): TwitterTweet | nul
       screen_name: 'unknown',
       profile_image_url_https: ''
     }
-    
-    if (tweetEntry.core && tweetEntry.core.user_results && tweetEntry.core.user_results.result && tweetEntry.core.user_results.result.legacy) {
+
+    if (tweetEntry.core?.user_results?.result?.legacy) {
       const userLegacy = tweetEntry.core.user_results.result.legacy
+      authorInfo = {
+        name: userLegacy.name || 'Unknown',
+        screen_name: userLegacy.screen_name || 'unknown',
+        profile_image_url_https: userLegacy.profile_image_url_https || ''
+      }
+    } else if (tweetEntry.legacy?.user) {
+      const userLegacy = tweetEntry.legacy.user
       authorInfo = {
         name: userLegacy.name || 'Unknown',
         screen_name: userLegacy.screen_name || 'unknown',
@@ -403,7 +450,7 @@ function processTweetApiResponse(data: any, tweetId: string): TwitterTweet | nul
       rest_id: tweetId,
       legacy: {
         id_str: tweetId,
-        full_text: tweetEntry.legacy.full_text || '',
+        full_text: tweetEntry.legacy.full_text || tweetEntry.legacy.text || '',
         created_at: tweetEntry.legacy.created_at || new Date().toISOString(),
         user_id_str: tweetEntry.legacy.user_id_str || tweetId,
         retweet_count: tweetEntry.legacy.retweet_count || 0,
@@ -422,8 +469,10 @@ function processTweetApiResponse(data: any, tweetId: string): TwitterTweet | nul
             }
           }
         }
-      }
-    }
+      },
+      article_results: tweetEntry.article_results || tweetEntry.article?.article_results || undefined,
+      card: tweetEntry.card || undefined
+    } as TwitterTweet
 
     return twitterTweet
   } catch (error) {
@@ -438,18 +487,18 @@ function processTweetApiResponse(data: any, tweetId: string): TwitterTweet | nul
 function processTweetInfo(tweet: TwitterTweet, originalUrl: string): ProcessedTweetInfo {
   // Extract user info from core.user_results.result.legacy or fallback to legacy.user
   const userLegacy = tweet.core?.user_results?.result?.legacy
-  const userFallback = tweet.legacy?.user
+  const userFallback = (tweet as any).legacy?.user
   
   const authorHandle = userLegacy?.screen_name || userFallback?.screen_name || 'unknown'
   const authorName = userLegacy?.name || userFallback?.name || authorHandle
   const authorProfileImage = userLegacy?.profile_image_url_https || userFallback?.profile_image_url_https
   
   // Extract tweet info
-  const tweetId = tweet.legacy?.id_str || tweet.rest_id || ''
-  const postPublishedAt = tweet.legacy?.created_at || ''
+  const tweetId = tweet.legacy?.id_str || (tweet as any).rest_id || ''
+  const postPublishedAt = tweet.legacy?.created_at || new Date().toISOString()
   
   // Check for article data
-  const articleResult = tweet.article_results?.result || tweet.article?.article_results?.result
+  const articleResult = (tweet as any).article_results?.result || (tweet as any).article?.article_results?.result
   const hasArticle = !!articleResult
   
   let articleTitle: string | undefined
@@ -583,16 +632,22 @@ function generateSlug(title: string): string {
     .substring(0, 100)
 }
 
+function sleep(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
 /**
  * Main function to process all Twitter URLs
  */
 export async function batchProcessTwitterUrls(): Promise<void> {
-  console.log(`🚀 Starting batch processing of ${TWITTER_URLS.length} Twitter URLs...`)
+  const limit = process.env.BATCH_LIMIT ? Number(process.env.BATCH_LIMIT) : undefined
+  const urlsToProcess = limit && limit > 0 ? TWITTER_URLS.slice(0, limit) : TWITTER_URLS
+  console.log(`🚀 Starting batch processing of ${urlsToProcess.length} Twitter URLs${limit ? ` (BATCH_LIMIT=${limit})` : ''}...`)
   
   const processedTweets: ProcessedTweetInfo[] = []
   const errors: string[] = []
   
-  for (const url of TWITTER_URLS) {
+  for (const url of urlsToProcess) {
     try {
       const tweetId = extractTweetId(url)
       if (!tweetId) {
@@ -602,35 +657,34 @@ export async function batchProcessTwitterUrls(): Promise<void> {
       
       console.log(`Processing: ${url} (ID: ${tweetId})`)
       
-      // For now, we'll create a mock tweet object since individual tweet fetching
-      // is not implemented in the current TwitterClient
-      // In a real implementation, you would fetch the actual tweet data
-      const mockTweet: Partial<TwitterTweet> = {
-        rest_id: tweetId,
-        legacy: {
-          id_str: tweetId,
-          created_at: new Date().toUTCString(),
-          full_text: 'Mock tweet text',
-          user: {
-            screen_name: url.split('/')[3], // Extract username from URL
-            name: url.split('/')[3],
-            profile_image_url_https: undefined
-          }
-        }
+      // Use real fetch via RapidAPI
+      const tweet = await fetchTweetData(tweetId)
+      if (!tweet) {
+        const msg = `Failed to fetch tweet: ${tweetId}`
+        console.error(msg)
+        errors.push(msg)
+        // Respect rate limit even on failure
+        await sleep(REQUEST_DELAY_MS)
+        continue
       }
-      
-      const tweetInfo = processTweetInfo(mockTweet as TwitterTweet, url)
+
+      const tweetInfo = processTweetInfo(tweet as TwitterTweet, url)
       processedTweets.push(tweetInfo)
+
+      // Simple rate limiting between requests
+      await sleep(REQUEST_DELAY_MS)
       
     } catch (error) {
       const errorMsg = `Error processing ${url}: ${error}`
       console.error(errorMsg)
       errors.push(errorMsg)
+      // Keep a short pause after an error to avoid rapid retries
+      await sleep(REQUEST_DELAY_MS)
     }
   }
   
   console.log(`\n📊 Processing Summary:`)
-  console.log(`- Total URLs: ${TWITTER_URLS.length}`)
+  console.log(`- Total URLs: ${urlsToProcess.length}`)
   console.log(`- Successfully processed: ${processedTweets.length}`)
   console.log(`- Errors: ${errors.length}`)
   console.log(`- Tweets with articles: ${processedTweets.filter(t => t.hasArticle).length}`)

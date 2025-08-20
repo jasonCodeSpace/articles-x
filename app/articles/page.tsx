@@ -4,8 +4,6 @@ import { ArticleFeed } from '@/components/article-feed'
 import { FeedLoading } from '@/components/feed-loading'
 
 
-// Initialize scheduler on server startup
-import '@/lib/init-scheduler'
 
 export const dynamic = 'force-dynamic'
 

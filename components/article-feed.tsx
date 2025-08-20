@@ -19,7 +19,6 @@ export function ArticleFeed({ initialArticles, initialCategories }: ArticleFeedP
     searchQuery,
     currentPage,
     totalPages,
-    totalItems,
     handlePageChange,
     clearSearch,
     retry

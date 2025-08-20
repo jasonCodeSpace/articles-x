@@ -15,7 +15,7 @@ export interface FetchArticlesOptions {
  */
 export async function fetchArticles(options: FetchArticlesOptions = {}): Promise<Article[]> {
   const {
-    limit = 50,
+    limit = 100,
     sort = 'newest',
     search,
     category

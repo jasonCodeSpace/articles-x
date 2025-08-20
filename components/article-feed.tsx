@@ -1,9 +1,9 @@
 'use client'
 
 import { ArticleCard, Article } from '@/components/article-card'
-
 import { FeedEmptyState } from '@/components/feed-empty-state'
 import { FeedLoading } from '@/components/feed-loading'
+import { Pagination } from '@/components/pagination'
 import { useArticleFeed } from '@/hooks/use-article-feed'
 
 interface ArticleFeedProps {
@@ -13,10 +13,14 @@ interface ArticleFeedProps {
 
 export function ArticleFeed({ initialArticles, initialCategories }: ArticleFeedProps) {
   const {
-    filteredArticles,
+    paginatedArticles,
     isLoading,
     error,
     searchQuery,
+    currentPage,
+    totalPages,
+    totalItems,
+    handlePageChange,
     clearSearch,
     retry
   } = useArticleFeed({
@@ -44,21 +48,31 @@ export function ArticleFeed({ initialArticles, initialCategories }: ArticleFeedP
           type="error"
           onRetry={retry}
         />
-      ) : filteredArticles.length === 0 ? (
+      ) : paginatedArticles.length === 0 ? (
         <FeedEmptyState
           type="no-results"
           onClearSearch={clearSearch}
         />
       ) : (
-        <div className="divide-y divide-gray-800">
-          {filteredArticles.map((article) => (
-            <ArticleCard
-              key={article.id}
-              article={article}
-              className="border-0 rounded-none bg-transparent hover:bg-gray-950/50 transition-colors"
-            />
-          ))}
-        </div>
+        <>
+          <div className="divide-y divide-gray-800">
+            {paginatedArticles.map((article: Article) => (
+              <ArticleCard
+                key={article.id}
+                article={article}
+                className="border-0 rounded-none bg-transparent hover:bg-gray-950/50 transition-colors"
+              />
+            ))}
+          </div>
+          
+          {/* Pagination */}
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+            className="border-t border-gray-800"
+          />
+        </>
       )}
     </div>
   )

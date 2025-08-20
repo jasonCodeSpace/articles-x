@@ -3,37 +3,46 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Article } from '@/components/article-card'
 import { SortOption } from '@/lib/articles'
+import { calculatePagination } from '@/components/pagination'
 
 interface UseArticleFeedProps {
   initialArticles: Article[]
   initialCategories: string[]
+  itemsPerPage?: number
 }
 
 interface UseArticleFeedReturn {
   articles: Article[]
   filteredArticles: Article[]
+  paginatedArticles: Article[]
   isLoading: boolean
   error: string | null
   searchQuery: string
   sortOption: SortOption
   selectedCategory: string
   categories: string[]
+  currentPage: number
+  totalPages: number
+  totalItems: number
   handleSearch: (query: string) => void
   handleSort: (sort: SortOption) => void
   handleCategoryChange: (category: string) => void
+  handlePageChange: (page: number) => void
   clearSearch: () => void
   retry: () => void
 }
 
 export function useArticleFeed({
   initialArticles,
-  initialCategories
+  initialCategories,
+  itemsPerPage = 30
 }: UseArticleFeedProps): UseArticleFeedReturn {
   // State
   const [articles] = useState<Article[]>(initialArticles)
   const [searchQuery, setSearchQuery] = useState('')
   const [sortOption, setSortOption] = useState<SortOption>('newest')
   const [selectedCategory, setSelectedCategory] = useState('all')
+  const [currentPage, setCurrentPage] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -71,9 +80,21 @@ export function useArticleFeed({
     return filtered
   }, [articles, searchQuery, selectedCategory, sortOption])
 
+  // Calculate pagination
+  const paginationInfo = useMemo(() => {
+    return calculatePagination(filteredArticles.length, itemsPerPage, currentPage)
+  }, [filteredArticles.length, itemsPerPage, currentPage])
+
+  // Get paginated articles
+  const paginatedArticles = useMemo(() => {
+    const { startIndex, endIndex } = paginationInfo
+    return filteredArticles.slice(startIndex, endIndex)
+  }, [filteredArticles, paginationInfo])
+
   // Handlers
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query)
+    setCurrentPage(1) // Reset to first page when searching
     setError(null)
   }, [])
 
@@ -83,11 +104,17 @@ export function useArticleFeed({
 
   const handleCategoryChange = useCallback((category: string) => {
     setSelectedCategory(category)
+    setCurrentPage(1) // Reset to first page when category changes
+  }, [])
+
+  const handlePageChange = useCallback((page: number) => {
+    setCurrentPage(page)
   }, [])
 
   const clearSearch = useCallback(() => {
     setSearchQuery('')
     setSelectedCategory('all')
+    setCurrentPage(1) // Reset to first page when clearing search
     setError(null)
   }, [])
 
@@ -109,15 +136,20 @@ export function useArticleFeed({
   return {
     articles,
     filteredArticles,
+    paginatedArticles,
     isLoading,
     error,
     searchQuery,
     sortOption,
     selectedCategory,
     categories: initialCategories,
+    currentPage,
+    totalPages: paginationInfo.totalPages,
+    totalItems: filteredArticles.length,
     handleSearch,
     handleSort,
     handleCategoryChange,
+    handlePageChange,
     clearSearch,
     retry
   }

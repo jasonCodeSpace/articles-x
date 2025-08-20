@@ -31,7 +31,6 @@ export async function fetchArticles(options: FetchArticlesOptions = {}): Promise
         title,
         slug,
         content,
-        excerpt,
         author_name,
         author_handle,
         author_profile_image,

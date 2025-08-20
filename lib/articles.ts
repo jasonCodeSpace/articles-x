@@ -18,7 +18,7 @@ export async function fetchArticles(options: FetchArticlesOptions = {}): Promise
     limit = 100,
     sort = 'newest',
     search,
-    category
+    // category param is ignored server-side to avoid errors when column doesn't exist
   } = options
 
   try {
@@ -30,7 +30,6 @@ export async function fetchArticles(options: FetchArticlesOptions = {}): Promise
         id,
         title,
         slug,
-        content,
         excerpt,
         author_name,
         author_handle,
@@ -39,7 +38,6 @@ export async function fetchArticles(options: FetchArticlesOptions = {}): Promise
         published_at,
         created_at,
         tags,
-        category,
         article_url
       `)
       .eq('status', 'published') // Only fetch published articles
@@ -50,10 +48,8 @@ export async function fetchArticles(options: FetchArticlesOptions = {}): Promise
       query = query.ilike('title', `%${search.trim()}%`)
     }
 
-    // Apply category filter
-    if (category && category !== 'all') {
-      query = query.eq('category', category)
-    }
+    // Do NOT apply category filter here to maintain compatibility with DBs missing the category column.
+    // Category filtering is handled client-side in useArticleFeed.
 
     // Apply sorting
     if (sort === 'newest') {
@@ -84,6 +80,8 @@ export async function fetchArticles(options: FetchArticlesOptions = {}): Promise
  * Get available categories
  */
 export async function getArticleCategories(): Promise<string[]> {
+  type CategoryRow = { category: string | null }
+
   try {
     const supabase = await createClient()
     
@@ -94,12 +92,19 @@ export async function getArticleCategories(): Promise<string[]> {
       .not('category', 'is', null)
 
     if (error) {
+      // Gracefully handle missing column in some environments without using any
+      const errorWithCode = error as { code?: unknown }
+      if (typeof errorWithCode.code === 'string' && errorWithCode.code === '42703') {
+        return []
+      }
       console.error('Error fetching categories:', error)
       return []
     }
 
+    const rows: CategoryRow[] = (data ?? []) as CategoryRow[]
+
     // Extract unique categories
-    const categories = [...new Set(data?.map(item => item.category).filter(Boolean))]
+    const categories = [...new Set(rows.map((item) => item.category).filter((c): c is string => Boolean(c)))]
     return categories.sort()
     
   } catch (error) {

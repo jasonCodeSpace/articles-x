@@ -144,9 +144,10 @@ export async function getTwitterListStats(): Promise<TwitterListStats> {
   
   const last_scan_time = lastScanTimes?.[0]?.toISOString()
   
-  // Calculate next scan time (15 minutes from last scan)
+  // Calculate next scan time (interval from last scan, default 8 minutes)
+  const intervalMinutes = parseInt(process.env.SCHEDULER_INTERVAL_MINUTES || '8')
   const next_scan_time = last_scan_time 
-    ? new Date(new Date(last_scan_time).getTime() + 15 * 60 * 1000).toISOString()
+    ? new Date(new Date(last_scan_time).getTime() + intervalMinutes * 60 * 1000).toISOString()
     : undefined
   
   return {

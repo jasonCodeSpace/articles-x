@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { createClient } from '@/lib/supabase/server'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { TwitterTweet } from '@/lib/twitter'
 
 // Zod schema for harvested article fields
@@ -36,6 +36,8 @@ export interface TweetData {
   article_rest_id?: string
   list_id: string
   raw_data: Record<string, unknown> // Complete raw tweet data
+  article_published_at?: string
+  category?: string
 }
 
 export interface DatabaseArticle {
@@ -229,6 +231,12 @@ export function mapTweetToTweetData(tweet: TwitterTweet, listId: string): TweetD
     } else {
       articleUrl = `https://x.com/${authorHandle}/status/${tweetId}`
     }
+
+    // Compute article published time from metadata.first_published_at_secs if available
+    const firstPublishedSecs = articleResult.metadata?.first_published_at_secs
+    const articlePublishedAt = firstPublishedSecs
+      ? new Date(firstPublishedSecs * 1000).toISOString()
+      : (createdAt ? new Date(createdAt).toISOString() : undefined)
     
     articleData = {
       article_url: articleUrl,
@@ -236,6 +244,8 @@ export function mapTweetToTweetData(tweet: TwitterTweet, listId: string): TweetD
       article_excerpt: articleResult.preview_text || articleResult.description || tweetText.slice(0, 200),
       article_featured_image: articleResult.cover_media?.media_info?.original_img_url,
       article_rest_id: restId,
+      article_published_at: articlePublishedAt,
+      category: 'twitter-import',
     }
   }
   
@@ -265,7 +275,7 @@ export async function batchUpsertArticles(
     return { inserted: 0, updated: 0, skipped: 0 }
   }
 
-  const supabase = await createClient()
+  const supabase = createServiceRoleClient()
   let inserted = 0
   let updated = 0
   let skipped = 0
@@ -276,7 +286,7 @@ export async function batchUpsertArticles(
     uniqueArticles.set(article.article_url, article)
   }
 
-  console.log(`Processing ${uniqueArticles.size} unique articles (${harvestedArticles.length} total harvested)`)
+  console.log(`Processing ${uniqueArticles.size} unique articles (${harvestedArticles.length} total harvested)`) 
 
   if (dryRun) {
     console.log('DRY RUN: Would process these articles:')
@@ -384,7 +394,7 @@ export async function batchUpsertTweets(
     return { inserted: 0, updated: 0, skipped: 0 }
   }
 
-  const supabase = await createClient()
+  const supabase = createServiceRoleClient()
   let inserted = 0
   let updated = 0
   let skipped = 0
@@ -426,6 +436,8 @@ export async function batchUpsertTweets(
               article_rest_id: tweetData.article_rest_id,
               list_id: tweetData.list_id,
               raw_data: tweetData.raw_data,
+              article_published_at: tweetData.article_published_at,
+              category: tweetData.category,
               updated_at: new Date().toISOString(),
             })
             .eq('tweet_id', tweetData.tweet_id)
@@ -456,6 +468,8 @@ export async function batchUpsertTweets(
               article_rest_id: tweetData.article_rest_id,
               list_id: tweetData.list_id,
               raw_data: tweetData.raw_data,
+              article_published_at: tweetData.article_published_at,
+              category: tweetData.category,
             })
 
           if (insertError) {
@@ -466,14 +480,9 @@ export async function batchUpsertTweets(
           }
         }
       } catch (error) {
-        console.error(`Error processing tweet ${tweetData.tweet_id}:`, error)
+        console.error(`Unexpected error processing tweet ${tweetData.tweet_id}:`, error)
         skipped++
       }
-    }
-
-    // Add a small delay between batches to avoid rate limiting
-    if (i + batchSize < tweetDataArray.length) {
-      await sleep(100)
     }
   }
 
@@ -598,4 +607,14 @@ function parseTwitterDate(twitterDate: string): string {
  */
 function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+// Service-role Supabase client for server-side writes (bypasses RLS)
+function createServiceRoleClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE
+  if (!supabaseUrl || !serviceKey) {
+    throw new Error('Supabase service role environment variables are not set. Please set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY on the server.')
+  }
+  return createSupabaseClient(supabaseUrl, serviceKey)
 }

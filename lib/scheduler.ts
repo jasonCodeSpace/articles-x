@@ -192,7 +192,7 @@ export function createScheduler(): TwitterListScheduler {
 
   const config: SchedulerConfig = {
     enabled: process.env.SCHEDULER_ENABLED === 'true',
-    intervalMinutes: parseInt(process.env.SCHEDULER_INTERVAL_MINUTES || '15'),
+    intervalMinutes: parseInt(process.env.SCHEDULER_INTERVAL_MINUTES || '8'),
     autoStart: process.env.SCHEDULER_AUTO_START === 'true',
     cronSecret: process.env.CRON_SECRET || '',
     apiBaseUrl: process.env.NEXTAUTH_URL || 'http://localhost:3000'

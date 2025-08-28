@@ -103,20 +103,9 @@ export function mapTweetToArticle(tweet: TwitterTweet): HarvestedArticle | null 
       return null
     }
 
-    // Build article URL using priority order
-    let articleUrl: string
-    const restId = articleResult.rest_id // Always extract rest_id if available
-
-    if (articleResult.url) {
-      // (a) Explicit URL if present
-      articleUrl = articleResult.url
-    } else if (articleResult.rest_id) {
-      // (b) https://x.com/i/articles/{rest_id}
-      articleUrl = `https://x.com/i/articles/${restId}`
-    } else {
-      // (c) Source post URL https://x.com/{author_handle}/status/{tweet_id}
-      articleUrl = `https://x.com/${authorHandle}/status/${tweetId}`
-    }
+    // Build article URL: always use source post URL https://x.com/{author_handle}/status/{tweet_id}
+    const articleUrl = `https://x.com/${authorHandle}/status/${tweetId}`
+    const restId = articleResult.rest_id // still capture rest_id for metadata if available
 
     // Extract title and description (prefer preview_text over description)
     const title = articleResult.title || tweetText.slice(0, 100) || 'Untitled Article'
@@ -220,17 +209,8 @@ export function mapTweetToTweetData(tweet: TwitterTweet, listId: string): TweetD
   let articleData: Partial<TweetData> = {}
   
   if (hasArticle && articleResult) {
-    // Extract article information
-    const restId = articleResult.rest_id
-    let articleUrl: string
-    
-    if (articleResult.url) {
-      articleUrl = articleResult.url
-    } else if (articleResult.rest_id) {
-      articleUrl = `https://x.com/i/articles/${restId}`
-    } else {
-      articleUrl = `https://x.com/${authorHandle}/status/${tweetId}`
-    }
+    // Always use tweet link for article_url
+    const articleUrl = `https://x.com/${authorHandle}/status/${tweetId}`
 
     // Compute article published time from metadata.first_published_at_secs if available
     const firstPublishedSecs = articleResult.metadata?.first_published_at_secs
@@ -243,7 +223,7 @@ export function mapTweetToTweetData(tweet: TwitterTweet, listId: string): TweetD
       article_title: articleResult.title || tweetText.slice(0, 100) || 'Untitled Article',
       article_excerpt: articleResult.preview_text || articleResult.description || tweetText.slice(0, 200),
       article_featured_image: articleResult.cover_media?.media_info?.original_img_url,
-      article_rest_id: restId,
+      article_rest_id: articleResult.rest_id,
       article_published_at: articlePublishedAt,
       category: 'twitter-import',
     }

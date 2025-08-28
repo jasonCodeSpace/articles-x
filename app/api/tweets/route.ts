@@ -35,7 +35,17 @@ export async function GET(request: NextRequest) {
         article_rest_id,
         list_id,
         created_at,
-        updated_at
+        updated_at,
+        title,
+        slug,
+        published_time,
+        image,
+        author_avatar,
+        description,
+        article_published_at,
+        published_at,
+        content,
+        category
       `, { count: 'exact' })
 
     // Apply filters
@@ -56,7 +66,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Apply sorting
-    const validSortColumns = ['created_at', 'created_at_twitter', 'author_name', 'has_article']
+    const validSortColumns = ['created_at', 'created_at_twitter', 'author_name', 'has_article', 'article_published_at', 'published_at']
     const sortColumn = validSortColumns.includes(sortBy) ? sortBy : 'created_at'
     const order = sortOrder === 'asc' ? 'asc' : 'desc'
     

@@ -29,7 +29,7 @@ const sampleArticles = [
     meta_title: "PumpFun is winning.",
     meta_description: "Analysis of PumpFun's success in the memecoin space and its impact on the crypto ecosystem.",
     featured_image_url: "https://pbs.twimg.com/media/GxXN2RLWcAAmv-A.jpg",
-    article_url: "https://x.com/i/articles/1951672267450052608",
+    article_url: "https://x.com/crypto_analyst_pro/status/1951672267450052608",
     tags: ['crypto', 'memecoin', 'pumpfun', 'analysis'],
     category: 'crypto-analysis'
   },

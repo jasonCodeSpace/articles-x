@@ -63,7 +63,7 @@ describe('Article Ingest System', () => {
       const result = mapTweetToArticle(tweet)
 
       expect(result).toEqual({
-        article_url: 'https://x.com/i/articles/article789012',
+        article_url: 'https://x.com/green_tech_guru/status/2345678901',
         title: 'Sustainable Technology: Building a Greener Digital Future',
         excerpt: 'Explore how technology companies are adopting sustainable practices.',
         author_name: 'Sarah Green',

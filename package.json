@@ -12,7 +12,8 @@
     "test:coverage": "jest --coverage",
     "add-sample-data": "tsx scripts/add-sample-data.ts",
     "init:twitter-lists": "tsx scripts/init-twitter-lists.ts",
-    "migrate:tweets-to-articles": "tsx scripts/migrate-tweets-to-articles.ts"
+    "migrate:tweets-to-articles": "tsx scripts/migrate-tweets-to-articles.ts",
+    "fix:tweet-urls": "tsx scripts/fix-tweet-urls.ts"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.10",

@@ -129,66 +129,8 @@ async function fixTweetTableUrls() {
 }
 
 async function fixArticleTableUrls() {
-  console.log('\n🔍 Finding articles with incorrect article URLs...')
-  
-  // Fetch all articles with article URLs
-  const { data: articles, error: fetchError } = await supabase
-    .from('articles')
-    .select('id, slug, article_url, tweet_id, author_handle')
-    .not('article_url', 'is', null)
-    .order('id')
-  
-  if (fetchError) {
-    console.error('❌ Error fetching articles:', fetchError)
-    process.exit(1)
-  }
-  
-  if (!articles || articles.length === 0) {
-    console.log('✅ No articles found with article URLs')
-    return { updated: 0, skipped: 0 }
-  }
-  
-  console.log(`📊 Found ${articles.length} articles with article URLs`)
-  
-  let updated = 0
-  let skipped = 0
-  
-  for (const article of articles) {
-    const { id, slug, article_url, tweet_id, author_handle } = article
-    
-    if (!article_url || !tweet_id || !author_handle) {
-      skipped++
-      continue
-    }
-    
-    const newUrl = convertToCorrectArticleUrl(article_url, author_handle, tweet_id)
-    
-    if (newUrl === article_url) {
-      skipped++
-      continue
-    }
-    
-    console.log(`🔄 Updating article ${slug}:`)
-    console.log(`   From: ${article_url}`)
-    console.log(`   To:   ${newUrl}`)
-    
-    const { error: updateError } = await supabase
-      .from('articles')
-      .update({ 
-        article_url: newUrl,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', id)
-    
-    if (updateError) {
-      console.error(`❌ Error updating article ${slug}:`, updateError)
-      skipped++
-    } else {
-      updated++
-    }
-  }
-  
-  return { updated, skipped }
+  console.log('\n🔍 Skipping articles table (no tweet_id column)...')
+  return { updated: 0, skipped: 0 }
 }
 
 // Main execution

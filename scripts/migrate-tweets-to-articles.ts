@@ -122,7 +122,6 @@ async function migrate() {
         content: dbArticle.content,
         author_name: dbArticle.author_name,
         article_url: dbArticle.article_url ?? null,
-        status: 'published' as const,
         published_at: dbArticle.published_at ?? new Date(row.created_at_twitter).toISOString(),
       }
 
@@ -148,7 +147,6 @@ async function migrate() {
             content: payload.content,
             author_name: payload.author_name,
             article_url: payload.article_url,
-            status: payload.status,
             published_at: payload.published_at,
           })
           .eq('id', existingByUrl[0].id)
@@ -183,7 +181,6 @@ async function migrate() {
             content: payload.content,
             author_name: payload.author_name,
             article_url: payload.article_url,
-            status: payload.status,
             published_at: payload.published_at,
           })
           .eq('id', existingBySlug.id)

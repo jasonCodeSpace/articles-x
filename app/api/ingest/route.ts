@@ -65,8 +65,17 @@ async function runIngest(request: NextRequest): Promise<NextResponse> {
       customListIds: requestBody.listIds?.length || 0
     })
 
-    // Get list IDs from request body or database (in order of preference)
+    // Get list IDs from request body, environment variables, or database (in order of preference)
     let twitterListIds = requestBody.listIds
+
+    if (!twitterListIds || twitterListIds.length === 0) {
+      // Try to get from environment variables
+      const envListIds = process.env.TWITTER_LIST_IDS
+      if (envListIds) {
+        twitterListIds = envListIds.split(',').map(id => id.trim()).filter(Boolean)
+        console.log(`📋 Retrieved ${twitterListIds.length} Twitter lists from environment variables`)
+      }
+    }
 
     if (!twitterListIds || twitterListIds.length === 0) {
       // Get all active Twitter lists from database

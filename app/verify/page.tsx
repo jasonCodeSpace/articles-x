@@ -5,8 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Loader2, Mail, ArrowLeft } from 'lucide-react'
+import { Loader2, Mail, ArrowLeft, CheckCircle, XCircle } from 'lucide-react'
 import Link from 'next/link'
 
 function VerifyContent() {
@@ -99,113 +98,116 @@ function VerifyContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
-      {/* 背景装饰 */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-yellow-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
-        <div className="absolute top-40 left-40 w-80 h-80 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-4000"></div>
+    <div className="min-h-screen bg-black relative overflow-hidden flex items-center justify-center p-4">
+      {/* 动态背景 */}
+      <div className="absolute inset-0">
+        <div className="absolute inset-0 bg-mesh opacity-20"></div>
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse animation-delay-2000"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-radial from-blue-500/5 to-transparent rounded-full animate-float"></div>
       </div>
 
-      <div className="relative z-10 w-full max-w-md">
+      {/* 主要内容 */}
+      <div className="relative z-10 w-full max-w-md animate-slide-up">
+        {/* 头部 */}
         <div className="text-center mb-8">
-          <Link href="/" className="inline-block">
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          <Link href="/" className="inline-block group">
+            <h1 className="text-4xl font-bold text-x-gradient hover:scale-105 transition-transform duration-300">
               Xarticle
             </h1>
           </Link>
-          <p className="text-gray-600 mt-2">验证您的邮箱地址</p>
+          <p className="text-gray-400 mt-3 text-lg">验证您的邮箱地址</p>
         </div>
 
-        <Card className="backdrop-blur-sm bg-white/80 border-0 shadow-xl">
-          <CardHeader className="text-center">
-            <div className="mx-auto w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-              <Mail className="w-6 h-6 text-blue-600" />
+        {/* 验证表单 */}
+        <div className="glass-dark p-8 rounded-2xl border border-gray-800/50 animate-slide-up animation-delay-200">
+          <div className="text-center mb-6">
+            <div className="mx-auto w-16 h-16 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-full flex items-center justify-center mb-4 border border-blue-500/30">
+              <Mail className="w-8 h-8 text-blue-400" />
             </div>
-            <CardTitle className="text-xl font-semibold">验证邮箱</CardTitle>
-            <CardDescription className="text-sm text-gray-600">
-              我们已向 <span className="font-medium text-gray-800">{email}</span> 发送了验证码
+            <h2 className="text-2xl font-bold text-white mb-2">验证邮箱</h2>
+            <p className="text-gray-400 text-sm leading-relaxed">
+              我们已向 <span className="text-blue-400 font-medium">{email}</span> 发送了验证码
               <br />请输入收到的6位验证码
-            </CardDescription>
-          </CardHeader>
-          
-          <CardContent>
-            <form onSubmit={handleVerify} className="space-y-4">
-              <div className="space-y-2">
-                <label htmlFor="verificationCode" className="text-sm font-medium text-gray-700">验证码</label>
-                <Input
-                  id="verificationCode"
-                  type="text"
-                  placeholder="输入6位验证码"
-                  value={verificationCode}
-                  onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                  className="text-center text-lg tracking-widest"
-                  maxLength={6}
-                  required
-                />
+            </p>
+          </div>
+          <form onSubmit={handleVerify} className="space-y-6">
+            <div className="space-y-3">
+              <label htmlFor="verificationCode" className="text-sm font-medium text-gray-300">验证码</label>
+              <Input
+                id="verificationCode"
+                type="text"
+                placeholder="输入6位验证码"
+                value={verificationCode}
+                onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                className="bg-gray-900/50 border-gray-700 text-white placeholder-gray-500 text-center text-xl tracking-[0.5em] h-14 focus:border-blue-500 focus:ring-blue-500/20 transition-all duration-300"
+                maxLength={6}
+                required
+              />
+            </div>
+
+            {error && (
+              <div className="flex items-center gap-3 p-4 text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl animate-slide-up">
+                <XCircle className="w-5 h-5 flex-shrink-0" />
+                <span>{error}</span>
               </div>
+            )}
 
-              {error && (
-                <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
-                  {error}
-                </div>
+            {message && (
+              <div className="flex items-center gap-3 p-4 text-sm text-green-400 bg-green-500/10 border border-green-500/20 rounded-xl animate-slide-up">
+                <CheckCircle className="w-5 h-5 flex-shrink-0" />
+                <span>{message}</span>
+              </div>
+            )}
+
+            <Button
+              type="submit"
+              className="w-full h-12 bg-x-gradient hover:opacity-90 text-white font-medium rounded-xl transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-blue-500/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+              disabled={isLoading || verificationCode.length !== 6}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  验证中...
+                </>
+              ) : (
+                '验证并登录'
               )}
+            </Button>
 
-              {message && (
-                <div className="p-3 text-sm text-green-600 bg-green-50 border border-green-200 rounded-md">
-                  {message}
-                </div>
-              )}
-
+            <div className="text-center space-y-4">
+              <p className="text-sm text-gray-400">没有收到验证码？</p>
               <Button
-                type="submit"
-                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-                disabled={isLoading || verificationCode.length !== 6}
+                type="button"
+                variant="outline"
+                onClick={handleResendCode}
+                disabled={resendLoading || countdown > 0}
+                className="bg-transparent border-gray-700 text-gray-300 hover:bg-gray-800/50 hover:border-gray-600 hover:text-white transition-all duration-300"
               >
-                {isLoading ? (
+                {resendLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    验证中...
+                    发送中...
                   </>
+                ) : countdown > 0 ? (
+                  `重新发送 (${countdown}s)`
                 ) : (
-                  '验证并登录'
+                  '重新发送验证码'
                 )}
               </Button>
+            </div>
 
-              <div className="text-center space-y-2">
-                <p className="text-sm text-gray-600">没有收到验证码？</p>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleResendCode}
-                  disabled={resendLoading || countdown > 0}
-                  className="text-sm"
-                >
-                  {resendLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      发送中...
-                    </>
-                  ) : countdown > 0 ? (
-                    `重新发送 (${countdown}s)`
-                  ) : (
-                    '重新发送验证码'
-                  )}
-                </Button>
-              </div>
-
-              <div className="text-center">
-                <Link 
-                  href="/register" 
-                  className="inline-flex items-center text-sm text-gray-600 hover:text-gray-800 transition-colors"
-                >
-                  <ArrowLeft className="mr-1 h-4 w-4" />
-                  返回注册
-                </Link>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
+            <div className="text-center pt-4 border-t border-gray-800/50">
+              <Link 
+                href="/register" 
+                className="inline-flex items-center text-sm text-gray-400 hover:text-blue-400 transition-colors duration-300 group"
+              >
+                <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform duration-300" />
+                返回注册
+              </Link>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   )
@@ -214,14 +216,19 @@ function VerifyContent() {
 export default function VerifyPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-black relative overflow-hidden flex items-center justify-center p-4">
+        <div className="absolute inset-0">
+          <div className="absolute inset-0 bg-mesh opacity-20"></div>
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse animation-delay-2000"></div>
+        </div>
         <div className="relative z-10 w-full max-w-md">
-          <Card className="backdrop-blur-sm bg-white/80 border-0 shadow-xl">
-            <CardContent className="p-8 text-center">
-              <Loader2 className="mx-auto h-8 w-8 animate-spin text-blue-600" />
-              <p className="mt-4 text-gray-600">加载中...</p>
-            </CardContent>
-          </Card>
+          <div className="glass-dark p-8 rounded-2xl border border-gray-800/50">
+            <div className="text-center">
+              <Loader2 className="mx-auto h-8 w-8 animate-spin text-blue-400" />
+              <p className="mt-4 text-gray-400">加载中...</p>
+            </div>
+          </div>
         </div>
       </div>
     }>

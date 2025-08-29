@@ -20,7 +20,7 @@ export interface Article {
   featured_image_url?: string
   // Some deployments may use image instead of featured_image_url
   image?: string
-  published_at?: string
+  article_published_at?: string
   created_at: string
   tags: string[]
   // category might be absent in some DBs, keep optional
@@ -41,7 +41,7 @@ export function ArticleCard({ article, className }: ArticleCardProps) {
     .toUpperCase()
     .slice(0, 2)
 
-  const publishedDate = article.published_at || article.created_at
+  const publishedDate = article.article_published_at || article.created_at
   const relativeTime = formatDistanceToNow(new Date(publishedDate), { addSuffix: true })
 
   // Use the actual article URL directly

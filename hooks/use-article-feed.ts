@@ -67,8 +67,8 @@ export function useArticleFeed({
 
     // Apply sorting
     filtered.sort((a, b) => {
-      const aDate = new Date(a.published_at || a.created_at)
-      const bDate = new Date(b.published_at || b.created_at)
+      const aDate = new Date(a.article_published_at || a.created_at)
+      const bDate = new Date(b.article_published_at || b.created_at)
 
       if (sortOption === 'newest') {
         return bDate.getTime() - aDate.getTime()

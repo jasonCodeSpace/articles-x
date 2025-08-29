@@ -41,9 +41,9 @@ export async function fetchArticles(options: FetchArticlesOptions = {}): Promise
 
     // Apply sorting (avoid referencing columns that may not exist like created_at)
     if (sort === 'newest') {
-      query = query.order('published_at', { ascending: false, nullsFirst: false })
+      query = query.order('article_published_at', { ascending: false, nullsFirst: false })
     } else {
-      query = query.order('published_at', { ascending: true, nullsFirst: true })
+      query = query.order('article_published_at', { ascending: true, nullsFirst: true })
     }
 
     const { data, error } = await query

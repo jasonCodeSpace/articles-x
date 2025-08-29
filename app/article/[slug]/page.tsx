@@ -5,21 +5,21 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ExternalLink, Eye, MessageCircle, Repeat2, Heart, Bookmark, ArrowLeft } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Article } from '@/components/article-card'
 
 interface ArticlePageProps {
-  params: {
+  params: Promise<{
     slug: string
-  }
+  }>
 }
 
 export default async function ArticlePage({ params }: ArticlePageProps) {
+  const resolvedParams = await params
   const supabase = await createClient()
   
   const { data: article, error } = await supabase
     .from('articles')
     .select('*')
-    .eq('slug', params.slug)
+    .eq('slug', resolvedParams.slug)
     .single()
 
   if (error || !article) {
@@ -189,12 +189,13 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 }
 
 export async function generateMetadata({ params }: ArticlePageProps) {
+  const resolvedParams = await params
   const supabase = await createClient()
   
   const { data: article } = await supabase
     .from('articles')
     .select('title, article_preview_text, image')
-    .eq('slug', params.slug)
+    .eq('slug', resolvedParams.slug)
     .single()
 
   if (!article) {

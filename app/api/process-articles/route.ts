@@ -40,14 +40,133 @@ function generateSlug(title: string): string {
     .substring(0, 50);
 }
 
+// Define interfaces for API response types
+interface ContentBlock {
+  text?: string;
+  [key: string]: unknown;
+}
+
+interface ContentState {
+  blocks?: ContentBlock[];
+  [key: string]: unknown;
+}
+
+interface ArticleResult {
+  content_state?: ContentState;
+  content?: ContentState;
+  preview_text?: string;
+  description?: string;
+  [key: string]: unknown;
+}
+
+interface MediaInfo {
+  original_img_url?: string;
+  [key: string]: unknown;
+}
+
+interface CoverMedia {
+  media_info?: MediaInfo;
+  [key: string]: unknown;
+}
+
+interface MediaEntity {
+  media_url_https?: string;
+  [key: string]: unknown;
+}
+
+interface Entities {
+  media?: MediaEntity[];
+  [key: string]: unknown;
+}
+
+interface TweetLegacy {
+  screen_name?: string;
+  name?: string;
+  profile_image_url_https?: string;
+  full_text?: string;
+  text?: string;
+  created_at?: string;
+  reply_count?: number;
+  retweet_count?: number;
+  favorite_count?: number;
+  bookmark_count?: number;
+  entities?: Entities;
+  [key: string]: unknown;
+}
+
+interface ArticleResultWithNesting {
+  result?: ArticleResult;
+  article_results?: {
+    result?: ArticleResult;
+  };
+  [key: string]: unknown;
+}
+
+interface ExtendedArticleResult extends ArticleResult {
+  title?: string;
+  cover_media?: CoverMedia;
+  [key: string]: unknown;
+}
+
+interface TweetResult {
+  core?: {
+    user_results?: {
+      result?: {
+        legacy?: TweetLegacy;
+      };
+    };
+  };
+  legacy?: TweetLegacy;
+  article_results?: ArticleResultWithNesting;
+  article?: ArticleResultWithNesting;
+  views?: {
+    count?: number;
+  };
+  [key: string]: unknown;
+}
+
+interface TweetEntry {
+  entryId?: string;
+  content?: {
+    itemContent?: {
+      tweet_results?: {
+        result?: TweetResult;
+      };
+    };
+  };
+  [key: string]: unknown;
+}
+
+interface TweetInstruction {
+  type?: string;
+  entries?: TweetEntry[];
+  [key: string]: unknown;
+}
+
+interface ThreadedConversation {
+  instructions?: TweetInstruction[];
+  [key: string]: unknown;
+}
+
+interface TweetData {
+  threaded_conversation_with_injections_v2?: ThreadedConversation;
+  [key: string]: unknown;
+}
+
+interface TweetApiResponse {
+  article_results?: ArticleResult[];
+  data?: TweetData;
+  [key: string]: unknown;
+}
+
 // Function to extract full article content from article result
-function extractFullArticleContent(articleResult: any): string {
+function extractFullArticleContent(articleResult: ArticleResult): string {
   try {
     // First try content_state.blocks (the correct structure)
     if (articleResult?.content_state?.blocks && Array.isArray(articleResult.content_state.blocks)) {
       const textBlocks = articleResult.content_state.blocks
-        .filter((block: any) => block.text && block.text.trim())
-        .map((block: any) => block.text.trim());
+        .filter((block: ContentBlock) => block.text && block.text.trim())
+        .map((block: ContentBlock) => block.text!.trim());
       
       if (textBlocks.length > 0) {
         const fullContent = textBlocks.join('\n\n');
@@ -59,8 +178,8 @@ function extractFullArticleContent(articleResult: any): string {
     // Fallback to old structure (content.blocks)
     if (articleResult?.content?.blocks && Array.isArray(articleResult.content.blocks)) {
       const textBlocks = articleResult.content.blocks
-        .filter((block: any) => block.text && block.text.trim())
-        .map((block: any) => block.text.trim());
+        .filter((block: ContentBlock) => block.text && block.text.trim())
+        .map((block: ContentBlock) => block.text!.trim());
       
       if (textBlocks.length > 0) {
         const fullContent = textBlocks.join('\n\n');
@@ -79,7 +198,7 @@ function extractFullArticleContent(articleResult: any): string {
 }
 
 // Function to fetch tweet details from API
-async function fetchTweetDetails(tweetId: string, retries: number = 3): Promise<any> {
+async function fetchTweetDetails(tweetId: string, retries: number = 3): Promise<TweetApiResponse | null> {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       const response = await fetch(`https://${RAPIDAPI_HOST}/tweet?pid=${tweetId}`, {
@@ -175,22 +294,25 @@ async function processTweetForArticle(tweetId: string, authorHandle: string): Pr
       return null;
     }
     
+    // Cast to extended article result for proper typing
+    const extendedArticleResult = articleResult as ExtendedArticleResult;
+    
     console.log(`Article data found for tweet ${tweetId}:`, {
-      title: articleResult.title,
-      hasPreviewText: !!articleResult.preview_text,
-      hasDescription: !!articleResult.description,
-      hasCoverMedia: !!articleResult.cover_media
+      title: extendedArticleResult.title,
+      hasPreviewText: !!extendedArticleResult.preview_text,
+      hasDescription: !!extendedArticleResult.description,
+      hasCoverMedia: !!extendedArticleResult.cover_media
     });
     
     // Generate article data from article_results
     const tweetText = legacy.full_text || legacy.text || 'No content available';
-    const title = articleResult.title || tweetText.substring(0, 100) || 'Untitled Article';
+    const title = extendedArticleResult.title || tweetText.substring(0, 100) || 'Untitled Article';
     const slug = generateSlug(title) + '-' + Math.random().toString(36).substring(2, 8);
-    const excerpt = articleResult.preview_text || articleResult.description || tweetText.substring(0, 200);
-    const featuredImageUrl = articleResult.cover_media?.media_info?.original_img_url;
+    const excerpt = extendedArticleResult.preview_text || extendedArticleResult.description || tweetText.substring(0, 200);
+    const featuredImageUrl = extendedArticleResult.cover_media?.media_info?.original_img_url;
     
     // Extract full article content from article_results
-    const fullArticleContent = extractFullArticleContent(articleResult);
+    const fullArticleContent = extractFullArticleContent(extendedArticleResult);
     
     console.log(`Full article content extracted for tweet ${tweetId}:`, {
       contentLength: fullArticleContent.length,

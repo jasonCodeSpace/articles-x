@@ -1,4 +1,119 @@
-# Articles X
+# Articles X - Twitter Article Processing System
+
+## Overview
+
+This system automatically fetches tweets from specified Twitter lists, identifies article tweets, and extracts detailed article information for storage and analysis.
+
+## Workflow
+
+### 1. Timeline Fetching (Every 15 minutes)
+- Fetches tweets from three Twitter list timelines
+- Saves tweet ID, author handle, and article status to `tweets` table
+- API endpoint: `/api/fetch-timeline`
+
+### 2. Article Processing (Every 30 minutes)
+- Processes tweets marked as articles
+- Extracts detailed information including:
+  - Author details (username, handle, profile image)
+  - Tweet metadata (publication time, interactions)
+  - Article content (title, preview, full content)
+  - Comments and interactions
+- Saves to `articles` table
+- API endpoint: `/api/fetch-tweet-details`
+
+### 3. Cleanup (Every 48 hours)
+- Removes non-article tweets older than 48 hours
+- API endpoint: `/api/cleanup-tweets`
+
+## Setup
+
+### 1. Environment Variables
+Copy `.env.example` to `.env.local` and fill in the required values:
+
+```bash
+cp .env.example .env.local
+```
+
+Required variables:
+- `RAPIDAPI_KEY`: Your RapidAPI key for Twitter241 API
+- `NEXT_PUBLIC_SUPABASE_URL`: Your Supabase project URL
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Your Supabase anon key
+- `SUPABASE_SERVICE_ROLE_KEY`: Your Supabase service role key
+- `CRON_SECRET`: Secret for securing cron endpoints
+
+### 2. Database Setup
+
+1. Link your Supabase project:
+```bash
+npx supabase link --project-ref YOUR_PROJECT_REF
+```
+
+2. Apply database migrations:
+```bash
+npx supabase db push
+```
+
+### 3. Deployment
+
+1. Deploy to Vercel
+2. Set environment variables in Vercel dashboard
+3. Configure GitHub secrets:
+   - `VERCEL_URL`: Your Vercel deployment URL
+   - `CRON_SECRET`: Same as in environment variables
+
+### 4. GitHub Actions
+
+The following workflows are automatically configured:
+- `fetch-timeline.yml`: Runs every 15 minutes
+- `process-articles.yml`: Runs every 30 minutes
+- `cleanup-tweets.yml`: Runs every 48 hours
+
+## API Endpoints
+
+### POST /api/fetch-timeline
+Fetches tweets from Twitter list timelines.
+
+### GET/POST /api/fetch-tweet-details
+Processes article tweets and extracts detailed information.
+
+### GET /api/cleanup-tweets
+Cleans up old non-article tweets.
+
+## Database Schema
+
+### tweets table
+- `id`: Primary key
+- `tweet_id`: Twitter tweet ID
+- `author_handle`: Tweet author handle
+- `has_article`: Boolean indicating if tweet contains article
+- `list_id`: Source Twitter list ID
+- `created_at`: Timestamp
+- `updated_at`: Timestamp
+
+### articles table
+Extended with Twitter-specific fields:
+- `tweet_id`: Associated tweet ID
+- `tweet_text`: Original tweet text
+- `tweet_published_at`: Tweet publication time
+- `tweet_views`, `tweet_replies`, `tweet_retweets`, `tweet_likes`, `tweet_bookmarks`: Engagement metrics
+- `article_preview_title`: Article preview title
+- `article_preview_text`: Article preview text
+- `full_article_content`: Complete article content
+- `comments_data`: JSON array of comments
+- `raw_tweet_data`: Raw API response
+- `list_id`: Source Twitter list ID
+
+## Development
+
+```bash
+npm run dev
+```
+
+The application will be available at `http://localhost:3000`.
+
+---
+
+# Previous Documentation
 
 A modern, production-ready article platform that curates and displays content from Twitter lists with beautiful UI and secure authentication.
 

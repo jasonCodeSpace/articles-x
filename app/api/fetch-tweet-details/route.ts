@@ -174,6 +174,7 @@ function extractArticleInfo(tweetData: any) {
   let fullContent = '';
   if (articleData && articleData.content_state?.blocks) {
     fullContent = articleData.content_state.blocks
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .map((block: any) => block.text || '')
       .filter((text: string) => text.trim())
       .join('\n\n');
@@ -257,7 +258,8 @@ async function fetchTweetDetails(tweetId: string) {
   }
 }
 
-async function saveArticleToDatabase(articleData: any, tweetId: string, listId: string) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function saveArticleToDatabase(articleData: any, tweetId: string) {
   const supabase = await createClient();
   
   try {
@@ -344,7 +346,7 @@ async function saveArticleToDatabase(articleData: any, tweetId: string, listId: 
 
 export async function POST(request: NextRequest) {
   try {
-    const { tweetId, listId } = await request.json();
+    const { tweetId } = await request.json();
     
     if (!tweetId) {
       return NextResponse.json(
@@ -356,7 +358,7 @@ export async function POST(request: NextRequest) {
     console.log(`Fetching details for tweet ${tweetId}...`);
     
     const articleData = await fetchTweetDetails(tweetId);
-    await saveArticleToDatabase(articleData, tweetId, listId || 'unknown');
+    await saveArticleToDatabase(articleData, tweetId);
     
     return NextResponse.json({
       success: true,
@@ -384,7 +386,6 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const tweetId = searchParams.get('tweetId');
-  const listId = searchParams.get('listId');
   
   if (!tweetId) {
     return NextResponse.json(
@@ -397,7 +398,7 @@ export async function GET(request: NextRequest) {
     console.log(`Fetching details for tweet ${tweetId}...`);
     
     const articleData = await fetchTweetDetails(tweetId);
-    await saveArticleToDatabase(articleData, tweetId, listId || 'unknown');
+    await saveArticleToDatabase(articleData, tweetId);
     
     return NextResponse.json({
       success: true,

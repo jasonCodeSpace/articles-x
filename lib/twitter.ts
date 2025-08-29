@@ -152,6 +152,7 @@ const TweetSchema = z.object({
 
 
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const TimelineResponseSchema = z.object({
   cursor: z.union([z.string(), z.object({}).passthrough()]).optional(),
   result: z.object({

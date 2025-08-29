@@ -28,6 +28,8 @@ interface UseArticleFeedReturn {
   handleSort: (sort: SortOption) => void
   handleCategoryChange: (category: string) => void
   handlePageChange: (page: number) => void
+  handleTimeSort: () => void
+  handleViewsSort: () => void
   clearSearch: () => void
   retry: () => void
 }
@@ -67,13 +69,23 @@ export function useArticleFeed({
 
     // Apply sorting
     filtered.sort((a, b) => {
-      const aDate = new Date(a.article_published_at || a.created_at)
-      const bDate = new Date(b.article_published_at || b.created_at)
-
-      if (sortOption === 'newest') {
-        return bDate.getTime() - aDate.getTime()
+      if (sortOption === 'views_high') {
+        const aViews = a.tweet_views || 0
+        const bViews = b.tweet_views || 0
+        return bViews - aViews
+      } else if (sortOption === 'views_low') {
+        const aViews = a.tweet_views || 0
+        const bViews = b.tweet_views || 0
+        return aViews - bViews
       } else {
-        return aDate.getTime() - bDate.getTime()
+        const aDate = new Date(a.article_published_at || a.created_at)
+        const bDate = new Date(b.article_published_at || b.created_at)
+
+        if (sortOption === 'newest') {
+          return bDate.getTime() - aDate.getTime()
+        } else {
+          return aDate.getTime() - bDate.getTime()
+        }
       }
     })
 
@@ -124,6 +136,26 @@ export function useArticleFeed({
     // For now, we're using static data from server
   }, [])
 
+  const handleTimeSort = useCallback(() => {
+    if (sortOption === 'newest') {
+      setSortOption('oldest')
+    } else {
+      setSortOption('newest')
+    }
+    setCurrentPage(1)
+  }, [sortOption])
+
+  const handleViewsSort = useCallback(() => {
+    if (sortOption === 'views_high') {
+      // Second click: reset to default (newest)
+      setSortOption('newest')
+    } else {
+      // First click: sort by views high to low
+      setSortOption('views_high')
+    }
+    setCurrentPage(1)
+  }, [sortOption])
+
   // Set error if no results found with search
   useEffect(() => {
     if (searchQuery.trim() && filteredArticles.length === 0 && articles.length > 0) {
@@ -150,7 +182,9 @@ export function useArticleFeed({
     handleSort,
     handleCategoryChange,
     handlePageChange,
+    handleTimeSort,
+    handleViewsSort,
     clearSearch,
-    retry
+    retry,
   }
 }

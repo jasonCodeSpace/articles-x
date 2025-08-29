@@ -5,6 +5,8 @@ import { FeedEmptyState } from '@/components/feed-empty-state'
 import { FeedLoading } from '@/components/feed-loading'
 import { Pagination } from '@/components/pagination'
 import { useArticleFeed } from '@/hooks/use-article-feed'
+import { Button } from '@/components/ui/button'
+import { Clock, Eye } from 'lucide-react'
 
 interface ArticleFeedProps {
   initialArticles: Article[]
@@ -17,9 +19,12 @@ export function ArticleFeed({ initialArticles, initialCategories }: ArticleFeedP
     isLoading,
     error,
     searchQuery,
+    sortOption,
     currentPage,
     totalPages,
     handlePageChange,
+    handleTimeSort,
+    handleViewsSort,
     clearSearch,
     retry
   } = useArticleFeed({
@@ -54,6 +59,29 @@ export function ArticleFeed({ initialArticles, initialCategories }: ArticleFeedP
         />
       ) : (
         <>
+          {/* Sort buttons */}
+          <div className="flex gap-3 mb-6 pb-4 border-b border-gray-800">
+            <Button
+              variant={sortOption === 'newest' || sortOption === 'oldest' ? 'default' : 'outline'}
+              size="sm"
+              onClick={handleTimeSort}
+              className="flex items-center gap-2"
+            >
+              <Clock className="h-4 w-4" />
+              {sortOption === 'oldest' ? '最老文章' : '最新文章'}
+            </Button>
+            
+            <Button
+              variant={sortOption === 'views_high' ? 'default' : 'outline'}
+              size="sm"
+              onClick={handleViewsSort}
+              className="flex items-center gap-2"
+            >
+              <Eye className="h-4 w-4" />
+              {sortOption === 'views_high' ? '观看量排序' : '按观看量排序'}
+            </Button>
+          </div>
+          
           <div className="divide-y divide-gray-800">
             {paginatedArticles.map((article: Article) => (
               <ArticleCard

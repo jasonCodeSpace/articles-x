@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { Article } from '@/components/article-card'
 
-export type SortOption = 'newest' | 'oldest'
+export type SortOption = 'newest' | 'oldest' | 'views_high' | 'views_low'
 
 export interface FetchArticlesOptions {
   limit?: number
@@ -39,11 +39,15 @@ export async function fetchArticles(options: FetchArticlesOptions = {}): Promise
       query = query.eq('category', category.trim())
     }
 
-    // Apply sorting (avoid referencing columns that may not exist like created_at)
+    // Apply sorting
     if (sort === 'newest') {
       query = query.order('article_published_at', { ascending: false, nullsFirst: false })
-    } else {
+    } else if (sort === 'oldest') {
       query = query.order('article_published_at', { ascending: true, nullsFirst: true })
+    } else if (sort === 'views_high') {
+      query = query.order('tweet_views', { ascending: false, nullsFirst: false })
+    } else if (sort === 'views_low') {
+      query = query.order('tweet_views', { ascending: true, nullsFirst: true })
     }
 
     const { data, error } = await query

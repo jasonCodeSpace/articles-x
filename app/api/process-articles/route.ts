@@ -206,6 +206,82 @@ async function saveArticleToDatabase(articleData: ArticleData, tweetId: string) 
   }
 }
 
+export async function POST(request: NextRequest) {
+  // Verify cron secret
+  const authHeader = request.headers.get('authorization');
+  if (!authHeader || !authHeader.startsWith('Bearer ') || authHeader.slice(7) !== CRON_SECRET) {
+    return NextResponse.json(
+      { error: 'Unauthorized' },
+      { status: 401 }
+    );
+  }
+
+  try {
+    const body = await request.json();
+    const { tweetIds } = body;
+
+    if (!tweetIds || !Array.isArray(tweetIds) || tweetIds.length === 0) {
+      return NextResponse.json(
+        { error: 'tweetIds array is required' },
+        { status: 400 }
+      );
+    }
+
+    console.log(`Processing ${tweetIds.length} specific tweet IDs`);
+    
+    const results = [];
+    const errors = [];
+    
+    // Process each tweet ID
+    for (const tweetId of tweetIds) {
+      try {
+        console.log(`Processing tweet ${tweetId}...`);
+        
+        const articleData = await fetchTweetDetails(tweetId);
+        await saveArticleToDatabase(articleData, tweetId);
+        
+        results.push({
+          tweetId: tweetId,
+          success: true,
+          title: articleData.articlePreview.title
+        });
+        
+        console.log(`Successfully processed tweet ${tweetId}`);
+        
+        // Add delay to avoid rate limiting
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+      } catch (error) {
+        console.error(`Error processing tweet ${tweetId}:`, error);
+        errors.push({
+          tweetId: tweetId,
+          error: error instanceof Error ? error.message : 'Unknown error'
+        });
+      }
+    }
+    
+    return NextResponse.json({
+      success: true,
+      message: `Processed ${results.length} tweets successfully`,
+      processed: results.length,
+      errors: errors.length,
+      results: results,
+      errorDetails: errors
+    });
+    
+  } catch (error) {
+    console.error('Error in process-articles POST API:', error);
+    return NextResponse.json(
+      { 
+        success: false, 
+        error: 'Failed to process articles',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
+      { status: 500 }
+    );
+  }
+}
+
 export async function GET(request: NextRequest) {
   // Verify cron secret
   const authHeader = request.headers.get('authorization');

@@ -1,6 +1,10 @@
 import fs from 'fs';
 import path from 'path';
 import { createServiceClient } from '../lib/supabase/service';
+import dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config({ path: '.env.local' });
 import type { TweetLink } from './process-tweet-links';
 
 interface ProcessedArticle {

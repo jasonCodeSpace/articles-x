@@ -67,8 +67,8 @@ interface ArticleData {
   };
   publishedAt: string;
   fullContent: string;
-  comments: any[];
-  rawData: any;
+  comments: unknown[];
+  rawData: unknown;
 }
 
 async function fetchTweetDetails(tweetId: string): Promise<ArticleData> {

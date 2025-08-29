@@ -29,12 +29,12 @@ export interface TweetData {
   tweet_text: string
   created_at_twitter: string
   has_article: boolean
+  list_id?: string
   article_url?: string
   article_title?: string
   article_excerpt?: string
   article_featured_image?: string
   article_rest_id?: string
-  list_id: string
   raw_data: Record<string, unknown> // Complete raw tweet data
   article_published_at?: string
   category?: string
@@ -187,7 +187,7 @@ export function harvestedToDatabase(harvested: HarvestedArticle): DatabaseArticl
 /**
  * Convert Twitter tweet to TweetData format for storage in tweets table
  */
-export function mapTweetToTweetData(tweet: TwitterTweet, listId: string): TweetData {
+export function mapTweetToTweetData(tweet: TwitterTweet, listId?: string): TweetData {
   // Extract user info from core.user_results.result.legacy (new API structure) or fallback to legacy.user (current structure)
   const userLegacy = tweet.core?.user_results?.result?.legacy
   const userFromTweetLegacy = tweet.legacy?.user
@@ -409,12 +409,12 @@ export async function batchUpsertTweets(
               author_profile_image: tweetData.author_profile_image,
               tweet_text: tweetData.tweet_text,
               has_article: tweetData.has_article,
+              list_id: tweetData.list_id,
               article_url: tweetData.article_url,
               article_title: tweetData.article_title,
               article_excerpt: tweetData.article_excerpt,
               article_featured_image: tweetData.article_featured_image,
               article_rest_id: tweetData.article_rest_id,
-              list_id: tweetData.list_id,
               raw_data: tweetData.raw_data,
               article_published_at: tweetData.article_published_at,
               category: tweetData.category,
@@ -441,12 +441,12 @@ export async function batchUpsertTweets(
               tweet_text: tweetData.tweet_text,
               created_at_twitter: tweetData.created_at_twitter,
               has_article: tweetData.has_article,
+              list_id: tweetData.list_id,
               article_url: tweetData.article_url,
               article_title: tweetData.article_title,
               article_excerpt: tweetData.article_excerpt,
               article_featured_image: tweetData.article_featured_image,
               article_rest_id: tweetData.article_rest_id,
-              list_id: tweetData.list_id,
               raw_data: tweetData.raw_data,
               article_published_at: tweetData.article_published_at,
               category: tweetData.category,

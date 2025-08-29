@@ -65,29 +65,23 @@ async function runIngest(request: NextRequest): Promise<NextResponse> {
       customListIds: requestBody.listIds?.length || 0
     })
 
-    // Get list IDs from request body, environment, or database (in order of preference)
+    // Get list IDs from request body or database (in order of preference)
     let twitterListIds = requestBody.listIds
 
     if (!twitterListIds || twitterListIds.length === 0) {
-      // Try environment variable as fallback
-      const envListIds = process.env.TWITTER_LIST_IDS?.split(',').map(id => id.trim()).filter(Boolean)
-      if (envListIds && envListIds.length > 0) {
-        twitterListIds = envListIds
-      } else {
-        // Get all active Twitter lists from database
-        try {
-          twitterListIds = await getActiveTwitterListIds()
-          console.log(`📋 Retrieved ${twitterListIds.length} active Twitter lists from database`)
-        } catch (error) {
-          console.error('Error fetching active Twitter lists from database:', error)
-          return NextResponse.json(
-            { 
-              success: false, 
-              message: 'Failed to fetch active Twitter lists from database. Ensure database is properly configured.' 
-            },
-            { status: 500 }
-          )
-        }
+      // Get all active Twitter lists from database
+      try {
+        twitterListIds = await getActiveTwitterListIds()
+        console.log(`📋 Retrieved ${twitterListIds.length} active Twitter lists from database`)
+      } catch (error) {
+        console.error('Error fetching active Twitter lists from database:', error)
+        return NextResponse.json(
+          { 
+            success: false, 
+            message: 'Failed to fetch active Twitter lists from database. Ensure database is properly configured.' 
+          },
+          { status: 500 }
+        )
       }
     }
 

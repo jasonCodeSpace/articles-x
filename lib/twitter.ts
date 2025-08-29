@@ -198,6 +198,7 @@ interface TwitterClientConfig {
 interface FetchListTimelineOptions {
   listId: string
   cursor?: string
+  count?: number
 }
 
 interface TwitterApiError extends Error {
@@ -264,104 +265,76 @@ export class TwitterClient {
   }
 
   /**
-   * Fetch timeline for a Twitter list with pagination support
+   * Fetch timeline for a specific Twitter list
    */
-  async fetchListTimeline(
-    options: FetchListTimelineOptions
-  ): Promise<{ tweets: TwitterTweet[]; nextCursor?: string }> {
+  async fetchListTimeline(options: FetchListTimelineOptions): Promise<TwitterTimelineResponse> {
     return this.executeWithRateLimit(async () => {
-      const url = new URL('https://twitter241.p.rapidapi.com/list-timeline')
-      url.searchParams.set('listId', options.listId)
-      
-      if (options.cursor) {
-        url.searchParams.set('cursor', options.cursor)
-      }
-
-      const response = await this.fetchWithRetry(url.toString(), {
-        headers: {
-          'X-RapidAPI-Host': this.config.apiHost,
-          'X-RapidAPI-Key': this.config.apiKey,
-        },
-        timeout: this.config.timeoutMs,
+      const url = `https://${this.config.apiHost}/list-timeline`
+      const params = new URLSearchParams({
+        list_id: options.listId,
+        count: (options.count || 20).toString(),
+        ...(options.cursor && { cursor: options.cursor })
       })
+
+      const response = await this.fetchWithRetry(
+        `${url}?${params}`,
+        {
+          headers: {
+            'X-RapidAPI-Key': this.config.apiKey,
+            'X-RapidAPI-Host': this.config.apiHost,
+          },
+          timeout: this.config.timeoutMs,
+        }
+      )
 
       if (!response.ok) {
         const error = new Error(`Twitter API error: ${response.status} ${response.statusText}`) as TwitterApiError
         error.status = response.status
-        try {
-          error.response = await response.json()
-        } catch {
-          // Ignore JSON parse errors
-        }
+        error.response = await response.json().catch(() => null)
         throw error
       }
 
       const data = await response.json() as TwitterTimelineResponse
-      
-      // Validate response structure
-      const parsed = TimelineResponseSchema.safeParse(data)
-      if (!parsed.success) {
-        console.warn('Twitter API response validation failed:', parsed.error)
-        // Continue with best-effort parsing
-      }
-
-      const tweets = this.extractTweetsFromResponse(data)
-      const nextCursor = this.extractNextCursor(data)
-
-      return { tweets, nextCursor }
+      return data
     })
   }
 
   /**
-   * Fetch all pages of a list timeline (no page limit - gets all available tweets)
+   * Fetch all pages of a list timeline
    */
-  async fetchAllListPages(listId: string, maxPages: number = 10): Promise<TwitterTweet[]> {
+  async fetchAllListPages(listId: string, maxPages = 10): Promise<TwitterTweet[]> {
     const allTweets: TwitterTweet[] = []
     let cursor: string | undefined
     let pageCount = 0
 
     while (pageCount < maxPages) {
       try {
-        console.log(`Fetching page ${pageCount + 1} for list ${listId}${cursor ? ` (cursor: ${cursor.slice(0, 20)}...)` : ''}`)
-        
-        const result = await this.fetchListTimeline({ listId, cursor })
-        
-        allTweets.push(...result.tweets)
-        cursor = result.nextCursor
+        const response = await this.fetchListTimeline({
+          listId,
+          cursor,
+          count: 20
+        })
+
+        const tweets = this.extractTweetsFromResponse(response)
+        allTweets.push(...tweets)
+
+        // Get next cursor
+        const nextCursor = this.extractNextCursor(response)
+        if (!nextCursor || nextCursor === cursor) {
+          break // No more pages
+        }
+
+        cursor = nextCursor
         pageCount++
 
-        // If no next cursor, we've reached the end
-        if (!cursor) {
-          console.log(`Reached end of list ${listId} at page ${pageCount}`)
-          break
-        }
-
-        // Check if we've reached the page limit
-        if (pageCount >= maxPages) {
-          console.log(`Reached page limit (${maxPages}) for list ${listId}`)
-          break
-        }
-
-        // Small delay between requests to be respectful
+        // Add a small delay between pages
         await this.sleep(100)
-        
       } catch (error) {
         console.error(`Error fetching page ${pageCount + 1} for list ${listId}:`, error)
-        
-        // If it's a rate limit or server error, stop pagination for this list
-        if (error instanceof Error && 'status' in error) {
-          const status = (error as TwitterApiError).status
-          if (status === 429 || (status && status >= 500)) {
-            console.log(`Stopping pagination for list ${listId} due to ${status} error`)
-            break
-          }
-        }
-        
-        throw error // Re-throw other errors
+        break
       }
     }
 
-    console.log(`Collected ${allTweets.length} tweets from ${pageCount} pages for list ${listId}`)
     return allTweets
   }
 

@@ -13,6 +13,6 @@ jobs:
     steps:
       - name: Process Article Tweets
         run: |
-          curl -X GET "${{ secrets.VERCEL_URL }}/api/fetch-tweet-details" \
+          curl -X GET "${{ secrets.VERCEL_URL }}/api/process-articles" \
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"

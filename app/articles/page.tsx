@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic'
 export default async function HomePage() {
   // Fetch data in parallel
   const [articles, categories] = await Promise.all([
-    fetchArticles({ limit: 100 }),
+    fetchArticles(), // Remove limit to fetch all articles
     getArticleCategories()
   ])
 

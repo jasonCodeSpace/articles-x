@@ -1,7 +1,8 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { ExternalLink } from 'lucide-react'
+import { ExternalLink, Eye, MessageCircle, Repeat2, Heart, Bookmark } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import Image from 'next/image'
+import Link from 'next/link'
 
 export interface Article {
   id: string
@@ -26,6 +27,18 @@ export interface Article {
   // category might be absent in some DBs, keep optional
   category?: string
   article_url?: string
+  // New fields from database
+  tweet_id?: string
+  tweet_text?: string
+  tweet_published_at?: string
+  tweet_views?: number
+  tweet_replies?: number
+  tweet_retweets?: number
+  tweet_likes?: number
+  tweet_bookmarks?: number
+  article_preview_text?: string
+  full_article_content?: string
+  updated_at?: string
 }
 
 interface ArticleCardProps {
@@ -99,13 +112,15 @@ export function ArticleCard({ article, className }: ArticleCardProps) {
             {/* Article title with smaller image on the right */}
             <div className="flex gap-2">
               <div className="flex-1">
-                <h3 className="text-white text-sm leading-4 font-medium line-clamp-2 group-hover:text-blue-400 transition-colors duration-200">
-                  {article.title}
-                </h3>
+                <Link href={`/article/${article.slug}`} className="block">
+                  <h3 className="text-white text-sm leading-4 font-medium line-clamp-2 group-hover:text-blue-400 transition-colors duration-200 hover:underline">
+                    {article.title}
+                  </h3>
+                </Link>
                 
-                {descriptionText && (
+                {(article.article_preview_text || descriptionText) && (
                   <p className="text-gray-400 text-xs leading-4 mt-1 line-clamp-2">
-                    {descriptionText}
+                    {article.article_preview_text || descriptionText}
                   </p>
                 )}
               </div>
@@ -126,6 +141,42 @@ export function ArticleCard({ article, className }: ArticleCardProps) {
                 </div>
               )}
             </div>
+            
+            {/* Tweet engagement stats */}
+            {(article.tweet_views || article.tweet_replies || article.tweet_retweets || article.tweet_likes || article.tweet_bookmarks) && (
+              <div className="mt-2 flex items-center gap-3 text-xs text-gray-500">
+                {article.tweet_views !== undefined && (
+                  <div className="flex items-center gap-1">
+                    <Eye className="h-3 w-3" />
+                    <span>{article.tweet_views.toLocaleString()}</span>
+                  </div>
+                )}
+                {article.tweet_replies !== undefined && (
+                  <div className="flex items-center gap-1">
+                    <MessageCircle className="h-3 w-3" />
+                    <span>{article.tweet_replies.toLocaleString()}</span>
+                  </div>
+                )}
+                {article.tweet_retweets !== undefined && (
+                  <div className="flex items-center gap-1">
+                    <Repeat2 className="h-3 w-3" />
+                    <span>{article.tweet_retweets.toLocaleString()}</span>
+                  </div>
+                )}
+                {article.tweet_likes !== undefined && (
+                  <div className="flex items-center gap-1">
+                    <Heart className="h-3 w-3" />
+                    <span>{article.tweet_likes.toLocaleString()}</span>
+                  </div>
+                )}
+                {article.tweet_bookmarks !== undefined && (
+                  <div className="flex items-center gap-1">
+                    <Bookmark className="h-3 w-3" />
+                    <span>{article.tweet_bookmarks.toLocaleString()}</span>
+                  </div>
+                )}
+              </div>
+            )}
             
             {/* Compact article link */}
             {articleUrl && (

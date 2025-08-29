@@ -1,9 +1,17 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createServiceClient } from '@/lib/supabase/service';
+import { createClient } from '@supabase/supabase-js';
+import dotenv from 'dotenv';
 
-const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY || '';
+// Load environment variables
+dotenv.config({ path: '.env.local' });
+
+// Initialize Supabase client
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+// Twitter API configuration
+const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY!;
 const RAPIDAPI_HOST = 'twitter241.p.rapidapi.com';
-const CRON_SECRET = process.env.CRON_SECRET;
 
 interface ArticleData {
   id?: string;
@@ -234,6 +242,27 @@ async function processTweetForArticle(tweetId: string, authorHandle: string): Pr
   }
 }
 
+// Function to get article tweets from database
+async function getArticleTweets(): Promise<{tweet_id: string, author_handle: string}[]> {
+  try {
+    const { data, error } = await supabase
+      .from('tweets')
+      .select('tweet_id, author_handle')
+      .eq('is_article', true);
+    
+    if (error) {
+      console.error('Error fetching article tweets:', error);
+      return [];
+    }
+    
+    console.log(`Found ${data?.length || 0} article tweets to process`);
+    return data || [];
+  } catch (error) {
+    console.error('Failed to fetch article tweets:', error);
+    return [];
+  }
+}
+
 // Function to insert article into Supabase
 async function insertArticle(article: ArticleData, retryCount = 0): Promise<boolean> {
   const maxRetries = 3;
@@ -241,35 +270,13 @@ async function insertArticle(article: ArticleData, retryCount = 0): Promise<bool
   try {
     console.log(`Inserting article: ${article.title}`);
     
-    const supabase = createServiceClient();
-    
-    // Check if article with this tweet_id already exists
-    const { data: existingArticle } = await supabase
+    const { data, error } = await supabase
       .from('articles')
-      .select('id')
-      .eq('tweet_id', article.tweet_id)
-      .single();
-    
-    let error;
-    if (existingArticle) {
-      // Update existing article
-      const { error: updateError } = await supabase
-        .from('articles')
-        .update(article)
-        .eq('tweet_id', article.tweet_id);
-      error = updateError;
-      console.log(`Updated existing article for tweet ${article.tweet_id}`);
-    } else {
-      // Insert new article
-      const { error: insertError } = await supabase
-        .from('articles')
-        .insert([article]);
-      error = insertError;
-      console.log(`Inserted new article for tweet ${article.tweet_id}`);
-    }
+      .insert([article])
+      .select();
     
     if (error) {
-      console.error('Error saving article:', error);
+      console.error('Error inserting article:', error);
       
       if (retryCount < maxRetries) {
         console.log(`Retrying insertion (attempt ${retryCount + 1}/${maxRetries})...`);
@@ -280,10 +287,10 @@ async function insertArticle(article: ArticleData, retryCount = 0): Promise<bool
       return false;
     }
     
-    console.log(`✓ Successfully saved article: ${article.title}`);
+    console.log(`✓ Successfully inserted article: ${article.title}`);
     return true;
   } catch (error) {
-    console.error('Failed to save article:', error);
+    console.error('Failed to insert article:', error);
     
     if (retryCount < maxRetries) {
       console.log(`Retrying insertion (attempt ${retryCount + 1}/${maxRetries})...`);
@@ -295,233 +302,70 @@ async function insertArticle(article: ArticleData, retryCount = 0): Promise<bool
   }
 }
 
-export async function GET(request: NextRequest) {
-  // Verify cron secret
-  const authHeader = request.headers.get('authorization');
-  if (!authHeader || !authHeader.startsWith('Bearer ') || authHeader.slice(7) !== CRON_SECRET) {
-    return NextResponse.json(
-      { error: 'Unauthorized' },
-      { status: 401 }
-    );
-  }
-
+// Main function
+async function main() {
   try {
-    const supabase = createServiceClient();
+    console.log('Starting Process Article Tweets job...');
     
-    // Get all tweets where is_article is true
-    const { data: tweets, error: fetchError } = await supabase
-      .from('tweets')
-      .select('tweet_id, author_handle')
-      .eq('is_article', true)
-      .limit(50); // Process in batches of 50
+    // Get all article tweets from database
+    const articleTweets = await getArticleTweets();
     
-    if (fetchError) {
-      console.error('Error fetching tweets:', fetchError);
-      return NextResponse.json(
-        { error: 'Failed to fetch tweets', details: fetchError.message },
-        { status: 500 }
-      );
+    if (articleTweets.length === 0) {
+      console.log('No article tweets found to process');
+      return;
     }
     
-    if (!tweets || tweets.length === 0) {
-      return NextResponse.json({
-        success: true,
-        message: 'No article tweets found to process',
-        processed: 0
-      });
-    }
+    let processedCount = 0;
+    let insertedCount = 0;
+    let failedCount = 0;
     
-    console.log(`Found ${tweets.length} article tweets to process`);
-    
-    const results = [];
-    const errors = [];
-    
-    // Process each tweet
-    for (const tweet of tweets) {
+    // Process each article tweet
+    for (let i = 0; i < articleTweets.length; i++) {
+      const { tweet_id, author_handle } = articleTweets[i];
+      
+      console.log(`\n=== Processing ${i + 1}/${articleTweets.length}: @${author_handle}/status/${tweet_id} ===`);
+      
       try {
-        console.log(`Processing tweet ${tweet.tweet_id} by @${tweet.author_handle}...`);
-        
-        const articleData = await processTweetForArticle(tweet.tweet_id, tweet.author_handle);
+        const articleData = await processTweetForArticle(tweet_id, author_handle);
         
         if (articleData) {
           const insertSuccess = await insertArticle(articleData);
           
           if (insertSuccess) {
-            results.push({
-              tweetId: tweet.tweet_id,
-              success: true,
-              title: articleData.title
-            });
+            insertedCount++;
+            console.log(`✓ Successfully processed and inserted article ${i + 1}/${articleTweets.length}`);
           } else {
-            errors.push({
-              tweetId: tweet.tweet_id,
-              error: 'Failed to insert article into database'
-            });
+            failedCount++;
+            console.log(`✗ Failed to insert article ${i + 1}/${articleTweets.length}`);
           }
         } else {
-          errors.push({
-            tweetId: tweet.tweet_id,
-            error: 'Failed to extract article data from tweet'
-          });
+          failedCount++;
+          console.log(`✗ Failed to process tweet ${i + 1}/${articleTweets.length}`);
         }
         
-        console.log(`Completed processing tweet ${tweet.tweet_id}`);
+        processedCount++;
         
-        // Add delay to avoid rate limiting
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Add delay between requests to avoid rate limiting
+        if (i < articleTweets.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
         
       } catch (error) {
-        console.error(`Error processing tweet ${tweet.tweet_id}:`, error);
-        errors.push({
-          tweetId: tweet.tweet_id,
-          error: error instanceof Error ? error.message : 'Unknown error'
-        });
+        console.error(`Error processing tweet ${tweet_id}:`, error);
+        failedCount++;
       }
     }
     
-    return NextResponse.json({
-      success: true,
-      message: `Processed ${results.length} tweets successfully`,
-      processed: results.length,
-      errors: errors.length,
-      results: results,
-      errorDetails: errors
-    });
+    console.log(`\n=== Process Article Tweets Job Complete ===`);
+    console.log(`Total tweets processed: ${processedCount}`);
+    console.log(`Articles successfully inserted: ${insertedCount}`);
+    console.log(`Failed: ${failedCount}`);
     
   } catch (error) {
-    console.error('Error in process-articles API:', error);
-    return NextResponse.json(
-      { 
-        success: false, 
-        error: 'Failed to process articles',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      },
-      { status: 500 }
-    );
+    console.error('Process Article Tweets job failed:', error);
+    process.exit(1);
   }
 }
 
-export async function POST(request: NextRequest) {
-  // Verify cron secret
-  const authHeader = request.headers.get('authorization');
-  if (!authHeader || !authHeader.startsWith('Bearer ') || authHeader.slice(7) !== CRON_SECRET) {
-    return NextResponse.json(
-      { error: 'Unauthorized' },
-      { status: 401 }
-    );
-  }
-
-  try {
-    const body = await request.json();
-    const { tweetIds } = body;
-
-    if (!tweetIds || !Array.isArray(tweetIds) || tweetIds.length === 0) {
-      return NextResponse.json(
-        { error: 'tweetIds array is required' },
-        { status: 400 }
-      );
-    }
-
-    console.log(`Processing ${tweetIds.length} specific tweet IDs`);
-    
-    const results = [];
-    const errors = [];
-    
-    // Process each tweet ID
-    for (const tweetId of tweetIds) {
-      try {
-        console.log(`Processing tweet ${tweetId}...`);
-        
-        // We need to get the author_handle from the tweet data
-        // For now, we'll extract it from the API response
-        const data = await fetchTweetDetails(tweetId);
-        
-        if (!data) {
-          errors.push({
-            tweetId: tweetId,
-            error: 'Failed to fetch tweet data'
-          });
-          continue;
-        }
-        
-        // Extract author handle from the response
-        let authorHandle = 'unknown';
-        try {
-          const instructions = data.data?.threaded_conversation_with_injections_v2?.instructions;
-          if (instructions) {
-            for (const instruction of instructions) {
-              if (instruction.type === 'TimelineAddEntries' && instruction.entries) {
-                for (const entry of instruction.entries) {
-                  const tweetResult = entry.content?.itemContent?.tweet_results?.result;
-                  if (tweetResult) {
-                    authorHandle = tweetResult.core?.user_results?.result?.legacy?.screen_name || 'unknown';
-                    break;
-                  }
-                }
-                if (authorHandle !== 'unknown') break;
-              }
-            }
-          }
-        } catch (e) {
-          console.error('Error extracting author handle:', e);
-        }
-        
-        const articleData = await processTweetForArticle(tweetId, authorHandle);
-        
-        if (articleData) {
-          const insertSuccess = await insertArticle(articleData);
-          
-          if (insertSuccess) {
-            results.push({
-              tweetId: tweetId,
-              success: true,
-              title: articleData.title
-            });
-          } else {
-            errors.push({
-              tweetId: tweetId,
-              error: 'Failed to insert article into database'
-            });
-          }
-        } else {
-          errors.push({
-            tweetId: tweetId,
-            error: 'Failed to extract article data from tweet'
-          });
-        }
-        
-        console.log(`Successfully processed tweet ${tweetId}`);
-        
-        // Add delay to avoid rate limiting
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-      } catch (error) {
-        console.error(`Error processing tweet ${tweetId}:`, error);
-        errors.push({
-          tweetId: tweetId,
-          error: error instanceof Error ? error.message : 'Unknown error'
-        });
-      }
-    }
-    
-    return NextResponse.json({
-      success: true,
-      message: `Processed ${results.length} tweets successfully`,
-      processed: results.length,
-      errors: errors.length,
-      results: results,
-      errorDetails: errors
-    });
-    
-  } catch (error) {
-    console.error('Error in process-articles POST API:', error);
-    return NextResponse.json(
-      { 
-        success: false, 
-        error: 'Failed to process articles',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      },
-      { status: 500 }
-    );
-  }
-}
+// Run the script
+main().catch(console.error);

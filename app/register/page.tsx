@@ -41,7 +41,7 @@ export default function RegisterPage() {
     }
 
     try {
-      const { data, error } = await supabase.auth.signUp({
+      const { error } = await supabase.auth.signUp({
         email,
         password,
       })
@@ -55,7 +55,7 @@ export default function RegisterPage() {
           router.push(`/verify?email=${encodeURIComponent(email)}`)
         }, 1500)
       }
-    } catch (err) {
+    } catch (error) {
       setError('注册失败，请稍后重试')
     } finally {
       setIsLoading(false)

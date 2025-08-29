@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Loader2, Mail, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 
-export default function VerifyPage() {
+function VerifyContent() {
   const [verificationCode, setVerificationCode] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
@@ -52,7 +52,7 @@ export default function VerifyPage() {
     }
 
     try {
-      const { data, error } = await supabase.auth.verifyOtp({
+      const { error } = await supabase.auth.verifyOtp({
         email,
         token: verificationCode,
         type: 'signup'
@@ -67,7 +67,7 @@ export default function VerifyPage() {
           router.push('/articles')
         }, 1500)
       }
-    } catch (err) {
+    } catch (error) {
       setError('验证过程中发生错误，请重试')
     } finally {
       setIsLoading(false)
@@ -91,7 +91,7 @@ export default function VerifyPage() {
         setMessage('验证码已重新发送到您的邮箱')
         setCountdown(60) // 60秒倒计时
       }
-    } catch (err) {
+    } catch (error) {
       setError('重发验证码时发生错误')
     } finally {
       setResendLoading(false)
@@ -208,5 +208,24 @@ export default function VerifyPage() {
         </Card>
       </div>
     </div>
+  )
+}
+
+export default function VerifyPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
+        <div className="relative z-10 w-full max-w-md">
+          <Card className="backdrop-blur-sm bg-white/80 border-0 shadow-xl">
+            <CardContent className="p-8 text-center">
+              <Loader2 className="mx-auto h-8 w-8 animate-spin text-blue-600" />
+              <p className="mt-4 text-gray-600">加载中...</p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    }>
+      <VerifyContent />
+    </Suspense>
   )
 }

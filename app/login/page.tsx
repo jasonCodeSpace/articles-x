@@ -33,7 +33,7 @@ export default function Login() {
     try {
       const validatedData = loginSchema.parse({ email, password })
       
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email: validatedData.email,
         password: validatedData.password,
       })
@@ -47,9 +47,9 @@ export default function Login() {
           router.push('/articles')
         }, 1500)
       }
-    } catch (err) {
-      if (err instanceof z.ZodError) {
-        setError(err.issues[0].message)
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        setError(error.issues[0].message)
       } else {
         setError('登录过程中发生错误')
       }

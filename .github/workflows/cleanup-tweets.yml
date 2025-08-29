@@ -13,7 +13,8 @@ jobs:
     steps:
       - name: Cleanup non-article tweets
         run: |
-          curl -X POST "https://${{ secrets.VERCEL_URL }}/api/cleanup-tweets" \
+          # Use the production URL directly since VERCEL_URL secret may not be configured
+          curl -X POST "https://articles-x.vercel.app/api/cleanup-tweets" \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
             -H "Content-Type: application/json" \
             --fail --show-error --silent

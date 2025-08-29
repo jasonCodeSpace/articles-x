@@ -9,13 +9,12 @@ import { Loader2, Mail, ArrowLeft, CheckCircle, XCircle } from 'lucide-react'
 import Link from 'next/link'
 
 function VerifyContent() {
-  const [verificationCode, setVerificationCode] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
   const [email, setEmail] = useState('')
-  const [resendLoading, setResendLoading] = useState(false)
-  const [countdown, setCountdown] = useState(0)
   
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -31,71 +30,53 @@ function VerifyContent() {
     }
   }, [searchParams, router])
 
-  useEffect(() => {
-    if (countdown > 0) {
-      const timer = setTimeout(() => setCountdown(countdown - 1), 1000)
-      return () => clearTimeout(timer)
-    }
-  }, [countdown])
 
-  const handleVerify = async (e: React.FormEvent) => {
+
+  const handleSetPassword = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     setError('')
     setMessage('')
 
-    if (!verificationCode.trim()) {
-      setError('请输入验证码')
+    if (!password.trim()) {
+      setError('请输入密码')
+      setIsLoading(false)
+      return
+    }
+
+    if (password.length < 6) {
+      setError('密码长度至少为6位')
+      setIsLoading(false)
+      return
+    }
+
+    if (password !== confirmPassword) {
+      setError('两次输入的密码不一致')
       setIsLoading(false)
       return
     }
 
     try {
-      const { error } = await supabase.auth.verifyOtp({
-        email,
-        token: verificationCode,
-        type: 'signup'
+      const { error } = await supabase.auth.updateUser({
+        password: password
       })
 
       if (error) {
-        setError(error.message || '验证失败，请检查验证码是否正确')
+        setError(error.message || '设置密码失败')
       } else {
-        setMessage('验证成功！正在跳转...')
-        // 验证成功后跳转到主页或仪表板
+        setMessage('密码设置成功！正在跳转...')
         setTimeout(() => {
           router.push('/articles')
         }, 1500)
       }
     } catch (error) {
-      setError('验证过程中发生错误，请重试')
+      setError('设置密码过程中发生错误，请重试')
     } finally {
       setIsLoading(false)
     }
   }
 
-  const handleResendCode = async () => {
-    setResendLoading(true)
-    setError('')
-    setMessage('')
 
-    try {
-      const { error } = await supabase.auth.resend({
-        type: 'signup',
-        email,
-      })
-
-      if (error) {
-        setError(error.message || '重发验证码失败')
-      } else {
-        setMessage('验证码已重新发送到您的邮箱')
-        setCountdown(60) // 60秒倒计时
-      }
-    } catch (error) {
-      setError('重发验证码时发生错误')
-    } finally {
-      setResendLoading(false)
-    }
-  }
 
   return (
     <div className="min-h-screen bg-black relative overflow-hidden flex items-center justify-center p-4">
@@ -116,7 +97,7 @@ function VerifyContent() {
               Xarticle
             </h1>
           </Link>
-          <p className="text-gray-400 mt-3 text-lg">验证您的邮箱地址</p>
+          <p className="text-gray-400 mt-3 text-lg">设置您的账户密码</p>
         </div>
 
         {/* 验证表单 */}
@@ -125,23 +106,35 @@ function VerifyContent() {
             <div className="mx-auto w-16 h-16 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-full flex items-center justify-center mb-4 border border-blue-500/30">
               <Mail className="w-8 h-8 text-blue-400" />
             </div>
-            <h2 className="text-2xl font-bold text-white mb-2">验证邮箱</h2>
+            <h2 className="text-2xl font-bold text-white mb-2">设置密码</h2>
             <p className="text-gray-400 text-sm leading-relaxed">
-              我们已向 <span className="text-blue-400 font-medium">{email}</span> 发送了验证码
-              <br />请输入收到的6位验证码
+              为您的账户 <span className="text-blue-400 font-medium">{email}</span> 设置密码
+              <br />请输入至少6位字符的密码
             </p>
           </div>
-          <form onSubmit={handleVerify} className="space-y-6">
+          <form onSubmit={handleSetPassword} className="space-y-6">
             <div className="space-y-3">
-              <label htmlFor="verificationCode" className="text-sm font-medium text-gray-300">验证码</label>
+              <label htmlFor="password" className="text-sm font-medium text-gray-300">密码</label>
               <Input
-                id="verificationCode"
-                type="text"
-                placeholder="输入6位验证码"
-                value={verificationCode}
-                onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                className="bg-gray-900/50 border-gray-700 text-white placeholder-gray-500 text-center text-xl tracking-[0.5em] h-14 focus:border-blue-500 focus:ring-blue-500/20 transition-all duration-300"
-                maxLength={6}
+                id="password"
+                type="password"
+                placeholder="输入密码（至少6位）"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="bg-gray-900/50 border-gray-700 text-white placeholder-gray-500 h-12 focus:border-blue-500 focus:ring-blue-500/20 transition-all duration-300"
+                required
+              />
+            </div>
+            
+            <div className="space-y-3">
+              <label htmlFor="confirmPassword" className="text-sm font-medium text-gray-300">确认密码</label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                placeholder="再次输入密码"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="bg-gray-900/50 border-gray-700 text-white placeholder-gray-500 h-12 focus:border-blue-500 focus:ring-blue-500/20 transition-all duration-300"
                 required
               />
             </div>
@@ -163,39 +156,17 @@ function VerifyContent() {
             <Button
               type="submit"
               className="w-full h-12 bg-x-gradient hover:opacity-90 text-white font-medium rounded-xl transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-blue-500/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-              disabled={isLoading || verificationCode.length !== 6}
+              disabled={isLoading || !password || !confirmPassword}
             >
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  验证中...
+                  设置中...
                 </>
               ) : (
-                '验证并登录'
+                '设置密码并登录'
               )}
             </Button>
-
-            <div className="text-center space-y-4">
-              <p className="text-sm text-gray-400">没有收到验证码？</p>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleResendCode}
-                disabled={resendLoading || countdown > 0}
-                className="bg-transparent border-gray-700 text-gray-300 hover:bg-gray-800/50 hover:border-gray-600 hover:text-white transition-all duration-300"
-              >
-                {resendLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    发送中...
-                  </>
-                ) : countdown > 0 ? (
-                  `重新发送 (${countdown}s)`
-                ) : (
-                  '重新发送验证码'
-                )}
-              </Button>
-            </div>
 
             <div className="text-center pt-4 border-t border-gray-800/50">
               <Link 

@@ -1,23 +1,27 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
-
 import { Input } from '@/components/ui/input'
-import { Mail, ArrowRight, CheckCircle, XCircle } from 'lucide-react'
+import { Mail, Lock, ArrowRight, CheckCircle, XCircle } from 'lucide-react'
 import { z } from 'zod'
+import Link from 'next/link'
 
-const emailSchema = z.object({
-  email: z.string().email('Please enter a valid email address'),
+const loginSchema = z.object({
+  email: z.string().email('请输入有效的邮箱地址'),
+  password: z.string().min(6, '密码至少需要6个字符'),
 })
 
 export default function Login() {
   const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
 
+  const router = useRouter()
   const supabase = createClient()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -27,25 +31,27 @@ export default function Login() {
     setError('')
 
     try {
-      const validatedEmail = emailSchema.parse({ email })
+      const validatedData = loginSchema.parse({ email, password })
       
-      const { error } = await supabase.auth.signInWithOtp({
-        email: validatedEmail.email,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-        },
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: validatedData.email,
+        password: validatedData.password,
       })
 
       if (error) {
-        setError(error.message)
+        setError(error.message || '登录失败，请检查邮箱和密码')
       } else {
-        setMessage('Check your email for the magic link!')
+        setMessage('登录成功！正在跳转...')
+        // 登录成功后跳转到文章页面
+        setTimeout(() => {
+          router.push('/articles')
+        }, 1500)
       }
     } catch (err) {
       if (err instanceof z.ZodError) {
         setError(err.issues[0].message)
       } else {
-        setError('An unexpected error occurred')
+        setError('登录过程中发生错误')
       }
     } finally {
       setIsLoading(false)
@@ -75,10 +81,10 @@ export default function Login() {
             </div>
             
             <h2 className="text-2xl font-bold text-white mb-3 animate-slide-up">
-              Join Xarticle
+              登录 Xarticle
             </h2>
             <p className="text-gray-300 text-base mb-6 animate-slide-up" style={{animationDelay: '0.1s'}}>
-              Discover the best articles from X — curated and noise-free.
+              使用您的邮箱和密码登录账户
             </p>
             
             {/* Features */}
@@ -91,14 +97,27 @@ export default function Login() {
             </div>
           </div>
           <form onSubmit={handleSubmit} className="space-y-6 animate-slide-up" style={{animationDelay: '0.3s'}}>
-            <div className="space-y-2">
+            <div className="space-y-4">
               <div className="relative group">
                 <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-blue-400 transition-colors" />
                 <Input
                   type="email"
-                  placeholder="Enter your email"
+                  placeholder="输入您的邮箱"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  required
+                  disabled={isLoading}
+                  className="pl-12 h-14 bg-gray-900/50 border-gray-700/50 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-2xl text-white placeholder-gray-500 text-base backdrop-blur-sm transition-all duration-300 hover:bg-gray-800/50"
+                />
+              </div>
+              
+              <div className="relative group">
+                <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-blue-400 transition-colors" />
+                <Input
+                  type="password"
+                  placeholder="输入您的密码"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   required
                   disabled={isLoading}
                   className="pl-12 h-14 bg-gray-900/50 border-gray-700/50 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 rounded-2xl text-white placeholder-gray-500 text-base backdrop-blur-sm transition-all duration-300 hover:bg-gray-800/50"
@@ -114,15 +133,27 @@ export default function Login() {
               {isLoading ? (
                 <div className="flex items-center">
                   <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
-                  Sending magic link...
+                  登录中...
                 </div>
               ) : (
                 <div className="flex items-center">
-                  Send magic link
+                  登录
                   <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </div>
               )}
             </Button>
+            
+            <div className="text-center">
+              <p className="text-gray-400 text-sm">
+                还没有账户？{' '}
+                <Link 
+                  href="/register" 
+                  className="text-blue-400 hover:text-blue-300 underline transition-colors"
+                >
+                  立即注册
+                </Link>
+              </p>
+            </div>
             
             {/* Success Message */}
             {message && (
@@ -131,9 +162,6 @@ export default function Login() {
                   <CheckCircle className="h-5 w-5 text-green-400 mr-3 animate-pulse" />
                   <div>
                     <p className="text-sm font-medium text-green-300">{message}</p>
-                    <p className="text-xs text-green-400/80 mt-1">
-                      The link will expire in 1 hour for security.
-                    </p>
                   </div>
                 </div>
               </div>
@@ -146,9 +174,6 @@ export default function Login() {
                   <XCircle className="h-5 w-5 text-red-400 mr-3 animate-pulse" />
                   <div>
                     <p className="text-sm font-medium text-red-300">{error}</p>
-                    <p className="text-xs text-red-400/80 mt-1">
-                      Please try again or contact support if the issue persists.
-                    </p>
                   </div>
                 </div>
               </div>
@@ -159,13 +184,13 @@ export default function Login() {
         {/* Footer */}
         <div className="text-center mt-8 animate-slide-up" style={{animationDelay: '0.4s'}}>
           <p className="text-xs text-gray-500">
-            By signing up, you agree to our{' '}
+            登录即表示您同意我们的{' '}
             <a href="#" className="text-blue-400 hover:text-blue-300 underline transition-colors">
-              Terms of Service
+              服务条款
             </a>{' '}
             •{' '}
             <a href="#" className="text-blue-400 hover:text-blue-300 underline transition-colors">
-              Privacy Policy
+              隐私政策
             </a>
           </p>
         </div>

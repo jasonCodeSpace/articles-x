@@ -7,7 +7,10 @@ export async function middleware(request: NextRequest) {
   })
 
   const pathname = request.nextUrl.pathname
-  const isAuthRoute = pathname.startsWith('/login') || pathname.startsWith('/auth')
+  const isAuthRoute = pathname.startsWith('/login') || 
+                       pathname.startsWith('/auth') || 
+                       pathname.startsWith('/register') || 
+                       pathname.startsWith('/verify')
   const isPublicFile = pathname.startsWith('/_next') ||
                        pathname.startsWith('/favicon.ico') ||
                        pathname.startsWith('/api')
@@ -58,8 +61,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // If user is logged in and trying to access login page or root, redirect to protected page
-  if (user && (pathname === '/login' || pathname === '/')) {
+  // If user is logged in and trying to access auth pages or root, redirect to protected page
+  if (user && (pathname === '/login' || pathname === '/register' || pathname === '/verify' || pathname === '/')) {
     const url = request.nextUrl.clone()
     url.pathname = '/articles'
     return NextResponse.redirect(url)

@@ -62,7 +62,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // If user is logged in and trying to access auth pages or root, redirect to protected page
-  if (user && (pathname === '/login' || pathname === '/register' || pathname === '/verify' || pathname === '/')) {
+  if (user && (pathname === '/login' || pathname === '/register' || pathname === '/')) {
     const url = request.nextUrl.clone()
     url.pathname = '/articles'
     return NextResponse.redirect(url)

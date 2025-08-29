@@ -63,10 +63,10 @@ export default function RegisterPage() {
       if (error) {
         setError(error.message || '注册失败，请重试')
       } else {
-        setMessage('注册成功！正在跳转到验证页面...')
-        // 跳转到验证页面
+        setMessage('注册成功！正在跳转...')
+        // 直接跳转到文章页面
         setTimeout(() => {
-          router.push(`/verify?email=${encodeURIComponent(email)}`)
+          router.push('/articles')
         }, 1500)
       }
     } catch (error) {

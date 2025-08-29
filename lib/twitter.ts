@@ -300,6 +300,50 @@ export class TwitterClient {
   }
 
   /**
+   * Fetch a single tweet by ID
+   */
+  async fetchTweet(tweetId: string): Promise<TwitterTweet | null> {
+    return this.executeWithRateLimit(async () => {
+      const url = `https://${this.config.apiHost}/tweet`
+      const params = new URLSearchParams({
+        tweet_id: tweetId
+      })
+
+      const response = await this.fetchWithRetry(
+        `${url}?${params}`,
+        {
+          headers: {
+            'X-RapidAPI-Key': this.config.apiKey,
+            'X-RapidAPI-Host': this.config.apiHost,
+          },
+          timeout: this.config.timeoutMs,
+        }
+      )
+
+      if (!response.ok) {
+        const error = new Error(`Twitter API error: ${response.status} ${response.statusText}`) as TwitterApiError
+        error.status = response.status
+        error.response = await response.json().catch(() => null)
+        throw error
+      }
+
+      const data = await response.json() as { result?: { tweet_results?: { result?: unknown } } }
+      const tweet = data?.result?.tweet_results?.result
+      
+      if (tweet) {
+        const parsed = TweetSchema.safeParse(tweet)
+        if (parsed.success) {
+          return parsed.data
+        } else {
+          console.warn('Failed to parse tweet:', parsed.error)
+        }
+      }
+      
+      return null
+    })
+  }
+
+  /**
    * Fetch all pages of a list timeline
    */
   async fetchAllListPages(listId: string, maxPages = 10): Promise<TwitterTweet[]> {

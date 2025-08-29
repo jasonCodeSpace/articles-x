@@ -83,22 +83,54 @@ interface TwitterTweetResponse {
   };
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function extractArticleInfo(tweetData: any) {
-  const result = tweetData?.data?.tweetResult?.result;
+  console.log('Raw tweet data structure:', JSON.stringify(tweetData, null, 2));
+  
+  // Navigate to the original tweet using the provided path:
+  // data -> threaded_conversation_with_injections_v2 -> instructions[1] -> entries[0] -> content -> itemContent -> tweet_results -> result
+  const instructions = tweetData?.data?.threaded_conversation_with_injections_v2?.instructions;
+  if (!instructions || !Array.isArray(instructions) || instructions.length < 2) {
+    console.log('No instructions found or insufficient instructions in API response');
+    throw new Error('Invalid tweet data structure - no instructions found');
+  }
+  
+  // Get the second instruction (index 1) as specified in the guide
+  const targetInstruction = instructions[1];
+  if (!targetInstruction || !targetInstruction.entries || !Array.isArray(targetInstruction.entries)) {
+    console.log('No entries found in instruction[1]');
+    throw new Error('Invalid tweet data structure - no entries found in instruction[1]');
+  }
+  
+  // Get the first entry (index 0) which contains the original tweet
+  const originalTweetEntry = targetInstruction.entries[0];
+  if (!originalTweetEntry) {
+    console.log('No entry found at entries[0]');
+    throw new Error('Invalid tweet data structure - no entry found at entries[0]');
+  }
+  
+  const result = originalTweetEntry.content?.itemContent?.tweet_results?.result;
   
   if (!result) {
-    throw new Error('Invalid tweet data structure');
+    console.log('No result found in original tweet entry');
+    console.log('Available keys in originalTweetEntry:', Object.keys(originalTweetEntry || {}));
+    throw new Error('Invalid tweet data structure - no tweet result found');
   }
 
-  // Extract author information
+  // Extract author information using the provided paths
+  // [...原始推文] -> core -> user_results -> result -> legacy -> name/screen_name/profile_image_url_https
   const authorInfo = result.core?.user_results?.result?.legacy;
+  console.log('Author info extracted:', JSON.stringify(authorInfo, null, 2));
   const author = {
     username: authorInfo?.name || '',
     handle: authorInfo?.screen_name || '',
     profileImage: authorInfo?.profile_image_url_https || ''
   };
+  console.log('Author object:', JSON.stringify(author, null, 2));
 
-  // Extract tweet metadata
+  // Extract tweet metadata using the provided paths
+  // [...原始推文] -> legacy -> created_at/reply_count/retweet_count/favorite_count/bookmark_count
+  // [...原始推文] -> views -> count
   const legacy = result.legacy;
   const tweetMeta = {
     publishedAt: legacy?.created_at || '',
@@ -110,47 +142,72 @@ function extractArticleInfo(tweetData: any) {
     bookmarks: legacy?.bookmark_count || 0
   };
 
-  // Extract article preview from card
-  const cardBindings = result.card?.legacy?.binding_values || [];
-  const articlePreview = {
-    title: '',
-    text: ''
-  };
+  // Extract article data using the provided paths
+  // [...原始推文] -> article -> article_results -> result
+  const articleData = result.article?.article_results?.result;
+  console.log('Article data extracted:', JSON.stringify(articleData, null, 2));
   
-  for (const binding of cardBindings) {
-    if (binding.key === 'title' && binding.value?.string_value) {
-      articlePreview.title = binding.value.string_value;
-    }
-    if (binding.key === 'description' && binding.value?.string_value) {
-      articlePreview.text = binding.value.string_value;
+  // Extract article preview using the provided paths
+  // [...文章基础路径] -> title/preview_text
+  const articlePreview = {
+    title: articleData?.title || '',
+    text: articleData?.preview_text || ''
+  };
+  console.log('Article preview extracted:', JSON.stringify(articlePreview, null, 2));
+  
+  // Fallback to card data if article data not available
+  if (!articlePreview.title || !articlePreview.text) {
+    const cardBindings = result.card?.legacy?.binding_values || [];
+    
+    for (const binding of cardBindings) {
+      if (binding.key === 'title' && binding.value?.string_value && !articlePreview.title) {
+        articlePreview.title = binding.value.string_value;
+      }
+      if (binding.key === 'description' && binding.value?.string_value && !articlePreview.text) {
+        articlePreview.text = binding.value.string_value;
+      }
     }
   }
 
-  // Extract full article content from blocks
-  const blocks = result.blocks || [];
-  const fullContent = blocks
-    .map((block: any) => block.text || '')
-    .filter((text: string) => text.trim())
-    .join('\n\n');
+  // Extract full article content using the provided path
+  // [...原始推文] -> article -> article_results -> result -> content_state -> blocks
+  let fullContent = '';
+  if (articleData && articleData.content_state?.blocks) {
+    fullContent = articleData.content_state.blocks
+      .map((block: any) => block.text || '')
+      .filter((text: string) => text.trim())
+      .join('\n\n');
+  }
+  
+  // If no article content, use tweet text as fallback
+  if (!fullContent) {
+    fullContent = legacy?.full_text || '';
+  }
 
-  // Extract comments from threaded conversation
+  // Extract comments using the provided path
+  // data -> threaded_conversation_with_injections_v2 -> instructions[1] -> entries
+  // From entries[1] onwards are comment threads
   const comments: Array<{
     content: string;
     authorUsername: string;
     authorHandle: string;
   }> = [];
-
-  const instructions = tweetData?.data?.threaded_conversation_with_injections_v2?.instructions || [];
   
-  for (const instruction of instructions) {
-    const entries = instruction.entries || [];
+  // Process entries starting from index 1 (skip the original tweet at index 0)
+  const entries = targetInstruction.entries;
+  for (let i = 1; i < entries.length; i++) {
+    const entry = entries[i];
     
-    // Skip first entry (original tweet) and process comments
-    for (let i = 1; i < entries.length; i++) {
-      const entry = entries[i];
-      const commentResult = entry.content?.itemContent?.tweet_results?.result;
+    // Look for items array in each entry
+    const items = entry.content?.items || [];
+  
+  for (const item of items) {
+      const commentResult = item.item?.itemContent?.tweet_results?.result;
       
       if (commentResult) {
+        // Extract comment content and author using the provided paths
+        // itemContent -> tweet_results -> result -> legacy -> full_text
+        // itemContent -> tweet_results -> result -> core -> user_results -> result -> legacy -> name/screen_name
         const commentAuthor = commentResult.core?.user_results?.result?.legacy;
         const commentText = commentResult.legacy?.full_text;
         
@@ -204,40 +261,81 @@ async function saveArticleToDatabase(articleData: any, tweetId: string, listId: 
   const supabase = await createClient();
   
   try {
-    const { error } = await supabase
+    // Generate slug from author handle and tweet ID
+    const slug = `${articleData.author.handle}-${tweetId}`.toLowerCase().replace(/[^a-z0-9-]/g, '-');
+    
+    console.log('Article data received:', JSON.stringify(articleData, null, 2));
+    
+    // Prepare the data according to user requirements
+    const articleRecord = {
+      // Core identifiers
+      tweet_id: tweetId,
+      title: articleData.articlePreview.title || 'Untitled Article',
+      slug: slug,
+      
+      // Author information
+      author_name: articleData.author.username,
+      author_handle: articleData.author.handle,
+      author_avatar: articleData.author.profileImage,
+      image: articleData.author.profileImage, // Using author avatar as image
+      
+      // Article content
+      article_preview_text: articleData.articlePreview.text,
+      full_article_content: articleData.fullContent,
+      
+      // Tweet metadata
+      tweet_text: articleData.tweetMeta.text,
+      tweet_published_at: articleData.tweetMeta.publishedAt ? new Date(articleData.tweetMeta.publishedAt).toISOString() : new Date().toISOString(),
+      article_published_at: articleData.tweetMeta.publishedAt ? new Date(articleData.tweetMeta.publishedAt).toISOString() : new Date().toISOString(),
+      
+      // Tweet interaction data
+      tweet_views: articleData.tweetMeta.views || 0,
+      tweet_replies: articleData.tweetMeta.replies || 0,
+      tweet_retweets: articleData.tweetMeta.retweets || 0,
+      tweet_likes: articleData.tweetMeta.likes || 0,
+      tweet_bookmarks: articleData.tweetMeta.bookmarks || 0,
+      
+      // Additional data
+       comments_data: articleData.comments || [],
+       raw_tweet_data: articleData.rawData,
+       
+       // System fields
+       updated_at: new Date().toISOString(),
+       category: 'twitter-import', // Default category
+       article_url: `https://twitter.com/${articleData.author.handle}/status/${tweetId}` // Twitter URL
+    };
+    
+    console.log('Article record to save:', JSON.stringify(articleRecord, null, 2));
+    
+    // Check if article with this tweet_id already exists
+    const { data: existingArticle } = await supabase
       .from('articles')
-      .upsert({
-        tweet_id: tweetId,
-        title: articleData.articlePreview.title || 'Untitled Article',
-        slug: `${articleData.author.handle}-${tweetId}`,
-        content: articleData.fullContent || articleData.tweetMeta.text,
-        excerpt: articleData.articlePreview.text,
-        author_name: articleData.author.username,
-        author_handle: articleData.author.handle,
-        author_profile_image: articleData.author.profileImage,
-        tweet_text: articleData.tweetMeta.text,
-        tweet_published_at: new Date(articleData.tweetMeta.publishedAt).toISOString(),
-        tweet_views_count: articleData.tweetMeta.views,
-        tweet_replies_count: articleData.tweetMeta.replies,
-        tweet_retweets_count: articleData.tweetMeta.retweets,
-        tweet_likes_count: articleData.tweetMeta.likes,
-        tweet_bookmarks_count: articleData.tweetMeta.bookmarks,
-        article_preview_title: articleData.articlePreview.title,
-        article_preview_text: articleData.articlePreview.text,
-        full_article_content: articleData.fullContent,
-        comments_data: articleData.comments,
-        raw_tweet_data: articleData.rawData,
-        list_id: listId,
-        status: 'published',
-        published_at: new Date().toISOString()
-      }, {
-        onConflict: 'tweet_id'
-      });
+      .select('id')
+      .eq('tweet_id', tweetId)
+      .single();
+    
+    let error;
+    if (existingArticle) {
+      // Update existing article
+      const { error: updateError } = await supabase
+        .from('articles')
+        .update(articleRecord)
+        .eq('tweet_id', tweetId);
+      error = updateError;
+    } else {
+      // Insert new article
+      const { error: insertError } = await supabase
+        .from('articles')
+        .insert(articleRecord);
+      error = insertError;
+    }
     
     if (error) {
       console.error('Error saving article:', error);
       throw error;
     }
+    
+    console.log(`Successfully saved article for tweet ${tweetId}`);
   } catch (error) {
     console.error('Error saving article to database:', error);
     throw error;

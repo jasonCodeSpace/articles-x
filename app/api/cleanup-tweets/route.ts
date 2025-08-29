@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
 }
 
 // GET method for manual testing (only in development)
-export async function GET(request: NextRequest) {
+export async function GET() {
   if (process.env.NODE_ENV !== 'development') {
     return NextResponse.json(
       { error: 'GET method only available in development' },

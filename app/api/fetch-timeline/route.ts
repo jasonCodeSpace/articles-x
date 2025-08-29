@@ -50,9 +50,9 @@ interface TwitterTimelineResponse {
   };
 }
 
-function hasArticleLink(tweet: any): boolean {
+function hasArticleLink(tweet: { legacy?: { entities?: { urls?: Array<{ expanded_url?: string }> } } }): boolean {
   const urls = tweet?.legacy?.entities?.urls || [];
-  return urls.some((url: any) => 
+  return urls.some((url: { expanded_url?: string }) => 
     url.expanded_url && url.expanded_url.includes('/i/article/')
   );
 }
@@ -151,7 +151,7 @@ async function saveTweetsToDatabase(tweets: Array<{
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     let totalTweets = 0;
     let totalArticles = 0;

@@ -1,9 +1,9 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenerativeAI, GenerativeModel } from '@google/generative-ai';
 
 let genAI: GoogleGenerativeAI | null = null;
-let model: any = null;
+let model: GenerativeModel | null = null;
 
-function initializeGemini() {
+function initializeGemini(): GenerativeModel | null {
   if (!process.env.GEMINI_API_KEY) {
     throw new Error('GEMINI_API_KEY environment variable is required');
   }
@@ -33,6 +33,9 @@ export async function generateArticleSummary(
 ): Promise<ArticleSummary> {
   try {
     const currentModel = initializeGemini();
+    if (!currentModel) {
+      throw new Error('Failed to initialize Gemini model');
+    }
     
     // 构建提示词，使用用户指定的格式
     const prompt = `TASK: Read the article. Produce an ULTRA-CONCISE, read-aloud friendly summary in English and Chinese. There is no fixed length; prioritize maximum information density while not missing any key point.
@@ -139,6 +142,9 @@ export async function batchGenerateSummaries(
 export async function testGeminiConnection(): Promise<boolean> {
   try {
     const currentModel = initializeGemini();
+    if (!currentModel) {
+      return false;
+    }
     const result = await currentModel.generateContent('Hello, this is a test.');
     const response = await result.response;
     return !!response.text();

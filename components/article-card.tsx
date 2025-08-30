@@ -55,10 +55,40 @@ interface ArticleCardProps {
   index?: number
 }
 
+// 语言检测函数
+function detectLanguage(text: string): string {
+  if (!text) return 'en'
+  
+  // 检测中文字符
+  const chineseRegex = /[\u4e00-\u9fff]/
+  if (chineseRegex.test(text)) return 'zh'
+  
+  // 检测西班牙语特征词汇
+  const spanishWords = /\b(el|la|los|las|de|del|en|con|por|para|que|es|son|está|están|tiene|tienen|año|años|más|muy|también|como|cuando|donde|porque|pero|sin|sobre|entre|hasta|desde|durante|después|antes|mientras|aunque|si|no|sí|todo|todos|toda|todas|otro|otros|otra|otras|mismo|misma|mismos|mismas|cada|algún|alguna|algunos|algunas|ningún|ninguna|ningunos|ningunas|mucho|mucha|muchos|muchas|poco|poca|pocos|pocas|tanto|tanta|tantos|tantas|cuanto|cuanta|cuantos|cuantas|qué|quién|quiénes|cuál|cuáles|cómo|cuándo|dónde|por qué|para qué)\b/gi
+  const spanishMatches = text.match(spanishWords)
+  if (spanishMatches && spanishMatches.length > 3) return 'es'
+  
+  // 检测德语特征词汇
+  const germanWords = /\b(der|die|das|den|dem|des|ein|eine|einen|einem|einer|eines|und|oder|aber|doch|sondern|denn|weil|dass|wenn|als|wie|wo|wer|was|welche|welcher|welches|ich|du|er|sie|es|wir|ihr|sie|mich|dich|sich|uns|euch|haben|sein|werden|können|müssen|sollen|wollen|dürfen|mögen|ist|sind|war|waren|wird|werden|hat|hatte|hatten|kann|konnte|konnten|muss|musste|mussten|soll|sollte|sollten|will|wollte|wollten|darf|durfte|durften|mag|mochte|mochten|nicht|kein|keine|keinen|keinem|keiner|keines|auch|noch|schon|nur|sehr|mehr|viel|wenig|gut|schlecht|groß|klein|neu|alt|jung|schnell|langsam|hier|dort|da|heute|morgen|gestern|jetzt|dann|immer|nie|oft|manchmal|wieder|zuerst|danach|endlich|plötzlich|vielleicht|bestimmt|wahrscheinlich|möglich|unmöglich)\b/gi
+  const germanMatches = text.match(germanWords)
+  if (germanMatches && germanMatches.length > 3) return 'de'
+  
+  // 检测法语特征词汇
+  const frenchWords = /\b(le|la|les|un|une|des|du|de|d'|et|ou|mais|donc|or|ni|car|que|qui|quoi|dont|où|quand|comment|pourquoi|parce|puisque|si|comme|lorsque|tandis|pendant|après|avant|depuis|jusqu'|pour|par|avec|sans|sur|sous|dans|hors|entre|parmi|malgré|selon|vers|chez|contre|envers|je|tu|il|elle|nous|vous|ils|elles|me|te|se|nous|vous|se|mon|ma|mes|ton|ta|tes|son|sa|ses|notre|nos|votre|vos|leur|leurs|ce|cette|ces|cet|celui|celle|ceux|celles|être|avoir|faire|aller|venir|voir|savoir|pouvoir|vouloir|devoir|falloir|dire|prendre|donner|mettre|porter|tenir|venir|partir|sortir|entrer|monter|descendre|passer|rester|devenir|mourir|naître|est|sont|était|étaient|sera|seront|a|ont|avait|avaient|aura|auront|fait|font|faisait|faisaient|fera|feront|va|vont|allait|allaient|ira|iront|vient|viennent|venait|venaient|viendra|viendront|voit|voient|voyait|voyaient|verra|verront|sait|savent|savait|savaient|saura|sauront|peut|peuvent|pouvait|pouvaient|pourra|pourront|veut|veulent|voulait|voulaient|voudra|voudront|doit|doivent|devait|devaient|devra|devront|faut|fallait|faudra|dit|disent|disait|disaient|dira|diront|prend|prennent|prenait|prenaient|prendra|prendront|donne|donnent|donnait|donnaient|donnera|donneront|met|mettent|mettait|mettaient|mettra|mettront|porte|portent|portait|portaient|portera|porteront|tient|tiennent|tenait|tenaient|tiendra|tiendront|part|partent|partait|partaient|partira|partiront|sort|sortent|sortait|sortaient|sortira|sortiront|entre|entrent|entrait|entraient|entrera|entreront|monte|montent|montait|montaient|montera|monteront|descend|descendent|descendait|descendaient|descendra|descendront|passe|passent|passait|passaient|passera|passeront|reste|restent|restait|restaient|restera|resteront|devient|deviennent|devenait|devenaient|deviendra|deviendront|meurt|meurent|mourait|mouraient|mourra|mourront|naît|naissent|naissait|naissaient|naîtra|naîtront|pas|ne|n'|non|oui|si|très|plus|moins|beaucoup|peu|trop|assez|bien|mal|mieux|pire|tout|tous|toute|toutes|autre|autres|même|mêmes|chaque|quelque|quelques|plusieurs|certain|certains|certaine|certaines|aucun|aucune|aucuns|aucunes|nul|nulle|nuls|nulles|tel|telle|tels|telles)\b/gi
+  const frenchMatches = text.match(frenchWords)
+  if (frenchMatches && frenchMatches.length > 3) return 'fr'
+  
+  // 默认返回英语
+  return 'en'
+}
+
 export function ArticleCard({ article, className, index = 0 }: ArticleCardProps) {
   const [imageError, setImageError] = useState(false)
   const [imageLoading, setImageLoading] = useState(true)
   const [isShared, setIsShared] = useState(false)
+  
+  // 检测文章语言
+  const detectedLanguage = detectLanguage(article.full_article_content || article.title || '')
 
   const handleImageError = () => {
     setImageError(true)
@@ -123,7 +153,7 @@ export function ArticleCard({ article, className, index = 0 }: ArticleCardProps)
           {/* Language badge */}
           <div className="absolute top-3 left-3">
             <span className="bg-gray-900/80 text-white text-xs px-2 py-1 rounded-md font-medium backdrop-blur-sm">
-              EN
+              {detectedLanguage.toUpperCase()}
             </span>
           </div>
           {/* Category badge */}

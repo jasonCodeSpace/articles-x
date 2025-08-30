@@ -13,14 +13,12 @@ jobs:
     steps:
       - name: Generate summaries
         run: |
-          curl -X POST "${{ secrets.VERCEL_URL }}/api/generate-summaries" \
+          curl -X POST "https://articles-x.vercel.app/api/generate-summaries" \
             -H "Content-Type: application/json" \
             -w "HTTP Status: %{http_code}\n" \
             --max-time 300 \
             --retry 3 \
             --retry-delay 10
-        env:
-          VERCEL_URL: ${{ secrets.VERCEL_URL }}
 
       - name: Log completion
         run: |

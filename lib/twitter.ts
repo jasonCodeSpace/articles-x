@@ -272,7 +272,7 @@ export class TwitterClient {
     return this.executeWithRateLimit(async () => {
       const url = `https://${this.config.apiHost}/list-timeline`
       const params = new URLSearchParams({
-        list_id: options.listId,
+        listId: options.listId,
         count: (options.count || 20).toString(),
         ...(options.cursor && { cursor: options.cursor })
       })
@@ -307,7 +307,7 @@ export class TwitterClient {
     return this.executeWithRateLimit(async () => {
       const url = `https://${this.config.apiHost}/tweet`
       const params = new URLSearchParams({
-        tweet_id: tweetId
+        pid: tweetId
       })
 
       const response = await this.fetchWithRetry(

@@ -7,9 +7,8 @@ const HarvestedArticleSchema = z.object({
   article_url: z.string().url(),
   title: z.string().min(1),
   excerpt: z.string().optional(),
-  author_name: z.string().min(1),
   author_handle: z.string().min(1),
-  author_profile_image: z.string().optional(),
+  author_avatar: z.string().optional(),
   tweet_id: z.string(),
   rest_id: z.string().optional(),
   original_url: z.string().url().optional(),
@@ -22,22 +21,8 @@ export type HarvestedArticle = z.infer<typeof HarvestedArticleSchema>
 // Interface for tweet data to be stored in tweets table
 export interface TweetData {
   tweet_id: string
-  rest_id?: string
   author_handle: string
-  author_name: string
-  author_profile_image?: string
-  tweet_text: string
-  created_at_twitter: string
-  has_article: boolean
-  list_id?: string
-  article_url?: string
-  article_title?: string
-  article_excerpt?: string
-  article_featured_image?: string
-  article_rest_id?: string
-  raw_data: Record<string, unknown> // Complete raw tweet data
-  article_published_at?: string
-  category?: string
+  is_article: boolean
 }
 
 export interface DatabaseArticle {
@@ -47,7 +32,7 @@ export interface DatabaseArticle {
   excerpt?: string
   author_name: string
   author_handle?: string
-  author_profile_image?: string
+  author_avatar?: string
   status: 'draft' | 'published'
   published_at?: string
   meta_title?: string
@@ -90,7 +75,6 @@ export function mapTweetToArticle(tweet: TwitterTweet): HarvestedArticle | null 
     const userFallback = tweet.legacy?.user
     
     const authorHandle = userLegacy?.screen_name || userFallback?.screen_name
-    const authorName = userLegacy?.name || userFallback?.name || authorHandle || 'Unknown'
     const authorProfileImage = userLegacy?.profile_image_url_https || userFallback?.profile_image_url_https
     
     // Extract tweet info
@@ -118,9 +102,8 @@ export function mapTweetToArticle(tweet: TwitterTweet): HarvestedArticle | null 
       article_url: articleUrl,
       title,
       excerpt,
-      author_name: authorName,
       author_handle: authorHandle,
-      author_profile_image: authorProfileImage,
+      author_avatar: authorProfileImage,
       tweet_id: tweetId,
       rest_id: restId,
       original_url: articleResult.url,
@@ -150,7 +133,7 @@ export function harvestedToDatabase(harvested: HarvestedArticle): DatabaseArticl
   const slug = generateSlug(harvested.title)
   
   // Use excerpt or create one from title
-  const excerpt = harvested.excerpt || `Article by ${harvested.author_name}`
+  const excerpt = harvested.excerpt || `Article by ${harvested.author_handle}`
   
   // Create basic content
   const content = harvested.excerpt || harvested.title
@@ -166,9 +149,9 @@ export function harvestedToDatabase(harvested: HarvestedArticle): DatabaseArticl
     slug,
     content,
     excerpt,
-    author_name: harvested.author_name,
+    author_name: harvested.author_handle,
     author_handle: harvested.author_handle,
-    author_profile_image: harvested.author_profile_image || undefined,
+    author_avatar: harvested.author_avatar || undefined,
     status: 'published' as const,
     published_at: publishedAt,
     meta_title: harvested.title,
@@ -193,54 +176,19 @@ export function mapTweetToTweetData(tweet: TwitterTweet, listId?: string): Tweet
   const userFromTweetLegacy = tweet.legacy?.user
   
   const authorHandle = userLegacy?.screen_name || userFromTweetLegacy?.screen_name || 'unknown'
-  const authorName = userLegacy?.name || userFromTweetLegacy?.name || authorHandle
-  const authorProfileImage = userLegacy?.profile_image_url_https || userFromTweetLegacy?.profile_image_url_https
   
   // Extract tweet info from legacy object (current API structure)
   const tweetLegacy = tweet.legacy
   const tweetId = tweetLegacy?.id_str || tweet.rest_id || ''
-  const createdAt = tweetLegacy?.created_at || ''
-  const tweetText = tweetLegacy?.full_text || tweetLegacy?.text || ''
   
   // Check if tweet has article data
   const articleResult = tweet.article_results?.result || tweet.article?.article_results?.result
-  const hasArticle = !!articleResult
-  
-  let articleData: Partial<TweetData> = {}
-  
-  if (hasArticle && articleResult) {
-    // Always use tweet link for article_url
-    const articleUrl = `https://x.com/${authorHandle}/status/${tweetId}`
-
-    // Compute article published time from metadata.first_published_at_secs if available
-    const firstPublishedSecs = articleResult.metadata?.first_published_at_secs
-    const articlePublishedAt = firstPublishedSecs
-      ? new Date(firstPublishedSecs * 1000).toISOString()
-      : (createdAt ? new Date(createdAt).toISOString() : undefined)
-    
-    articleData = {
-      article_url: articleUrl,
-      article_title: articleResult.title || tweetText.slice(0, 100) || 'Untitled Article',
-      article_excerpt: articleResult.preview_text || articleResult.description || tweetText.slice(0, 200),
-      article_featured_image: articleResult.cover_media?.media_info?.original_img_url,
-      article_rest_id: articleResult.rest_id,
-      article_published_at: articlePublishedAt,
-      category: 'twitter-import',
-    }
-  }
+  const isArticle = !!articleResult
   
   return {
     tweet_id: tweetId,
-    rest_id: tweet.rest_id,
     author_handle: authorHandle,
-    author_name: authorName,
-    author_profile_image: authorProfileImage,
-    tweet_text: tweetText,
-    created_at_twitter: createdAt,
-    has_article: hasArticle,
-    list_id: listId,
-    raw_data: tweet, // Store complete raw tweet data
-    ...articleData,
+    is_article: isArticle,
   }
 }
 
@@ -311,7 +259,7 @@ export async function batchUpsertArticles(
               excerpt: dbArticle.excerpt,
               author_name: dbArticle.author_name,
               author_handle: dbArticle.author_handle,
-              author_profile_image: dbArticle.author_profile_image,
+              author_avatar: dbArticle.author_avatar,
               meta_title: dbArticle.meta_title,
               meta_description: dbArticle.meta_description,
               featured_image_url: dbArticle.featured_image_url,
@@ -405,20 +353,7 @@ export async function batchUpsertTweets(
             .from('tweets')
             .update({
               author_handle: tweetData.author_handle,
-              author_name: tweetData.author_name,
-              author_profile_image: tweetData.author_profile_image,
-              tweet_text: tweetData.tweet_text,
-              has_article: tweetData.has_article,
-              list_id: tweetData.list_id,
-              article_url: tweetData.article_url,
-              article_title: tweetData.article_title,
-              article_excerpt: tweetData.article_excerpt,
-              article_featured_image: tweetData.article_featured_image,
-              article_rest_id: tweetData.article_rest_id,
-              raw_data: tweetData.raw_data,
-              article_published_at: tweetData.article_published_at,
-              category: tweetData.category,
-              updated_at: new Date().toISOString(),
+              is_article: tweetData.is_article,
             })
             .eq('tweet_id', tweetData.tweet_id)
 
@@ -434,22 +369,8 @@ export async function batchUpsertTweets(
             .from('tweets')
             .insert({
               tweet_id: tweetData.tweet_id,
-              rest_id: tweetData.rest_id,
               author_handle: tweetData.author_handle,
-              author_name: tweetData.author_name,
-              author_profile_image: tweetData.author_profile_image,
-              tweet_text: tweetData.tweet_text,
-              created_at_twitter: tweetData.created_at_twitter,
-              has_article: tweetData.has_article,
-              list_id: tweetData.list_id,
-              article_url: tweetData.article_url,
-              article_title: tweetData.article_title,
-              article_excerpt: tweetData.article_excerpt,
-              article_featured_image: tweetData.article_featured_image,
-              article_rest_id: tweetData.article_rest_id,
-              raw_data: tweetData.raw_data,
-              article_published_at: tweetData.article_published_at,
-              category: tweetData.category,
+              is_article: tweetData.is_article,
             })
 
           if (insertError) {

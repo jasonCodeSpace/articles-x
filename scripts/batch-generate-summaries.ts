@@ -34,15 +34,15 @@ async function batchGenerateSummaries() {
     // 动态导入gemini模块
     const { generateArticleSummary } = await import('../lib/gemini');
     
-    console.log('开始获取最新的300篇文章...');
+    console.log('开始获取最新的3篇文章...');
     
-    // 获取最新的300篇还没有摘要的文章
+    // 获取最新的3篇还没有摘要的文章
     const { data: articles, error } = await supabase
       .from('articles')
       .select('id, title, full_article_content')
       .is('summary_english', null)
       .order('tweet_published_at', { ascending: false })
-      .limit(300);
+      .limit(3);
 
     if (error) {
       throw new Error(`获取文章失败: ${error.message}`);

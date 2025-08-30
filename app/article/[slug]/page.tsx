@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ExternalLink, Eye, MessageCircle, Repeat2, Heart, Bookmark, ArrowLeft } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
+import AiSummary from '@/components/ai-summary'
 
 interface ArticlePageProps {
   params: Promise<{
@@ -143,26 +144,11 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
           {/* AI Summary Section */}
           {article.summary_english && (
-            <section className="mb-6 p-6 bg-gray-900 rounded-lg border border-gray-700">
-              <h2 className="text-xl font-semibold mb-4 text-white flex items-center gap-2">
-                <span className="inline-flex items-center justify-center w-6 h-6 bg-blue-600 text-white text-xs font-bold rounded">
-                  AI
-                </span>
-                Summary
-              </h2>
-              
-              <div className="text-gray-200 leading-relaxed whitespace-pre-wrap">
-                {article.summary_english}
-              </div>
-              
-              {article.summary_generated_at && (
-                <div className="mt-4 pt-4 border-t border-gray-700">
-                  <p className="text-xs text-gray-500">
-                    Summary generated {formatDistanceToNow(new Date(article.summary_generated_at), { addSuffix: true })}
-                  </p>
-                </div>
-              )}
-            </section>
+            <AiSummary
+              summaryEnglish={article.summary_english}
+              summaryChinese={article.summary_chinese}
+              summaryGeneratedAt={article.summary_generated_at}
+            />
           )}
         </header>
 

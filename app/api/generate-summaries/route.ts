@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createServiceClient } from '@/lib/supabase/service';
 import { generateArticleAnalysis } from '@/lib/gemini';
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient();
+    const supabase = createServiceClient();
     
     // 先获取最近发布的100条推文对应的文章
     const { data: recentArticles, error: fetchError } = await supabase

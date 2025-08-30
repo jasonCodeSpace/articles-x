@@ -6,24 +6,26 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
     
-    // 获取最近24小时内没有摘要的文章
-    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-    
-    const { data: articles, error: fetchError } = await supabase
+    // 先获取最近更新的100条文章
+    const { data: recentArticles, error: fetchError } = await supabase
       .from('articles')
-      .select('id, title, full_article_content')
-      .gte('updated_at', twentyFourHoursAgo)
-      .or('summary_chinese.is.null,summary_english.is.null,summary_generated_at.is.null')
+      .select('id, title, full_article_content, summary_chinese, summary_english, summary_generated_at')
       .not('full_article_content', 'is', null)
-      .limit(10); // 限制每次处理的文章数量
+      .order('updated_at', { ascending: false })
+      .limit(100);
     
     if (fetchError) {
-      console.error('Error fetching articles:', fetchError);
+      console.error('Error fetching recent articles:', fetchError);
       return NextResponse.json(
-        { error: 'Failed to fetch articles' },
+        { error: 'Failed to fetch recent articles' },
         { status: 500 }
       );
     }
+    
+    // 从最近100条文章中筛选出没有摘要的文章
+    const articles = recentArticles?.filter(article => 
+      !article.summary_chinese || !article.summary_english || !article.summary_generated_at
+    ) || [];
     
     if (!articles || articles.length === 0) {
       return NextResponse.json(

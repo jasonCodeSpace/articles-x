@@ -1,7 +1,6 @@
 @import "tailwindcss";
 
 :root {
-  /* X.com inspired dark theme */
   --background: 0 0% 0%; /* Pure black like X.com */
   --foreground: 0 0% 98%; /* Near white text */
   --card: 0 0% 3%; /* Very dark gray for cards */

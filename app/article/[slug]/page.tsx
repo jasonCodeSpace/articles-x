@@ -20,19 +20,21 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   
   // Extract short ID from the slug and find the full UUID
   const shortId = extractArticleIdFromSlug(resolvedParams.slug)
+  // Use SQL to directly find the article by short ID pattern
+  // Convert UUID to text and remove dashes, then check if it starts with shortId
+  const { data: articles, error: searchError } = await supabase
+    .rpc('find_articles_by_short_id', { short_id: shortId })
   
-  // Get all articles and filter in JavaScript to find the matching short ID
-  const { data: allArticles, error: searchError } = await supabase
-    .from('articles')
-    .select('*')
-  
-  if (searchError || !allArticles) {
+  if (searchError) {
     console.error('Database error:', searchError)
     notFound()
   }
   
   // Find the exact match by comparing the short ID
-  const article = allArticles.find(a => a.id.replace(/-/g, '').substring(0, 6) === shortId)
+  const article = articles?.find((a: any) => {
+    const articleShortId = a.id.replace(/-/g, '').substring(0, 6)
+    return articleShortId === shortId
+  })
   
   if (!article) {
     notFound()

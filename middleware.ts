@@ -14,13 +14,16 @@ export async function middleware(request: NextRequest) {
   const isPublicFile = pathname.startsWith('/_next') ||
                        pathname.startsWith('/favicon.ico') ||
                        pathname.startsWith('/api')
+  
+  const isPublicRoute = pathname.startsWith('/article/') ||
+                        pathname === '/articles'
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY
 
   // If env is missing, avoid throwing and redirect protected routes to login
   if (!supabaseUrl || !supabaseAnonKey) {
-    if (!isAuthRoute && !isPublicFile) {
+    if (!isAuthRoute && !isPublicFile && !isPublicRoute) {
       const url = request.nextUrl.clone()
       url.pathname = '/login'
       return NextResponse.redirect(url)
@@ -55,7 +58,7 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   // If user is not logged in and trying to access protected routes
-  if (!user && !isAuthRoute && !isPublicFile) {
+  if (!user && !isAuthRoute && !isPublicFile && !isPublicRoute) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)

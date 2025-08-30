@@ -21,8 +21,128 @@ export interface ArticleSummary {
   english: string;
 }
 
+export interface ArticleAnalysis {
+  summary: ArticleSummary;
+  category: string;
+}
+
 /**
- * 使用Gemini AI生成文章总结
+ * 使用Gemini AI生成文章总结和分类
+ * @param content 文章内容
+ * @param title 文章标题
+ * @returns 包含中文和英文总结以及分类的对象
+ */
+export async function generateArticleAnalysis(
+  content: string,
+  title: string
+): Promise<ArticleAnalysis> {
+  try {
+    const currentModel = initializeGemini();
+    if (!currentModel) {
+      throw new Error('Failed to initialize Gemini model');
+    }
+    
+    // 构建提示词，包含摘要生成和分类
+    const prompt = `TASK: Read the article and perform two tasks:
+1. Produce an ULTRA-CONCISE, read-aloud friendly summary in English and Chinese
+2. Categorize the article with ONE category from the provided list
+
+SUMMARY GOALS:
+- Convey the main thesis, all core points, critical facts (names/dates/numbers), nuances/caveats, and the conclusion.
+- Sound natural and informative for speech. Use short, plain sentences. No filler.
+
+SUMMARY OUTPUT FORMAT (in this order):
+
+English
+Thesis: ≤ ~18 words (may exceed only if needed for completeness)
+Key Points: 3–8 bullets, each ≤ ~12 words; include concrete facts
+Nuances/Caveats: 1–4 bullets, ≤ ~12 words each; mark opinions as [opinion]
+Conclusion: ≤ ~18 words; state the overall takeaway
+
+中文
+主题句：≤ ~18字（必要时可略超，保证完整）
+要点：3–8条，每条≤ ~12字；包含姓名、日期、数字等事实
+细节/注意：1–4条，每条≤ ~12字；观点用【观点】标注
+结论：≤ ~18字；给出总之要义
+
+CATEGORY TASK:
+Select ONE category that best fits this article from the following list:
+AI, Agents, Models, Lending, DEX, Yield, Perps, Markets, Onchain, Airdrops, L1, L2, Wallets, Infrastructure, Oracles, Policy, Elections, Politics, Social, Media, History, Art, Culture, DAOs, Identity, SocialFi, Startups, VC, Business, GameFi, Esports, Gaming, Hardware, Software, Tech, Health, Science, Security, Education, Economics, Lifestyle, NFTs
+
+OUTPUT FORMAT:
+CATEGORY: [selected category]
+
+[English summary]
+
+[Chinese summary]
+
+RULES:
+- No intro/outro, no repetition, no adjectives unless essential.
+- Prefer active voice; keep parallel structure across bullets.
+- If the article omits something important, write "not stated".
+- If space is tight, do not drop key points—slightly exceed the targets instead.
+- Do not use asterisk symbols in the output.
+- Choose the most specific and relevant category.
+
+Article Title: ${title}
+
+Article Content:
+${content.substring(0, 8000)}`; // 限制内容长度避免超出API限制
+
+    const result = await currentModel.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+
+    // 解析分类
+    const categoryMatch = text.match(/CATEGORY:\s*([^\n]+)/i);
+    const category = categoryMatch ? categoryMatch[1].trim() : 'Tech'; // 默认分类
+
+    // 解析响应，分离中文和英文总结
+    const englishMatch = text.match(/English[\s\S]*?(?=中文|$)/i);
+    const chineseMatch = text.match(/中文[\s\S]*$/i);
+    
+    let summary: ArticleSummary;
+    
+    if (englishMatch && chineseMatch) {
+      summary = {
+        english: englishMatch[0].replace(/^English\s*/i, '').trim(),
+        chinese: chineseMatch[0].replace(/^中文\s*/i, '').trim()
+      };
+    } else {
+      // 如果解析失败，尝试按分隔符分割
+      const parts = text.split(/(?:中文|Chinese)/i);
+      if (parts.length >= 2) {
+        summary = {
+          english: parts[0].replace(/CATEGORY:[^\n]*\n?/i, '').trim(),
+          chinese: parts[1].trim()
+        };
+      } else {
+        // 最后的备用方案
+        const lines = text.split('\n').filter((line: string) => line.trim() && !line.match(/^CATEGORY:/i));
+        const midPoint = Math.floor(lines.length / 2);
+        summary = {
+          english: lines.slice(0, midPoint).join('\n').trim(),
+          chinese: lines.slice(midPoint).join('\n').trim()
+        };
+      }
+    }
+
+    // 移除所有星号符号
+    summary.english = summary.english.replace(/\*/g, '');
+    summary.chinese = summary.chinese.replace(/\*/g, '');
+
+    return {
+      summary,
+      category
+    };
+  } catch (error) {
+    console.error('Error generating article analysis:', error);
+    throw new Error('Failed to generate article analysis');
+  }
+}
+
+/**
+ * 使用Gemini AI生成文章总结（保持向后兼容）
  * @param content 文章内容
  * @param title 文章标题
  * @returns 包含中文和英文总结的对象

@@ -26,7 +26,12 @@ export async function fetchArticles(options: FetchArticlesOptions = {}): Promise
     
     let query = supabase
       .from('articles')
-      .select('*')
+      .select(`
+        *,
+        summary_chinese,
+        summary_english,
+        summary_generated_at
+      `)
       .limit(limit)
 
     // Apply search filter

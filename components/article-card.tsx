@@ -39,6 +39,10 @@ export interface Article {
   article_preview_text?: string
   full_article_content?: string
   updated_at?: string
+  // AI-generated summary fields
+  summary_chinese?: string
+  summary_english?: string
+  summary_generated_at?: string
 }
 
 interface ArticleCardProps {
@@ -118,10 +122,33 @@ export function ArticleCard({ article, className }: ArticleCardProps) {
                   </h3>
                 </Link>
                 
-                {(article.article_preview_text || descriptionText) && (
-                  <p className="text-gray-400 text-xs leading-4 mt-1 line-clamp-2">
-                    {article.article_preview_text || descriptionText}
-                  </p>
+                {/* AI Summary or preview text */}
+                {(article.summary_chinese || article.summary_english || article.article_preview_text || descriptionText) && (
+                  <div className="mt-1 space-y-1">
+                    {/* Display AI summary if available */}
+                    {(article.summary_chinese || article.summary_english) && (
+                      <div className="space-y-1">
+                        {article.summary_chinese && (
+                          <p className="text-gray-300 text-xs leading-4 line-clamp-2 bg-gray-800/50 rounded px-2 py-1 border-l-2 border-blue-500">
+                            <span className="text-blue-400 font-medium">中文总结：</span>
+                            {article.summary_chinese}
+                          </p>
+                        )}
+                        {article.summary_english && (
+                          <p className="text-gray-300 text-xs leading-4 line-clamp-2 bg-gray-800/50 rounded px-2 py-1 border-l-2 border-green-500">
+                            <span className="text-green-400 font-medium">English Summary:</span>
+                            {article.summary_english}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                    {/* Fallback to preview text if no AI summary */}
+                    {!(article.summary_chinese || article.summary_english) && (article.article_preview_text || descriptionText) && (
+                      <p className="text-gray-400 text-xs leading-4 line-clamp-2">
+                        {article.article_preview_text || descriptionText}
+                      </p>
+                    )}
+                  </div>
                 )}
               </div>
               

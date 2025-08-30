@@ -140,6 +140,30 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
               )}
             </div>
           )}
+
+          {/* AI Summary Section */}
+          {article.summary_english && (
+            <section className="mb-6 p-6 bg-gray-900 rounded-lg border border-gray-700">
+              <h2 className="text-xl font-semibold mb-4 text-white flex items-center gap-2">
+                <span className="inline-flex items-center justify-center w-6 h-6 bg-blue-600 text-white text-xs font-bold rounded">
+                  AI
+                </span>
+                Summary
+              </h2>
+              
+              <div className="text-gray-200 leading-relaxed whitespace-pre-wrap">
+                {article.summary_english}
+              </div>
+              
+              {article.summary_generated_at && (
+                <div className="mt-4 pt-4 border-t border-gray-700">
+                  <p className="text-xs text-gray-500">
+                    Summary generated {formatDistanceToNow(new Date(article.summary_generated_at), { addSuffix: true })}
+                  </p>
+                </div>
+              )}
+            </section>
+          )}
         </header>
 
         {/* Article Content */}
@@ -155,6 +179,8 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             </div>
           )}
         </article>
+
+
 
         {/* Footer */}
         <footer className="mt-12 pt-8 border-t border-gray-800">

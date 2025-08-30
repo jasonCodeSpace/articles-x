@@ -44,7 +44,6 @@ export function ModernNav({ user, categories, className }: ModernNavProps) {
 
   const navItems: NavItem[] = [
     { name: 'Home', url: '/articles', icon: Home },
-    { name: 'Search', url: '/articles?search=true', icon: Search },
     { name: 'Categories', url: '#', icon: Filter },
     { name: 'Profile', url: '#', icon: User },
   ]
@@ -61,6 +60,18 @@ export function ModernNav({ user, categories, className }: ModernNavProps) {
 
   return (
     <>
+      {/* Mobile Search Bar - Top of page */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-black/90 backdrop-blur-lg border-b border-gray-700/50 px-4 py-3">
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="Search articles..."
+            className="w-full bg-gray-800/50 border border-gray-600/50 rounded-full px-4 py-3 pl-10 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50"
+          />
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+        </div>
+      </div>
+
       {/* Desktop Navigation */}
       <nav className="hidden md:block fixed top-0 left-1/2 -translate-x-1/2 z-50 mt-6">
         <div className="flex items-center gap-4 bg-black/80 border border-gray-700/50 backdrop-blur-lg py-3 px-6 rounded-full shadow-2xl">

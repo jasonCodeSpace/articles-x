@@ -35,7 +35,8 @@ export function ArticleFeed({ initialArticles, initialCategories, initialCategor
     initialArticles,
     initialCategories,
     initialCategory,
-    initialSearchQuery
+    initialSearchQuery,
+    itemsPerPage: 18
   })
 
   if (isLoading) {

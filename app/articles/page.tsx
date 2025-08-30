@@ -16,7 +16,7 @@ export default async function HomePage({ searchParams }: PageProps) {
   ])
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 md:pt-24 pb-6">
       <div className="space-y-6">
         <Suspense fallback={<FeedLoading />}>
           <ArticleFeed 

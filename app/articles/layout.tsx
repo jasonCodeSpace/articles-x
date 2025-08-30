@@ -53,7 +53,7 @@ export default async function ProtectedLayout({
       <ModernNav user={user} categories={categories} />
       
       {/* Main Content */}
-      <div className="pt-16 md:pt-16 pb-20 md:pb-0">
+      <div className="pt-20 md:pt-16 pb-20 md:pb-0">
         {children}
       </div>
     </div>

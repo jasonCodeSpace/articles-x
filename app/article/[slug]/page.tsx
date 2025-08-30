@@ -17,10 +17,14 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   const resolvedParams = await params
   const supabase = await createClient()
   
+  // Extract article ID from the slug (last part after the last dash)
+  const slugParts = resolvedParams.slug.split('--')
+  const articleId = slugParts[slugParts.length - 1]
+  
   const { data: article, error } = await supabase
     .from('articles')
     .select('*')
-    .eq('slug', resolvedParams.slug)
+    .eq('id', articleId)
     .single()
 
   if (error || !article) {
@@ -204,10 +208,14 @@ export async function generateMetadata({ params }: ArticlePageProps) {
   const resolvedParams = await params
   const supabase = await createClient()
   
+  // Extract article ID from the slug (last part after the last dash)
+  const slugParts = resolvedParams.slug.split('--')
+  const articleId = slugParts[slugParts.length - 1]
+  
   const { data: article } = await supabase
     .from('articles')
     .select('title, article_preview_text, image')
-    .eq('slug', resolvedParams.slug)
+    .eq('id', articleId)
     .single()
 
   if (!article) {

@@ -36,7 +36,7 @@ export async function fetchArticles(options: FetchArticlesOptions = {}): Promise
 
     // Apply search filter
     if (search && search.trim()) {
-      query = query.ilike('title', `%${search.trim()}%`)
+      query = query.or(`title.ilike.%${search.trim()}%,author_name.ilike.%${search.trim()}%,author_handle.ilike.%${search.trim()}%`)
     }
 
     // Apply category filter (server-side) - safe because we ensured this column exists via migration

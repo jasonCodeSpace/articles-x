@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { Article } from '@/components/article-card'
 import { SortOption } from '@/lib/articles'
 import { calculatePagination } from '@/components/pagination'
@@ -8,6 +8,8 @@ import { calculatePagination } from '@/components/pagination'
 interface UseArticleFeedProps {
   initialArticles: Article[]
   initialCategories: string[]
+  initialCategory?: string
+  initialSearchQuery?: string
   itemsPerPage?: number
 }
 
@@ -37,13 +39,15 @@ interface UseArticleFeedReturn {
 export function useArticleFeed({
   initialArticles,
   initialCategories,
-  itemsPerPage = 30
+  initialCategory = 'all',
+  initialSearchQuery = '',
+  itemsPerPage = 20
 }: UseArticleFeedProps): UseArticleFeedReturn {
   // State
   const [articles] = useState<Article[]>(initialArticles)
-  const [searchQuery, setSearchQuery] = useState('')
+  const [searchQuery, setSearchQuery] = useState(initialSearchQuery)
   const [sortOption, setSortOption] = useState<SortOption>('newest')
-  const [selectedCategory, setSelectedCategory] = useState('all')
+  const [selectedCategory, setSelectedCategory] = useState(initialCategory)
   const [currentPage, setCurrentPage] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -57,14 +61,19 @@ export function useArticleFeed({
       const query = searchQuery.toLowerCase().trim()
       filtered = filtered.filter(article =>
         article.title.toLowerCase().includes(query) ||
-        article.excerpt?.toLowerCase().includes(query) ||
-        article.author_name.toLowerCase().includes(query)
+        article.author_name.toLowerCase().includes(query) ||
+        article.author_handle?.toLowerCase().includes(query)
       )
     }
 
-    // Apply category filter
+    // Apply category filter (single tag only)
     if (selectedCategory !== 'all') {
-      filtered = filtered.filter(article => article.category === selectedCategory)
+      filtered = filtered.filter(article => {
+        if (!article.category) return false
+        // Only match the first category for single tag support
+        const firstCategory = article.category.split(',')[0].trim()
+        return firstCategory === selectedCategory
+      })
     }
 
     // Apply sorting

@@ -3,34 +3,29 @@ import { fetchArticles, getArticleCategories } from '@/lib/articles'
 import { ArticleFeed } from '@/components/article-feed'
 import { FeedLoading } from '@/components/feed-loading'
 
+interface PageProps {
+  searchParams: Promise<{ category?: string; search?: string; page?: string }>
+}
 
-
-export const dynamic = 'force-dynamic'
-
-export default async function HomePage() {
-  // Fetch data in parallel
+export default async function HomePage({ searchParams }: PageProps) {
+  const { category, search, page } = await searchParams
+  
   const [articles, categories] = await Promise.all([
-    fetchArticles(), // Remove limit to fetch all articles
+    fetchArticles({ category, search }),
     getArticleCategories()
   ])
 
   return (
-    <div className="min-h-screen relative">
-      {/* Subtle background effects */}
-      <div className="absolute inset-0 bg-gradient-to-b from-blue-500/5 via-transparent to-purple-500/5 pointer-events-none" />
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none animate-pulse" />
-      
-      {/* X.com style main content */}
-      <div className="border-x border-gray-800 min-h-screen bg-black/90 backdrop-blur-sm relative z-10">
-        {/* Article Feed */}
-        <div className="relative z-10">
-          <Suspense fallback={<FeedLoading />}>
-            <ArticleFeed 
-              initialArticles={articles}
-              initialCategories={categories}
-            />
-          </Suspense>
-        </div>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-6">
+      <div className="space-y-6">
+        <Suspense fallback={<FeedLoading />}>
+          <ArticleFeed 
+            initialArticles={articles} 
+            initialCategories={categories}
+            initialCategory={category || 'all'}
+            initialSearchQuery={search || ''}
+          />
+        </Suspense>
       </div>
     </div>
   )

@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { formatDistanceToNow } from 'date-fns'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { ExternalLink, Eye, MessageCircle, Repeat2, Heart, Bookmark, ArrowLeft } from 'lucide-react'
+import { ExternalLink, ArrowLeft } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import AiSummary from '@/components/ai-summary'
@@ -119,41 +119,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             </div>
           )}
 
-          {/* Tweet engagement stats */}
-          {(article.tweet_views || article.tweet_replies || article.tweet_retweets || article.tweet_likes || article.tweet_bookmarks) && (
-            <div className="flex items-center gap-4 text-sm text-gray-400 mb-6 p-4 bg-gray-900 rounded-lg">
-              {article.tweet_views !== undefined && (
-                <div className="flex items-center gap-1">
-                  <Eye className="h-4 w-4" />
-                  <span>{article.tweet_views.toLocaleString()} views</span>
-                </div>
-              )}
-              {article.tweet_replies !== undefined && (
-                <div className="flex items-center gap-1">
-                  <MessageCircle className="h-4 w-4" />
-                  <span>{article.tweet_replies.toLocaleString()} replies</span>
-                </div>
-              )}
-              {article.tweet_retweets !== undefined && (
-                <div className="flex items-center gap-1">
-                  <Repeat2 className="h-4 w-4" />
-                  <span>{article.tweet_retweets.toLocaleString()} retweets</span>
-                </div>
-              )}
-              {article.tweet_likes !== undefined && (
-                <div className="flex items-center gap-1">
-                  <Heart className="h-4 w-4" />
-                  <span>{article.tweet_likes.toLocaleString()} likes</span>
-                </div>
-              )}
-              {article.tweet_bookmarks !== undefined && (
-                <div className="flex items-center gap-1">
-                  <Bookmark className="h-4 w-4" />
-                  <span>{article.tweet_bookmarks.toLocaleString()} bookmarks</span>
-                </div>
-              )}
-            </div>
-          )}
+
 
           {/* AI Summary Section */}
           {article.summary_english && (

@@ -6,6 +6,7 @@ import { ExternalLink, Eye, MessageCircle, Repeat2, Heart, Bookmark, ArrowLeft }
 import Image from 'next/image'
 import Link from 'next/link'
 import AiSummary from '@/components/ai-summary'
+import { extractArticleIdFromSlug } from '@/lib/url-utils'
 
 interface ArticlePageProps {
   params: Promise<{
@@ -17,17 +18,23 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   const resolvedParams = await params
   const supabase = await createClient()
   
-  // Extract article ID from the slug (last part after the last dash)
-  const slugParts = resolvedParams.slug.split('--')
-  const articleId = slugParts[slugParts.length - 1]
+  // Extract short ID from the slug and find the full UUID
+  const shortId = extractArticleIdFromSlug(resolvedParams.slug)
   
-  const { data: article, error } = await supabase
+  // Find article by matching the first 6 characters of the UUID (without dashes)
+  const { data: articles, error: searchError } = await supabase
     .from('articles')
     .select('*')
-    .eq('id', articleId)
-    .single()
-
-  if (error || !article) {
+    .ilike('id', `${shortId}%`)
+  
+  if (searchError || !articles || articles.length === 0) {
+    notFound()
+  }
+  
+  // Find the exact match by comparing the short ID
+  const article = articles.find(a => a.id.replace(/-/g, '').substring(0, 6) === shortId)
+  
+  if (!article) {
     notFound()
   }
 

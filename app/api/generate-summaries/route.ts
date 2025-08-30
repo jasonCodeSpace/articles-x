@@ -6,12 +6,13 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
     
-    // 先获取最近更新的100条文章
+    // 先获取最近发布的100条推文对应的文章
     const { data: recentArticles, error: fetchError } = await supabase
       .from('articles')
-      .select('id, title, full_article_content, summary_chinese, summary_english, summary_generated_at')
+      .select('id, title, full_article_content, summary_chinese, summary_english, summary_generated_at, tweet_published_at')
       .not('full_article_content', 'is', null)
-      .order('updated_at', { ascending: false })
+      .not('tweet_published_at', 'is', null)
+      .order('tweet_published_at', { ascending: false })
       .limit(100);
     
     if (fetchError) {

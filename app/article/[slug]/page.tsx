@@ -21,18 +21,18 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   // Extract short ID from the slug and find the full UUID
   const shortId = extractArticleIdFromSlug(resolvedParams.slug)
   
-  // Find article by matching the first 6 characters of the UUID (without dashes)
-  const { data: articles, error: searchError } = await supabase
+  // Get all articles and filter in JavaScript to find the matching short ID
+  const { data: allArticles, error: searchError } = await supabase
     .from('articles')
     .select('*')
-    .ilike('id', `${shortId}%`)
   
-  if (searchError || !articles || articles.length === 0) {
+  if (searchError || !allArticles) {
+    console.error('Database error:', searchError)
     notFound()
   }
   
   // Find the exact match by comparing the short ID
-  const article = articles.find(a => a.id.replace(/-/g, '').substring(0, 6) === shortId)
+  const article = allArticles.find(a => a.id.replace(/-/g, '').substring(0, 6) === shortId)
   
   if (!article) {
     notFound()

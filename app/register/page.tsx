@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
-import { Loader2, Mail, Lock, ArrowLeft, ArrowRight, CheckCircle, XCircle } from 'lucide-react'
+import { Mail, Lock, ArrowRight, CheckCircle, XCircle } from 'lucide-react'
 import Link from 'next/link'
 
 export default function RegisterPage() {
@@ -69,7 +69,7 @@ export default function RegisterPage() {
           router.push('/articles')
         }, 1500)
       }
-    } catch (error) {
+    } catch {
       setError('注册失败，请稍后重试')
     } finally {
       setIsLoading(false)

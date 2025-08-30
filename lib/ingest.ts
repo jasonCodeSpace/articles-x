@@ -170,7 +170,7 @@ export function harvestedToDatabase(harvested: HarvestedArticle): DatabaseArticl
 /**
  * Convert Twitter tweet to TweetData format for storage in tweets table
  */
-export function mapTweetToTweetData(tweet: TwitterTweet, listId?: string): TweetData {
+export function mapTweetToTweetData(tweet: TwitterTweet): TweetData {
   // Extract user info from core.user_results.result.legacy (new API structure) or fallback to legacy.user (current structure)
   const userLegacy = tweet.core?.user_results?.result?.legacy
   const userFromTweetLegacy = tweet.legacy?.user
@@ -424,7 +424,7 @@ export async function ingestTweetsFromLists(
       for (const tweet of tweets) {
         try {
           // Convert tweet to TweetData for storage
-          const tweetData = mapTweetToTweetData(tweet, listId)
+          const tweetData = mapTweetToTweetData(tweet)
           tweetDataForList.push(tweetData)
           
           // Also try to extract article if it exists

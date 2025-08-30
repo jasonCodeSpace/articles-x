@@ -23,9 +23,9 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // 从最近100条文章中筛选出没有摘要的文章
+    // 从最近100条文章中筛选出没有中文摘要的文章
     const articles = recentArticles?.filter(article => 
-      !article.summary_chinese || !article.summary_english || !article.summary_generated_at
+      !article.summary_chinese
     ) || [];
     
     if (!articles || articles.length === 0) {

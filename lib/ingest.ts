@@ -234,11 +234,14 @@ export async function batchUpsertArticles(
 
     for (const [articleUrl, harvestedArticle] of batch) {
       try {
-        // Check if article already exists
+        const dbArticle = harvestedToDatabase(harvestedArticle)
+
+        // First check if article already exists based on title and article_url
         const { data: existingArticle, error: checkError } = await supabase
           .from('articles')
           .select('id, updated_at')
-          .eq('slug', generateSlug(harvestedArticle.title))
+          .eq('title', dbArticle.title)
+          .eq('article_url', dbArticle.article_url || '')
           .single()
 
         if (checkError && checkError.code !== 'PGRST116') {
@@ -246,8 +249,6 @@ export async function batchUpsertArticles(
           skipped++
           continue
         }
-
-        const dbArticle = harvestedToDatabase(harvestedArticle)
 
         if (existingArticle) {
           // Update existing article
@@ -281,14 +282,20 @@ export async function batchUpsertArticles(
             updated++
           }
         } else {
-          // Insert new article
+          // Insert new article - the unique constraint will prevent duplicates
           const { error: insertError } = await supabase
             .from('articles')
             .insert([dbArticle])
 
           if (insertError) {
-            console.error(`Error inserting article ${articleUrl}:`, insertError)
-            skipped++
+            // Check if it's a duplicate constraint violation
+            if (insertError.code === '23505' && insertError.message?.includes('articles_title_url_unique')) {
+              console.log(`Skipped duplicate article: ${dbArticle.title}`)
+              skipped++
+            } else {
+              console.error(`Error inserting article ${articleUrl}:`, insertError)
+              skipped++
+            }
           } else {
             console.log(`Inserted article: ${dbArticle.title}`)
             inserted++

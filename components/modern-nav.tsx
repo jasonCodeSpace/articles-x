@@ -3,12 +3,12 @@
 import React, { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import Link from "next/link"
-import { Home, Search, User, BookOpen, Menu, Grid3X3, Bell, ChevronDown, Settings, Filter } from "lucide-react"
+import { Home, Search, User, BookOpen as _BookOpen, Menu as _Menu, Grid3X3 as _Grid3X3, Bell, ChevronDown, Settings, Filter } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { Button } from '@/components/ui/button'
+import { Button as _Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { LogoutButton } from '@/components/logout-button'
-import { SearchComponent } from '@/components/search-component'
+import { LogoutButton as _LogoutButton } from '@/components/logout-button'
+import { SearchComponent as _SearchComponent } from '@/components/search-component'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,7 +37,7 @@ interface ModernNavProps {
 
 export function ModernNav({ user, categories, className }: ModernNavProps) {
   const [activeTab, setActiveTab] = useState("Home")
-  const [isMobile, setIsMobile] = useState(false)
+  const [_isMobile, setIsMobile] = useState(false)
 
   const userDisplayName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User'
   const userInitial = userDisplayName.charAt(0).toUpperCase()

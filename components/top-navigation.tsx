@@ -23,12 +23,12 @@ interface TopNavigationProps {
 
 export function TopNavigation({
   onSearchChange,
-  onCategoryChange,
-  onTimeFilterChange,
+  onCategoryChange: _onCategoryChange,
+  onTimeFilterChange: _onTimeFilterChange,
   searchValue,
-  currentCategory,
-  currentTimeFilter,
-  categories = ['All', 'Crypto', 'Infra']
+  currentCategory: _currentCategory,
+  currentTimeFilter: _currentTimeFilter,
+  categories: _categories = ['All', 'Crypto', 'Infra']
 }: TopNavigationProps) {
   const [searchInput, setSearchInput] = useState(searchValue)
 
@@ -40,7 +40,7 @@ export function TopNavigation({
     return () => clearTimeout(timeoutId)
   }
 
-  const timeFilters = ['24h', '3d', '7d']
+  const _timeFilters = ['24h', '3d', '7d']
 
   return (
     <div className="flex items-center justify-between p-4 border-b border-gray-800 bg-black">
@@ -188,9 +188,9 @@ export function SecondaryNavigation({
 
 // Sidebar with topics and filters
 export function Sidebar({
-  onCategoryChange,
-  currentCategory,
-  categories = ['All', 'Crypto', 'Infra']
+  onCategoryChange: _onCategoryChange,
+  currentCategory: _currentCategory,
+  categories: _categories = ['All', 'Crypto', 'Infra']
 }: {
   onCategoryChange: (category: string) => void
   currentCategory: string

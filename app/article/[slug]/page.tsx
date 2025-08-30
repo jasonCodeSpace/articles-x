@@ -31,7 +31,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   }
   
   // Find the exact match by comparing the short ID
-  const article = articles?.find((a: any) => {
+  const article = articles?.find((a: { id: string }) => {
     const articleShortId = a.id.replace(/-/g, '').substring(0, 6)
     return articleShortId === shortId
   })

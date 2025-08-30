@@ -82,20 +82,20 @@ function detectLanguage(text: string): string {
   return 'en'
 }
 
-export function ArticleCard({ article, className, index = 0 }: ArticleCardProps) {
-  const [imageError, setImageError] = useState(false)
-  const [imageLoading, setImageLoading] = useState(true)
+export function ArticleCard({ article, className, index: _index = 0 }: ArticleCardProps) {
+  const [_imageError, setImageError] = useState(false)
+  const [_imageLoading, setImageLoading] = useState(true)
   const [isShared, setIsShared] = useState(false)
   
   // 检测文章语言
   const detectedLanguage = detectLanguage(article.full_article_content || article.title || '')
 
-  const handleImageError = () => {
+  const _handleImageError = () => {
     setImageError(true)
     setImageLoading(false)
   }
 
-  const handleImageLoad = () => {
+  const _handleImageLoad = () => {
     setImageLoading(false)
   }
 

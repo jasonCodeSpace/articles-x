@@ -5,8 +5,8 @@ import { FeedEmptyState } from '@/components/feed-empty-state'
 import { FeedLoading } from '@/components/feed-loading'
 import { Pagination } from '@/components/pagination'
 import { useArticleFeed } from '@/hooks/use-article-feed'
-import { Button } from '@/components/ui/button'
-import { Clock, Eye } from 'lucide-react'
+import { Button as _Button } from '@/components/ui/button'
+import { Clock as _Clock, Eye as _Eye } from 'lucide-react'
 
 interface ArticleFeedProps {
   initialArticles: Article[]
@@ -21,14 +21,14 @@ export function ArticleFeed({ initialArticles, initialCategories, initialCategor
     isLoading,
     error,
     searchQuery,
-    sortOption,
-    selectedCategory,
+    sortOption: _sortOption,
+    selectedCategory: _selectedCategory,
     currentPage,
     totalPages,
     handlePageChange,
-    handleTimeSort,
-    handleViewsSort,
-    handleCategoryChange,
+    handleTimeSort: _handleTimeSort,
+    handleViewsSort: _handleViewsSort,
+    handleCategoryChange: _handleCategoryChange,
     clearSearch,
     retry
   } = useArticleFeed({

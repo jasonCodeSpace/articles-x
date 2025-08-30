@@ -8,7 +8,7 @@ interface PageProps {
 }
 
 export default async function HomePage({ searchParams }: PageProps) {
-  const { category, search, page } = await searchParams
+  const { category, search, page: _page } = await searchParams
   
   const [articles, categories] = await Promise.all([
     fetchArticles({ category, search }),

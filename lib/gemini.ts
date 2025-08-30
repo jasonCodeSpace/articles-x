@@ -1,11 +1,20 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-if (!process.env.GEMINI_API_KEY) {
-  throw new Error('GEMINI_API_KEY environment variable is required');
-}
+let genAI: GoogleGenerativeAI | null = null;
+let model: any = null;
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+function initializeGemini() {
+  if (!process.env.GEMINI_API_KEY) {
+    throw new Error('GEMINI_API_KEY environment variable is required');
+  }
+  
+  if (!genAI) {
+    genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+  }
+  
+  return model;
+}
 
 export interface ArticleSummary {
   chinese: string;
@@ -23,11 +32,13 @@ export async function generateArticleSummary(
   title: string
 ): Promise<ArticleSummary> {
   try {
+    const currentModel = initializeGemini();
+    
     // 构建提示词，使用用户指定的格式
-    const prompt = `TASK: Read the article. Produce an ULTRA-CONCISE, read-aloud friendly summary in **English and Chinese**. There is **no fixed length**; prioritize **maximum information density** while **not missing any key point**.
+    const prompt = `TASK: Read the article. Produce an ULTRA-CONCISE, read-aloud friendly summary in English and Chinese. There is no fixed length; prioritize maximum information density while not missing any key point.
 
 GOALS:
-- Convey the **main thesis**, **all core points**, **critical facts (names/dates/numbers)**, **nuances/caveats**, and **the conclusion**.
+- Convey the main thesis, all core points, critical facts (names/dates/numbers), nuances/caveats, and the conclusion.
 - Sound natural and informative for speech. Use short, plain sentences. No filler.
 
 OUTPUT FORMAT (in this order):
@@ -48,14 +59,14 @@ RULES:
 - No intro/outro, no repetition, no adjectives unless essential.
 - Prefer active voice; keep parallel structure across bullets.
 - If the article omits something important, write "not stated".
-- If space is tight, **do not drop key points**—slightly exceed the targets instead.
+- If space is tight, do not drop key points—slightly exceed the targets instead.
 
 Article Title: ${title}
 
 Article Content:
 ${content.substring(0, 8000)}`; // 限制内容长度避免超出API限制
 
-    const result = await model.generateContent(prompt);
+    const result = await currentModel.generateContent(prompt);
     const response = await result.response;
     const text = response.text();
 
@@ -127,7 +138,8 @@ export async function batchGenerateSummaries(
  */
 export async function testGeminiConnection(): Promise<boolean> {
   try {
-    const result = await model.generateContent('Hello, this is a test.');
+    const currentModel = initializeGemini();
+    const result = await currentModel.generateContent('Hello, this is a test.');
     const response = await result.response;
     return !!response.text();
   } catch (error) {

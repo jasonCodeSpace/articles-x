@@ -1,6 +1,8 @@
 import { z } from 'zod'
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { TwitterTweet } from '@/lib/twitter'
+import fs from 'fs'
+import path from 'path'
 
 // Zod schema for harvested article fields
 const HarvestedArticleSchema = z.object({
@@ -125,6 +127,56 @@ export function mapTweetToArticle(tweet: TwitterTweet): HarvestedArticle | null 
   }
 }
 
+// Cache for author category mappings
+let authorCategoryCache: Map<string, string> | null = null
+
+/**
+ * Load author category mappings from tags.csv
+ */
+function loadAuthorCategoryMappings(): Map<string, string> {
+  if (authorCategoryCache) {
+    return authorCategoryCache
+  }
+
+  const mappings = new Map<string, string>()
+  
+  try {
+    const csvPath = path.join(process.cwd(), 'tags.csv')
+    const csvContent = fs.readFileSync(csvPath, 'utf-8')
+    
+    const lines = csvContent.split('\n')
+    for (const line of lines) {
+      const trimmedLine = line.trim()
+      if (!trimmedLine) continue
+      
+      const colonIndex = trimmedLine.indexOf(':')
+      if (colonIndex === -1) continue
+      
+      const authorHandle = trimmedLine.substring(0, colonIndex).trim()
+      const categories = trimmedLine.substring(colonIndex + 1).trim()
+      
+      // Use the first category if multiple categories are specified
+      const primaryCategory = categories.split(',')[0].trim()
+      mappings.set(authorHandle, primaryCategory)
+    }
+    
+    console.log(`Loaded ${mappings.size} author category mappings from tags.csv`)
+  } catch (error) {
+    console.warn('Failed to load author category mappings from tags.csv:', error)
+  }
+  
+  authorCategoryCache = mappings
+  return mappings
+}
+
+/**
+ * Get category for author handle
+ */
+function getCategoryForAuthor(authorHandle: string): string {
+  const mappings = loadAuthorCategoryMappings()
+  return mappings.get(authorHandle) || 'twitter-import'
+}
+
 /**
  * Convert harvested article to database article format
  */
@@ -144,6 +196,9 @@ export function harvestedToDatabase(harvested: HarvestedArticle): DatabaseArticl
   // Generate tweet URL from tweet_id
   const tweetUrl = `https://twitter.com/${harvested.author_handle}/status/${harvested.tweet_id}`
 
+  // Get category based on author handle from tags.csv
+  const category = getCategoryForAuthor(harvested.author_handle)
+
   return {
     title: harvested.title,
     slug,
@@ -158,7 +213,7 @@ export function harvestedToDatabase(harvested: HarvestedArticle): DatabaseArticl
     meta_description: excerpt,
     featured_image_url: harvested.featured_image_url,
     tags: ['twitter', 'imported'],
-    category: 'twitter-import',
+    category: category,
     tweet_url: tweetUrl,
     tweet_published_at: publishedAt,
     tweet_id: harvested.tweet_id,

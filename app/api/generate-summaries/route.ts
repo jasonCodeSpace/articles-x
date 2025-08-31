@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/service';
 import { generateArticleAnalysis } from '@/lib/gemini';
 
-export async function POST(_request: NextRequest) {
+export async function POST() {
   try {
     const supabase = createServiceClient();
     
@@ -53,7 +53,16 @@ export async function POST(_request: NextRequest) {
         const analysis = await generateArticleAnalysis(article.full_article_content, article.title);
         
         // 准备更新数据
-        const updateData: any = {
+        const updateData: {
+          summary_chinese: string;
+          summary_english: string;
+          summary_generated_at: string;
+          category: string;
+          language: string;
+          title_english?: string;
+          article_preview_text_english?: string;
+          full_article_content_english?: string;
+        } = {
           summary_chinese: analysis.summary.chinese,
           summary_english: analysis.summary.english,
           summary_generated_at: new Date().toISOString(),
@@ -127,5 +136,5 @@ export async function POST(_request: NextRequest) {
 
 // 支持GET请求用于手动触发
 export async function GET() {
-  return POST(new NextRequest('http://localhost/api/generate-summaries', { method: 'POST' }));
+  return POST();
 }

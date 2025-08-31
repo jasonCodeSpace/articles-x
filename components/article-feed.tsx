@@ -6,8 +6,7 @@ import { FeedLoading } from '@/components/feed-loading'
 import { FeedToolbar } from '@/components/feed-toolbar'
 import { Pagination } from '@/components/pagination'
 import { useArticleFeed } from '@/hooks/use-article-feed'
-import { Button as _Button } from '@/components/ui/button'
-import { Clock as _Clock, Eye as _Eye } from 'lucide-react'
+
 
 interface ArticleFeedProps {
   initialArticles: Article[]
@@ -22,15 +21,12 @@ export function ArticleFeed({ initialArticles, initialCategories, initialCategor
     isLoading,
     error,
     searchQuery,
-    sortOption,
     selectedCategory,
     selectedLanguage,
     categories,
     currentPage,
     totalPages,
-    totalItems,
     handleSearch,
-    handleSort,
     handleCategoryChange,
     handleLanguageChange,
     handlePageChange,

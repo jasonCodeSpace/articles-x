@@ -90,8 +90,8 @@ function detectLanguage(text: string): string {
 }
 
 export function ArticleCard({ article, className, index: _index = 0 }: ArticleCardProps) {
-  const [_imageError, setImageError] = useState(false)
-  const [_imageLoading, setImageLoading] = useState(true)
+  const [_imageError, _setImageError] = useState(false)
+  const [_imageLoading, _setImageLoading] = useState(true)
   const [isShared, setIsShared] = useState(false)
   const { language } = useLanguage()
   
@@ -110,12 +110,12 @@ export function ArticleCard({ article, className, index: _index = 0 }: ArticleCa
   }
 
   const _handleImageError = () => {
-    setImageError(true)
-    setImageLoading(false)
+    _setImageError(true)
+    _setImageLoading(false)
   }
 
   const _handleImageLoad = () => {
-    setImageLoading(false)
+    _setImageLoading(false)
   }
 
   const handleShare = async () => {

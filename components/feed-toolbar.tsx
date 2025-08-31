@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu'
 import { Search, Filter, Globe, ChevronDown, Languages } from 'lucide-react'
-import { SortOption } from '@/lib/articles'
+
 import { useLanguage } from '@/contexts/language-context'
 
 interface FeedToolbarProps {

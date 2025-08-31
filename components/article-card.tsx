@@ -47,6 +47,8 @@ export interface Article {
   summary_chinese?: string
   summary_english?: string
   summary_generated_at?: string
+  // Language and category fields
+  language?: string
 }
 
 interface ArticleCardProps {
@@ -87,8 +89,19 @@ export function ArticleCard({ article, className, index: _index = 0 }: ArticleCa
   const [_imageLoading, setImageLoading] = useState(true)
   const [isShared, setIsShared] = useState(false)
   
-  // 检测文章语言
-  const detectedLanguage = detectLanguage(article.full_article_content || article.title || '')
+  // 使用数据库中的语言字段，如果没有则使用检测函数
+  const detectedLanguage = article.language || detectLanguage(article.full_article_content || article.title || '')
+  
+  // 调试信息 - 查看实际接收到的数据
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Article data:', {
+      id: article.id,
+      title: article.title?.substring(0, 50) + '...',
+      language: article.language,
+      category: article.category,
+      detectedLanguage
+    })
+  }
 
   const _handleImageError = () => {
     setImageError(true)
@@ -151,11 +164,13 @@ export function ArticleCard({ article, className, index: _index = 0 }: ArticleCa
             referrerPolicy="no-referrer"
           />
           {/* Language badge */}
-          <div className="absolute top-3 left-3">
-            <span className="bg-gray-900/80 text-white text-xs px-2 py-1 rounded-md font-medium backdrop-blur-sm">
-              {detectedLanguage.toUpperCase()}
-            </span>
-          </div>
+          {detectedLanguage && (
+            <div className="absolute top-3 left-3">
+              <span className="bg-gray-900/80 text-white text-xs px-2 py-1 rounded-md font-medium backdrop-blur-sm">
+                {detectedLanguage.toUpperCase()}
+              </span>
+            </div>
+          )}
           {/* Category badge */}
           {article.category && (
             <div className="absolute top-3 right-3">

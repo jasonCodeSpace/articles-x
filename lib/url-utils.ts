@@ -37,7 +37,9 @@ export function generateArticleUrl(title: string, id: string): string {
  */
 export function extractArticleIdFromSlug(slug: string): string {
   const parts = slug.split('--')
-  return parts[parts.length - 1]
+  const lastPart = parts[parts.length - 1]
+  // Remove any leading dashes that might be present
+  return lastPart.replace(/^-+/, '')
 }
 
 /**

@@ -24,6 +24,7 @@ export interface ArticleSummary {
 export interface ArticleAnalysis {
   summary: ArticleSummary;
   category: string;
+  language: string;
 }
 
 /**
@@ -42,10 +43,97 @@ export async function generateArticleAnalysis(
       throw new Error('Failed to initialize Gemini model');
     }
     
-    // 构建提示词，包含摘要生成和分类
-    const prompt = `TASK: Read the article and perform two tasks:
-1. Produce an ULTRA-CONCISE, read-aloud friendly summary in English and Chinese
+    // 构建提示词，包含摘要生成、分类和语言检测
+    const prompt = `TASK: Read the article and perform three tasks:
+1. Detect the primary language of the article
 2. Categorize the article with ONE category from the provided list
+3. Produce an ULTRA-CONCISE, read-aloud friendly summary in English and Chinese
+
+LANGUAGE DETECTION:
+Detect the primary language of the article content. Use ISO 639-1 language codes:
+- en (English)
+- zh (Chinese)
+- ja (Japanese)
+- ko (Korean)
+- es (Spanish)
+- fr (French)
+- de (German)
+- it (Italian)
+- pt (Portuguese)
+- ru (Russian)
+- ar (Arabic)
+- hi (Hindi)
+- th (Thai)
+- vi (Vietnamese)
+- tr (Turkish)
+- pl (Polish)
+- nl (Dutch)
+- sv (Swedish)
+- da (Danish)
+- no (Norwegian)
+- fi (Finnish)
+- he (Hebrew)
+- cs (Czech)
+- hu (Hungarian)
+- ro (Romanian)
+- bg (Bulgarian)
+- hr (Croatian)
+- sk (Slovak)
+- sl (Slovenian)
+- et (Estonian)
+- lv (Latvian)
+- lt (Lithuanian)
+- mt (Maltese)
+- ga (Irish)
+- cy (Welsh)
+- is (Icelandic)
+- mk (Macedonian)
+- sq (Albanian)
+- sr (Serbian)
+- bs (Bosnian)
+- me (Montenegrin)
+- uk (Ukrainian)
+- be (Belarusian)
+- kk (Kazakh)
+- ky (Kyrgyz)
+- uz (Uzbek)
+- tg (Tajik)
+- mn (Mongolian)
+- ka (Georgian)
+- hy (Armenian)
+- az (Azerbaijani)
+- fa (Persian)
+- ur (Urdu)
+- bn (Bengali)
+- ta (Tamil)
+- te (Telugu)
+- ml (Malayalam)
+- kn (Kannada)
+- gu (Gujarati)
+- pa (Punjabi)
+- or (Odia)
+- as (Assamese)
+- ne (Nepali)
+- si (Sinhala)
+- my (Burmese)
+- km (Khmer)
+- lo (Lao)
+- ms (Malay)
+- id (Indonesian)
+- tl (Filipino)
+- sw (Swahili)
+- am (Amharic)
+- yo (Yoruba)
+- ig (Igbo)
+- ha (Hausa)
+- zu (Zulu)
+- xh (Xhosa)
+- af (Afrikaans)
+If unsure, use 'en' as default.
+
+CATEGORY TASK:
+Select ONE category that best fits this article from the following list:
+AI, Agents, Models, Lending, DEX, Yield, Perps, Markets, Onchain, Airdrops, L1, L2, Wallets, Infrastructure, Oracles, Policy, Elections, Politics, Social, Media, History, Art, Culture, DAOs, Identity, SocialFi, Startups, VC, Business, GameFi, Esports, Gaming, Hardware, Software, Tech, Health, Science, Security, Education, Economics, Lifestyle, NFTs
 
 SUMMARY GOALS:
 - Convey the main thesis, all core points, critical facts (names/dates/numbers), nuances/caveats, and the conclusion.
@@ -65,11 +153,8 @@ Conclusion: ≤ ~18 words; state the overall takeaway
 细节/注意：1–4条，每条≤ ~12字；观点用【观点】标注
 结论：≤ ~18字；给出总之要义
 
-CATEGORY TASK:
-Select ONE category that best fits this article from the following list:
-AI, Agents, Models, Lending, DEX, Yield, Perps, Markets, Onchain, Airdrops, L1, L2, Wallets, Infrastructure, Oracles, Policy, Elections, Politics, Social, Media, History, Art, Culture, DAOs, Identity, SocialFi, Startups, VC, Business, GameFi, Esports, Gaming, Hardware, Software, Tech, Health, Science, Security, Education, Economics, Lifestyle, NFTs
-
 OUTPUT FORMAT:
+LANGUAGE: [detected language code]
 CATEGORY: [selected category]
 
 [English summary]
@@ -83,6 +168,7 @@ RULES:
 - If space is tight, do not drop key points—slightly exceed the targets instead.
 - Do not use asterisk symbols in the output.
 - Choose the most specific and relevant category.
+- Detect language based on the actual content, not the title.
 
 Article Title: ${title}
 
@@ -93,6 +179,10 @@ ${content.substring(0, 8000)}`; // 限制内容长度避免超出API限制
     const response = await result.response;
     const text = response.text();
 
+    // 解析语言
+    const languageMatch = text.match(/LANGUAGE:\s*([^\n]+)/i);
+    const language = languageMatch ? languageMatch[1].trim() : 'en'; // 默认语言
+    
     // 解析分类
     const categoryMatch = text.match(/CATEGORY:\s*([^\n]+)/i);
     const category = categoryMatch ? categoryMatch[1].trim() : 'Tech'; // 默认分类
@@ -133,7 +223,8 @@ ${content.substring(0, 8000)}`; // 限制内容长度避免超出API限制
 
     return {
       summary,
-      category
+      category,
+      language
     };
   } catch (error) {
     console.error('Error generating article analysis:', error);

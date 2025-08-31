@@ -9,7 +9,7 @@ export async function POST(_request: NextRequest) {
     // 先获取最近发布的100条推文对应的文章
     const { data: recentArticles, error: fetchError } = await supabase
       .from('articles')
-      .select('id, title, full_article_content, summary_chinese, summary_english, summary_generated_at, tweet_published_at')
+      .select('id, title, full_article_content, summary_chinese, summary_english, summary_generated_at, tweet_published_at, category, language')
       .not('full_article_content', 'is', null)
       .not('tweet_published_at', 'is', null)
       .order('tweet_published_at', { ascending: false })
@@ -23,9 +23,9 @@ export async function POST(_request: NextRequest) {
       );
     }
     
-    // 从最近100条文章中筛选出没有中文摘要的文章
+    // 从最近100条文章中筛选出没有中文摘要或没有分类的文章
     const articles = recentArticles?.filter(article => 
-      !article.summary_chinese
+      !article.summary_chinese || !article.category
     ) || [];
     
     if (!articles || articles.length === 0) {
@@ -59,7 +59,8 @@ export async function POST(_request: NextRequest) {
             summary_chinese: analysis.summary.chinese,
             summary_english: analysis.summary.english,
             summary_generated_at: new Date().toISOString(),
-            category: analysis.category
+            category: analysis.category,
+            language: analysis.language
           })
           .eq('id', article.id);
         
@@ -74,6 +75,7 @@ export async function POST(_request: NextRequest) {
             articleId: article.id,
             title: article.title,
             category: analysis.category,
+            language: analysis.language,
             summaryGenerated: true
           });
           console.log(`Successfully processed article: ${article.title}`);

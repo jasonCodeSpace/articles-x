@@ -30,11 +30,8 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     notFound()
   }
   
-  // Find the exact match by comparing the short ID
-  const article = articles?.find((a: { id: string }) => {
-    const articleShortId = a.id.replace(/-/g, '').substring(0, 6)
-    return articleShortId === shortId
-  })
+  // The RPC function already filters by short ID, so we just need the first result
+  const article = articles?.[0]
   
   if (!article) {
     notFound()

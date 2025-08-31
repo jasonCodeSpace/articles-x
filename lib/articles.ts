@@ -8,6 +8,7 @@ export interface FetchArticlesOptions {
   sort?: SortOption
   search?: string
   category?: string
+  language?: string
 }
 
 /**
@@ -19,6 +20,7 @@ export async function fetchArticles(options: FetchArticlesOptions = {}): Promise
     sort = 'newest',
     search,
     category,
+    language,
   } = options
 
   try {
@@ -42,6 +44,11 @@ export async function fetchArticles(options: FetchArticlesOptions = {}): Promise
     // Apply category filter (server-side) - safe because we ensured this column exists via migration
     if (category && category.trim()) {
       query = query.eq('category', category.trim())
+    }
+
+    // Apply language filter
+    if (language && language.trim() && language !== 'all') {
+      query = query.eq('language', language.trim())
     }
 
     // Apply sorting

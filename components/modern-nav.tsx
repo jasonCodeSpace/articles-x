@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils"
 import { Button as _Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { LogoutButton as _LogoutButton } from '@/components/logout-button'
-import { SearchComponent as _SearchComponent } from '@/components/search-component'
+
 import {
   DropdownMenu,
   DropdownMenuContent,

@@ -22,6 +22,7 @@ interface UseArticleFeedReturn {
   searchQuery: string
   sortOption: SortOption
   selectedCategory: string
+  selectedLanguage: string
   categories: string[]
   currentPage: number
   totalPages: number
@@ -29,6 +30,7 @@ interface UseArticleFeedReturn {
   handleSearch: (query: string) => void
   handleSort: (sort: SortOption) => void
   handleCategoryChange: (category: string) => void
+  handleLanguageChange: (language: string) => void
   handlePageChange: (page: number) => void
   handleTimeSort: () => void
   handleViewsSort: () => void
@@ -48,6 +50,7 @@ export function useArticleFeed({
   const [searchQuery, setSearchQuery] = useState(initialSearchQuery)
   const [sortOption, setSortOption] = useState<SortOption>('newest')
   const [selectedCategory, setSelectedCategory] = useState(initialCategory)
+  const [selectedLanguage, setSelectedLanguage] = useState('all')
   const [currentPage, setCurrentPage] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -76,6 +79,13 @@ export function useArticleFeed({
       })
     }
 
+    // Apply language filter
+    if (selectedLanguage !== 'all') {
+      filtered = filtered.filter(article => {
+        return article.language === selectedLanguage
+      })
+    }
+
     // Apply sorting
     filtered.sort((a, b) => {
       if (sortOption === 'views_high') {
@@ -99,7 +109,7 @@ export function useArticleFeed({
     })
 
     return filtered
-  }, [articles, searchQuery, selectedCategory, sortOption])
+  }, [articles, searchQuery, selectedCategory, selectedLanguage, sortOption])
 
   // Calculate pagination
   const paginationInfo = useMemo(() => {
@@ -128,6 +138,11 @@ export function useArticleFeed({
     setCurrentPage(1) // Reset to first page when category changes
   }, [])
 
+  const handleLanguageChange = useCallback((language: string) => {
+    setSelectedLanguage(language)
+    setCurrentPage(1) // Reset to first page when language changes
+  }, [])
+
   const handlePageChange = useCallback((page: number) => {
     setCurrentPage(page)
   }, [])
@@ -135,6 +150,7 @@ export function useArticleFeed({
   const clearSearch = useCallback(() => {
     setSearchQuery('')
     setSelectedCategory('all')
+    setSelectedLanguage('all')
     setCurrentPage(1) // Reset to first page when clearing search
     setError(null)
   }, [])
@@ -183,6 +199,7 @@ export function useArticleFeed({
     searchQuery,
     sortOption,
     selectedCategory,
+    selectedLanguage,
     categories: initialCategories,
     currentPage,
     totalPages: paginationInfo.totalPages,
@@ -190,6 +207,7 @@ export function useArticleFeed({
     handleSearch,
     handleSort,
     handleCategoryChange,
+    handleLanguageChange,
     handlePageChange,
     handleTimeSort,
     handleViewsSort,

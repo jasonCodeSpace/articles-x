@@ -24,21 +24,24 @@ export function ArticleFeed({ initialArticles, initialCategories, initialCategor
     searchQuery,
     sortOption,
     selectedCategory,
+    selectedLanguage,
     categories,
     currentPage,
     totalPages,
+    totalItems,
     handleSearch,
     handleSort,
-    handlePageChange,
     handleCategoryChange,
+    handleLanguageChange,
+    handlePageChange,
     clearSearch,
-    retry
+    retry,
   } = useArticleFeed({
     initialArticles,
     initialCategories,
     initialCategory,
     initialSearchQuery,
-    itemsPerPage: 18
+    itemsPerPage: 20,
   })
 
   if (isLoading) {
@@ -49,15 +52,15 @@ export function ArticleFeed({ initialArticles, initialCategories, initialCategor
     <div className="space-y-4">
       {/* Feed Toolbar */}
       <FeedToolbar
-        onSearchChange={handleSearch}
-        onSortChange={handleSort}
-        onCategoryChange={handleCategoryChange}
-        currentSort={sortOption}
-        currentCategory={selectedCategory}
-        searchValue={searchQuery}
-        categories={categories}
-        isLoading={isLoading}
-      />
+          onSearchChange={handleSearch}
+          onCategoryChange={handleCategoryChange}
+          onLanguageChange={handleLanguageChange}
+          currentCategory={selectedCategory}
+          currentLanguage={selectedLanguage}
+          searchValue={searchQuery}
+          categories={categories}
+          isLoading={isLoading}
+        />
 
       {/* X.com style feed - single column */}
       {error === 'no-results' ? (

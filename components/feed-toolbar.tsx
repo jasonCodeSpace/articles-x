@@ -9,15 +9,15 @@ import {
   DropdownMenuItem, 
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu'
-import { Search, Filter, SortAsc, SortDesc, ChevronDown } from 'lucide-react'
+import { Search, Filter, Globe, ChevronDown } from 'lucide-react'
 import { SortOption } from '@/lib/articles'
 
 interface FeedToolbarProps {
   onSearchChange: (search: string) => void
-  onSortChange: (sort: SortOption) => void
   onCategoryChange: (category: string) => void
-  currentSort: SortOption
+  onLanguageChange: (language: string) => void
   currentCategory: string
+  currentLanguage: string
   searchValue: string
   categories?: string[]
   isLoading?: boolean
@@ -25,10 +25,10 @@ interface FeedToolbarProps {
 
 export function FeedToolbar({
   onSearchChange,
-  onSortChange,
   onCategoryChange,
-  currentSort,
+  onLanguageChange,
   currentCategory,
+  currentLanguage,
   searchValue,
   categories = [],
   isLoading = false
@@ -50,9 +50,13 @@ export function FeedToolbar({
     return () => clearTimeout(timeoutId)
   }
 
-  const sortOptions = [
-    { value: 'newest' as const, label: 'Newest First', icon: SortDesc },
-    { value: 'oldest' as const, label: 'Oldest First', icon: SortAsc },
+  const languageOptions = [
+    { value: 'all', label: 'All Languages' },
+    { value: 'zh', label: '中文' },
+    { value: 'en', label: 'English' },
+    { value: 'es', label: 'Español' },
+    { value: 'fr', label: 'Français' },
+    { value: 'de', label: 'Deutsch' },
   ]
 
   const categoryOptions = [
@@ -60,7 +64,7 @@ export function FeedToolbar({
     ...categories.map(cat => ({ value: cat, label: cat }))
   ]
 
-  const currentSortOption = sortOptions.find(opt => opt.value === currentSort)
+  const currentLanguageOption = languageOptions.find(opt => opt.value === currentLanguage) || languageOptions[0]
   const currentCategoryOption = categoryOptions.find(opt => opt.value === currentCategory) || categoryOptions[0]
 
   return (
@@ -115,7 +119,7 @@ export function FeedToolbar({
           </DropdownMenuContent>
         </DropdownMenu>
 
-        {/* Sort */}
+        {/* Language Filter */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button 
@@ -123,19 +127,18 @@ export function FeedToolbar({
               className="gap-2 rounded-full w-full sm:w-auto text-sm"
               disabled={isLoading}
             >
-              {currentSortOption && <currentSortOption.icon className="h-4 w-4" />}
-              <span className="truncate">{currentSortOption?.label}</span>
+              <Globe className="h-4 w-4" />
+              <span className="truncate">{currentLanguageOption.label}</span>
               <ChevronDown className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-40 bg-gray-900 border-gray-700 rounded-xl">
-            {sortOptions.map((option) => (
+          <DropdownMenuContent align="end" className="w-48 bg-gray-900 border-gray-700 rounded-xl">
+            {languageOptions.map((option) => (
               <DropdownMenuItem
                 key={option.value}
-                onClick={() => onSortChange(option.value)}
-                className={`rounded-lg ${currentSort === option.value ? 'bg-accent' : ''}`}
+                onClick={() => onLanguageChange(option.value)}
+                className={`rounded-lg ${currentLanguage === option.value ? 'bg-accent' : ''}`}
               >
-                <option.icon className="h-4 w-4 mr-2" />
                 {option.label}
               </DropdownMenuItem>
             ))}

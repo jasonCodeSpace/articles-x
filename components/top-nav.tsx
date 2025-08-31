@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { LogoutButton } from '@/components/logout-button'
-import { SearchComponent } from '@/components/search-component'
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -43,7 +43,7 @@ export function TopNav({ user, categories }: TopNavProps) {
 
           {/* Search Bar */}
           <div className="flex-1 max-w-md mx-8">
-            <SearchComponent />
+            {/* SearchComponent removed */}
           </div>
 
           {/* Categories Dropdown */}

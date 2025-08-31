@@ -183,19 +183,18 @@ export async function generateMetadata({ params }: ArticlePageProps) {
   // Extract short ID from the slug and find the full UUID
   const shortId = extractArticleIdFromSlug(resolvedParams.slug)
   
-  // Get all articles and filter in JavaScript to find the matching short ID
-  const { data: allArticles, error: searchError } = await supabase
-    .from('articles')
-    .select('title, article_preview_text, image, id')
+  // Use the same RPC function as the main component
+  const { data: articles, error: searchError } = await supabase
+    .rpc('find_articles_by_short_id', { short_id: shortId })
   
-  if (searchError || !allArticles) {
+  if (searchError || !articles) {
     return {
       title: 'Article Not Found'
     }
   }
   
-  // Find the exact match by comparing the short ID
-  const article = allArticles.find(a => a.id.replace(/-/g, '').substring(0, 6) === shortId)
+  // The RPC function already filters by short ID, so we just need the first result
+  const article = articles?.[0]
 
   if (!article) {
     return {

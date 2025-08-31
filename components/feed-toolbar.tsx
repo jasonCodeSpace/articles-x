@@ -55,8 +55,9 @@ export function FeedToolbar({
     { value: 'zh', label: '中文' },
     { value: 'en', label: 'English' },
     { value: 'es', label: 'Español' },
-    { value: 'fr', label: 'Français' },
     { value: 'de', label: 'Deutsch' },
+    { value: 'it', label: 'Italiano' },
+    { value: 'ja', label: '日本語' },
   ]
 
   const categoryOptions = [

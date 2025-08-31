@@ -89,8 +89,8 @@ export function ArticleCard({ article, className, index: _index = 0 }: ArticleCa
   const [_imageLoading, setImageLoading] = useState(true)
   const [isShared, setIsShared] = useState(false)
   
-  // 使用数据库中的语言字段，如果没有则使用检测函数
-  const detectedLanguage = article.language || detectLanguage(article.full_article_content || article.title || '')
+  // 只使用数据库中的语言字段，如果没有数据则不显示语言标签
+  const languageFromDB = article.language
   
   // 调试信息 - 查看实际接收到的数据
   if (process.env.NODE_ENV === 'development') {
@@ -99,7 +99,7 @@ export function ArticleCard({ article, className, index: _index = 0 }: ArticleCa
       title: article.title?.substring(0, 50) + '...',
       language: article.language,
       category: article.category,
-      detectedLanguage
+      languageFromDB
     })
   }
 
@@ -126,18 +126,21 @@ export function ArticleCard({ article, className, index: _index = 0 }: ArticleCa
 
 
   const authorInitials = article.author_name
-    .split(' ')
-    .map(name => name[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2)
+    ? article.author_name
+        .split(' ')
+        .map(name => name[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2)
+    : 'UN'
 
   const publishedDate = article.article_published_at || article.created_at
-  const relativeTime = formatDistanceToNow(new Date(publishedDate), { addSuffix: true })
+  const relativeTime = publishedDate && !isNaN(new Date(publishedDate).getTime()) 
+    ? formatDistanceToNow(new Date(publishedDate), { addSuffix: true })
+    : 'Unknown time'
 
-  // Generate author handle for display
-  const authorHandle = article.author_handle || 
-    article.author_name.toLowerCase().replace(/\s+/g, '_')
+  // Use author_handle directly
+  const authorHandle = article.author_handle || 'unknown'
 
   // Prefer description, then excerpt, then a small slice of content
   const descriptionText = article.description || article.excerpt || article.content
@@ -153,7 +156,7 @@ export function ArticleCard({ article, className, index: _index = 0 }: ArticleCa
     <div className={`bg-gray-900/80 border border-gray-700 rounded-xl overflow-hidden hover:bg-gray-900/90 hover:border-gray-600 transition-all duration-300 group cursor-pointer shadow-xl hover:shadow-2xl hover:scale-[1.02] flex flex-col h-[480px] ${className}`}>
       {/* Featured image at the top */}
       {coverUrl && (
-        <div className="relative w-full h-48 overflow-hidden">
+        <Link href={articleUrl} className="relative w-full h-48 overflow-hidden block">
           <Image
             src={coverUrl}
             alt={`Cover for ${article.title}`}
@@ -163,11 +166,11 @@ export function ArticleCard({ article, className, index: _index = 0 }: ArticleCa
             unoptimized
             referrerPolicy="no-referrer"
           />
-          {/* Language badge */}
-          {detectedLanguage && (
+          {/* Language badge - only show if language data exists in Supabase */}
+          {languageFromDB && (
             <div className="absolute top-3 left-3">
               <span className="bg-gray-900/80 text-white text-xs px-2 py-1 rounded-md font-medium backdrop-blur-sm">
-                {detectedLanguage.toUpperCase()}
+                {languageFromDB.toUpperCase()}
               </span>
             </div>
           )}
@@ -179,7 +182,7 @@ export function ArticleCard({ article, className, index: _index = 0 }: ArticleCa
               </span>
             </div>
           )}
-        </div>
+        </Link>
       )}
       
       {/* Card content */}
@@ -194,29 +197,33 @@ export function ArticleCard({ article, className, index: _index = 0 }: ArticleCa
         {/* Article preview text */}
         <div className="flex-grow">
           {(article.article_preview_text || descriptionText) && (
-            <p className="text-gray-400 text-sm leading-relaxed line-clamp-3 mb-4">
-              {article.article_preview_text || descriptionText}
-            </p>
+            <Link href={articleUrl} className="block">
+              <p className="text-gray-400 text-sm leading-relaxed line-clamp-3 mb-4 hover:text-gray-300 transition-colors cursor-pointer">
+                {article.article_preview_text || descriptionText}
+              </p>
+            </Link>
           )}
         </div>
         
         {/* Author info */}
         <div className="flex items-center gap-2 mb-3">
-          <Avatar className="h-6 w-6 ring-1 ring-gray-600">
-            {avatarUrl ? (
-              <AvatarImage 
-                src={avatarUrl} 
-                alt={`${article.author_name} profile picture`}
-              />
-            ) : null}
-            <AvatarFallback className="text-xs font-medium bg-gray-600 text-white">
-              {authorInitials}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex items-center gap-1 text-xs text-gray-400 min-w-0">
-            <span className="font-medium text-gray-300 truncate">
+          <Link href={`/author/${encodeURIComponent(authorHandle)}`} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+            <Avatar className="h-6 w-6 ring-1 ring-gray-600">
+              {avatarUrl ? (
+                <AvatarImage 
+                  src={avatarUrl} 
+                  alt={`${article.author_name} profile picture`}
+                />
+              ) : null}
+              <AvatarFallback className="text-xs font-medium bg-gray-600 text-white">
+                {authorInitials}
+              </AvatarFallback>
+            </Avatar>
+            <span className="font-medium text-gray-300 truncate hover:text-white transition-colors">
               @{authorHandle}
             </span>
+          </Link>
+          <div className="flex items-center gap-1 text-xs text-gray-400 min-w-0">
             <span>·</span>
             <time dateTime={publishedDate} title={new Date(publishedDate).toLocaleString()}>
               {relativeTime.replace(' ago', '')}

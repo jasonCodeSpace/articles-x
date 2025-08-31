@@ -149,8 +149,8 @@ export function ArticleCard({ article, className, index: _index = 0 }: ArticleCa
   const authorHandle = article.author_handle || 'unknown'
 
   // Field fallbacks for content based on language preference
-  const displayTitle = language === 'en' ? (article.title_english || article.title) : article.title
-  const displayPreview = language === 'en' ? (article.article_preview_text_english || article.article_preview_text) : article.article_preview_text
+  const displayTitle = language === 'original' ? article.title : (article.title_english || article.title)
+  const displayPreview = language === 'original' ? article.article_preview_text : (article.article_preview_text_english || article.article_preview_text)
   const descriptionText = displayPreview || article.description || article.excerpt || article.content
 
   // Field fallbacks for images

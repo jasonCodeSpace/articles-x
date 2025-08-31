@@ -2,8 +2,8 @@
 
 import { useState } from 'react'
 import { formatDistanceToNow } from 'date-fns'
-import { ChevronDown, ChevronUp } from 'lucide-react'
-import { useLanguage } from '@/contexts/language-context'
+import { ChevronDown, ChevronUp, Languages } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
 interface AiSummaryProps {
   summaryEnglish: string
@@ -16,10 +16,14 @@ export default function AiSummary({
   summaryChinese, 
   summaryGeneratedAt 
 }: AiSummaryProps) {
-  const { language } = useLanguage()
   const [isCollapsed, setIsCollapsed] = useState(true)
+  const [summaryLanguage, setSummaryLanguage] = useState<'en' | 'zh'>('en')
   
-  const currentSummary = language === 'en' ? summaryEnglish : (summaryChinese || summaryEnglish)
+  const currentSummary = summaryLanguage === 'zh' ? (summaryChinese || summaryEnglish) : summaryEnglish
+  
+  const toggleSummaryLanguage = () => {
+    setSummaryLanguage(summaryLanguage === 'en' ? 'zh' : 'en')
+  }
   
   return (
     <section className="mb-6 p-6 bg-gray-900 rounded-lg border border-gray-700">
@@ -39,7 +43,15 @@ export default function AiSummary({
           )}
         </button>
         
-
+        <Button 
+          variant="outline" 
+          size="sm"
+          className="gap-2 text-xs h-8 px-3"
+          onClick={toggleSummaryLanguage}
+        >
+          <Languages className="h-3 w-3" />
+          <span>{summaryLanguage === 'en' ? 'English' : '中文'}</span>
+        </Button>
       </div>
       
       {/* Collapsible content */}

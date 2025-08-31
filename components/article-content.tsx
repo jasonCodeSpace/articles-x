@@ -1,7 +1,8 @@
 'use client'
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { ExternalLink } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { ExternalLink, Languages } from 'lucide-react'
 import Image from 'next/image'
 import AiSummary from '@/components/ai-summary'
 import { useLanguage } from '@/contexts/language-context'
@@ -42,11 +43,15 @@ export function ArticleContent({
   publishedDate,
   relativeTime
 }: ArticleContentProps) {
-  const { language } = useLanguage()
+  const { language, setLanguage } = useLanguage()
+
+  const toggleLanguage = () => {
+    setLanguage(language === 'en' ? 'original' : 'en')
+  }
 
   // Get content based on language preference
-  const displayTitle = language === 'en' ? (article.title_english || article.title) : article.title
-  const displayContent = language === 'en' ? (article.full_article_content_english || article.full_article_content) : article.full_article_content
+  const displayTitle = language === 'original' ? article.title : (article.title_english || article.title)
+  const displayContent = language === 'original' ? article.full_article_content : (article.full_article_content_english || article.full_article_content)
 
   return (
     <>
@@ -57,22 +62,35 @@ export function ArticleContent({
         </h1>
         
         {/* Author Info */}
-        <div className="flex items-center gap-3 mb-4">
-          <Avatar className="h-12 w-12">
-            {avatarUrl ? (
-              <AvatarImage 
-                src={avatarUrl} 
-                alt={`${article.author_name} profile picture`}
-              />
-            ) : null}
-            <AvatarFallback className="text-sm font-medium bg-gray-600 text-white">
-              {authorInitials}
-            </AvatarFallback>
-          </Avatar>
-          <div>
-            <div className="font-medium text-white">{article.author_name}</div>
-            <div className="text-sm text-gray-400">@{authorHandle}</div>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <Avatar className="h-12 w-12">
+              {avatarUrl ? (
+                <AvatarImage 
+                  src={avatarUrl} 
+                  alt={`${article.author_name} profile picture`}
+                />
+              ) : null}
+              <AvatarFallback className="text-sm font-medium bg-gray-600 text-white">
+                {authorInitials}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <div className="font-medium text-white">{article.author_name}</div>
+              <div className="text-sm text-gray-400">@{authorHandle}</div>
+            </div>
           </div>
+          
+          {/* Language Toggle */}
+          <Button 
+            variant="outline" 
+            size="sm"
+            className="gap-2 text-xs h-8 px-3"
+            onClick={toggleLanguage}
+          >
+            <Languages className="h-3 w-3" />
+            <span>{language === 'en' ? 'English' : 'Original'}</span>
+          </Button>
         </div>
 
         {/* Publication Date */}

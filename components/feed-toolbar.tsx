@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu'
 import { Search, Filter, Globe, ChevronDown, Languages } from 'lucide-react'
+import { UnifiedMobileButton } from '@/components/unified-mobile-button'
 
 import { useLanguage } from '@/contexts/language-context'
 
@@ -91,91 +92,106 @@ export function FeedToolbar({
       </form>
 
       {/* Right side - Filters and Sort */}
-      <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
-        {/* Category Filter */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button 
-              variant="outline" 
-              className="gap-2 rounded-full w-full sm:w-auto text-sm"
-              disabled={isLoading}
-            >
-              <Filter className="h-4 w-4" />
-              <span className="truncate">{currentCategoryOption.label}</span>
-              <ChevronDown className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-[200px] max-h-[300px] overflow-y-auto p-1 bg-gray-900 border-gray-700 rounded-xl">
-            <div className="flex flex-col gap-0.5">
-              {categoryOptions.map((option) => (
+      <div className="flex items-center gap-2 w-full sm:w-auto">
+        {/* Mobile: Unified Button */}
+        <div className="sm:hidden w-full">
+          <UnifiedMobileButton
+            onCategoryChange={onCategoryChange}
+            onLanguageChange={onLanguageChange}
+            currentCategory={currentCategory}
+            currentLanguage={currentLanguage}
+            categories={categories}
+            isLoading={isLoading}
+          />
+        </div>
+
+        {/* Desktop: Separate Buttons */}
+        <div className="hidden sm:flex items-center gap-2">
+          {/* Category Filter */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                variant="outline" 
+                className="gap-2 rounded-full text-sm"
+                disabled={isLoading}
+              >
+                <Filter className="h-4 w-4" />
+                <span className="truncate">{currentCategoryOption.label}</span>
+                <ChevronDown className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-[200px] max-h-[300px] overflow-y-auto p-1 bg-gray-900 border-gray-700 rounded-xl">
+              <div className="flex flex-col gap-0.5">
+                {categoryOptions.map((option) => (
+                  <DropdownMenuItem
+                    key={option.value}
+                    onClick={() => onCategoryChange(option.value)}
+                    className={`cursor-pointer text-sm px-3 py-2 rounded-lg transition-colors ${
+                      currentCategory === option.value ? 'bg-accent text-accent-foreground font-medium' : 'hover:bg-accent/50'
+                    }`}
+                  >
+                    {option.label}
+                  </DropdownMenuItem>
+                ))}
+              </div>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Language Toggle */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                variant="outline" 
+                className="gap-2 rounded-full text-sm"
+                disabled={isLoading}
+              >
+                <Languages className="h-4 w-4" />
+                <span className="truncate">{language === 'en' ? 'English' : 'Original'}</span>
+                <ChevronDown className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-32 bg-gray-900 border-gray-700 rounded-xl">
+              <DropdownMenuItem
+                onClick={() => setLanguage('original')}
+                className={`rounded-lg cursor-pointer ${language === 'original' ? 'bg-accent text-accent-foreground font-medium' : 'hover:bg-accent/50'}`}
+              >
+                Original
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setLanguage('en')}
+                className={`rounded-lg cursor-pointer ${language === 'en' ? 'bg-accent text-accent-foreground font-medium' : 'hover:bg-accent/50'}`}
+              >
+                English
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Language Filter */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                variant="outline" 
+                className="gap-2 rounded-full text-sm"
+                disabled={isLoading}
+              >
+                <Globe className="h-4 w-4" />
+                <span className="truncate">{currentLanguageOption.label}</span>
+                <ChevronDown className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48 bg-gray-900 border-gray-700 rounded-xl">
+              {languageOptions.map((option) => (
                 <DropdownMenuItem
                   key={option.value}
-                  onClick={() => onCategoryChange(option.value)}
-                  className={`cursor-pointer text-sm px-3 py-2 rounded-lg transition-colors ${
-                    currentCategory === option.value ? 'bg-accent text-accent-foreground font-medium' : 'hover:bg-accent/50'
-                  }`}
+                  onClick={() => onLanguageChange(option.value)}
+                  className={`rounded-lg ${currentLanguage === option.value ? 'bg-accent' : ''}`}
                 >
                   {option.label}
                 </DropdownMenuItem>
               ))}
-            </div>
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-        {/* Language Toggle */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button 
-              variant="outline" 
-              className="gap-2 rounded-full w-full sm:w-auto text-sm"
-              disabled={isLoading}
-            >
-              <Languages className="h-4 w-4" />
-              <span className="truncate">{language === 'en' ? 'English' : 'Original'}</span>
-              <ChevronDown className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-32 bg-gray-900 border-gray-700 rounded-xl">
-            <DropdownMenuItem
-              onClick={() => setLanguage('original')}
-              className={`rounded-lg cursor-pointer ${language === 'original' ? 'bg-accent text-accent-foreground font-medium' : 'hover:bg-accent/50'}`}
-            >
-              Original
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => setLanguage('en')}
-              className={`rounded-lg cursor-pointer ${language === 'en' ? 'bg-accent text-accent-foreground font-medium' : 'hover:bg-accent/50'}`}
-            >
-              English
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-        {/* Language Filter */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button 
-              variant="outline" 
-              className="gap-2 rounded-full w-full sm:w-auto text-sm"
-              disabled={isLoading}
-            >
-              <Globe className="h-4 w-4" />
-              <span className="truncate">{currentLanguageOption.label}</span>
-              <ChevronDown className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48 bg-gray-900 border-gray-700 rounded-xl">
-            {languageOptions.map((option) => (
-              <DropdownMenuItem
-                key={option.value}
-                onClick={() => onLanguageChange(option.value)}
-                className={`rounded-lg ${currentLanguage === option.value ? 'bg-accent' : ''}`}
-              >
-                {option.label}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
     </div>
   )

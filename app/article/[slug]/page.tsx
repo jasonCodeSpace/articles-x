@@ -1,8 +1,9 @@
-import { ArrowLeft } from 'lucide-react'
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { PersistentNav } from '@/components/persistent-nav'
 import { ArticleContent } from '@/components/article-content'
+import { ArticlePageToolbar } from '@/components/article-page-toolbar'
+import { ArticleBreadcrumb } from '@/components/article-breadcrumb'
+import { LanguageProvider } from '@/contexts/language-context'
 import { createClient } from '@/lib/supabase/server'
 import { extractArticleIdFromSlug } from '@/lib/url-utils'
 import { formatDistanceToNow } from 'date-fns'
@@ -53,35 +54,31 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   const coverUrl = article.image
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      {/* Persistent Navigation */}
-      <PersistentNav />
-      
-      <div className="max-w-4xl mx-auto px-4 py-8 pt-24">
-        {/* Breadcrumbs */}
-        <nav className="mb-6">
-          <div className="flex items-center gap-2 text-sm text-gray-400">
-            <Link href="/articles" className="hover:text-white transition-colors flex items-center gap-1">
-              <ArrowLeft className="h-4 w-4" />
-              <span>Articles</span>
-            </Link>
-            <span>/</span>
-            <span className="text-white truncate">{article.title_english || article.title}</span>
-          </div>
-        </nav>
+    <LanguageProvider>
+      <div className="min-h-screen bg-black text-white">
+        {/* Persistent Navigation */}
+        <PersistentNav />
+        
+        <div className="max-w-4xl mx-auto px-4 py-8 pt-24">
+          {/* Breadcrumbs */}
+          <ArticleBreadcrumb article={article} />
 
-        {/* Article Content */}
-        <ArticleContent
-          article={article}
-          authorInitials={authorInitials}
-          authorHandle={authorHandle}
-          avatarUrl={avatarUrl}
-          coverUrl={coverUrl}
-          publishedDate={publishedDate}
-          relativeTime={relativeTime}
-        />
+          {/* Language Toolbar */}
+          <ArticlePageToolbar />
+
+          {/* Article Content */}
+          <ArticleContent
+            article={article}
+            authorInitials={authorInitials}
+            authorHandle={authorHandle}
+            avatarUrl={avatarUrl}
+            coverUrl={coverUrl}
+            publishedDate={publishedDate}
+            relativeTime={relativeTime}
+          />
+        </div>
       </div>
-    </div>
+    </LanguageProvider>
   )
 }
 

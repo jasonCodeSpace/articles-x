@@ -3,8 +3,11 @@ CREATE OR REPLACE FUNCTION find_articles_by_short_id(short_id TEXT)
 RETURNS TABLE(
   id UUID,
   title TEXT,
+  title_english TEXT,
   article_preview_text TEXT,
+  article_preview_text_english TEXT,
   full_article_content TEXT,
+  full_article_content_english TEXT,
   article_url TEXT,
   image TEXT,
   category TEXT,
@@ -24,8 +27,11 @@ BEGIN
   SELECT 
     a.id,
     a.title,
+    a.title_english,
     a.article_preview_text,
+    a.article_preview_text_english,
     a.full_article_content,
+    a.full_article_content_english,
     a.article_url,
     a.image,
     a.category,

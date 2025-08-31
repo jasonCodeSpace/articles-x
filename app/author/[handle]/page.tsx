@@ -7,6 +7,8 @@ import { ArticleCard, Article } from '@/components/article-card'
 import { FeedLoading } from '@/components/feed-loading'
 import { FeedEmptyState } from '@/components/feed-empty-state'
 import { Pagination } from '@/components/pagination'
+import { AuthorPageToolbar } from '@/components/author-page-toolbar'
+import { LanguageProvider } from '@/contexts/language-context'
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 
@@ -97,65 +99,70 @@ export default function AuthorPage() {
     .slice(0, 2)
 
   return (
-    <div className="min-h-screen bg-black">
-      <div className="container mx-auto px-4 py-8">
-        {/* Back button */}
-        <Link 
-          href="/articles" 
-          className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-6"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Articles
-        </Link>
+    <LanguageProvider>
+      <div className="min-h-screen bg-black">
+        <div className="container mx-auto px-4 py-8">
+          {/* Back button */}
+          <Link 
+            href="/articles" 
+            className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-6"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Articles
+          </Link>
 
-        {/* Author header */}
-        <div className="bg-gray-900/80 border border-gray-700 rounded-xl p-6 mb-8">
-          <div className="flex items-center gap-4">
-            <Avatar className="h-16 w-16 ring-2 ring-gray-600">
-              {authorInfo.avatar_url ? (
-                <AvatarImage 
-                  src={authorInfo.avatar_url} 
-                  alt={`${authorInfo.full_name} profile picture`}
-                />
-              ) : null}
-              <AvatarFallback className="text-lg font-medium bg-gray-600 text-white">
-                {authorInitials}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <h1 className="text-2xl font-bold text-white mb-1">{authorInfo.full_name}</h1>
-              <p className="text-gray-400 mb-2">@{authorInfo.username}</p>
-              <p className="text-sm text-gray-500">
-                {authorInfo.articleCount} {authorInfo.articleCount === 1 ? 'article' : 'articles'}
-              </p>
+          {/* Author header */}
+          <div className="bg-gray-900/80 border border-gray-700 rounded-xl p-6 mb-8">
+            <div className="flex items-center gap-4">
+              <Avatar className="h-16 w-16 ring-2 ring-gray-600">
+                {authorInfo.avatar_url ? (
+                  <AvatarImage 
+                    src={authorInfo.avatar_url} 
+                    alt={`${authorInfo.full_name} profile picture`}
+                  />
+                ) : null}
+                <AvatarFallback className="text-lg font-medium bg-gray-600 text-white">
+                  {authorInitials}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <h1 className="text-2xl font-bold text-white mb-1">{authorInfo.full_name}</h1>
+                <p className="text-gray-400 mb-2">@{authorInfo.username}</p>
+                <p className="text-sm text-gray-500">
+                  {authorInfo.articleCount} {authorInfo.articleCount === 1 ? 'article' : 'articles'}
+                </p>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Articles grid */}
-        {articles.length > 0 ? (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {articles.map((article) => (
-                <ArticleCard key={article.id} article={article} />
-              ))}
-            </div>
-            
-            {/* Pagination */}
-            {pagination && pagination.totalPages > 1 && (
-              <Pagination
-                currentPage={pagination.currentPage}
-                totalPages={pagination.totalPages}
-                onPageChange={handlePageChange}
-              />
-            )}
-          </>
-        ) : (
-          <FeedEmptyState 
-            type="no-articles"
-          />
-        )}
+          {/* Language Toolbar */}
+           <AuthorPageToolbar />
+
+          {/* Articles grid */}
+          {articles.length > 0 ? (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {articles.map((article) => (
+                  <ArticleCard key={article.id} article={article} />
+                ))}
+              </div>
+              
+              {/* Pagination */}
+              {pagination && pagination.totalPages > 1 && (
+                <Pagination
+                  currentPage={pagination.currentPage}
+                  totalPages={pagination.totalPages}
+                  onPageChange={handlePageChange}
+                />
+              )}
+            </>
+          ) : (
+            <FeedEmptyState 
+              type="no-articles"
+            />
+          )}
+        </div>
       </div>
-    </div>
+    </LanguageProvider>
   )
 }

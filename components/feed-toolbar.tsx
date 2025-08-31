@@ -9,8 +9,9 @@ import {
   DropdownMenuItem, 
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu'
-import { Search, Filter, Globe, ChevronDown } from 'lucide-react'
+import { Search, Filter, Globe, ChevronDown, Languages } from 'lucide-react'
 import { SortOption } from '@/lib/articles'
+import { useLanguage } from '@/contexts/language-context'
 
 interface FeedToolbarProps {
   onSearchChange: (search: string) => void
@@ -34,6 +35,7 @@ export function FeedToolbar({
   isLoading = false
 }: FeedToolbarProps) {
   const [searchInput, setSearchInput] = useState(searchValue)
+  const { language, setLanguage } = useLanguage()
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -117,6 +119,35 @@ export function FeedToolbar({
                 </DropdownMenuItem>
               ))}
             </div>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        {/* Language Toggle */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button 
+              variant="outline" 
+              className="gap-2 rounded-full w-full sm:w-auto text-sm"
+              disabled={isLoading}
+            >
+              <Languages className="h-4 w-4" />
+              <span className="truncate">{language === 'en' ? 'English' : 'Original'}</span>
+              <ChevronDown className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-32 bg-gray-900 border-gray-700 rounded-xl">
+            <DropdownMenuItem
+              onClick={() => setLanguage('original')}
+              className={`rounded-lg cursor-pointer ${language === 'original' ? 'bg-accent text-accent-foreground font-medium' : 'hover:bg-accent/50'}`}
+            >
+              Original
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => setLanguage('en')}
+              className={`rounded-lg cursor-pointer ${language === 'en' ? 'bg-accent text-accent-foreground font-medium' : 'hover:bg-accent/50'}`}
+            >
+              English
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
 

@@ -1,13 +1,11 @@
-import { notFound } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
-import { formatDistanceToNow } from 'date-fns'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { ExternalLink, ArrowLeft } from 'lucide-react'
-import Image from 'next/image'
+import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
-import AiSummary from '@/components/ai-summary'
+import { notFound } from 'next/navigation'
 import { PersistentNav } from '@/components/persistent-nav'
+import { ArticleContent } from '@/components/article-content'
+import { createClient } from '@/lib/supabase/server'
 import { extractArticleIdFromSlug } from '@/lib/url-utils'
+import { formatDistanceToNow } from 'date-fns'
 
 interface ArticlePageProps {
   params: Promise<{
@@ -68,113 +66,20 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
               <span>Articles</span>
             </Link>
             <span>/</span>
-            <span className="text-white truncate">{article.title}</span>
+            <span className="text-white truncate">{article.title_english || article.title}</span>
           </div>
         </nav>
 
-        {/* Article Header */}
-        <header className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold mb-4 leading-tight">
-            {article.title}
-          </h1>
-          
-          {/* Author Info */}
-          <div className="flex items-center gap-3 mb-4">
-            <Avatar className="h-12 w-12">
-              {avatarUrl ? (
-                <AvatarImage 
-                  src={avatarUrl} 
-                  alt={`${article.author_name} profile picture`}
-                />
-              ) : null}
-              <AvatarFallback className="text-sm font-medium bg-gray-600 text-white">
-                {authorInitials}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <div className="font-medium text-white">{article.author_name}</div>
-              <div className="text-sm text-gray-400">@{authorHandle}</div>
-            </div>
-          </div>
-
-          {/* Publication Date */}
-          {publishedDate && (
-            <div className="text-sm text-gray-400 mb-4">
-              Published {relativeTime}
-            </div>
-          )}
-
-          {/* Featured Image */}
-          {coverUrl && (
-            <div className="mb-6">
-              <Image
-                src={coverUrl}
-                alt={`Cover for ${article.title}`}
-                width={800}
-                height={400}
-                className="w-full h-64 md:h-96 object-cover rounded-lg border border-gray-700"
-                loading="lazy"
-                unoptimized
-                referrerPolicy="no-referrer"
-              />
-            </div>
-          )}
-
-
-
-          {/* AI Summary Section */}
-          {article.summary_english && (
-            <AiSummary
-              summaryEnglish={article.summary_english}
-              summaryChinese={article.summary_chinese}
-              summaryGeneratedAt={article.summary_generated_at}
-            />
-          )}
-        </header>
-
         {/* Article Content */}
-        <article className="prose prose-invert prose-lg max-w-none">
-          {article.full_article_content ? (
-            <div 
-              className="whitespace-pre-wrap leading-relaxed text-gray-200"
-              dangerouslySetInnerHTML={{ __html: article.full_article_content.replace(/\n/g, '<br />') }}
-            />
-          ) : (
-            <div className="text-gray-400 italic">
-              Full article content is not available.
-            </div>
-          )}
-        </article>
-
-
-
-        {/* Footer */}
-        <footer className="mt-12 pt-8 border-t border-gray-800">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            {/* Category */}
-            {article.category && (
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-400">Category:</span>
-                <span className="inline-flex items-center rounded-full bg-gray-800 text-gray-300 border border-gray-700 px-3 py-1 text-sm">
-                  {article.category}
-                </span>
-              </div>
-            )}
-
-            {/* Original Article Link */}
-            {article.article_url && (
-              <a
-                href={article.article_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 transition-colors"
-              >
-                <ExternalLink className="h-4 w-4" />
-                <span>View original article</span>
-              </a>
-            )}
-          </div>
-        </footer>
+        <ArticleContent
+          article={article}
+          authorInitials={authorInitials}
+          authorHandle={authorHandle}
+          avatarUrl={avatarUrl}
+          coverUrl={coverUrl}
+          publishedDate={publishedDate}
+          relativeTime={relativeTime}
+        />
       </div>
     </div>
   )
@@ -207,11 +112,11 @@ export async function generateMetadata({ params }: ArticlePageProps) {
   }
 
   return {
-    title: article.title,
-    description: article.article_preview_text || 'Read this article',
+    title: article.title_english || article.title,
+    description: article.article_preview_text_english || article.article_preview_text || 'Read this article',
     openGraph: {
-      title: article.title,
-      description: article.article_preview_text || 'Read this article',
+      title: article.title_english || article.title,
+      description: article.article_preview_text_english || article.article_preview_text || 'Read this article',
       images: article.image ? [{ url: article.image }] : [],
     },
   }

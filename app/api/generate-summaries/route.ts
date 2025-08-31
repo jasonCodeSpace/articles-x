@@ -9,7 +9,7 @@ export async function POST(_request: NextRequest) {
     // 先获取最近发布的100条推文对应的文章
     const { data: recentArticles, error: fetchError } = await supabase
       .from('articles')
-      .select('id, title, full_article_content, summary_chinese, summary_english, summary_generated_at, tweet_published_at, category, language')
+      .select('id, title, full_article_content, summary_chinese, summary_english, summary_generated_at, tweet_published_at, category, language, title_english, article_preview_text_english, full_article_content_english, tweet_text, article_preview_text')
       .not('full_article_content', 'is', null)
       .not('tweet_published_at', 'is', null)
       .order('tweet_published_at', { ascending: false })
@@ -23,9 +23,9 @@ export async function POST(_request: NextRequest) {
       );
     }
     
-    // 从最近100条文章中筛选出没有中文摘要或没有分类的文章
+    // 从最近100条文章中筛选出没有中文摘要、没有分类或没有英文翻译的文章
     const articles = recentArticles?.filter(article => 
-      !article.summary_chinese || !article.category
+      !article.summary_chinese || !article.category || (!article.title_english && article.language !== 'en')
     ) || [];
     
     if (!articles || articles.length === 0) {
@@ -52,16 +52,31 @@ export async function POST(_request: NextRequest) {
         
         const analysis = await generateArticleAnalysis(article.full_article_content, article.title);
         
+        // 准备更新数据
+        const updateData: any = {
+          summary_chinese: analysis.summary.chinese,
+          summary_english: analysis.summary.english,
+          summary_generated_at: new Date().toISOString(),
+          category: analysis.category,
+          language: analysis.language
+        };
+
+        // 如果有英文翻译，添加翻译字段
+        if (analysis.english_translation) {
+          updateData.title_english = analysis.english_translation.title;
+          updateData.article_preview_text_english = analysis.english_translation.article_preview_text;
+          updateData.full_article_content_english = analysis.english_translation.full_article_content;
+        } else if (analysis.language === 'en') {
+          // 如果文章本身就是英文，直接复制原内容
+          updateData.title_english = article.title;
+          updateData.article_preview_text_english = article.article_preview_text || '';
+          updateData.full_article_content_english = article.full_article_content;
+        }
+
         // 更新数据库
         const { error: updateError } = await supabase
           .from('articles')
-          .update({
-            summary_chinese: analysis.summary.chinese,
-            summary_english: analysis.summary.english,
-            summary_generated_at: new Date().toISOString(),
-            category: analysis.category,
-            language: analysis.language
-          })
+          .update(updateData)
           .eq('id', article.id);
         
         if (updateError) {

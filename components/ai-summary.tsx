@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { formatDistanceToNow } from 'date-fns'
 import { ChevronDown, ChevronUp } from 'lucide-react'
+import { useLanguage } from '@/contexts/language-context'
 
 interface AiSummaryProps {
   summaryEnglish: string
@@ -15,7 +16,7 @@ export default function AiSummary({
   summaryChinese, 
   summaryGeneratedAt 
 }: AiSummaryProps) {
-  const [language, setLanguage] = useState<'en' | 'zh'>('en')
+  const { language } = useLanguage()
   const [isCollapsed, setIsCollapsed] = useState(true)
   
   const currentSummary = language === 'en' ? summaryEnglish : (summaryChinese || summaryEnglish)
@@ -38,33 +39,7 @@ export default function AiSummary({
           )}
         </button>
         
-        {/* Language Toggle Buttons - only show when expanded */}
-        {!isCollapsed && (
-          <div className="flex items-center gap-1 bg-gray-800 rounded-lg p-1">
-            <button
-              onClick={() => setLanguage('en')}
-              className={`px-3 py-1 text-sm font-medium rounded transition-colors ${
-                language === 'en'
-                  ? 'bg-blue-600 text-white'
-                  : 'text-gray-400 hover:text-white hover:bg-gray-700'
-              }`}
-            >
-              EN
-            </button>
-            {summaryChinese && (
-              <button
-                onClick={() => setLanguage('zh')}
-                className={`px-3 py-1 text-sm font-medium rounded transition-colors ${
-                  language === 'zh'
-                    ? 'bg-blue-600 text-white'
-                    : 'text-gray-400 hover:text-white hover:bg-gray-700'
-                }`}
-              >
-                中文
-              </button>
-            )}
-          </div>
-        )}
+
       </div>
       
       {/* Collapsible content */}

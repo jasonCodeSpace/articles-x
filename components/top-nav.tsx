@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { LogoutButton } from '@/components/logout-button'
+import { useLanguage } from '@/contexts/language-context'
 
 import {
   DropdownMenu,
@@ -10,7 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown, Languages } from 'lucide-react'
 import Link from 'next/link'
 
 interface TopNavProps {
@@ -28,6 +29,7 @@ interface TopNavProps {
 export function TopNav({ user, categories }: TopNavProps) {
   const userDisplayName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User'
   const userInitial = userDisplayName.charAt(0).toUpperCase()
+  const { language, setLanguage } = useLanguage()
 
   return (
     <nav className="fixed top-0 left-0 right-0 bg-gray-900/95 backdrop-blur-sm border-b border-gray-800 z-50">
@@ -77,6 +79,37 @@ export function TopNav({ user, categories }: TopNavProps) {
                     </DropdownMenuItem>
                   ))}
                 </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
+          {/* Language Switcher */}
+          <div className="hidden md:flex items-center gap-2 mr-4">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="bg-transparent hover:bg-gray-800 text-gray-300 border-gray-600 hover:border-gray-500 flex items-center gap-2"
+                >
+                  <Languages className="h-4 w-4" />
+                  {language === 'en' ? 'EN' : 'Original'}
+                  <ChevronDown className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="bg-gray-900 border-gray-700">
+                <DropdownMenuItem 
+                  onClick={() => setLanguage('en')}
+                  className={`text-gray-300 hover:text-white hover:bg-gray-800 cursor-pointer ${language === 'en' ? 'bg-gray-800 text-white' : ''}`}
+                >
+                  EN (English)
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => setLanguage('original')}
+                  className={`text-gray-300 hover:text-white hover:bg-gray-800 cursor-pointer ${language === 'original' ? 'bg-gray-800 text-white' : ''}`}
+                >
+                  Original
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

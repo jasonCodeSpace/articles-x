@@ -21,10 +21,18 @@ export interface ArticleSummary {
   english: string;
 }
 
+export interface ArticleTranslation {
+  title: string;
+  tweet_text: string;
+  article_preview_text: string;
+  full_article_content: string;
+}
+
 export interface ArticleAnalysis {
   summary: ArticleSummary;
   category: string;
   language: string;
+  english_translation?: ArticleTranslation;
 }
 
 /**
@@ -43,11 +51,12 @@ export async function generateArticleAnalysis(
       throw new Error('Failed to initialize Gemini model');
     }
     
-    // 构建提示词，包含摘要生成、分类和语言检测
-    const prompt = `TASK: Read the article and perform three tasks:
+    // 构建提示词，包含摘要生成、分类、语言检测和英文翻译
+    const prompt = `TASK: Read the article and perform four tasks:
 1. Detect the primary language of the article
 2. Categorize the article with ONE category from the provided list
 3. Produce an ULTRA-CONCISE, read-aloud friendly summary in English and Chinese
+4. If the article is not in English, provide English translations of title, tweet text, preview text, and full content
 
 LANGUAGE DETECTION:
 Detect the primary language of the article content. Use ISO 639-1 language codes:
@@ -187,6 +196,12 @@ CATEGORY: [selected category]
 
 [Chinese summary]
 
+ENGLISH_TRANSLATION: [only if article language is not English]
+TITLE: [English translation of title]
+TWEET_TEXT: [English translation of tweet text]
+PREVIEW_TEXT: [English translation of preview text]
+FULL_CONTENT: [English translation of full content]
+
 RULES:
 - No intro/outro, no repetition, no adjectives unless essential.
 - Prefer active voice; keep parallel structure across bullets.
@@ -195,6 +210,9 @@ RULES:
 - Do not use asterisk symbols in the output.
 - Choose the most specific and relevant category.
 - Detect language based on the actual content, not the title.
+- For English translations: maintain original meaning, use natural English, preserve technical terms and proper nouns.
+- For English translations: ALWAYS provide actual translations, never use "not applicable", "not stated", or similar phrases.
+- If article is already in English, do not include ENGLISH_TRANSLATION section.
 
 Article Title: ${title}
 
@@ -214,8 +232,8 @@ ${content.substring(0, 8000)}`; // 限制内容长度避免超出API限制
     const category = categoryMatch ? categoryMatch[1].trim() : 'Tech'; // 默认分类
 
     // 解析响应，分离中文和英文总结
-    const englishMatch = text.match(/English[\s\S]*?(?=中文|$)/i);
-    const chineseMatch = text.match(/中文[\s\S]*$/i);
+    const englishMatch = text.match(/English[\s\S]*?(?=中文|ENGLISH_TRANSLATION|$)/i);
+    const chineseMatch = text.match(/中文[\s\S]*?(?=ENGLISH_TRANSLATION|$)/i);
     
     let summary: ArticleSummary;
     
@@ -230,7 +248,7 @@ ${content.substring(0, 8000)}`; // 限制内容长度避免超出API限制
       if (parts.length >= 2) {
         summary = {
           english: parts[0].replace(/CATEGORY:[^\n]*\n?/i, '').trim(),
-          chinese: parts[1].trim()
+          chinese: parts[1].split(/ENGLISH_TRANSLATION/i)[0].trim()
         };
       } else {
         // 最后的备用方案
@@ -247,10 +265,43 @@ ${content.substring(0, 8000)}`; // 限制内容长度避免超出API限制
     summary.english = summary.english.replace(/\*/g, '');
     summary.chinese = summary.chinese.replace(/\*/g, '');
 
+    // 解析英文翻译（如果存在）
+    let english_translation: ArticleTranslation | undefined;
+    const translationMatch = text.match(/ENGLISH_TRANSLATION:[\s\S]*$/i);
+    
+    if (translationMatch && language !== 'en') {
+      const translationText = translationMatch[0];
+      const titleMatch = translationText.match(/TITLE:\s*([^\n]+)/i);
+      const tweetMatch = translationText.match(/TWEET_TEXT:\s*([^\n]+)/i);
+      const previewMatch = translationText.match(/PREVIEW_TEXT:\s*([^\n]+)/i);
+      const contentMatch = translationText.match(/FULL_CONTENT:\s*([\s\S]*?)(?=\n\w+:|$)/i);
+      
+      // 过滤无效翻译值的函数
+       const isValidTranslation = (text: string): boolean => {
+         const invalidValues = ['not applicable', 'not stated', 'n/a', 'na', 'none', 'null', 'undefined'];
+         return Boolean(text) && !invalidValues.includes(text.toLowerCase().trim());
+       };
+      
+      if (titleMatch || tweetMatch || previewMatch || contentMatch) {
+        const titleText = titleMatch ? titleMatch[1].trim() : '';
+        const tweetText = tweetMatch ? tweetMatch[1].trim() : '';
+        const previewText = previewMatch ? previewMatch[1].trim() : '';
+        const contentText = contentMatch ? contentMatch[1].trim() : '';
+        
+        english_translation = {
+          title: isValidTranslation(titleText) ? titleText : title,
+          tweet_text: isValidTranslation(tweetText) ? tweetText : '',
+          article_preview_text: isValidTranslation(previewText) ? previewText : '',
+          full_article_content: isValidTranslation(contentText) ? contentText : content.substring(0, 8000)
+        };
+      }
+    }
+
     return {
       summary,
       category,
-      language
+      language,
+      english_translation
     };
   } catch (error) {
     console.error('Error generating article analysis:', error);

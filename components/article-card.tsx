@@ -7,6 +7,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
 import { generateArticleUrl, generateShareableUrl } from '@/lib/url-utils'
+import { useLanguage } from '@/contexts/language-context'
 
 export interface Article {
   id: string
@@ -49,6 +50,10 @@ export interface Article {
   summary_generated_at?: string
   // Language and category fields
   language?: string
+  // English translation fields
+  title_english?: string
+  article_preview_text_english?: string
+  full_article_content_english?: string
 }
 
 interface ArticleCardProps {
@@ -88,6 +93,7 @@ export function ArticleCard({ article, className, index: _index = 0 }: ArticleCa
   const [_imageError, setImageError] = useState(false)
   const [_imageLoading, setImageLoading] = useState(true)
   const [isShared, setIsShared] = useState(false)
+  const { language } = useLanguage()
   
   // 只使用数据库中的语言字段，如果没有数据则不显示语言标签
   const languageFromDB = article.language
@@ -142,8 +148,10 @@ export function ArticleCard({ article, className, index: _index = 0 }: ArticleCa
   // Use author_handle directly
   const authorHandle = article.author_handle || 'unknown'
 
-  // Prefer description, then excerpt, then a small slice of content
-  const descriptionText = article.description || article.excerpt || article.content
+  // Field fallbacks for content based on language preference
+  const displayTitle = language === 'en' ? (article.title_english || article.title) : article.title
+  const displayPreview = language === 'en' ? (article.article_preview_text_english || article.article_preview_text) : article.article_preview_text
+  const descriptionText = displayPreview || article.description || article.excerpt || article.content
 
   // Field fallbacks for images
   const avatarUrl = article.author_profile_image || article.author_avatar
@@ -190,16 +198,16 @@ export function ArticleCard({ article, className, index: _index = 0 }: ArticleCa
         {/* Article title */}
         <Link href={articleUrl} className="block">
           <h3 className="text-white text-lg font-semibold leading-tight line-clamp-2 group-hover:text-blue-400 transition-colors duration-200 mb-3">
-            {article.title}
+            {displayTitle}
           </h3>
         </Link>
         
         {/* Article preview text */}
         <div className="flex-grow">
-          {(article.article_preview_text || descriptionText) && (
+          {descriptionText && (
             <Link href={articleUrl} className="block">
               <p className="text-gray-400 text-sm leading-relaxed line-clamp-3 mb-4 hover:text-gray-300 transition-colors cursor-pointer">
-                {article.article_preview_text || descriptionText}
+                {descriptionText}
               </p>
             </Link>
           )}
@@ -283,8 +291,10 @@ export function ArticleCard({ article, className, index: _index = 0 }: ArticleCa
         {/* Article link */}
         <div className="mb-3">
           <Link
-            href={articleUrl}
+            href={article.article_url || articleUrl}
             className="inline-flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 transition-colors"
+            target="_blank"
+            rel="noopener noreferrer"
           >
             <ExternalLink className="h-3 w-3" />
             <span>Read article</span>

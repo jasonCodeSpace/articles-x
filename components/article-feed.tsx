@@ -3,6 +3,7 @@
 import { ArticleCard, Article } from '@/components/article-card'
 import { FeedEmptyState } from '@/components/feed-empty-state'
 import { FeedLoading } from '@/components/feed-loading'
+import { FeedToolbar } from '@/components/feed-toolbar'
 import { Pagination } from '@/components/pagination'
 import { useArticleFeed } from '@/hooks/use-article-feed'
 import { Button as _Button } from '@/components/ui/button'
@@ -21,14 +22,15 @@ export function ArticleFeed({ initialArticles, initialCategories, initialCategor
     isLoading,
     error,
     searchQuery,
-    sortOption: _sortOption,
-    selectedCategory: _selectedCategory,
+    sortOption,
+    selectedCategory,
+    categories,
     currentPage,
     totalPages,
+    handleSearch,
+    handleSort,
     handlePageChange,
-    handleTimeSort: _handleTimeSort,
-    handleViewsSort: _handleViewsSort,
-    handleCategoryChange: _handleCategoryChange,
+    handleCategoryChange,
     clearSearch,
     retry
   } = useArticleFeed({
@@ -44,8 +46,18 @@ export function ArticleFeed({ initialArticles, initialCategories, initialCategor
   }
 
   return (
-    <div className="space-y-6">
-
+    <div className="space-y-4">
+      {/* Feed Toolbar */}
+      <FeedToolbar
+        onSearchChange={handleSearch}
+        onSortChange={handleSort}
+        onCategoryChange={handleCategoryChange}
+        currentSort={sortOption}
+        currentCategory={selectedCategory}
+        searchValue={searchQuery}
+        categories={categories}
+        isLoading={isLoading}
+      />
 
       {/* X.com style feed - single column */}
       {error === 'no-results' ? (

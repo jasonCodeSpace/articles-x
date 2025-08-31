@@ -59,22 +59,24 @@ export function TopNav({ user, categories }: TopNavProps) {
                   <ChevronDown className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="bg-gray-900 border-gray-700">
-                <DropdownMenuItem asChild>
-                  <Link href="/articles" className="text-gray-300 hover:text-white hover:bg-gray-800 cursor-pointer">
-                    All
-                  </Link>
-                </DropdownMenuItem>
-                {categories.map((category) => (
-                  <DropdownMenuItem key={category} asChild>
-                    <Link 
-                      href={`/articles?category=${encodeURIComponent(category)}`}
-                      className="text-gray-300 hover:text-white hover:bg-gray-800 cursor-pointer"
-                    >
-                      {category}
+              <DropdownMenuContent className="bg-gray-900 border-gray-700 w-[280px] sm:w-[420px] max-h-[400px] overflow-y-auto p-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1">
+                  <DropdownMenuItem asChild>
+                    <Link href="/articles" className="text-gray-300 hover:text-white hover:bg-gray-800 cursor-pointer text-sm px-2 py-1.5">
+                      All
                     </Link>
                   </DropdownMenuItem>
-                ))}
+                  {categories.map((category) => (
+                    <DropdownMenuItem key={category} asChild>
+                      <Link 
+                        href={`/articles?category=${encodeURIComponent(category)}`}
+                        className="text-gray-300 hover:text-white hover:bg-gray-800 cursor-pointer text-sm px-2 py-1.5"
+                      >
+                        {category}
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
+                </div>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

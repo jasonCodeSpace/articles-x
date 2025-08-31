@@ -49,22 +49,7 @@ export function TopNavigation({
         <h1 className="text-xl font-bold text-white">Xarticle</h1>
       </div>
 
-      {/* Center - Search */}
-      <div className="flex-1 max-w-md mx-8">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input
-            type="text"
-            placeholder="Search articles"
-            value={searchInput}
-            onChange={(e) => {
-              setSearchInput(e.target.value)
-              handleSearchChange(e.target.value)
-            }}
-            className="pl-10 pr-4 bg-gray-900/50 border-gray-600/50 text-white placeholder:text-gray-400 focus:border-blue-400"
-          />
-        </div>
-      </div>
+
 
       {/* Right side - Subscribe and User */}
       <div className="flex items-center gap-4">

@@ -64,9 +64,9 @@ export function FeedToolbar({
   const currentCategoryOption = categoryOptions.find(opt => opt.value === currentCategory) || categoryOptions[0]
 
   return (
-    <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between p-4 bg-transparent border-b border-gray-700/50">
-      {/* Left side - Search */}
-      <form onSubmit={handleSearchSubmit} className="flex-1 max-w-md">
+    <div className="flex flex-col sm:flex-row gap-3 items-center justify-center p-3 bg-transparent border-b border-gray-700/50 -mt-22 sm:-mt-14">
+      {/* Centered Search */}
+      <form onSubmit={handleSearchSubmit} className="w-full max-w-md sm:max-w-sm">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
@@ -77,37 +77,41 @@ export function FeedToolbar({
               setSearchInput(e.target.value)
               handleSearchChange(e.target.value)
             }}
-            className="pl-10 pr-4 bg-gray-900/50 border-gray-600/50 text-white placeholder:text-gray-400 focus:border-blue-400"
+            className="pl-10 pr-4 bg-gray-900/50 border-gray-600/50 text-white placeholder:text-gray-400 focus:border-blue-400 text-center rounded-full"
             disabled={isLoading}
           />
         </div>
       </form>
 
       {/* Right side - Filters and Sort */}
-      <div className="flex items-center gap-2">
+      <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
         {/* Category Filter */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button 
               variant="outline" 
-              className="gap-2"
+              className="gap-2 rounded-full w-full sm:w-auto text-sm"
               disabled={isLoading}
             >
               <Filter className="h-4 w-4" />
-              {currentCategoryOption.label}
+              <span className="truncate">{currentCategoryOption.label}</span>
               <ChevronDown className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
-            {categoryOptions.map((option) => (
-              <DropdownMenuItem
-                key={option.value}
-                onClick={() => onCategoryChange(option.value)}
-                className={currentCategory === option.value ? 'bg-accent' : ''}
-              >
-                {option.label}
-              </DropdownMenuItem>
-            ))}
+          <DropdownMenuContent align="end" className="w-[200px] max-h-[300px] overflow-y-auto p-1 bg-gray-900 border-gray-700 rounded-xl">
+            <div className="flex flex-col gap-0.5">
+              {categoryOptions.map((option) => (
+                <DropdownMenuItem
+                  key={option.value}
+                  onClick={() => onCategoryChange(option.value)}
+                  className={`cursor-pointer text-sm px-3 py-2 rounded-lg transition-colors ${
+                    currentCategory === option.value ? 'bg-accent text-accent-foreground font-medium' : 'hover:bg-accent/50'
+                  }`}
+                >
+                  {option.label}
+                </DropdownMenuItem>
+              ))}
+            </div>
           </DropdownMenuContent>
         </DropdownMenu>
 
@@ -116,20 +120,20 @@ export function FeedToolbar({
           <DropdownMenuTrigger asChild>
             <Button 
               variant="outline" 
-              className="gap-2"
+              className="gap-2 rounded-full w-full sm:w-auto text-sm"
               disabled={isLoading}
             >
               {currentSortOption && <currentSortOption.icon className="h-4 w-4" />}
-              {currentSortOption?.label}
+              <span className="truncate">{currentSortOption?.label}</span>
               <ChevronDown className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-40">
+          <DropdownMenuContent align="end" className="w-40 bg-gray-900 border-gray-700 rounded-xl">
             {sortOptions.map((option) => (
               <DropdownMenuItem
                 key={option.value}
                 onClick={() => onSortChange(option.value)}
-                className={currentSort === option.value ? 'bg-accent' : ''}
+                className={`rounded-lg ${currentSort === option.value ? 'bg-accent' : ''}`}
               >
                 <option.icon className="h-4 w-4 mr-2" />
                 {option.label}

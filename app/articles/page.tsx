@@ -3,6 +3,7 @@ import { fetchArticles, getArticleCategories } from '@/lib/articles'
 import { ArticleFeed } from '@/components/article-feed'
 import { FeedLoading } from '@/components/feed-loading'
 
+
 interface PageProps {
   searchParams: Promise<{ category?: string; search?: string; page?: string }>
 }

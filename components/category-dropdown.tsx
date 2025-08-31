@@ -39,23 +39,25 @@ export function CategoryDropdown({ categories, selectedCategory, onCategoryChang
           <ChevronDown className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-[140px]">
-        {allCategories.map((category) => {
-          const categoryValue = category === 'All' ? 'all' : category
-          return (
-            <DropdownMenuItem
-              key={category}
-              onClick={() => handleCategorySelect(category)}
-              className={`cursor-pointer ${
-                selectedCategory === categoryValue 
-                  ? 'bg-accent text-accent-foreground' 
-                  : ''
-              }`}
-            >
-              {category}
-            </DropdownMenuItem>
-          )
-        })}
+      <DropdownMenuContent align="start" className="w-[200px] p-1 max-h-[300px] overflow-y-auto">
+        <div className="flex flex-col gap-0.5">
+          {allCategories.map((category) => {
+            const categoryValue = category === 'All' ? 'all' : category
+            return (
+              <DropdownMenuItem
+                key={category}
+                onClick={() => handleCategorySelect(category)}
+                className={`cursor-pointer text-sm px-3 py-2 rounded-sm transition-colors ${
+                  selectedCategory === categoryValue 
+                    ? 'bg-accent text-accent-foreground font-medium' 
+                    : 'hover:bg-accent/50'
+                }`}
+              >
+                {category}
+              </DropdownMenuItem>
+            )
+          })}
+        </div>
       </DropdownMenuContent>
     </DropdownMenu>
   )

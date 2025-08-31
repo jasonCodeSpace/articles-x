@@ -44,7 +44,6 @@ export function ModernNav({ user, categories, className }: ModernNavProps) {
 
   const navItems: NavItem[] = [
     { name: 'Home', url: '/articles', icon: Home },
-    { name: 'Categories', url: '#', icon: Filter },
     { name: 'Profile', url: '#', icon: User },
   ]
 
@@ -60,17 +59,7 @@ export function ModernNav({ user, categories, className }: ModernNavProps) {
 
   return (
     <>
-      {/* Mobile Search Bar - Top of page */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-black/90 backdrop-blur-lg border-b border-gray-700/50 px-4 py-3">
-        <div className="relative">
-          <input
-            type="text"
-            placeholder="Search articles..."
-            className="w-full bg-gray-800/50 border border-gray-600/50 rounded-full px-4 py-3 pl-10 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50"
-          />
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-        </div>
-      </div>
+
 
       {/* Desktop Navigation */}
       <nav className="hidden md:block fixed top-0 left-1/2 -translate-x-1/2 z-50 mt-6">
@@ -85,56 +74,7 @@ export function ModernNav({ user, categories, className }: ModernNavProps) {
 
           {/* Navigation Items */}
           <div className="flex items-center gap-2">
-            {/* Search Bar */}
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search articles..."
-                className="bg-gray-800/50 border border-gray-600/50 rounded-full px-4 py-2 pl-10 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 w-64"
-              />
-              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            </div>
 
-            {/* Categories */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button
-                  className="relative cursor-pointer text-sm font-semibold px-4 py-2 rounded-full transition-colors text-gray-400 hover:text-white hover:bg-gray-800/50"
-                  onClick={() => setActiveTab('Categories')}
-                >
-                  <Filter size={18} strokeWidth={2.5} />
-                  {activeTab === 'Categories' && (
-                    <motion.div
-                      layoutId="desktop-indicator"
-                      className="absolute inset-0 w-full bg-blue-500/20 rounded-full -z-10"
-                      initial={false}
-                      transition={{
-                        type: "spring",
-                        stiffness: 300,
-                        damping: 30,
-                      }}
-                    />
-                  )}
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="bg-black/90 backdrop-blur-lg border-gray-700/50 mt-2">
-                <DropdownMenuItem asChild>
-                  <Link href="/articles" className="text-gray-300 hover:text-white hover:bg-gray-800/50 cursor-pointer">
-                    All
-                  </Link>
-                </DropdownMenuItem>
-                {categories.map((category) => (
-                  <DropdownMenuItem key={category} asChild>
-                    <Link 
-                      href={`/articles?category=${encodeURIComponent(category)}`}
-                      className="text-gray-300 hover:text-white hover:bg-gray-800/50 cursor-pointer"
-                    >
-                      {category}
-                    </Link>
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
 
             {/* User Profile Dropdown */}
             <DropdownMenu>
@@ -193,59 +133,18 @@ export function ModernNav({ user, categories, className }: ModernNavProps) {
         )}
       >
         <div className="flex items-center gap-2 bg-black/80 border border-gray-700/50 backdrop-blur-lg py-2 px-2 rounded-full shadow-2xl">
+          {/* Mobile Logo */}
+          <Link href="/articles" className="flex items-center gap-2 group cursor-pointer">
+            <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center hover:bg-gray-200 transition-all duration-300 group-hover:scale-110">
+              <span className="text-xs font-black text-black">𝕏</span>
+            </div>
+            <span className="text-sm font-bold text-white group-hover:text-blue-400 transition-colors">articles</span>
+          </Link>
           {navItems.map((item) => {
             const Icon = item.icon
             const isActive = activeTab === item.name
 
-            if (item.name === 'Categories') {
-              return (
-                <DropdownMenu key={item.name}>
-                  <DropdownMenuTrigger asChild>
-                    <button
-                      className={cn(
-                        "relative cursor-pointer text-sm font-semibold px-4 py-2 rounded-full transition-colors",
-                        "text-gray-400 hover:text-white",
-                        isActive && "bg-gray-800/50 text-white",
-                      )}
-                      onClick={() => setActiveTab(item.name)}
-                    >
-                      <Icon size={18} strokeWidth={2.5} />
-                      {isActive && (
-                        <motion.div
-                          layoutId="mobile-lamp"
-                          className="absolute inset-0 w-full bg-blue-500/20 rounded-full -z-10"
-                          initial={false}
-                          transition={{
-                            type: "spring",
-                            stiffness: 300,
-                            damping: 30,
-                          }}
-                        />
-                      )}
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="bg-black/90 backdrop-blur-lg border-gray-700/50 mb-2">
-                    <DropdownMenuItem asChild>
-                      <Link href="/articles" className="text-gray-300 hover:text-white hover:bg-gray-800/50 cursor-pointer">
-                        All
-                      </Link>
-                    </DropdownMenuItem>
-                    {categories.map((category) => (
-                      <DropdownMenuItem key={category} asChild>
-                        <Link 
-                          href={`/articles?category=${encodeURIComponent(category)}`}
-                          className="text-gray-300 hover:text-white hover:bg-gray-800/50 cursor-pointer"
-                        >
-                          {category}
-                        </Link>
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )
-            }
-
-            if (item.name === 'Profile') {
+if (item.name === 'Profile') {
               return (
                 <DropdownMenu key={item.name}>
                   <DropdownMenuTrigger asChild>

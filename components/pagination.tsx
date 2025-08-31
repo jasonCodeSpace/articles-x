@@ -14,7 +14,9 @@ export function Pagination({ currentPage, totalPages, onPageChange, className = 
   if (totalPages <= 1) return null
 
   const getVisiblePages = () => {
-    const delta = 2
+    // Use smaller delta for mobile to show fewer pages
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 640
+    const delta = isMobile ? 1 : 2
     const range = []
     const rangeWithDots = []
 
@@ -42,14 +44,14 @@ export function Pagination({ currentPage, totalPages, onPageChange, className = 
   const visiblePages = getVisiblePages()
 
   return (
-    <div className={`flex items-center justify-center space-x-2 py-8 ${className}`}>
+    <div className={`flex items-center justify-center space-x-1 sm:space-x-2 py-8 px-2 sm:px-0 ${className}`}>
       {/* Previous button */}
       <Button
         variant="outline"
         size="sm"
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
-        className="border-gray-700 bg-gray-900 text-gray-300 hover:bg-gray-800 hover:text-white disabled:opacity-50"
+        className="border-gray-700 bg-gray-900 text-gray-300 hover:bg-gray-800 hover:text-white disabled:opacity-50 rounded-full"
       >
         <ChevronLeft className="h-4 w-4" />
         <span className="sr-only">Previous page</span>
@@ -59,7 +61,7 @@ export function Pagination({ currentPage, totalPages, onPageChange, className = 
       {visiblePages.map((page, index) => {
         if (page === '...') {
           return (
-            <span key={`dots-${index}`} className="px-2 text-gray-500">
+            <span key={`dots-${index}`} className="px-1 sm:px-2 text-gray-500 text-sm">
               ...
             </span>
           )
@@ -73,7 +75,7 @@ export function Pagination({ currentPage, totalPages, onPageChange, className = 
             size="sm"
             onClick={() => onPageChange(pageNumber)}
             className={`
-              min-w-[40px] h-9
+              min-w-[32px] sm:min-w-[40px] h-8 sm:h-9 text-xs sm:text-sm rounded-full
               ${currentPage === pageNumber 
                 ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700' 
                 : 'border-gray-700 bg-gray-900 text-gray-300 hover:bg-gray-800 hover:text-white'
@@ -91,7 +93,7 @@ export function Pagination({ currentPage, totalPages, onPageChange, className = 
         size="sm"
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
-        className="border-gray-700 bg-gray-900 text-gray-300 hover:bg-gray-800 hover:text-white disabled:opacity-50"
+        className="border-gray-700 bg-gray-900 text-gray-300 hover:bg-gray-800 hover:text-white disabled:opacity-50 rounded-full"
       >
         <ChevronRight className="h-4 w-4" />
         <span className="sr-only">Next page</span>

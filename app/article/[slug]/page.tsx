@@ -6,6 +6,7 @@ import { ExternalLink, ArrowLeft } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import AiSummary from '@/components/ai-summary'
+import { PersistentNav } from '@/components/persistent-nav'
 import { extractArticleIdFromSlug } from '@/lib/url-utils'
 
 interface ArticlePageProps {
@@ -55,7 +56,10 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      {/* Persistent Navigation */}
+      <PersistentNav />
+      
+      <div className="max-w-4xl mx-auto px-4 py-8 pt-24">
         {/* Breadcrumbs */}
         <nav className="mb-6">
           <div className="flex items-center gap-2 text-sm text-gray-400">

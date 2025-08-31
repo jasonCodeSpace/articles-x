@@ -133,7 +133,33 @@ If unsure, use 'en' as default.
 
 CATEGORY TASK:
 Select ONE category that best fits this article from the following list:
-AI, Agents, Models, Lending, DEX, Yield, Perps, Markets, Onchain, Airdrops, L1, L2, Wallets, Infrastructure, Oracles, Policy, Elections, Politics, Social, Media, History, Art, Culture, DAOs, Identity, SocialFi, Startups, VC, Business, GameFi, Esports, Gaming, Hardware, Software, Tech, Health, Science, Security, Education, Economics, Lifestyle, NFTs
+
+CRYPTO & BLOCKCHAIN:
+AI, Agents, Models, Lending, DEX, Yield, Perps, Markets, Onchain, Airdrops, L1, L2, Wallets, Infrastructure, Oracles, DAOs, Identity, SocialFi, NFTs
+
+POLITICS & SOCIETY:
+Policy, Elections, Politics, Social, Media, History, Culture, Security, Education
+
+BUSINESS & TECH:
+Startups, VC, Business, Tech, Hardware, Software, Science, Economics
+
+LIFESTYLE & ENTERTAINMENT:
+GameFi, Esports, Gaming, Health, Lifestyle, Art, Stories, Fiction, Sports
+
+CLASSIFICATION GUIDELINES:
+- Stories, fairy tales, personal narratives, creative writing, fictional characters → Stories
+- Political analysis, international relations, conflicts, propaganda, war, elections → Politics  
+- Technology companies, software, hardware, innovation, programming → Tech
+- Cryptocurrency, blockchain, DeFi protocols, trading → Use specific crypto categories
+- Opinion pieces about social issues, community discussions → Social
+- Historical events, cultural analysis, traditions → History or Culture
+- When unsure between similar categories, choose the more specific one
+
+EXAMPLES:
+- "Leah, The Faerie Warrior Princess" → Stories (fictional character story)
+- "Le menzogne della propaganda pro-palestinese" → Politics (political propaganda analysis)
+- "Apple releases new iPhone" → Tech (technology company product)
+- "DeFi protocol launches new yield farming" → Yield (crypto-specific)
 
 SUMMARY GOALS:
 - Convey the main thesis, all core points, critical facts (names/dates/numbers), nuances/caveats, and the conclusion.

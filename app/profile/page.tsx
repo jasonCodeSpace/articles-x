@@ -3,7 +3,7 @@ import { ClientNavWrapper } from '@/components/client-nav-wrapper'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { ArticleCard, Article } from '@/components/article-card'
+import { Article } from '@/components/article-card'
 import { Calendar, Settings, Bookmark, ChevronLeft, ChevronRight } from 'lucide-react'
 import { redirect } from 'next/navigation'
 import { formatDistanceToNow } from 'date-fns'
@@ -12,7 +12,7 @@ import Link from 'next/link'
 export default async function ProfilePage({
   searchParams,
 }: {
-  searchParams: { page?: string }
+  searchParams: Promise<{ page?: string }>
 }) {
   const supabase = await createClient()
   
@@ -31,8 +31,9 @@ export default async function ProfilePage({
   
   const categories = [...new Set(categoriesData?.map(item => item.category) || [])]
 
-  // Get pagination parameters
-  const currentPage = parseInt(searchParams.page || '1', 10)
+  // Pagination logic
+  const resolvedSearchParams = await searchParams
+  const currentPage = parseInt(resolvedSearchParams.page || '1', 10)
   const itemsPerPage = 10
   const offset = (currentPage - 1) * itemsPerPage
 

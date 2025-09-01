@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Mail, Lock, ArrowRight, CheckCircle, XCircle } from 'lucide-react'
+import { Mail, Lock, ArrowRight, CheckCircle, XCircle, ArrowLeft } from 'lucide-react'
 import { z } from 'zod'
 import Link from 'next/link'
 
@@ -67,6 +67,17 @@ export default function Login() {
       <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-radial from-blue-500/5 to-transparent rounded-full animate-pulse"></div>
       
       <div className="relative w-full max-w-md z-10">
+        {/* Back Button */}
+        <div className="mb-6 animate-slide-up">
+          <Link 
+            href="/articles" 
+            className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors group"
+          >
+            <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
+            <span className="text-sm">返回文章列表</span>
+          </Link>
+        </div>
+        
         {/* Main Container */}
         <div className="glass-dark p-8 rounded-3xl border border-gray-800/50 shadow-2xl backdrop-blur-xl animate-fade-in">
           {/* Header */}

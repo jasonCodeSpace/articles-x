@@ -297,7 +297,7 @@ export function ArticleCard({ article, className, index: _index = 0 }: ArticleCa
             rel="noopener noreferrer"
           >
             <ExternalLink className="h-3 w-3" />
-            <span>Read article</span>
+            <span>Read on X</span>
           </Link>
         </div>
         

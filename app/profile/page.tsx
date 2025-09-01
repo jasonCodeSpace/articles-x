@@ -4,11 +4,16 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ArticleCard, Article } from '@/components/article-card'
-import { Calendar, Settings, Bookmark } from 'lucide-react'
+import { Calendar, Settings, Bookmark, ChevronLeft, ChevronRight } from 'lucide-react'
 import { redirect } from 'next/navigation'
 import { formatDistanceToNow } from 'date-fns'
+import Link from 'next/link'
 
-export default async function ProfilePage() {
+export default async function ProfilePage({
+  searchParams,
+}: {
+  searchParams: { page?: string }
+}) {
   const supabase = await createClient()
   
   // Get current user
@@ -26,8 +31,19 @@ export default async function ProfilePage() {
   
   const categories = [...new Set(categoriesData?.map(item => item.category) || [])]
 
-  // Get user's bookmarked articles
-  const { data: bookmarksData } = await supabase
+  // Get pagination parameters
+  const currentPage = parseInt(searchParams.page || '1', 10)
+  const itemsPerPage = 10
+  const offset = (currentPage - 1) * itemsPerPage
+
+  // Get total count of bookmarks
+  const { count: totalBookmarks } = await supabase
+    .from('bookmarks')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', user.id)
+
+  // Get user's bookmarked articles with pagination
+  const { data: bookmarksData, error: bookmarksError } = await supabase
     .from('bookmarks')
     .select(`
       id,
@@ -36,16 +52,11 @@ export default async function ProfilePage() {
         id,
         title,
         slug,
-        content,
-        excerpt,
         author_name,
         author_handle,
         author_avatar,
-        featured_image_url,
         image,
         article_published_at,
-        created_at,
-        tags,
         category,
         article_url,
         tweet_id,
@@ -71,8 +82,54 @@ export default async function ProfilePage() {
     `)
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
+    .range(offset, offset + itemsPerPage - 1)
 
-  const bookmarkedArticles = (bookmarksData?.map(bookmark => bookmark.articles).filter(Boolean).flat() || []) as Article[]
+  if (bookmarksError) {
+    console.error('Error fetching bookmarks:', bookmarksError)
+  }
+
+  console.log('Bookmarks data:', JSON.stringify(bookmarksData, null, 2))
+  
+  const bookmarkedArticles = (bookmarksData?.map(bookmark => {
+    const article = Array.isArray(bookmark.articles) ? bookmark.articles[0] : bookmark.articles
+    if (!article) return null
+    // Add missing fields with defaults to match Article interface
+    return {
+      id: article.id,
+      title: article.title,
+      slug: article.slug,
+      author_name: article.author_name,
+      author_handle: article.author_handle,
+      author_avatar: article.author_avatar,
+      image: article.image,
+      featured_image_url: article.image,
+      article_published_at: article.article_published_at,
+      created_at: article.article_published_at || new Date().toISOString(),
+      tags: article.tag ? [article.tag] : [],
+      content: article.full_article_content || article.article_preview_text || '',
+      excerpt: article.article_preview_text || '',
+      category: article.category,
+      article_url: article.article_url,
+      tweet_id: article.tweet_id,
+      tweet_text: article.tweet_text,
+      tweet_published_at: article.tweet_published_at,
+      tweet_views: article.tweet_views,
+      tweet_replies: article.tweet_replies,
+      tweet_retweets: article.tweet_retweets,
+      tweet_likes: article.tweet_likes,
+      tweet_bookmarks: article.tweet_bookmarks,
+      article_preview_text: article.article_preview_text,
+      full_article_content: article.full_article_content,
+      updated_at: article.updated_at,
+      summary_chinese: article.summary_chinese,
+      summary_english: article.summary_english,
+      summary_generated_at: article.summary_generated_at,
+      language: article.language,
+      title_english: article.title_english,
+      article_preview_text_english: article.article_preview_text_english,
+      full_article_content_english: article.full_article_content_english
+    } as Article
+  }).filter(Boolean) || []) as Article[]
 
   // Get user stats
   const userDisplayName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User'
@@ -139,14 +196,116 @@ export default async function ProfilePage() {
             </CardHeader>
             <CardContent>
               {bookmarkedArticles.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {bookmarkedArticles.map((article) => (
-                    <ArticleCard
-                      key={article.id}
-                      article={article}
-                    />
-                  ))}
-                </div>
+                <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead className="bg-gray-700">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                            Title
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                            Description
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                            Author
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-700">
+                        {bookmarkedArticles.map((article) => {
+                          return (
+                            <tr key={article.id} className="hover:bg-gray-750">
+                              <td className="px-6 py-4 max-w-xs">
+                                 <Link 
+                                   href={`/article/${article.slug}`} 
+                                   className="text-white hover:text-blue-400 text-sm leading-tight block overflow-hidden"
+                                   style={{
+                                     display: '-webkit-box',
+                                     WebkitLineClamp: 2,
+                                     WebkitBoxOrient: 'vertical',
+                                     lineHeight: '1.4em',
+                                     maxHeight: '2.8em',
+                                     fontSize: '14px'
+                                   }}
+                                 >
+                                   {article.title}
+                                 </Link>
+                               </td>
+                               <td className="px-6 py-4 max-w-md">
+                                 {article.excerpt && (
+                                   <Link 
+                                     href={`/article/${article.slug}`} 
+                                     className="text-gray-300 hover:text-blue-400 text-sm leading-tight block overflow-hidden"
+                                     style={{
+                                       display: '-webkit-box',
+                                       WebkitLineClamp: 2,
+                                       WebkitBoxOrient: 'vertical',
+                                       lineHeight: '1.4em',
+                                       maxHeight: '2.8em',
+                                       fontSize: '14px'
+                                     }}
+                                   >
+                                     {article.excerpt}
+                                   </Link>
+                                 )}
+                               </td>
+                               <td className="px-6 py-4">
+                                  {article.author_handle ? (
+                                    <Link 
+                                      href={`/author/${article.author_handle}`} 
+                                      className="text-gray-300 hover:text-blue-400 text-sm"
+                                      style={{ fontSize: '14px' }}
+                                    >
+                                      {article.author_name}
+                                    </Link>
+                                  ) : (
+                                    <span className="text-gray-300 text-sm" style={{ fontSize: '14px' }}>
+                                      {article.author_name}
+                                    </span>
+                                  )}
+                                </td>
+                            </tr>
+                          )
+                        })}
+                      </tbody>
+                    </table>
+                   </div>
+                   
+                   {/* Pagination */}
+                   {totalBookmarks && totalBookmarks > itemsPerPage && (
+                     <div className="flex items-center justify-between px-6 py-4 border-t border-gray-700">
+                       <div className="text-sm text-gray-400">
+                         显示 {Math.min(offset + 1, totalBookmarks)} - {Math.min(offset + itemsPerPage, totalBookmarks)} 条，共 {totalBookmarks} 条
+                       </div>
+                       <div className="flex items-center space-x-2">
+                         {currentPage > 1 && (
+                           <Link
+                             href={`/profile?page=${currentPage - 1}`}
+                             className="flex items-center px-3 py-2 text-sm text-gray-400 hover:text-white border border-gray-600 rounded-md hover:border-gray-500"
+                           >
+                             <ChevronLeft className="w-4 h-4 mr-1" />
+                             上一页
+                           </Link>
+                         )}
+                         
+                         <span className="text-sm text-gray-400">
+                           第 {currentPage} 页，共 {Math.ceil((totalBookmarks || 0) / itemsPerPage)} 页
+                         </span>
+                         
+                         {currentPage < Math.ceil((totalBookmarks || 0) / itemsPerPage) && (
+                           <Link
+                             href={`/profile?page=${currentPage + 1}`}
+                             className="flex items-center px-3 py-2 text-sm text-gray-400 hover:text-white border border-gray-600 rounded-md hover:border-gray-500"
+                           >
+                             下一页
+                             <ChevronRight className="w-4 h-4 ml-1" />
+                           </Link>
+                         )}
+                       </div>
+                     </div>
+                   )}
+                 </div>
               ) : (
                 <div className="text-center py-12">
                   <Bookmark className="h-12 w-12 text-muted-foreground mx-auto mb-4" />

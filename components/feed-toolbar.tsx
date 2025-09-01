@@ -96,13 +96,13 @@ export function FeedToolbar({
         {/* Mobile: Unified Button */}
         <div className="sm:hidden w-full">
           <UnifiedMobileButton
-            onCategoryChange={onCategoryChange}
-            onLanguageChange={onLanguageChange}
-            currentCategory={currentCategory}
-            currentLanguage={currentLanguage}
-            _categories={categories}
-            isLoading={isLoading}
-          />
+          onCategoryChange={onCategoryChange}
+          onLanguageChange={onLanguageChange}
+          currentCategory={currentCategory}
+          currentLanguage={currentLanguage}
+          categories={categories}
+          isLoading={isLoading}
+        />
         </div>
 
         {/* Desktop: Separate Buttons */}

@@ -10,12 +10,16 @@ export async function middleware(request: NextRequest) {
   const isAuthRoute = pathname.startsWith('/login') || 
                        pathname.startsWith('/auth') || 
                        pathname.startsWith('/register') || 
-                       pathname.startsWith('/verify')
+                       pathname.startsWith('/verify') ||
+                       pathname.startsWith('/reset-password') ||
+                       pathname.startsWith('/debug-auth') ||
+                       pathname.startsWith('/test-auth') ||
+                       pathname.startsWith('/test-articles')
   const isPublicFile = pathname.startsWith('/_next') ||
                        pathname.startsWith('/favicon.ico') ||
                        pathname.startsWith('/api')
   
-  const isPublicRoute = pathname === '/new' || pathname === '/' || pathname === '/landing'
+  const isPublicRoute = pathname === '/' || pathname === '/landing'
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY

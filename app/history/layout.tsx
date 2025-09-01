@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { ModernNav } from '@/components/modern-nav'
+import { ClientNavWrapper } from '@/components/client-nav-wrapper'
 
 interface ProtectedLayoutProps {
   children: React.ReactNode
@@ -41,7 +41,7 @@ export default async function HistoryLayout({
 
   return (
     <div className="min-h-screen bg-background">
-      <ModernNav user={user ?? undefined} categories={categories} />
+      <ClientNavWrapper initialUser={user} categories={categories} />
       
       {/* Main Content */}
       <div className="pt-20 md:pt-16 pb-20 md:pb-0">

@@ -11,9 +11,8 @@ export const metadata: Metadata = {
   description: 'Discover the latest articles and insights',
 }
 
-// Enable static generation
-export const dynamic = 'force-static'
-export const revalidate = 3600 // Revalidate every hour
+// Enable dynamic rendering for search params
+export const dynamic = 'force-dynamic'
 
 // Generate static params for both daily and weekly views
 export async function generateStaticParams() {

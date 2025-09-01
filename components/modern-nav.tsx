@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils"
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ThemeToggle } from '@/components/theme-toggle'
 
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -45,10 +46,18 @@ export function ModernNav({ user, categories, className }: ModernNavProps) {
   // Determine current filter and button text
   const currentFilter = searchParams.get('filter')
   const isWeeklyFilter = currentFilter === 'week'
-  const buttonText = isWeeklyFilter ? 'Weekly Article' : 'Daily Article'
+  const buttonText = isWeeklyFilter ? 'This Week' : 'Today'
 
+  // Debug: Add console logs to understand user state
+  console.log('ModernNav - User object:', user)
+  console.log('ModernNav - User email:', user?.email)
+  console.log('ModernNav - User metadata:', user?.user_metadata)
+  
   const userDisplayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User'
   const userInitial = userDisplayName.charAt(0).toUpperCase()
+  
+  console.log('ModernNav - Display name:', userDisplayName)
+  console.log('ModernNav - User initial:', userInitial)
 
   const navItems: NavItem[] = [
     { name: 'Profile', url: '#', icon: User },
@@ -72,7 +81,7 @@ export function ModernNav({ user, categories, className }: ModernNavProps) {
       <nav className="hidden md:block fixed top-0 left-1/2 -translate-x-1/2 z-50 mt-6">
         <div className="flex items-center gap-4 bg-background/70 backdrop-blur-md border border-border py-3 px-6 rounded-full shadow-2xl">
           {/* Logo */}
-          <button onClick={() => router.push('/landing')} className="flex items-center gap-2 group cursor-pointer">
+          <button onClick={() => router.push('/landing')} className="flex items-center gap-2 group cursor-pointer hover:cursor-pointer">
             <div className="w-6 h-6 bg-foreground rounded-full flex items-center justify-center hover:bg-muted transition-all duration-300 group-hover:scale-110">
               <span className="text-xs font-black text-background">𝕏</span>
             </div>
@@ -84,7 +93,7 @@ export function ModernNav({ user, categories, className }: ModernNavProps) {
             {/* Navigation Buttons */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-full transition-colors">
+                <button className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-full transition-colors cursor-pointer">
                   {buttonText}
                   <ChevronDown className="w-3 h-3" />
                 </button>
@@ -95,7 +104,7 @@ export function ModernNav({ user, categories, className }: ModernNavProps) {
                     router.push('/new')
                     router.refresh()
                   }} className="w-full cursor-pointer text-left">
-                    Daily Article
+                    Today
                   </button>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
@@ -103,14 +112,14 @@ export function ModernNav({ user, categories, className }: ModernNavProps) {
                     router.push('/new?filter=week')
                     router.refresh()
                   }} className="w-full cursor-pointer text-left">
-                    Weekly Article
+                    This Week
                   </button>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
             <button 
               onClick={() => router.push('/history')}
-              className="px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-full transition-colors"
+              className="px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-full transition-colors cursor-pointer"
             >
               History
             </button>
@@ -119,7 +128,7 @@ export function ModernNav({ user, categories, className }: ModernNavProps) {
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-2 pl-2 hover:bg-accent/50 rounded-full p-2 transition-colors">
+                  <button className="flex items-center gap-2 pl-2 hover:bg-accent/50 rounded-full p-2 transition-colors cursor-pointer">
                     <Avatar className="w-6 h-6">
                       {user?.user_metadata?.avatar_url ? (
                         <AvatarImage src={user.user_metadata.avatar_url} alt={userDisplayName} />
@@ -133,11 +142,16 @@ export function ModernNav({ user, categories, className }: ModernNavProps) {
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="mt-2">
-                  <DropdownMenuItem className="cursor-pointer">
-                    <Settings size={16} className="mr-2" />
-                    Account
+                  <DropdownMenuItem asChild>
+                    <button 
+                      onClick={() => router.push('/profile')}
+                      className="w-full flex items-center justify-start cursor-pointer"
+                    >
+                      <Settings size={16} className="mr-2" />
+                      Account
+                    </button>
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
+                  <DropdownMenuItem className="p-0">
                     <ThemeToggle />
                   </DropdownMenuItem>
 
@@ -163,7 +177,7 @@ export function ModernNav({ user, categories, className }: ModernNavProps) {
               </DropdownMenu>
             ) : (
               <Link href="/login">
-                <button className="flex items-center gap-2 pl-2 hover:bg-accent/50 rounded-full p-2 transition-colors">
+                <button className="flex items-center gap-2 pl-2 hover:bg-accent/50 rounded-full p-2 transition-colors cursor-pointer">
                   <Avatar className="w-6 h-6">
                     <AvatarFallback className="bg-muted text-foreground text-xs font-medium">
                       <User size={12} />
@@ -187,7 +201,7 @@ export function ModernNav({ user, categories, className }: ModernNavProps) {
       >
         <div className="flex items-center gap-2 bg-background/70 backdrop-blur-md border border-border py-2 px-2 rounded-full shadow-2xl">
           {/* Mobile Logo */}
-          <button onClick={() => router.push('/landing')} className="flex items-center gap-2 group cursor-pointer">
+          <button onClick={() => router.push('/landing')} className="flex items-center gap-2 group cursor-pointer hover:cursor-pointer">
             <div className="w-6 h-6 bg-foreground rounded-full flex items-center justify-center hover:bg-muted transition-all duration-300 group-hover:scale-110">
               <span className="text-xs font-black text-background">𝕏</span>
             </div>
@@ -197,7 +211,10 @@ export function ModernNav({ user, categories, className }: ModernNavProps) {
           {/* New Articles Menu for Mobile */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="relative cursor-pointer text-sm font-semibold px-4 py-2 rounded-full transition-colors text-muted-foreground hover:text-foreground">
+              <button 
+                className="relative cursor-pointer text-sm font-semibold px-4 py-2 rounded-full transition-colors text-muted-foreground hover:text-foreground"
+                title="New Articles"
+              >
                 <Plus size={18} strokeWidth={2.5} />
               </button>
             </DropdownMenuTrigger>
@@ -207,7 +224,7 @@ export function ModernNav({ user, categories, className }: ModernNavProps) {
                   onClick={() => router.push('/new')}
                   className="w-full flex items-center justify-start px-2 py-1.5 text-sm cursor-pointer"
                 >
-                  Daily Article
+                  Today
                 </button>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
@@ -218,7 +235,7 @@ export function ModernNav({ user, categories, className }: ModernNavProps) {
                   }}
                   className="w-full flex items-center justify-start px-2 py-1.5 text-sm cursor-pointer"
                 >
-                  Weekly Article
+                  This Week
                 </button>
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -227,7 +244,8 @@ export function ModernNav({ user, categories, className }: ModernNavProps) {
           {/* History Button for Mobile */}
           <button
               onClick={() => router.push('/history')}
-              className="relative cursor-pointer text-sm font-semibold px-4 py-2 rounded-full transition-colors text-muted-foreground hover:text-foreground"
+              className="relative cursor-pointer text-sm font-semibold px-4 py-2 rounded-full transition-colors text-muted-foreground hover:text-foreground hover:cursor-pointer"
+              title="History"
             >
               <History size={18} strokeWidth={2.5} />
             </button>
@@ -263,12 +281,17 @@ if (item.name === 'Profile') {
                         )}
                       </button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-border mt-2 shadow-lg">
-                      <DropdownMenuItem className="text-gray-900 dark:text-gray-100 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer">
-                        <Settings size={16} className="mr-2" />
-                        Account
+                    <DropdownMenuContent className="mt-2">
+                      <DropdownMenuItem asChild>
+                        <button 
+                          onClick={() => router.push('/profile')}
+                          className="w-full flex items-center justify-start text-popover-foreground hover:bg-accent cursor-pointer px-2 py-1.5 text-sm"
+                        >
+                          <Settings size={16} className="mr-2" />
+                          Account
+                        </button>
                       </DropdownMenuItem>
-                      <DropdownMenuItem className="text-gray-900 dark:text-gray-100 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800">
+                      <DropdownMenuItem className="text-popover-foreground hover:bg-accent p-0">
                         <ThemeToggle />
                       </DropdownMenuItem>
 
@@ -280,7 +303,7 @@ if (item.name === 'Profile') {
                              await supabase.auth.signOut()
                              window.location.href = '/login'
                            }}
-                           className="w-full flex items-center justify-start text-gray-900 dark:text-gray-100 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 px-2 py-1.5 text-sm cursor-pointer"
+                           className="w-full flex items-center justify-start text-popover-foreground hover:bg-accent px-2 py-1.5 text-sm cursor-pointer"
                          >
                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
                              <path d="m16 17 5-5-5-5"></path>

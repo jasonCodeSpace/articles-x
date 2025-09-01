@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import { ModernNav } from '@/components/modern-nav'
 import { ArticleContent } from '@/components/article-content'
-import { ArticlePageToolbar } from '@/components/article-page-toolbar'
+
 import { ArticleBreadcrumb } from '@/components/article-breadcrumb'
 import { LanguageProvider } from '@/contexts/language-context'
 import { createClient } from '@/lib/supabase/server'
@@ -74,8 +74,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           {/* Breadcrumbs */}
           <ArticleBreadcrumb article={article} />
 
-          {/* Language Toolbar */}
-          <ArticlePageToolbar />
+
 
           {/* Article Content */}
           <ArticleContent

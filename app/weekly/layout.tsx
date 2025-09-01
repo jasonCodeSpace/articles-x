@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { ModernNav } from '@/components/modern-nav'
+import { ClientNavWrapper } from '@/components/client-nav-wrapper'
 import { getArticleCategories } from '@/lib/articles'
 
 interface WeeklyLayoutProps {
@@ -11,15 +11,9 @@ export default async function WeeklyLayout({ children }: WeeklyLayoutProps) {
   const { data: { user } } = await supabase.auth.getUser()
   const categories = await getArticleCategories()
 
-  const userForNav = user ? {
-    id: user.id,
-    email: user.email,
-    user_metadata: user.user_metadata
-  } : undefined
-
   return (
     <>
-      <ModernNav user={userForNav} categories={categories} />
+      <ClientNavWrapper initialUser={user} categories={categories} />
       {children}
     </>
   )

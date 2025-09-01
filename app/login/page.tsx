@@ -33,19 +33,34 @@ export default function Login() {
     try {
       const validatedData = loginSchema.parse({ email, password })
       
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email: validatedData.email,
         password: validatedData.password,
       })
 
       if (error) {
-        setError(error.message || '登录失败，请检查邮箱和密码')
-      } else {
+        console.error('Login error:', error)
+        
+        // 提供更具体的错误信息
+        if (error.message.includes('Invalid login credentials')) {
+          setError('邮箱或密码不正确，请检查后重试')
+        } else if (error.message.includes('Email not confirmed')) {
+          setError('请先确认您的邮箱地址')
+        } else if (error.message.includes('Too many requests')) {
+          setError('尝试次数过多，请稍后再试')
+        } else {
+          setError(error.message || '登录失败，请检查邮箱和密码')
+        }
+      } else if (data?.user) {
         setMessage('登录成功！正在跳转...')
+        console.log('Login successful:', data.user.email)
+        
         // 登录成功后跳转到主页面
         setTimeout(() => {
           router.push('/new')
         }, 1500)
+      } else {
+        setError('登录失败，未知错误')
       }
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -59,12 +74,12 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-black relative overflow-hidden flex items-center justify-center px-4 py-12">
+    <div className="min-h-screen bg-background relative overflow-hidden flex items-center justify-center px-4 py-12">
       {/* Animated Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-black to-gray-900"></div>
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-float"></div>
-      <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl animate-float" style={{animationDelay: '2s'}}></div>
-      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-radial from-blue-500/5 to-transparent rounded-full animate-pulse"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-muted"></div>
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-float"></div>
+      <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-accent/10 rounded-full blur-3xl animate-float" style={{animationDelay: '2s'}}></div>
+      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-radial from-primary/5 to-transparent rounded-full animate-pulse"></div>
       
       <div className="relative w-full max-w-md z-10">
         {/* Back Button */}
@@ -154,7 +169,15 @@ export default function Login() {
               )}
             </Button>
             
-            <div className="text-center">
+            <div className="text-center space-y-2">
+              <p className="text-gray-400 text-sm">
+                <Link 
+                  href="/reset-password" 
+                  className="text-blue-400 hover:text-blue-300 underline transition-colors"
+                >
+                  忘记密码？
+                </Link>
+              </p>
               <p className="text-gray-400 text-sm">
                 还没有账户？{' '}
                 <Link 

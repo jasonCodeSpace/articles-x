@@ -127,14 +127,16 @@ export function ArticleContent({
       </header>
 
       {/* Article Content */}
-      <article className="prose prose-invert prose-lg max-w-none">
+      <article className="max-w-none">
         {displayContent ? (
-          <div 
-            className="whitespace-pre-wrap leading-relaxed text-gray-200"
-            dangerouslySetInnerHTML={{ __html: displayContent.replace(/\n/g, '<br />') }}
-          />
+          <div className="article-content">
+            <div 
+              className="article-content"
+              dangerouslySetInnerHTML={{ __html: displayContent.replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br />').replace(/^/, '<p>').replace(/$/, '</p>') }}
+            />
+          </div>
         ) : (
-          <div className="text-gray-400 italic">
+          <div className="text-gray-400 italic text-lg leading-relaxed">
             Full article content is not available.
           </div>
         )}

@@ -245,3 +245,122 @@ body {
 .bg-gradient-radial {
   background: radial-gradient(circle, var(--tw-gradient-stops));
 }
+
+/* Article Content Styles - BBC inspired */
+.article-content {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 1.125rem; /* 18px */
+  line-height: 1.75; /* 28px */
+  color: #e5e7eb; /* gray-200 */
+  max-width: 65ch; /* Optimal reading width */
+  margin: 0 auto;
+}
+
+.article-content p {
+  margin-bottom: 1.5rem;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+}
+
+.article-content p:first-child {
+  margin-top: 0;
+}
+
+.article-content p:last-child {
+  margin-bottom: 0;
+}
+
+/* Improved paragraph spacing for better readability */
+.article-content p + p {
+  margin-top: 1.75rem;
+}
+
+/* Better line height for longer paragraphs */
+.article-content p:has(+ p) {
+  line-height: 1.8;
+}
+
+/* Quote styling */
+.article-content blockquote {
+  border-left: 4px solid #3b82f6;
+  padding-left: 1.5rem;
+  margin: 2rem 0;
+  font-style: italic;
+  color: #d1d5db;
+  background: rgba(59, 130, 246, 0.05);
+  border-radius: 0 0.5rem 0.5rem 0;
+  padding: 1.5rem;
+}
+
+/* List styling */
+.article-content ul,
+.article-content ol {
+  margin: 1.5rem 0;
+  padding-left: 2rem;
+}
+
+.article-content li {
+  margin-bottom: 0.75rem;
+  line-height: 1.7;
+}
+
+/* Link styling */
+.article-content a {
+  color: #60a5fa;
+  text-decoration: underline;
+  text-decoration-color: rgba(96, 165, 250, 0.4);
+  text-underline-offset: 0.2em;
+  transition: all 0.2s ease;
+}
+
+.article-content a:hover {
+  color: #93c5fd;
+  text-decoration-color: #93c5fd;
+}
+
+/* Emphasis styling */
+.article-content strong,
+.article-content b {
+  font-weight: 600;
+  color: #f9fafb;
+}
+
+.article-content em,
+.article-content i {
+  font-style: italic;
+  color: #f3f4f6;
+}
+
+/* Code styling */
+.article-content code {
+  background: rgba(55, 65, 81, 0.8);
+  color: #fbbf24;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.375rem;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.9em;
+}
+
+/* Responsive typography */
+@media (max-width: 768px) {
+  .article-content {
+    font-size: 1rem; /* 16px */
+    line-height: 1.7; /* 27.2px */
+    max-width: 100%;
+  }
+  
+  .article-content p {
+    margin-bottom: 1.25rem;
+  }
+  
+  .article-content p + p {
+    margin-top: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .article-content {
+    font-size: 1.25rem; /* 20px */
+    line-height: 1.8; /* 36px */
+  }
+}

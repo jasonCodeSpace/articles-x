@@ -72,7 +72,7 @@ export default async function ProfilePage() {
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
 
-  const bookmarkedArticles = bookmarksData?.map(bookmark => bookmark.articles).filter(Boolean) as Article[] || []
+  const bookmarkedArticles = (bookmarksData?.map(bookmark => bookmark.articles).filter(Boolean).flat() || []) as Article[]
 
   // Get user stats
   const userDisplayName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User'
@@ -126,64 +126,7 @@ export default async function ProfilePage() {
           </Card>
         </div>
 
-                {/* Profile Sections */}
-        <div className="grid gap-6 md:grid-cols-2">
-          {/* Account Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5" />
-                Account Information
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between py-2 border-b border-border">
-                <span className="text-muted-foreground">Email</span>
-                <span className="text-foreground">{user.email}</span>
-              </div>
-              <div className="flex items-center justify-between py-2 border-b border-border">
-                <span className="text-muted-foreground">User ID</span>
-                <span className="text-foreground font-mono text-xs">{user.id.slice(0, 8)}...</span>
-              </div>
-              <div className="flex items-center justify-between py-2 border-b border-border">
-                <span className="text-muted-foreground">Account Created</span>
-                <span className="text-foreground">{joinDate.toLocaleDateString()}</span>
-              </div>
-              <div className="flex items-center justify-between py-2">
-                <span className="text-muted-foreground">Email Verified</span>
-                <span className={`text-sm font-medium ${user.email_confirmed_at ? 'text-green-600' : 'text-yellow-600'}`}>
-                  {user.email_confirmed_at ? 'Verified' : 'Pending'}
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Bookmarks Stats */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Bookmark className="h-5 w-5" />
-                Reading Activity
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between py-2 border-b border-border">
-                <span className="text-muted-foreground">Bookmarked Articles</span>
-                <span className="text-foreground font-semibold">{bookmarkedArticles.length}</span>
-              </div>
-              <div className="flex items-center justify-between py-2 border-b border-border">
-                <span className="text-muted-foreground">Joined</span>
-                <span className="text-foreground">{formatDistanceToNow(joinDate, { addSuffix: true })}</span>
-              </div>
-              {lastSignIn && (
-                <div className="flex items-center justify-between py-2">
-                  <span className="text-muted-foreground">Last Active</span>
-                  <span className="text-foreground">{formatDistanceToNow(lastSignIn, { addSuffix: true })}</span>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+        
 
         {/* Bookmarked Articles Section */}
         <div className="mt-12">

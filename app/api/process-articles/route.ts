@@ -496,12 +496,12 @@ export async function GET(request: NextRequest) {
     const supabase = createServiceClient();
     console.log('Supabase client created successfully');
     
-    // Get the latest 15 tweets where is_article is true
+    // Get the latest 15 tweets where has_article is true
     console.log('Fetching latest article tweets from database...');
     const { data: tweets, error: fetchError } = await supabase
       .from('tweets')
       .select('tweet_id, author_handle')
-      .eq('is_article', true)
+      .eq('has_article', true)
       .order('created_at', { ascending: false })
       .limit(15); // Process the latest 15 article tweets
     

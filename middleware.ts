@@ -19,7 +19,16 @@ export async function middleware(request: NextRequest) {
                        pathname.startsWith('/favicon.ico') ||
                        pathname.startsWith('/api')
   
-  const isPublicRoute = pathname === '/new' || pathname === '/landing'
+  const isPublicRoute = pathname === '/' || 
+                        pathname === '/landing' || 
+                        pathname === '/new' ||
+                        pathname.startsWith('/new') ||
+                        pathname === '/history' ||
+                        pathname.startsWith('/history') ||
+                        pathname === '/weekly' ||
+                        pathname.startsWith('/weekly') ||
+                        pathname.startsWith('/article/') ||
+                        pathname.startsWith('/author/')
   const isProtectedRoute = pathname.startsWith('/profile')
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL

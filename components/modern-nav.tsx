@@ -92,17 +92,14 @@ export function ModernNav({ user, className }: ModernNavProps) {
               <DropdownMenuContent align="start" className="w-40">
                 <DropdownMenuItem asChild>
                   <button onClick={() => {
-                    const url = new URL('/new', window.location.origin)
-                    window.location.href = url.toString()
+                    window.location.href = '/new'
                   }} className="w-full cursor-pointer text-left">
                     Today
                   </button>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <button onClick={() => {
-                    const url = new URL('/new', window.location.origin)
-                    url.searchParams.set('filter', 'week')
-                    window.location.href = url.toString()
+                    window.location.href = '/new?filter=week'
                   }} className="w-full cursor-pointer text-left">
                     This Week
                   </button>
@@ -168,17 +165,33 @@ export function ModernNav({ user, className }: ModernNavProps) {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Link href="/login">
-                <button className="flex items-center gap-2 pl-2 hover:bg-accent/50 rounded-full p-2 transition-colors cursor-pointer">
-                  <Avatar className="w-6 h-6">
-                    <AvatarFallback className="bg-muted text-foreground text-xs font-medium">
-                      <User size={12} />
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="text-foreground text-xs font-medium hidden lg:block">Login</span>
-                  <ChevronDown size={14} className="text-muted-foreground" />
-                </button>
-              </Link>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center gap-2 pl-2 hover:bg-accent/50 rounded-full p-2 transition-colors cursor-pointer">
+                    <Avatar className="w-6 h-6">
+                      <AvatarFallback className="bg-muted text-foreground text-xs font-medium">
+                        <User size={12} />
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-foreground text-xs font-medium hidden lg:block">Guest</span>
+                    <ChevronDown size={14} className="text-muted-foreground" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="mt-2">
+                  <DropdownMenuItem asChild>
+                    <button 
+                      onClick={() => router.push('/login')}
+                      className="w-full flex items-center justify-start cursor-pointer"
+                    >
+                      <User size={16} className="mr-2" />
+                      Login
+                    </button>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="p-0">
+                    <ThemeToggle />
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
              )}
           </div>
         </div>
@@ -214,8 +227,7 @@ export function ModernNav({ user, className }: ModernNavProps) {
               <DropdownMenuItem asChild>
                 <button 
                   onClick={() => {
-                    const url = new URL('/new', window.location.origin)
-                    window.location.href = url.toString()
+                    window.location.href = '/new'
                   }}
                   className="w-full flex items-center justify-start px-2 py-1.5 text-sm cursor-pointer"
                 >
@@ -225,9 +237,7 @@ export function ModernNav({ user, className }: ModernNavProps) {
               <DropdownMenuItem asChild>
                 <button 
                   onClick={() => {
-                    const url = new URL('/new', window.location.origin)
-                    url.searchParams.set('filter', 'week')
-                    window.location.href = url.toString()
+                    window.location.href = '/new?filter=week'
                   }}
                   className="w-full flex items-center justify-start px-2 py-1.5 text-sm cursor-pointer"
                 >
@@ -314,30 +324,46 @@ if (item.name === 'Profile') {
                 )
               } else {
                 return (
-                  <Link key={item.name} href="/login">
-                    <button
-                      className={cn(
-                        "relative cursor-pointer text-sm font-semibold px-4 py-2 rounded-full transition-colors",
-                        "text-muted-foreground hover:text-foreground",
-                        isActive && "bg-accent/50 text-foreground",
-                      )}
-                      onClick={() => setActiveTab(item.name)}
-                    >
-                      <Icon size={18} strokeWidth={2.5} />
-                      {isActive && (
-                        <motion.div
-                          layoutId="mobile-lamp"
-                          className="absolute inset-0 w-full bg-accent/20 rounded-full -z-10"
-                          initial={false}
-                          transition={{
-                            type: "spring",
-                            stiffness: 300,
-                            damping: 30,
-                          }}
-                        />
-                      )}
-                    </button>
-                  </Link>
+                  <DropdownMenu key={item.name}>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        className={cn(
+                          "relative cursor-pointer text-sm font-semibold px-4 py-2 rounded-full transition-colors",
+                          "text-muted-foreground hover:text-foreground",
+                          isActive && "bg-accent/50 text-foreground",
+                        )}
+                        onClick={() => setActiveTab(item.name)}
+                      >
+                        <Icon size={18} strokeWidth={2.5} />
+                        {isActive && (
+                          <motion.div
+                            layoutId="mobile-lamp"
+                            className="absolute inset-0 w-full bg-accent/20 rounded-full -z-10"
+                            initial={false}
+                            transition={{
+                              type: "spring",
+                              stiffness: 300,
+                              damping: 30,
+                            }}
+                          />
+                        )}
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="mt-2">
+                      <DropdownMenuItem asChild>
+                        <button 
+                          onClick={() => router.push('/login')}
+                          className="w-full flex items-center justify-start text-popover-foreground hover:bg-accent cursor-pointer px-2 py-1.5 text-sm"
+                        >
+                          <User size={16} className="mr-2" />
+                          Login
+                        </button>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="text-popover-foreground hover:bg-accent p-0">
+                        <ThemeToggle />
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 )
               }
             }

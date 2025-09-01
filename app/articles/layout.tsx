@@ -15,10 +15,6 @@ export default async function ProtectedLayout({
     data: { user },
   } = await supabase.auth.getUser()
 
-  if (!user) {
-    redirect('/login')
-  }
-
   // Fetch categories
   let categories: string[] = [];
   try {
@@ -50,7 +46,7 @@ export default async function ProtectedLayout({
 
   return (
     <div className="min-h-screen bg-black">
-      <ModernNav user={user} categories={categories} />
+      <ModernNav user={user ?? undefined} categories={categories} />
       
       {/* Main Content */}
       <div className="pt-20 md:pt-16 pb-20 md:pb-0">

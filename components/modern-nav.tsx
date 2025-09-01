@@ -23,7 +23,7 @@ interface NavItem {
 }
 
 interface ModernNavProps {
-  user: {
+  user?: {
     id: string
     email?: string
     user_metadata?: {
@@ -39,7 +39,7 @@ export function ModernNav({ user, categories, className }: ModernNavProps) {
   const [activeTab, setActiveTab] = useState("Home")
   const [_isMobile, setIsMobile] = useState(false)
 
-  const userDisplayName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User'
+  const userDisplayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User'
   const userInitial = userDisplayName.charAt(0).toUpperCase()
 
   const navItems: NavItem[] = [
@@ -81,7 +81,7 @@ export function ModernNav({ user, categories, className }: ModernNavProps) {
               <DropdownMenuTrigger asChild>
                 <button className="flex items-center gap-2 pl-2 hover:bg-gray-800/50 rounded-full p-2 transition-colors">
                   <Avatar className="w-6 h-6">
-                    {user.user_metadata?.avatar_url ? (
+                    {user?.user_metadata?.avatar_url ? (
                       <AvatarImage src={user.user_metadata.avatar_url} alt={userDisplayName} />
                     ) : null}
                     <AvatarFallback className="bg-gray-700/80 text-white text-xs font-medium">

@@ -15,8 +15,7 @@ export async function middleware(request: NextRequest) {
                        pathname.startsWith('/favicon.ico') ||
                        pathname.startsWith('/api')
   
-  const isPublicRoute = pathname.startsWith('/article/') ||
-                        pathname === '/articles'
+  const isPublicRoute = pathname === '/articles' || pathname === '/'
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY
@@ -64,8 +63,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // If user is logged in and trying to access auth pages or root, redirect to protected page
-  if (user && (pathname === '/login' || pathname === '/register' || pathname === '/')) {
+  // If user is logged in and trying to access auth pages, redirect to articles
+  if (user && (pathname === '/login' || pathname === '/register')) {
     const url = request.nextUrl.clone()
     url.pathname = '/articles'
     return NextResponse.redirect(url)

@@ -63,7 +63,10 @@ export function ArticleContent({
         
         {/* Author Info */}
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
+          <div 
+            className="flex items-center gap-3 cursor-pointer hover:bg-gray-800/30 rounded-lg p-2 -m-2 transition-colors"
+            onClick={() => window.open(`https://x.com/${authorHandle}`, '_blank')}
+          >
             <Avatar className="h-12 w-12">
               {avatarUrl ? (
                 <AvatarImage 
@@ -76,7 +79,7 @@ export function ArticleContent({
               </AvatarFallback>
             </Avatar>
             <div>
-              <div className="font-medium text-white">{article.author_name}</div>
+              <div className="font-medium text-white hover:text-blue-400 transition-colors">{article.author_name}</div>
               <div className="text-sm text-gray-400">@{authorHandle}</div>
             </div>
           </div>

@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import Link from "next/link"
-import { Home, Search, User, BookOpen as _BookOpen, Menu as _Menu, Grid3X3 as _Grid3X3, Bell, ChevronDown, Settings, Filter } from "lucide-react"
+import { Home, Search, User, BookOpen as _BookOpen, Menu as _Menu, Grid3X3 as _Grid3X3, Bell, ChevronDown, Settings, Filter, Moon, Sun } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button as _Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -15,6 +15,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { useTheme } from '@/contexts/theme-context'
 
 interface NavItem {
   name: string
@@ -38,6 +39,7 @@ interface ModernNavProps {
 export function ModernNav({ user, categories, className }: ModernNavProps) {
   const [activeTab, setActiveTab] = useState("Home")
   const [_isMobile, setIsMobile] = useState(false)
+  const { theme, setTheme } = useTheme()
 
   const userDisplayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User'
   const userInitial = userDisplayName.charAt(0).toUpperCase()
@@ -98,10 +100,18 @@ export function ModernNav({ user, categories, className }: ModernNavProps) {
                     <Settings size={16} className="mr-2" />
                     Account
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="text-gray-300 hover:text-white hover:bg-gray-800/50 cursor-pointer">
-                    <Bell size={16} className="mr-2" />
-                    Subscribe
+                  <DropdownMenuItem 
+                    onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+                    className="text-gray-300 hover:text-white hover:bg-gray-800/50 cursor-pointer"
+                  >
+                    {theme === 'light' ? (
+                      <Moon size={16} className="mr-2" />
+                    ) : (
+                      <Sun size={16} className="mr-2" />
+                    )}
+                    {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
                   </DropdownMenuItem>
+
                   <DropdownMenuItem asChild>
                      <button 
                        onClick={async () => {
@@ -191,10 +201,18 @@ if (item.name === 'Profile') {
                         <Settings size={16} className="mr-2" />
                         Account
                       </DropdownMenuItem>
-                      <DropdownMenuItem className="text-gray-300 hover:text-white hover:bg-gray-800/50 cursor-pointer">
-                        <Bell size={16} className="mr-2" />
-                        Subscribe
+                      <DropdownMenuItem 
+                        onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+                        className="text-gray-300 hover:text-white hover:bg-gray-800/50 cursor-pointer"
+                      >
+                        {theme === 'light' ? (
+                          <Moon size={16} className="mr-2" />
+                        ) : (
+                          <Sun size={16} className="mr-2" />
+                        )}
+                        {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
                       </DropdownMenuItem>
+
                       <DropdownMenuItem asChild>
                          <button 
                            onClick={async () => {

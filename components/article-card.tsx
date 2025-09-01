@@ -2,6 +2,7 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ExternalLink, Eye, MessageCircle, Repeat2, Heart, Bookmark, Share2, Check } from 'lucide-react'
+import { BookmarkButton } from '@/components/bookmark-button'
 import { formatDistanceToNow } from 'date-fns'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -247,18 +248,24 @@ export function ArticleCard({ article, className }: ArticleCardProps) {
             )}
           </div>
           
-          {/* Share button */}
-          <button
-            onClick={handleShare}
-            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-accent-foreground transition-colors p-1 rounded hover:bg-accent"
-            title="Share article"
-          >
-            {isShared ? (
-              <Check className="h-3 w-3 text-green-400" />
-            ) : (
-              <Share2 className="h-3 w-3" />
-            )}
-          </button>
+          {/* Action buttons */}
+          <div className="flex items-center gap-1">
+            {/* Bookmark button */}
+            <BookmarkButton articleId={article.id} variant="card" />
+            
+            {/* Share button */}
+            <button
+              onClick={handleShare}
+              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-accent-foreground transition-colors p-2 rounded-full hover:bg-accent/50"
+              title="Share article"
+            >
+              {isShared ? (
+                <Check className="h-4 w-4 text-green-400" />
+              ) : (
+                <Share2 className="h-4 w-4" />
+              )}
+            </button>
+          </div>
         </div>
         
         {/* Article link */}

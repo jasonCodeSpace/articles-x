@@ -3,6 +3,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { ExternalLink, Languages } from 'lucide-react'
+import { BookmarkButton } from '@/components/bookmark-button'
 import Image from 'next/image'
 import AiSummary from '@/components/ai-summary'
 import { useLanguage } from '@/contexts/language-context'
@@ -86,16 +87,22 @@ export function ArticleContent({
             </div>
           </div>
           
-          {/* Language Toggle */}
-          <Button 
-            variant="outline" 
-            size="sm"
-            className="gap-2 text-xs h-8 px-3"
-            onClick={toggleLanguage}
-          >
-            <Languages className="h-3 w-3" />
-            <span>{language === 'en' ? 'English' : 'Original'}</span>
-          </Button>
+          {/* Action Buttons */}
+          <div className="flex items-center gap-3">
+            {/* Bookmark Button */}
+            <BookmarkButton articleId={article.id} variant="page" />
+            
+            {/* Language Toggle */}
+            <Button 
+              variant="outline" 
+              size="sm"
+              className="gap-2 text-xs h-8 px-3"
+              onClick={toggleLanguage}
+            >
+              <Languages className="h-3 w-3" />
+              <span>{language === 'en' ? 'English' : 'Original'}</span>
+            </Button>
+          </div>
         </div>
 
         {/* Publication Date */}

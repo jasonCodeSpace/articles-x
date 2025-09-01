@@ -20,6 +20,7 @@ export async function middleware(request: NextRequest) {
                        pathname.startsWith('/api')
   
   const isPublicRoute = pathname === '/' || pathname === '/landing'
+  const isProtectedRoute = pathname.startsWith('/profile')
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY
@@ -62,6 +63,13 @@ export async function middleware(request: NextRequest) {
 
   // If user is not logged in and trying to access protected routes
   if (!user && !isAuthRoute && !isPublicFile && !isPublicRoute) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/login'
+    return NextResponse.redirect(url)
+  }
+
+  // If user is not logged in and trying to access profile page
+  if (!user && isProtectedRoute) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)

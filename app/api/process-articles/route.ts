@@ -199,15 +199,22 @@ function extractFullArticleContent(articleResult: ArticleResult): string {
 
 // Function to fetch tweet details from API
 async function fetchTweetDetails(tweetId: string, retries: number = 3): Promise<TweetApiResponse | null> {
+  console.log(`Fetching tweet details for ${tweetId} from RapidAPI...`);
+  
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
-      const response = await fetch(`https://${RAPIDAPI_HOST}/tweet?pid=${tweetId}`, {
+      const url = `https://${RAPIDAPI_HOST}/tweet?pid=${tweetId}`;
+      console.log(`Attempt ${attempt}/${retries} - Calling: ${url}`);
+      
+      const response = await fetch(url, {
         method: 'GET',
         headers: {
           'x-rapidapi-key': RAPIDAPI_KEY,
           'x-rapidapi-host': RAPIDAPI_HOST,
         },
       });
+
+      console.log(`API response status for tweet ${tweetId}: ${response.status}`);
 
       if (response.status === 404) {
         console.log(`Tweet ${tweetId} not found (404) - skipping`);
@@ -220,18 +227,43 @@ async function fetchTweetDetails(tweetId: string, retries: number = 3): Promise<
         continue;
       }
 
+      if (response.status === 401) {
+        console.error(`Unauthorized API access for tweet ${tweetId} - check RAPIDAPI_KEY`);
+        throw new Error(`API authentication failed: Invalid RAPIDAPI_KEY`);
+      }
+
+      if (response.status === 403) {
+        console.error(`Forbidden API access for tweet ${tweetId} - check API permissions or quota`);
+        throw new Error(`API access forbidden: Check API permissions or quota`);
+      }
+
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text().catch(() => 'Unable to read error response');
+        console.error(`HTTP error for tweet ${tweetId}:`, {
+          status: response.status,
+          statusText: response.statusText,
+          errorBody: errorText
+        });
+        throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
       }
 
       const data = await response.json();
+      console.log(`Successfully fetched data for tweet ${tweetId}`);
       return data;
     } catch (error) {
-      console.error(`Attempt ${attempt}/${retries} failed for tweet ${tweetId}:`, error);
+      console.error(`Attempt ${attempt}/${retries} failed for tweet ${tweetId}:`, {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined
+      });
+      
       if (attempt === retries) {
+        console.error(`All ${retries} attempts failed for tweet ${tweetId}`);
         return null;
       }
-      await new Promise(resolve => setTimeout(resolve, 2000 * attempt));
+      
+      const waitTime = 2000 * attempt;
+      console.log(`Waiting ${waitTime}ms before retry...`);
+      await new Promise(resolve => setTimeout(resolve, waitTime));
     }
   }
   return null;
@@ -421,16 +453,51 @@ export async function GET(request: NextRequest) {
   // Verify cron secret
   const authHeader = request.headers.get('authorization');
   if (!authHeader || !authHeader.startsWith('Bearer ') || authHeader.slice(7) !== CRON_SECRET) {
+    console.error('Unauthorized access attempt to process-articles API');
     return NextResponse.json(
       { error: 'Unauthorized' },
       { status: 401 }
     );
   }
 
+  // Check required environment variables
+  if (!RAPIDAPI_KEY) {
+    console.error('RAPIDAPI_KEY environment variable is missing');
+    return NextResponse.json(
+      { 
+        success: false, 
+        error: 'Configuration error: RAPIDAPI_KEY not configured',
+        details: 'Missing required environment variable'
+      },
+      { status: 500 }
+    );
+  }
+
+  if (!CRON_SECRET) {
+    console.error('CRON_SECRET environment variable is missing');
+    return NextResponse.json(
+      { 
+        success: false, 
+        error: 'Configuration error: CRON_SECRET not configured',
+        details: 'Missing required environment variable'
+      },
+      { status: 500 }
+    );
+  }
+
+  console.log('Starting process-articles API execution...');
+  console.log('Environment check:', {
+    rapidApiKeyConfigured: !!RAPIDAPI_KEY,
+    cronSecretConfigured: !!CRON_SECRET,
+    rapidApiHost: RAPIDAPI_HOST
+  });
+
   try {
     const supabase = createServiceClient();
+    console.log('Supabase client created successfully');
     
     // Get the latest 15 tweets where is_article is true
+    console.log('Fetching latest article tweets from database...');
     const { data: tweets, error: fetchError } = await supabase
       .from('tweets')
       .select('tweet_id, author_handle')
@@ -439,9 +506,14 @@ export async function GET(request: NextRequest) {
       .limit(15); // Process the latest 15 article tweets
     
     if (fetchError) {
-      console.error('Error fetching tweets:', fetchError);
+      console.error('Database error fetching tweets:', fetchError);
       return NextResponse.json(
-        { error: 'Failed to fetch tweets', details: fetchError.message },
+        { 
+          success: false,
+          error: 'Database error: Failed to fetch tweets', 
+          details: fetchError.message,
+          errorCode: fetchError.code
+        },
         { status: 500 }
       );
     }
@@ -467,21 +539,25 @@ export async function GET(request: NextRequest) {
         const articleData = await processTweetForArticle(tweet.tweet_id, tweet.author_handle);
         
         if (articleData) {
+          console.log(`Successfully extracted article data for tweet ${tweet.tweet_id}: "${articleData.title}"`);
           const insertSuccess = await insertArticle(articleData);
           
           if (insertSuccess) {
+            console.log(`Successfully inserted article for tweet ${tweet.tweet_id}`);
             results.push({
               tweetId: tweet.tweet_id,
               success: true,
               title: articleData.title
             });
           } else {
+            console.error(`Failed to insert article into database for tweet ${tweet.tweet_id}`);
             errors.push({
               tweetId: tweet.tweet_id,
               error: 'Failed to insert article into database'
             });
           }
         } else {
+          console.error(`Failed to extract article data from tweet ${tweet.tweet_id}`);
           errors.push({
             tweetId: tweet.tweet_id,
             error: 'Failed to extract article data from tweet'
@@ -495,6 +571,12 @@ export async function GET(request: NextRequest) {
         
       } catch (error) {
         console.error(`Error processing tweet ${tweet.tweet_id}:`, error);
+        console.error('Error details:', {
+          message: error instanceof Error ? error.message : 'Unknown error',
+          stack: error instanceof Error ? error.stack : undefined,
+          tweetId: tweet.tweet_id,
+          authorHandle: tweet.author_handle
+        });
         errors.push({
           tweetId: tweet.tweet_id,
           error: error instanceof Error ? error.message : 'Unknown error'

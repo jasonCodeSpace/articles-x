@@ -88,7 +88,7 @@ export function ModernNav({ user, categories, className }: ModernNavProps) {
                   <ChevronDown className="w-3 h-3" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-40 bg-white dark:bg-gray-900 border-border backdrop-blur-none shadow-lg">
+              <DropdownMenuContent align="start" className="w-40 bg-background dark:bg-background border-border backdrop-blur-none shadow-lg">
                 <DropdownMenuItem asChild>
                   <button onClick={() => {
                     router.push('/new')
@@ -131,7 +131,7 @@ export function ModernNav({ user, categories, className }: ModernNavProps) {
                     <ChevronDown size={14} className="text-muted-foreground" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="bg-white dark:bg-gray-900 border-border mt-2 backdrop-blur-none shadow-lg">
+                <DropdownMenuContent className="bg-background dark:bg-background border-border mt-2 backdrop-blur-none shadow-lg">
                   <DropdownMenuItem className="text-muted-foreground hover:text-foreground hover:bg-accent cursor-pointer">
                     <Settings size={16} className="mr-2" />
                     Account
@@ -198,7 +198,7 @@ export function ModernNav({ user, categories, className }: ModernNavProps) {
                 <Plus size={18} strokeWidth={2.5} />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="bg-background dark:bg-gray-900 border-border mb-2 backdrop-blur-none shadow-lg opacity-100">
+            <DropdownMenuContent className="bg-background dark:bg-background border-border mb-2 backdrop-blur-none shadow-lg opacity-100">
               <DropdownMenuItem asChild>
                 <button 
                   onClick={() => router.push('/new')}
@@ -257,7 +257,7 @@ if (item.name === 'Profile') {
                         )}
                       </button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent className="bg-background dark:bg-gray-900 border-border mt-2 backdrop-blur-none shadow-lg opacity-100">
+                    <DropdownMenuContent className="bg-background dark:bg-background border-border mt-2 backdrop-blur-none shadow-lg opacity-100">
                       <DropdownMenuItem className="text-foreground dark:text-gray-100 hover:text-foreground hover:bg-accent dark:hover:bg-gray-700 cursor-pointer">
                         <Settings size={16} className="mr-2" />
                         Account

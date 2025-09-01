@@ -18,7 +18,7 @@ interface UnifiedMobileButtonProps {
   onLanguageChange: (language: string) => void
   currentCategory: string
   currentLanguage: string
-  _categories?: string[]
+  categories?: string[]
   isLoading?: boolean
   language?: 'original' | 'en'
   setLanguage?: (lang: 'original' | 'en') => void

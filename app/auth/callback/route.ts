@@ -53,7 +53,10 @@ export async function GET(request: Request) {
           redirectUrl = `${origin}${next}`
         }
         
-        return NextResponse.redirect(redirectUrl)
+        const response = NextResponse.redirect(redirectUrl)
+        // Force revalidation of cached data
+        response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate')
+        return response
       }
     } catch (error) {
       console.error('Unexpected error in token hash verification:', error)
@@ -94,7 +97,10 @@ export async function GET(request: Request) {
           redirectUrl = `${origin}${next}`
         }
         
-        return NextResponse.redirect(redirectUrl)
+        const response = NextResponse.redirect(redirectUrl)
+        // Force revalidation of cached data
+        response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate')
+        return response
       }
     } catch (error) {
       console.error('Unexpected error in auth callback:', error)

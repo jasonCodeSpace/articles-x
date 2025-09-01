@@ -29,7 +29,7 @@ export function UnifiedMobileButton({
   onLanguageChange,
   currentCategory,
   currentLanguage,
-  categories = [],
+
   isLoading = false,
   language,
   setLanguage
@@ -65,8 +65,7 @@ export function UnifiedMobileButton({
     { value: 'POLITICS & SOCIETY', label: 'Politics & Society' }
   ]
 
-  const _currentLanguageOption = languageOptions.find(opt => opt.value === currentLanguage) || languageOptions[0]
-  const _currentCategoryOption = categoryOptions.find(opt => opt.value === currentCategory) || categoryOptions[0]
+
 
   const handleCategorySelect = (category: string) => {
     onCategoryChange(category)

@@ -1,10 +1,10 @@
 "use client"
 
-import React, { useEffect, useState } from "react"
+import React, { useState } from "react"
 import { motion } from "framer-motion"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
-import { User, BookOpen as _BookOpen, Bell, ChevronDown, Settings, Plus, History } from "lucide-react"
+import { User, ChevronDown, Settings, Plus, History } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ThemeToggle } from '@/components/theme-toggle'
@@ -38,7 +38,6 @@ interface ModernNavProps {
 
 export function ModernNav({ user, categories, className }: ModernNavProps) {
   const [activeTab, setActiveTab] = useState("Home")
-  const [_isMobile, setIsMobile] = useState(false)
   // Theme functionality removed
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -63,15 +62,7 @@ export function ModernNav({ user, categories, className }: ModernNavProps) {
     { name: 'Profile', url: '#', icon: User },
   ]
 
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768)
-    }
 
-    handleResize()
-    window.addEventListener("resize", handleResize)
-    return () => window.removeEventListener("resize", handleResize)
-  }, [])
 
   return (
     <>

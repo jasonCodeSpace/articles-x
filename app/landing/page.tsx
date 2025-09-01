@@ -150,7 +150,7 @@ export default async function LandingPage() {
               </div>
               <h4 className="text-2xl font-bold text-foreground mb-4">Real-time Updates</h4>
               <p className="text-muted-foreground leading-relaxed">
-                Get the latest articles as they're shared. Fresh content delivered every 15 minutes, 24/7.
+                Get the latest articles as they&apos;re shared. Fresh content delivered every 15 minutes, 24/7.
               </p>
             </CardContent>
           </Card>
@@ -233,7 +233,7 @@ export default async function LandingPage() {
                 <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-accent to-primary bg-clip-text text-transparent">
                   {todayArticles || '47'}
                 </div>
-                <div className="text-muted-foreground font-medium">Today's Articles</div>
+                <div className="text-muted-foreground font-medium">Today&apos;s Articles</div>
               </div>
               <div className="space-y-3">
                 <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">

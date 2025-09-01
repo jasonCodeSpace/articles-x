@@ -28,7 +28,7 @@ export default function Register() {
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
 
-  const router = useRouter()
+
   const supabase = createClient()
 
   const handleSubmit = async (e: React.FormEvent) => {

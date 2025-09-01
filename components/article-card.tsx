@@ -64,9 +64,7 @@ interface ArticleCardProps {
 
 
 
-export function ArticleCard({ article, className, index: _index = 0 }: ArticleCardProps) {
-  const [_imageError, _setImageError] = useState(false)
-  const [_imageLoading, _setImageLoading] = useState(true)
+export function ArticleCard({ article, className }: ArticleCardProps) {
   const [isShared, setIsShared] = useState(false)
   const { language } = useLanguage()
   
@@ -84,14 +82,7 @@ export function ArticleCard({ article, className, index: _index = 0 }: ArticleCa
     })
   }
 
-  const _handleImageError = () => {
-    _setImageError(true)
-    _setImageLoading(false)
-  }
 
-  const _handleImageLoad = () => {
-    _setImageLoading(false)
-  }
 
   const handleShare = async () => {
     try {

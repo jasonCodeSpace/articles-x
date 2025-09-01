@@ -35,5 +35,9 @@ export function ClientNavWrapper({ initialUser, categories }: ClientNavWrapperPr
     return () => subscription.unsubscribe()
   }, [supabase])
 
-  return <ModernNav user={user} categories={categories} />
+  return <ModernNav user={user ? {
+    id: user.id,
+    email: user.email,
+    user_metadata: user.user_metadata
+  } : undefined} categories={categories} />
 }

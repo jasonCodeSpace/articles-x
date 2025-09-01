@@ -3,7 +3,7 @@ import { ClientNavWrapper } from '@/components/client-nav-wrapper'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { User, Mail, Calendar, Settings, Activity } from 'lucide-react'
+import { User, Calendar, Settings, Activity } from 'lucide-react'
 import { redirect } from 'next/navigation'
 import { formatDistanceToNow } from 'date-fns'
 

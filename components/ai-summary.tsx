@@ -28,9 +28,7 @@ export default function AiSummary({
   
   const currentSummary = summaryLanguage === 'zh' ? (summaryChinese || summaryEnglish) : summaryEnglish
   
-  const _toggleSummaryLanguage = () => {
-    setSummaryLanguage(summaryLanguage === 'en' ? 'zh' : 'en')
-  }
+
   
   return (
     <section className="mb-8 p-8 bg-muted rounded-xl border border-border">

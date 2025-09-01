@@ -13,7 +13,8 @@
     "add-sample-data": "tsx scripts/add-sample-data.ts",
     "init:twitter-lists": "tsx scripts/init-twitter-lists.ts",
     "migrate:tweets-to-articles": "tsx scripts/migrate-tweets-to-articles.ts",
-    "fix:tweet-urls": "tsx scripts/fix-tweet-urls.ts"
+    "fix:tweet-urls": "tsx scripts/fix-tweet-urls.ts",
+    "update-article-tags": "tsx scripts/update-article-tags.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

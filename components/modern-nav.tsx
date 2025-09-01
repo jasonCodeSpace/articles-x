@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { User, BookOpen as _BookOpen, Bell, ChevronDown, Settings, Plus, History } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { ThemeToggle } from '@/components/theme-toggle'
 
 import {
   DropdownMenu,
@@ -88,7 +89,7 @@ export function ModernNav({ user, categories, className }: ModernNavProps) {
                   <ChevronDown className="w-3 h-3" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-40 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-border shadow-lg">
+              <DropdownMenuContent align="start" className="w-40">
                 <DropdownMenuItem asChild>
                   <button onClick={() => {
                     router.push('/new')
@@ -131,12 +132,14 @@ export function ModernNav({ user, categories, className }: ModernNavProps) {
                     <ChevronDown size={14} className="text-muted-foreground" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-border mt-2 shadow-lg">
-                  <DropdownMenuItem className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer">
+                <DropdownMenuContent className="mt-2">
+                  <DropdownMenuItem className="cursor-pointer">
                     <Settings size={16} className="mr-2" />
                     Account
                   </DropdownMenuItem>
-                  {/* Dark mode toggle removed */}
+                  <DropdownMenuItem>
+                    <ThemeToggle />
+                  </DropdownMenuItem>
 
                   <DropdownMenuItem asChild>
                      <button 
@@ -146,7 +149,7 @@ export function ModernNav({ user, categories, className }: ModernNavProps) {
                          await supabase.auth.signOut()
                          window.location.href = '/login'
                        }}
-                       className="w-full flex items-center justify-start text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 px-2 py-1.5 text-sm cursor-pointer"
+                       className="w-full flex items-center justify-start px-2 py-1.5 text-sm cursor-pointer"
                      >
                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
                          <path d="m16 17 5-5-5-5"></path>
@@ -198,11 +201,11 @@ export function ModernNav({ user, categories, className }: ModernNavProps) {
                 <Plus size={18} strokeWidth={2.5} />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-border mb-2 shadow-lg">
+            <DropdownMenuContent className="mb-2">
               <DropdownMenuItem asChild>
                 <button 
                   onClick={() => router.push('/new')}
-                  className="w-full flex items-center justify-start text-gray-900 dark:text-gray-100 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 px-2 py-1.5 text-sm cursor-pointer"
+                  className="w-full flex items-center justify-start px-2 py-1.5 text-sm cursor-pointer"
                 >
                   Daily Article
                 </button>
@@ -213,7 +216,7 @@ export function ModernNav({ user, categories, className }: ModernNavProps) {
                     router.push('/new?filter=week')
                     router.refresh()
                   }}
-                  className="w-full flex items-center justify-start text-gray-900 dark:text-gray-100 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 px-2 py-1.5 text-sm cursor-pointer"
+                  className="w-full flex items-center justify-start px-2 py-1.5 text-sm cursor-pointer"
                 >
                   Weekly Article
                 </button>
@@ -264,6 +267,9 @@ if (item.name === 'Profile') {
                       <DropdownMenuItem className="text-gray-900 dark:text-gray-100 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer">
                         <Settings size={16} className="mr-2" />
                         Account
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="text-gray-900 dark:text-gray-100 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800">
+                        <ThemeToggle />
                       </DropdownMenuItem>
 
                       <DropdownMenuItem asChild>

@@ -120,7 +120,7 @@ export function FeedToolbar({
                 <ChevronDown className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-[200px] max-h-[300px] overflow-y-auto p-1 bg-background dark:bg-background border-border rounded-xl backdrop-blur-none shadow-lg">
+            <DropdownMenuContent align="end" className="w-[200px] max-h-[300px] overflow-y-auto p-1 rounded-xl">
               <div className="flex flex-col gap-0.5">
                 {categoryOptions.map((option) => (
                   <DropdownMenuItem
@@ -150,7 +150,7 @@ export function FeedToolbar({
                 <ChevronDown className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-32 bg-background dark:bg-background border-border rounded-xl backdrop-blur-none shadow-lg">
+            <DropdownMenuContent align="end" className="w-32 rounded-xl">
               <DropdownMenuItem
                 onClick={() => setLanguage('original')}
                 className={`rounded-lg cursor-pointer ${language === 'original' ? 'bg-accent text-accent-foreground font-medium' : 'hover:bg-accent/50'}`}
@@ -179,7 +179,7 @@ export function FeedToolbar({
                 <ChevronDown className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48 bg-background dark:bg-background border-border rounded-xl backdrop-blur-none shadow-lg">
+            <DropdownMenuContent align="end" className="w-48 rounded-xl">
               {languageOptions.map((option) => (
                 <DropdownMenuItem
                   key={option.value}

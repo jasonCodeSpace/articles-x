@@ -18,7 +18,7 @@ interface UnifiedMobileButtonProps {
   onLanguageChange: (language: string) => void
   currentCategory: string
   currentLanguage: string
-  categories?: string[]
+  _categories?: string[]
   isLoading?: boolean
   language?: 'original' | 'en'
   setLanguage?: (lang: 'original' | 'en') => void
@@ -29,7 +29,7 @@ export function UnifiedMobileButton({
   onLanguageChange,
   currentCategory,
   currentLanguage,
-  categories = [],
+  _categories = [],
   isLoading = false,
   language,
   setLanguage
@@ -65,8 +65,8 @@ export function UnifiedMobileButton({
     { value: 'POLITICS & SOCIETY', label: 'Politics & Society' }
   ]
 
-  const currentLanguageOption = languageOptions.find(opt => opt.value === currentLanguage) || languageOptions[0]
-  const currentCategoryOption = categoryOptions.find(opt => opt.value === currentCategory) || categoryOptions[0]
+  const _currentLanguageOption = languageOptions.find(opt => opt.value === currentLanguage) || languageOptions[0]
+  const _currentCategoryOption = categoryOptions.find(opt => opt.value === currentCategory) || categoryOptions[0]
 
   const handleCategorySelect = (category: string) => {
     onCategoryChange(category)

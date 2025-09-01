@@ -4,12 +4,9 @@ import React, { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
-import { Home, Search, User, BookOpen as _BookOpen, Menu as _Menu, Grid3X3 as _Grid3X3, Bell, ChevronDown, Settings, Filter, Moon, Sun } from "lucide-react"
+import { User, BookOpen as _BookOpen, Bell, ChevronDown, Settings, Plus, History } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { Button as _Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { LogoutButton as _LogoutButton } from '@/components/logout-button'
-import { Switch } from '@/components/ui/switch'
 
 import {
   DropdownMenu,
@@ -17,7 +14,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { useTheme } from '@/contexts/theme-context'
 
 interface NavItem {
   name: string
@@ -41,7 +37,7 @@ interface ModernNavProps {
 export function ModernNav({ user, categories, className }: ModernNavProps) {
   const [activeTab, setActiveTab] = useState("Home")
   const [_isMobile, setIsMobile] = useState(false)
-  const { theme, setTheme } = useTheme()
+  // Theme functionality removed
   const router = useRouter()
   const searchParams = useSearchParams()
   
@@ -140,17 +136,7 @@ export function ModernNav({ user, categories, className }: ModernNavProps) {
                     <Settings size={16} className="mr-2" />
                     Account
                   </DropdownMenuItem>
-                  <DropdownMenuItem 
-                    onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-                    className="text-muted-foreground hover:text-foreground hover:bg-accent cursor-pointer"
-                  >
-                    {theme === 'light' ? (
-                      <Moon size={16} className="mr-2" />
-                    ) : (
-                      <Sun size={16} className="mr-2" />
-                    )}
-                    {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
-                  </DropdownMenuItem>
+                  {/* Dark mode toggle removed */}
 
                   <DropdownMenuItem asChild>
                      <button 
@@ -205,30 +191,39 @@ export function ModernNav({ user, categories, className }: ModernNavProps) {
             <span className="text-sm font-bold text-foreground group-hover:text-accent-foreground transition-colors">articles</span>
           </button>
           
-          {/* New/History Buttons for Mobile */}
+          {/* New Articles Menu for Mobile */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="relative cursor-pointer text-sm font-semibold px-4 py-2 rounded-full transition-colors text-muted-foreground hover:text-foreground">
-                <_BookOpen size={18} strokeWidth={2.5} />
+                <Plus size={18} strokeWidth={2.5} />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="bg-white dark:bg-gray-900 border-border mb-2 backdrop-blur-none shadow-lg">
+            <DropdownMenuContent className="bg-background dark:bg-gray-900 border-border mb-2 backdrop-blur-none shadow-lg opacity-100">
               <DropdownMenuItem asChild>
                 <button 
                   onClick={() => router.push('/new')}
-                  className="w-full flex items-center justify-start text-muted-foreground hover:text-foreground hover:bg-accent px-2 py-1.5 text-sm cursor-pointer"
+                  className="w-full flex items-center justify-start text-foreground dark:text-gray-100 hover:text-foreground hover:bg-accent dark:hover:bg-gray-700 px-2 py-1.5 text-sm cursor-pointer"
                 >
-                  {buttonText}
+                  Daily Article
+                </button>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <button 
+                  onClick={() => router.push('/weekly')}
+                  className="w-full flex items-center justify-start text-foreground dark:text-gray-100 hover:text-foreground hover:bg-accent dark:hover:bg-gray-700 px-2 py-1.5 text-sm cursor-pointer"
+                >
+                  Weekly Article
                 </button>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
           
+          {/* History Button for Mobile */}
           <button
               onClick={() => router.push('/history')}
               className="relative cursor-pointer text-sm font-semibold px-4 py-2 rounded-full transition-colors text-muted-foreground hover:text-foreground"
             >
-              <Bell size={18} strokeWidth={2.5} />
+              <History size={18} strokeWidth={2.5} />
             </button>
           {navItems.map((item) => {
             const Icon = item.icon
@@ -262,27 +257,10 @@ if (item.name === 'Profile') {
                         )}
                       </button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent className="bg-white dark:bg-gray-900 border-border mt-2 backdrop-blur-none shadow-lg">
-                      <DropdownMenuItem className="text-muted-foreground hover:text-foreground hover:bg-accent cursor-pointer">
+                    <DropdownMenuContent className="bg-background dark:bg-gray-900 border-border mt-2 backdrop-blur-none shadow-lg opacity-100">
+                      <DropdownMenuItem className="text-foreground dark:text-gray-100 hover:text-foreground hover:bg-accent dark:hover:bg-gray-700 cursor-pointer">
                         <Settings size={16} className="mr-2" />
                         Account
-                      </DropdownMenuItem>
-                      <DropdownMenuItem className="text-muted-foreground hover:text-foreground hover:bg-accent cursor-pointer">
-                        <div className="flex items-center justify-between w-full">
-                          <div className="flex items-center">
-                            {theme === 'light' ? (
-                              <Sun size={16} className="mr-2" />
-                            ) : (
-                              <Moon size={16} className="mr-2" />
-                            )}
-                            <span>Dark Mode</span>
-                          </div>
-                          <Switch
-                            checked={theme === 'dark'}
-                            onCheckedChange={(checked: boolean) => setTheme(checked ? 'dark' : 'light')}
-                            className="data-[state=checked]:bg-accent data-[state=unchecked]:bg-muted"
-                          />
-                        </div>
                       </DropdownMenuItem>
 
                       <DropdownMenuItem asChild>
@@ -293,7 +271,7 @@ if (item.name === 'Profile') {
                              await supabase.auth.signOut()
                              window.location.href = '/login'
                            }}
-                           className="w-full flex items-center justify-start text-muted-foreground hover:text-foreground hover:bg-accent px-2 py-1.5 text-sm cursor-pointer"
+                           className="w-full flex items-center justify-start text-foreground dark:text-gray-100 hover:text-foreground hover:bg-accent dark:hover:bg-gray-700 px-2 py-1.5 text-sm cursor-pointer"
                          >
                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
                              <path d="m16 17 5-5-5-5"></path>

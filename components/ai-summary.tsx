@@ -2,8 +2,7 @@
 
 import { useState } from 'react'
 import { formatDistanceToNow } from 'date-fns'
-import { ChevronDown, ChevronUp, Languages } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { ChevronDown, ChevronUp } from 'lucide-react'
 
 interface AiSummaryProps {
   summaryEnglish: string
@@ -21,7 +20,7 @@ export default function AiSummary({
   
   const currentSummary = summaryLanguage === 'zh' ? (summaryChinese || summaryEnglish) : summaryEnglish
   
-  const toggleSummaryLanguage = () => {
+  const _toggleSummaryLanguage = () => {
     setSummaryLanguage(summaryLanguage === 'en' ? 'zh' : 'en')
   }
   

@@ -100,7 +100,7 @@ export function FeedToolbar({
             onLanguageChange={onLanguageChange}
             currentCategory={currentCategory}
             currentLanguage={currentLanguage}
-            categories={categories}
+            _categories={categories}
             isLoading={isLoading}
           />
         </div>

@@ -19,7 +19,7 @@ export default async function LandingPage() {
     .select('category')
     .not('category', 'is', null)
   
-  const categories = [...new Set(categoriesData?.map((item: any) => item.category).filter(Boolean) || [])] as string[]
+  const categories = [...new Set(categoriesData?.map((item: { category: string }) => item.category).filter(Boolean) || [])] as string[]
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/5">

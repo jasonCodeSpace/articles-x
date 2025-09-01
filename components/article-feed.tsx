@@ -79,8 +79,8 @@ export function ArticleFeed({ initialArticles, initialCategories, initialCategor
         />
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
-            {paginatedArticles.map((article: Article, index: number) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {paginatedArticles.slice(0, 18).map((article: Article, index: number) => (
               <ArticleCard
                 key={article.id}
                 article={article}

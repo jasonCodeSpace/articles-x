@@ -9,6 +9,7 @@ export interface FetchArticlesOptions {
   search?: string
   category?: string
   language?: string
+  tag?: string
 }
 
 /**
@@ -21,6 +22,7 @@ export async function fetchArticles(options: FetchArticlesOptions = {}): Promise
     search,
     category,
     language,
+    tag,
   } = options
 
   try {
@@ -49,6 +51,11 @@ export async function fetchArticles(options: FetchArticlesOptions = {}): Promise
     // Apply language filter
     if (language && language.trim() && language !== 'all') {
       query = query.eq('language', language.trim())
+    }
+
+    // Apply tag filter
+    if (tag && tag.trim()) {
+      query = query.eq('tag', tag.trim())
     }
 
     // Apply sorting

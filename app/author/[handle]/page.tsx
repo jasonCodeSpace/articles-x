@@ -9,6 +9,7 @@ import { FeedEmptyState } from '@/components/feed-empty-state'
 import { Pagination } from '@/components/pagination'
 import { AuthorPageToolbar } from '@/components/author-page-toolbar'
 import { LanguageProvider } from '@/contexts/language-context'
+import { ModernNav } from '@/components/modern-nav'
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 
@@ -70,8 +71,9 @@ export default function AuthorPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black">
-        <div className="container mx-auto px-4 py-8">
+      <div className="min-h-screen bg-background">
+        <ModernNav categories={[]} />
+        <div className="container mx-auto px-4 py-8 pt-24">
           <FeedLoading />
         </div>
       </div>
@@ -80,8 +82,9 @@ export default function AuthorPage() {
 
   if (error || !authorInfo) {
     return (
-      <div className="min-h-screen bg-black">
-        <div className="container mx-auto px-4 py-8">
+      <div className="min-h-screen bg-background">
+        <ModernNav categories={[]} />
+        <div className="container mx-auto px-4 py-8 pt-24">
           <FeedEmptyState 
             type="error"
             onRetry={() => window.location.reload()}
@@ -100,8 +103,9 @@ export default function AuthorPage() {
 
   return (
     <LanguageProvider>
-      <div className="min-h-screen bg-black">
-        <div className="container mx-auto px-4 py-8">
+      <div className="min-h-screen bg-background">
+        <ModernNav categories={[]} />
+        <div className="container mx-auto px-4 py-8 pt-24">
           {/* Back button */}
           <Link 
             href="/articles" 

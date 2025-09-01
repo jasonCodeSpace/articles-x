@@ -170,31 +170,38 @@ EXAMPLES:
 - "Apple releases new iPhone" → Tech (technology company product)
 - "DeFi protocol launches new yield farming" → Yield (crypto-specific)
 
-SUMMARY GOALS:
-- Convey the main thesis, all core points, critical facts (names/dates/numbers), nuances/caveats, and the conclusion.
-- Sound natural and informative for speech. Use short, plain sentences. No filler.
+ROLE
+TTS-ready summarizer. Output EXACTLY two paragraphs: first Chinese, then English.
+No headings or labels. 不要出现"总结"二字。
 
-SUMMARY OUTPUT FORMAT (in this order):
+TASK
+Read ARTICLE. Write an ultra-concise, natural, read-aloud description for someone who hasn't read it.
+Maximize information density. Do NOT omit key facts, names, dates, or numbers. Do NOT invent.
 
-English
-Thesis: ≤ ~18 words (may exceed only if needed for completeness)
-Key Points: 3–8 bullets, each ≤ ~12 words; include concrete facts
-Nuances/Caveats: 1–4 bullets, ≤ ~12 words each; mark opinions as [opinion]
-Conclusion: ≤ ~18 words; state the overall takeaway
+OUTPUT
+Two SINGLE coherent paragraphs (Chinese → English). Neutral tone. Short sentences.
 
-中文
-主题句：≤ ~18字（必要时可略超，保证完整）
-要点：3–8条，每条≤ ~12字；包含姓名、日期、数字等事实
-细节/注意：1–4条，每条≤ ~12字；观点用【观点】标注
-结论：≤ ~18字；给出总之要义
+TTS RULES
+- Numbers in words, not digits.
+  • CN: 年份用"二零二三年"；数量/金额/百分比用"一千九百万美元""约百分之十七"；区间如"一百一十万到一百二十万每天"。
+  • EN: years as "twenty twenty-two"; spell amounts/percents; ranges spelled out.
+- No symbols: $, %, ~, /, k, M, B. Spell them.
+- Expand acronyms to readable forms (both languages): EVM, USDC, MIT, HFT, DeFi, DEX, CMO, NYSE, KOL 等。
+- Handles写作"在 X 平台的 …" / "... on X".
+
+CONTENT RULES
+- 必含：是什么、为何重要、谁参与（姓名/职务/投资方）、关键机制或事件、关键数值与日期、应对或策略、结论。
+- 长清单：列三到五个代表名称 + "等/and others"，并给总量或比例。
+- 中英尽量信息对齐；无引号、无链接、无项目符号、无表情。
+- 若信息缺失：写"未提及" / "not stated"。
 
 OUTPUT FORMAT:
 LANGUAGE: [detected language code]
 CATEGORY: [selected category]
 
-[English summary]
+[Chinese paragraph]
 
-[Chinese summary]
+[English paragraph]
 
 ENGLISH_TRANSLATION: [only if article language is not English]
 TITLE: [English translation of title]
@@ -231,34 +238,37 @@ ${content.substring(0, 8000)}`; // 限制内容长度避免超出API限制
     const categoryMatch = text.match(/CATEGORY:\s*([^\n]+)/i);
     const category = categoryMatch ? categoryMatch[1].trim() : 'Tech'; // 默认分类
 
-    // 解析响应，分离中文和英文总结
-    const englishMatch = text.match(/English[\s\S]*?(?=中文|ENGLISH_TRANSLATION|$)/i);
-    const chineseMatch = text.match(/中文[\s\S]*?(?=ENGLISH_TRANSLATION|$)/i);
+    // 解析响应，新格式：中文段落在前，英文段落在后
+    // 移除LANGUAGE和CATEGORY行，然后按段落分割
+    const cleanText = text.replace(/LANGUAGE:\s*[^\n]+\n?/i, '').replace(/CATEGORY:\s*[^\n]+\n?/i, '').trim();
+    
+    // 按ENGLISH_TRANSLATION分割，取前面的部分
+    const summaryPart = cleanText.split(/ENGLISH_TRANSLATION/i)[0].trim();
+    
+    // 按段落分割（两个连续换行符）
+    const paragraphs = summaryPart.split(/\n\s*\n/).filter(p => p.trim());
     
     let summary: ArticleSummary;
     
-    if (englishMatch && chineseMatch) {
+    if (paragraphs.length >= 2) {
       summary = {
-        english: englishMatch[0].replace(/^English\s*/i, '').trim(),
-        chinese: chineseMatch[0].replace(/^中文\s*/i, '').trim()
+        chinese: paragraphs[0].trim(),
+        english: paragraphs[1].trim()
+      };
+    } else if (paragraphs.length === 1) {
+      // 如果只有一个段落，尝试按行分割
+      const lines = paragraphs[0].split('\n').filter(line => line.trim());
+      const midPoint = Math.floor(lines.length / 2);
+      summary = {
+        chinese: lines.slice(0, midPoint).join('\n').trim(),
+        english: lines.slice(midPoint).join('\n').trim()
       };
     } else {
-      // 如果解析失败，尝试按分隔符分割
-      const parts = text.split(/(?:中文|Chinese)/i);
-      if (parts.length >= 2) {
-        summary = {
-          english: parts[0].replace(/CATEGORY:[^\n]*\n?/i, '').trim(),
-          chinese: parts[1].split(/ENGLISH_TRANSLATION/i)[0].trim()
-        };
-      } else {
-        // 最后的备用方案
-        const lines = text.split('\n').filter((line: string) => line.trim() && !line.match(/^CATEGORY:/i));
-        const midPoint = Math.floor(lines.length / 2);
-        summary = {
-          english: lines.slice(0, midPoint).join('\n').trim(),
-          chinese: lines.slice(midPoint).join('\n').trim()
-        };
-      }
+      // 备用方案
+      summary = {
+        chinese: summaryPart,
+        english: summaryPart
+      };
     }
 
     // 移除所有星号符号

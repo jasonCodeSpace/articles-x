@@ -35,6 +35,7 @@ interface ArticleData {
   tweet_bookmarks?: number;
   article_preview_text?: string;
   full_article_content?: string;
+  tag?: 'Day' | 'Week' | 'History';
 }
 
 // Function to generate a slug from title
@@ -46,6 +47,22 @@ function generateSlug(title: string): string {
     .replace(/-+/g, '-')
     .trim()
     .substring(0, 50);
+}
+
+// Function to calculate article tag based on publication date
+function calculateArticleTag(publishedAt: string): 'Day' | 'Week' | 'History' {
+  const now = new Date();
+  const publishedDate = new Date(publishedAt);
+  const timeDiff = now.getTime() - publishedDate.getTime();
+  const hoursDiff = timeDiff / (1000 * 60 * 60);
+  
+  if (hoursDiff <= 24) {
+    return 'Day';
+  } else if (hoursDiff <= 24 * 7) {
+    return 'Week';
+  } else {
+    return 'History';
+  }
 }
 
 // Function to extract full article content from article result
@@ -212,6 +229,8 @@ async function processTweetForArticle(tweetId: string, authorHandle: string): Pr
     
     const articleUrl = `https://x.com/${authorHandle}/status/${tweetId}`;
     
+    const publishedAt = new Date(legacy.created_at || Date.now()).toISOString();
+    
     const articleData: ArticleData = {
       title: title,
       slug: slug,
@@ -219,20 +238,21 @@ async function processTweetForArticle(tweetId: string, authorHandle: string): Pr
       image: featuredImageUrl || legacy.entities?.media?.[0]?.media_url_https,
       author_handle: authorHandle,
       author_avatar: userLegacy?.profile_image_url_https,
-      article_published_at: new Date(legacy.created_at || Date.now()).toISOString(),
+      article_published_at: publishedAt,
       article_url: articleUrl,
       updated_at: new Date().toISOString(),
       category: category,
       tweet_id: tweetId,
       tweet_text: tweetText,
-      tweet_published_at: new Date(legacy.created_at || Date.now()).toISOString(),
+      tweet_published_at: publishedAt,
       tweet_views: tweetResult.views?.count || 0,
       tweet_replies: legacy.reply_count || 0,
       tweet_retweets: legacy.retweet_count || 0,
       tweet_likes: legacy.favorite_count || 0,
       tweet_bookmarks: legacy.bookmark_count || 0,
       article_preview_text: excerpt,
-      full_article_content: fullArticleContent || excerpt || title
+      full_article_content: fullArticleContent || excerpt || title,
+      tag: calculateArticleTag(publishedAt)
     };
 
     return articleData;

@@ -51,7 +51,7 @@ export function Pagination({ currentPage, totalPages, onPageChange, className = 
         size="sm"
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
-        className="border-gray-700 bg-gray-900 text-gray-300 hover:bg-gray-800 hover:text-white disabled:opacity-50 rounded-full"
+        className="border-border bg-card text-muted-foreground hover:bg-accent hover:text-foreground disabled:opacity-50 rounded-full"
       >
         <ChevronLeft className="h-4 w-4" />
         <span className="sr-only">Previous page</span>
@@ -61,7 +61,7 @@ export function Pagination({ currentPage, totalPages, onPageChange, className = 
       {visiblePages.map((page, index) => {
         if (page === '...') {
           return (
-            <span key={`dots-${index}`} className="px-1 sm:px-2 text-gray-500 text-sm">
+            <span key={`dots-${index}`} className="px-1 sm:px-2 text-muted-foreground text-sm">
               ...
             </span>
           )
@@ -78,7 +78,7 @@ export function Pagination({ currentPage, totalPages, onPageChange, className = 
               min-w-[32px] sm:min-w-[40px] h-8 sm:h-9 text-xs sm:text-sm rounded-full
               ${currentPage === pageNumber 
                 ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700' 
-                : 'border-gray-700 bg-gray-900 text-gray-300 hover:bg-gray-800 hover:text-white'
+                : 'border-border bg-card text-muted-foreground hover:bg-accent hover:text-foreground'
               }
             `}
           >
@@ -93,7 +93,7 @@ export function Pagination({ currentPage, totalPages, onPageChange, className = 
         size="sm"
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
-        className="border-gray-700 bg-gray-900 text-gray-300 hover:bg-gray-800 hover:text-white disabled:opacity-50 rounded-full"
+        className="border-border bg-card text-muted-foreground hover:bg-accent hover:text-foreground disabled:opacity-50 rounded-full"
       >
         <ChevronRight className="h-4 w-4" />
         <span className="sr-only">Next page</span>

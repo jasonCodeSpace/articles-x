@@ -6,7 +6,7 @@ interface ProtectedLayoutProps {
   children: React.ReactNode
 }
 
-export default async function ProtectedLayout({
+export default async function HistoryLayout({
   children,
 }: ProtectedLayoutProps) {
   const supabase = await createClient()
@@ -39,10 +39,6 @@ export default async function ProtectedLayout({
   } catch (error) {
     console.error('Error fetching categories:', error);
   }
-
-
-
-
 
   return (
     <div className="min-h-screen bg-background">

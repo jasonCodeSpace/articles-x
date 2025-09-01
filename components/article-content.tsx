@@ -6,6 +6,7 @@ import { ExternalLink, Languages } from 'lucide-react'
 import Image from 'next/image'
 import AiSummary from '@/components/ai-summary'
 import { useLanguage } from '@/contexts/language-context'
+import { useRouter } from 'next/navigation'
 
 interface ArticleContentProps {
   article: {
@@ -44,6 +45,7 @@ export function ArticleContent({
   relativeTime
 }: ArticleContentProps) {
   const { language, setLanguage } = useLanguage()
+  const router = useRouter()
 
   const toggleLanguage = () => {
     setLanguage(language === 'en' ? 'original' : 'en')
@@ -64,8 +66,8 @@ export function ArticleContent({
         {/* Author Info */}
         <div className="flex items-center justify-between mb-4">
           <div 
-            className="flex items-center gap-3 cursor-pointer hover:bg-gray-800/30 rounded-lg p-2 -m-2 transition-colors"
-            onClick={() => window.open(`https://x.com/${authorHandle}`, '_blank')}
+            className="flex items-center gap-3 cursor-pointer hover:bg-accent/30 rounded-lg p-2 -m-2 transition-colors"
+            onClick={() => router.push(`/author/${authorHandle}`)}
           >
             <Avatar className="h-12 w-12">
               {avatarUrl ? (
@@ -74,13 +76,13 @@ export function ArticleContent({
                   alt={`${article.author_name} profile picture`}
                 />
               ) : null}
-              <AvatarFallback className="text-sm font-medium bg-gray-600 text-white">
+              <AvatarFallback className="text-sm font-medium bg-muted text-foreground">
                 {authorInitials}
               </AvatarFallback>
             </Avatar>
             <div>
-              <div className="font-medium text-white hover:text-blue-400 transition-colors">{article.author_name}</div>
-              <div className="text-sm text-gray-400">@{authorHandle}</div>
+              <div className="font-medium text-foreground hover:text-blue-600 transition-colors">{article.author_name}</div>
+              <div className="text-sm text-muted-foreground">@{authorHandle}</div>
             </div>
           </div>
           
@@ -98,7 +100,7 @@ export function ArticleContent({
 
         {/* Publication Date */}
         {publishedDate && (
-          <div className="text-sm text-gray-400 mb-4">
+          <div className="text-sm text-muted-foreground mb-4">
             Published {relativeTime}
           </div>
         )}
@@ -111,7 +113,7 @@ export function ArticleContent({
               alt={`Cover for ${displayTitle}`}
               width={800}
               height={400}
-              className="w-full h-64 md:h-96 object-cover rounded-lg border border-gray-700"
+              className="w-full h-64 md:h-96 object-cover rounded-lg border border-border"
               loading="lazy"
               unoptimized
               referrerPolicy="no-referrer"
@@ -139,20 +141,20 @@ export function ArticleContent({
             />
           </div>
         ) : (
-          <div className="text-gray-400 italic text-lg leading-relaxed">
+          <div className="text-muted-foreground italic text-lg leading-relaxed">
             Full article content is not available.
           </div>
         )}
       </article>
 
       {/* Footer */}
-      <footer className="mt-12 pt-8 border-t border-gray-800">
+      <footer className="mt-12 pt-8 border-t border-border">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           {/* Category */}
           {article.category && (
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-400">Category:</span>
-              <span className="inline-flex items-center rounded-full bg-gray-800 text-gray-300 border border-gray-700 px-3 py-1 text-sm">
+              <span className="text-sm text-muted-foreground">Category:</span>
+              <span className="inline-flex items-center rounded-full bg-muted text-muted-foreground border border-border px-3 py-1 text-sm">
                 {article.category}
               </span>
             </div>
@@ -164,7 +166,7 @@ export function ArticleContent({
               href={article.article_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 transition-colors"
+              className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors"
             >
               <ExternalLink className="h-4 w-4" />
               <span>View original article</span>

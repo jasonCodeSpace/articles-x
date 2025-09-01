@@ -3,11 +3,13 @@
 import React, { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import Link from "next/link"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Home, Search, User, BookOpen as _BookOpen, Menu as _Menu, Grid3X3 as _Grid3X3, Bell, ChevronDown, Settings, Filter, Moon, Sun } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button as _Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { LogoutButton as _LogoutButton } from '@/components/logout-button'
+import { Switch } from '@/components/ui/switch'
 
 import {
   DropdownMenu,
@@ -40,6 +42,13 @@ export function ModernNav({ user, categories, className }: ModernNavProps) {
   const [activeTab, setActiveTab] = useState("Home")
   const [_isMobile, setIsMobile] = useState(false)
   const { theme, setTheme } = useTheme()
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  
+  // Determine current filter and button text
+  const currentFilter = searchParams.get('filter')
+  const isWeeklyFilter = currentFilter === 'week'
+  const buttonText = isWeeklyFilter ? 'Weekly Article' : 'Daily Article'
 
   const userDisplayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User'
   const userInitial = userDisplayName.charAt(0).toUpperCase()
@@ -65,44 +74,70 @@ export function ModernNav({ user, categories, className }: ModernNavProps) {
 
       {/* Desktop Navigation */}
       <nav className="hidden md:block fixed top-0 left-1/2 -translate-x-1/2 z-50 mt-6">
-        <div className="flex items-center gap-4 bg-black/80 border border-gray-700/50 backdrop-blur-lg py-3 px-6 rounded-full shadow-2xl">
+        <div className="flex items-center gap-4 bg-background/80 border border-border backdrop-blur-lg py-3 px-6 rounded-full shadow-2xl">
           {/* Logo */}
           <Link href="/articles" className="flex items-center gap-2 group cursor-pointer">
-            <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center hover:bg-gray-200 transition-all duration-300 group-hover:scale-110">
-              <span className="text-xs font-black text-black">𝕏</span>
+            <div className="w-6 h-6 bg-foreground rounded-full flex items-center justify-center hover:bg-muted transition-all duration-300 group-hover:scale-110">
+              <span className="text-xs font-black text-background">𝕏</span>
             </div>
-            <span className="text-sm font-bold text-white group-hover:text-blue-400 transition-colors">articles</span>
+            <span className="text-sm font-bold text-foreground group-hover:text-accent-foreground transition-colors">articles</span>
           </Link>
 
           {/* Navigation Items */}
           <div className="flex items-center gap-2">
-
+            {/* Navigation Buttons */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-full transition-colors">
+                  {buttonText}
+                  <ChevronDown className="w-3 h-3" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-40 bg-background border-border">
+                <DropdownMenuItem asChild>
+                  <Link href="/new" className="w-full cursor-pointer">
+                    Daily Article
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/new?filter=week" className="w-full cursor-pointer">
+                    Weekly Article
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Link 
+              href="/history" 
+              className="px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-full transition-colors"
+            >
+              History
+            </Link>
 
             {/* User Profile Dropdown or Login Button */}
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-2 pl-2 hover:bg-gray-800/50 rounded-full p-2 transition-colors">
+                  <button className="flex items-center gap-2 pl-2 hover:bg-accent/50 rounded-full p-2 transition-colors">
                     <Avatar className="w-6 h-6">
                       {user?.user_metadata?.avatar_url ? (
                         <AvatarImage src={user.user_metadata.avatar_url} alt={userDisplayName} />
                       ) : null}
-                      <AvatarFallback className="bg-gray-700/80 text-white text-xs font-medium">
+                      <AvatarFallback className="bg-muted text-foreground text-xs font-medium">
                         {userInitial}
                       </AvatarFallback>
                     </Avatar>
-                    <span className="text-white text-xs font-medium hidden lg:block">{userDisplayName}</span>
-                    <ChevronDown size={14} className="text-gray-400" />
+                    <span className="text-foreground text-xs font-medium hidden lg:block">{userDisplayName}</span>
+                    <ChevronDown size={14} className="text-muted-foreground" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="bg-black/90 backdrop-blur-lg border-gray-700/50 mt-2">
-                  <DropdownMenuItem className="text-gray-300 hover:text-white hover:bg-gray-800/50 cursor-pointer">
+                <DropdownMenuContent className="bg-background/90 backdrop-blur-lg border-border mt-2">
+                  <DropdownMenuItem className="text-muted-foreground hover:text-foreground hover:bg-accent cursor-pointer">
                     <Settings size={16} className="mr-2" />
                     Account
                   </DropdownMenuItem>
                   <DropdownMenuItem 
                     onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-                    className="text-gray-300 hover:text-white hover:bg-gray-800/50 cursor-pointer"
+                    className="text-muted-foreground hover:text-foreground hover:bg-accent cursor-pointer"
                   >
                     {theme === 'light' ? (
                       <Moon size={16} className="mr-2" />
@@ -120,7 +155,7 @@ export function ModernNav({ user, categories, className }: ModernNavProps) {
                          await supabase.auth.signOut()
                          window.location.href = '/login'
                        }}
-                       className="w-full flex items-center justify-start text-gray-300 hover:text-white hover:bg-gray-800/50 px-2 py-1.5 text-sm cursor-pointer"
+                       className="w-full flex items-center justify-start text-muted-foreground hover:text-foreground hover:bg-accent px-2 py-1.5 text-sm cursor-pointer"
                      >
                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
                          <path d="m16 17 5-5-5-5"></path>
@@ -134,14 +169,14 @@ export function ModernNav({ user, categories, className }: ModernNavProps) {
               </DropdownMenu>
             ) : (
               <Link href="/login">
-                <button className="flex items-center gap-2 pl-2 hover:bg-gray-800/50 rounded-full p-2 transition-colors">
+                <button className="flex items-center gap-2 pl-2 hover:bg-accent/50 rounded-full p-2 transition-colors">
                   <Avatar className="w-6 h-6">
-                    <AvatarFallback className="bg-gray-700/80 text-white text-xs font-medium">
+                    <AvatarFallback className="bg-muted text-foreground text-xs font-medium">
                       <User size={12} />
                     </AvatarFallback>
                   </Avatar>
-                  <span className="text-white text-xs font-medium hidden lg:block">Login</span>
-                  <ChevronDown size={14} className="text-gray-400" />
+                  <span className="text-foreground text-xs font-medium hidden lg:block">Login</span>
+                  <ChevronDown size={14} className="text-muted-foreground" />
                 </button>
               </Link>
              )}
@@ -156,13 +191,13 @@ export function ModernNav({ user, categories, className }: ModernNavProps) {
           className,
         )}
       >
-        <div className="flex items-center gap-2 bg-black/80 border border-gray-700/50 backdrop-blur-lg py-2 px-2 rounded-full shadow-2xl">
+        <div className="flex items-center gap-2 bg-background/80 border border-border backdrop-blur-lg py-2 px-2 rounded-full shadow-2xl">
           {/* Mobile Logo */}
           <Link href="/articles" className="flex items-center gap-2 group cursor-pointer">
-            <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center hover:bg-gray-200 transition-all duration-300 group-hover:scale-110">
-              <span className="text-xs font-black text-black">𝕏</span>
+            <div className="w-6 h-6 bg-foreground rounded-full flex items-center justify-center hover:bg-muted transition-all duration-300 group-hover:scale-110">
+              <span className="text-xs font-black text-background">𝕏</span>
             </div>
-            <span className="text-sm font-bold text-white group-hover:text-blue-400 transition-colors">articles</span>
+            <span className="text-sm font-bold text-foreground group-hover:text-accent-foreground transition-colors">articles</span>
           </Link>
           {navItems.map((item) => {
             const Icon = item.icon
@@ -176,8 +211,8 @@ if (item.name === 'Profile') {
                       <button
                         className={cn(
                           "relative cursor-pointer text-sm font-semibold px-4 py-2 rounded-full transition-colors",
-                          "text-gray-400 hover:text-white",
-                          isActive && "bg-gray-800/50 text-white",
+                          "text-muted-foreground hover:text-foreground",
+                          isActive && "bg-accent/50 text-foreground",
                         )}
                         onClick={() => setActiveTab(item.name)}
                       >
@@ -185,7 +220,7 @@ if (item.name === 'Profile') {
                         {isActive && (
                           <motion.div
                             layoutId="mobile-lamp"
-                            className="absolute inset-0 w-full bg-blue-500/20 rounded-full -z-10"
+                            className="absolute inset-0 w-full bg-accent/20 rounded-full -z-10"
                             initial={false}
                             transition={{
                               type: "spring",
@@ -196,21 +231,27 @@ if (item.name === 'Profile') {
                         )}
                       </button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent className="bg-black/90 backdrop-blur-lg border-gray-700/50 mb-2">
-                      <DropdownMenuItem className="text-gray-300 hover:text-white hover:bg-gray-800/50 cursor-pointer">
+                    <DropdownMenuContent className="bg-background/90 backdrop-blur-lg border-border mb-2">
+                      <DropdownMenuItem className="text-muted-foreground hover:text-foreground hover:bg-accent cursor-pointer">
                         <Settings size={16} className="mr-2" />
                         Account
                       </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-                        className="text-gray-300 hover:text-white hover:bg-gray-800/50 cursor-pointer"
-                      >
-                        {theme === 'light' ? (
-                          <Moon size={16} className="mr-2" />
-                        ) : (
-                          <Sun size={16} className="mr-2" />
-                        )}
-                        {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
+                      <DropdownMenuItem className="text-muted-foreground hover:text-foreground hover:bg-accent cursor-pointer">
+                        <div className="flex items-center justify-between w-full">
+                          <div className="flex items-center">
+                            {theme === 'light' ? (
+                              <Sun size={16} className="mr-2" />
+                            ) : (
+                              <Moon size={16} className="mr-2" />
+                            )}
+                            <span>Dark Mode</span>
+                          </div>
+                          <Switch
+                            checked={theme === 'dark'}
+                            onCheckedChange={(checked: boolean) => setTheme(checked ? 'dark' : 'light')}
+                            className="data-[state=checked]:bg-accent data-[state=unchecked]:bg-muted"
+                          />
+                        </div>
                       </DropdownMenuItem>
 
                       <DropdownMenuItem asChild>
@@ -221,7 +262,7 @@ if (item.name === 'Profile') {
                              await supabase.auth.signOut()
                              window.location.href = '/login'
                            }}
-                           className="w-full flex items-center justify-start text-gray-300 hover:text-white hover:bg-gray-800/50 px-2 py-1.5 text-sm cursor-pointer"
+                           className="w-full flex items-center justify-start text-muted-foreground hover:text-foreground hover:bg-accent px-2 py-1.5 text-sm cursor-pointer"
                          >
                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
                              <path d="m16 17 5-5-5-5"></path>
@@ -240,8 +281,8 @@ if (item.name === 'Profile') {
                     <button
                       className={cn(
                         "relative cursor-pointer text-sm font-semibold px-4 py-2 rounded-full transition-colors",
-                        "text-gray-400 hover:text-white",
-                        isActive && "bg-gray-800/50 text-white",
+                        "text-muted-foreground hover:text-foreground",
+                        isActive && "bg-accent/50 text-foreground",
                       )}
                       onClick={() => setActiveTab(item.name)}
                     >
@@ -249,7 +290,7 @@ if (item.name === 'Profile') {
                       {isActive && (
                         <motion.div
                           layoutId="mobile-lamp"
-                          className="absolute inset-0 w-full bg-blue-500/20 rounded-full -z-10"
+                          className="absolute inset-0 w-full bg-accent/20 rounded-full -z-10"
                           initial={false}
                           transition={{
                             type: "spring",
@@ -269,8 +310,8 @@ if (item.name === 'Profile') {
                 <button
                   className={cn(
                     "relative cursor-pointer text-sm font-semibold px-4 py-2 rounded-full transition-colors",
-                    "text-gray-400 hover:text-white",
-                    isActive && "bg-gray-800/50 text-white",
+                    "text-muted-foreground hover:text-foreground",
+                    isActive && "bg-accent/50 text-foreground",
                   )}
                   onClick={() => setActiveTab(item.name)}
                 >
@@ -278,7 +319,7 @@ if (item.name === 'Profile') {
                   {isActive && (
                     <motion.div
                       layoutId="mobile-lamp"
-                      className="absolute inset-0 w-full bg-blue-500/20 rounded-full -z-10"
+                      className="absolute inset-0 w-full bg-accent/20 rounded-full -z-10"
                       initial={false}
                       transition={{
                         type: "spring",

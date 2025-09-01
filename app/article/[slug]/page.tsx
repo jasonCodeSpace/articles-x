@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation'
-import { PersistentNav } from '@/components/persistent-nav'
+import { ModernNav } from '@/components/modern-nav'
 import { ArticleContent } from '@/components/article-content'
 import { ArticlePageToolbar } from '@/components/article-page-toolbar'
 import { ArticleBreadcrumb } from '@/components/article-breadcrumb'
@@ -17,6 +17,17 @@ interface ArticlePageProps {
 export default async function ArticlePage({ params }: ArticlePageProps) {
   const resolvedParams = await params
   const supabase = await createClient()
+  
+  // Get user session
+  const { data: { user } } = await supabase.auth.getUser()
+  
+  // Get categories
+  const { data: categoriesData } = await supabase
+    .from('articles')
+    .select('category')
+    .not('category', 'is', null)
+  
+  const categories = [...new Set(categoriesData?.map(item => item.category) || [])]
   
   // Extract short ID from the slug and find the full UUID
   const shortId = extractArticleIdFromSlug(resolvedParams.slug)
@@ -55,9 +66,9 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
   return (
     <LanguageProvider>
-      <div className="min-h-screen bg-black text-white">
-        {/* Persistent Navigation */}
-        <PersistentNav />
+      <div className="min-h-screen bg-background">
+        {/* Modern Navigation */}
+        <ModernNav user={user ?? undefined} categories={categories} />
         
         <div className="max-w-4xl mx-auto px-4 py-8 pt-24">
           {/* Breadcrumbs */}

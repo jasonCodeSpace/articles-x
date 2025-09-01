@@ -18,13 +18,13 @@ export function ArticleBreadcrumb({ article }: ArticleBreadcrumbProps) {
   
   return (
     <nav className="mb-6">
-      <div className="flex items-center gap-2 text-sm text-gray-400">
-        <Link href="/articles" className="hover:text-white transition-colors flex items-center gap-1">
+      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <Link href="/new" className="hover:text-foreground transition-colors flex items-center gap-1">
           <ArrowLeft className="h-4 w-4" />
           <span>Articles</span>
         </Link>
         <span>/</span>
-        <span className="text-white truncate">{displayTitle}</span>
+        <span className="text-foreground truncate">{displayTitle}</span>
       </div>
     </nav>
   )

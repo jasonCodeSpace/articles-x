@@ -72,7 +72,7 @@ export function FeedToolbar({
   const currentCategoryOption = categoryOptions.find(opt => opt.value === currentCategory) || categoryOptions[0]
 
   return (
-    <div className="flex flex-col sm:flex-row gap-3 items-center justify-center p-3 bg-transparent border-b border-gray-700/50 -mt-22 sm:-mt-14">
+    <div className="flex flex-col sm:flex-row gap-3 items-center justify-center p-3 bg-transparent border-b border-gray-700/50">
       {/* Centered Search */}
       <form onSubmit={handleSearchSubmit} className="w-full max-w-md sm:max-w-sm">
         <div className="relative">
@@ -85,7 +85,7 @@ export function FeedToolbar({
               setSearchInput(e.target.value)
               handleSearchChange(e.target.value)
             }}
-            className="pl-10 pr-4 bg-gray-900/50 border-gray-600/50 text-white placeholder:text-gray-400 focus:border-blue-400 text-center rounded-full"
+            className="pl-10 pr-4 bg-background/50 border-border text-foreground placeholder:text-muted-foreground focus:border-blue-400 text-center rounded-full"
             disabled={isLoading}
           />
         </div>
@@ -120,7 +120,7 @@ export function FeedToolbar({
                 <ChevronDown className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-[200px] max-h-[300px] overflow-y-auto p-1 bg-gray-900 border-gray-700 rounded-xl">
+            <DropdownMenuContent align="end" className="w-[200px] max-h-[300px] overflow-y-auto p-1 bg-background border-border rounded-xl">
               <div className="flex flex-col gap-0.5">
                 {categoryOptions.map((option) => (
                   <DropdownMenuItem
@@ -150,7 +150,7 @@ export function FeedToolbar({
                 <ChevronDown className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-32 bg-gray-900 border-gray-700 rounded-xl">
+            <DropdownMenuContent align="end" className="w-32 bg-background border-border rounded-xl">
               <DropdownMenuItem
                 onClick={() => setLanguage('original')}
                 className={`rounded-lg cursor-pointer ${language === 'original' ? 'bg-accent text-accent-foreground font-medium' : 'hover:bg-accent/50'}`}
@@ -179,7 +179,7 @@ export function FeedToolbar({
                 <ChevronDown className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48 bg-gray-900 border-gray-700 rounded-xl">
+            <DropdownMenuContent align="end" className="w-48 bg-background border-border rounded-xl">
               {languageOptions.map((option) => (
                 <DropdownMenuItem
                   key={option.value}

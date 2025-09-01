@@ -161,7 +161,7 @@ export function ArticleCard({ article, className, index: _index = 0 }: ArticleCa
   const articleUrl = generateArticleUrl(article.title, article.id)
 
   return (
-    <div className={`bg-gray-900/80 border border-gray-700 rounded-xl overflow-hidden hover:bg-gray-900/90 hover:border-gray-600 transition-all duration-300 group cursor-pointer shadow-xl hover:shadow-2xl hover:scale-[1.02] flex flex-col h-[480px] ${className}`}>
+    <div className={`bg-card border border-border rounded-xl overflow-hidden hover:bg-card/90 hover:border-border/80 transition-all duration-300 group cursor-pointer shadow-xl hover:shadow-2xl hover:scale-[1.02] flex flex-col h-[480px] ${className}`}>
       {/* Featured image at the top */}
       {coverUrl && (
         <Link href={articleUrl} className="relative w-full h-48 overflow-hidden block">
@@ -177,7 +177,7 @@ export function ArticleCard({ article, className, index: _index = 0 }: ArticleCa
           {/* Language badge - only show if language data exists in Supabase */}
           {languageFromDB && (
             <div className="absolute top-3 left-3">
-              <span className="bg-gray-900/80 text-white text-xs px-2 py-1 rounded-md font-medium backdrop-blur-sm">
+              <span className="bg-black/70 text-white text-xs px-2 py-1 rounded-md font-medium backdrop-blur-sm">
                 {languageFromDB.toUpperCase()}
               </span>
             </div>
@@ -185,7 +185,7 @@ export function ArticleCard({ article, className, index: _index = 0 }: ArticleCa
           {/* Category badge */}
           {article.category && (
             <div className="absolute top-3 right-3">
-              <span className="bg-blue-600/80 text-white text-xs px-2 py-1 rounded-md font-medium backdrop-blur-sm">
+              <span className="bg-blue-600 text-white text-xs px-2 py-1 rounded-md font-medium">
                 {article.category}
               </span>
             </div>
@@ -197,7 +197,7 @@ export function ArticleCard({ article, className, index: _index = 0 }: ArticleCa
       <div className="p-4 flex flex-col flex-grow">
         {/* Article title */}
         <Link href={articleUrl} className="block">
-          <h3 className="text-white text-lg font-semibold leading-tight line-clamp-2 group-hover:text-blue-400 transition-colors duration-200 mb-3">
+          <h3 className="text-foreground text-lg font-semibold leading-tight line-clamp-2 group-hover:text-accent-foreground transition-colors duration-200 mb-3">
             {displayTitle}
           </h3>
         </Link>
@@ -206,7 +206,7 @@ export function ArticleCard({ article, className, index: _index = 0 }: ArticleCa
         <div className="flex-grow">
           {descriptionText && (
             <Link href={articleUrl} className="block">
-              <p className="text-gray-400 text-sm leading-relaxed line-clamp-3 mb-4 hover:text-gray-300 transition-colors cursor-pointer">
+              <p className="text-muted-foreground text-sm leading-relaxed line-clamp-3 mb-4 hover:text-foreground transition-colors cursor-pointer">
                 {descriptionText}
               </p>
             </Link>
@@ -216,22 +216,22 @@ export function ArticleCard({ article, className, index: _index = 0 }: ArticleCa
         {/* Author info */}
         <div className="flex items-center gap-2 mb-3">
           <Link href={`/author/${encodeURIComponent(authorHandle)}`} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-            <Avatar className="h-6 w-6 ring-1 ring-gray-600">
+            <Avatar className="h-6 w-6 ring-1 ring-border">
               {avatarUrl ? (
                 <AvatarImage 
                   src={avatarUrl} 
                   alt={`${article.author_name} profile picture`}
                 />
               ) : null}
-              <AvatarFallback className="text-xs font-medium bg-gray-600 text-white">
+              <AvatarFallback className="text-xs font-medium bg-muted text-foreground">
                 {authorInitials}
               </AvatarFallback>
             </Avatar>
-            <span className="font-medium text-gray-300 truncate hover:text-white transition-colors">
+            <span className="font-medium text-muted-foreground truncate hover:text-foreground transition-colors">
               @{authorHandle}
             </span>
           </Link>
-          <div className="flex items-center gap-1 text-xs text-gray-400 min-w-0">
+          <div className="flex items-center gap-1 text-xs text-muted-foreground min-w-0">
             <span>·</span>
             <time dateTime={publishedDate} title={new Date(publishedDate).toLocaleString()}>
               {relativeTime.replace(' ago', '')}
@@ -241,7 +241,7 @@ export function ArticleCard({ article, className, index: _index = 0 }: ArticleCa
         
         {/* Tweet engagement stats and actions */}
         <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-3 text-xs text-gray-500">
+          <div className="flex items-center gap-3 text-xs text-muted-foreground">
             {article.tweet_views !== undefined && (
               <div className="flex items-center gap-1">
                 <Eye className="h-3 w-3" />
@@ -277,7 +277,7 @@ export function ArticleCard({ article, className, index: _index = 0 }: ArticleCa
           {/* Share button */}
           <button
             onClick={handleShare}
-            className="flex items-center gap-1 text-xs text-gray-400 hover:text-blue-400 transition-colors p-1 rounded hover:bg-gray-800"
+            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-accent-foreground transition-colors p-1 rounded hover:bg-accent"
             title="Share article"
           >
             {isShared ? (
@@ -321,49 +321,49 @@ export function ArticleCard({ article, className, index: _index = 0 }: ArticleCa
 
 export function ArticleCardSkeleton({ className }: { className?: string }) {
   return (
-    <div className={`bg-gray-900 rounded-lg overflow-hidden border border-gray-800 animate-pulse flex flex-col h-[480px] ${className}`}>
+    <div className={`bg-card rounded-lg overflow-hidden border border-border animate-pulse flex flex-col h-[480px] ${className}`}>
       {/* Image skeleton */}
-      <div className="h-48 bg-gray-800 flex-shrink-0" />
+      <div className="h-48 bg-muted flex-shrink-0" />
       
       {/* Content skeleton */}
       <div className="p-4 flex flex-col flex-grow">
         {/* Title skeleton */}
         <div className="space-y-2 mb-3">
-          <div className="h-5 bg-gray-700 rounded w-full" />
-          <div className="h-5 bg-gray-700 rounded w-3/4" />
+          <div className="h-5 bg-muted rounded w-full" />
+          <div className="h-5 bg-muted rounded w-3/4" />
         </div>
         
         {/* Description skeleton */}
         <div className="flex-grow space-y-2 mb-4">
-          <div className="h-4 bg-gray-700 rounded w-full" />
-          <div className="h-4 bg-gray-700 rounded w-5/6" />
-          <div className="h-4 bg-gray-700 rounded w-2/3" />
+          <div className="h-4 bg-muted rounded w-full" />
+          <div className="h-4 bg-muted rounded w-5/6" />
+          <div className="h-4 bg-muted rounded w-2/3" />
         </div>
         
         {/* Author info skeleton */}
         <div className="flex items-center gap-2 mb-3">
-          <div className="h-6 w-6 rounded-full bg-gray-700" />
-          <div className="h-3 bg-gray-700 rounded w-20" />
-          <div className="h-3 bg-gray-700 rounded w-12" />
+          <div className="h-6 w-6 rounded-full bg-muted" />
+          <div className="h-3 bg-muted rounded w-20" />
+          <div className="h-3 bg-muted rounded w-12" />
         </div>
         
         {/* Stats and actions skeleton */}
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-3">
-            <div className="h-3 bg-gray-700 rounded w-8" />
-            <div className="h-3 bg-gray-700 rounded w-8" />
-            <div className="h-3 bg-gray-700 rounded w-8" />
+            <div className="h-3 bg-muted rounded w-8" />
+            <div className="h-3 bg-muted rounded w-8" />
+            <div className="h-3 bg-muted rounded w-8" />
           </div>
-          <div className="h-3 w-3 bg-gray-700 rounded" />
+          <div className="h-3 w-3 bg-muted rounded" />
         </div>
         
         {/* Link skeleton */}
-        <div className="h-3 bg-gray-700 rounded w-20 mb-3" />
+        <div className="h-3 bg-muted rounded w-20 mb-3" />
         
         {/* Tags skeleton */}
         <div className="flex gap-1">
-          <div className="h-3 bg-gray-700 rounded w-12" />
-          <div className="h-3 bg-gray-700 rounded w-16" />
+          <div className="h-3 bg-muted rounded w-12" />
+          <div className="h-3 bg-muted rounded w-16" />
         </div>
       </div>
     </div>

@@ -26,23 +26,23 @@ export default function AiSummary({
   }
   
   return (
-    <section className="mb-8 p-8 bg-gray-900/30 rounded-xl border border-gray-600/50 backdrop-blur-sm">
+    <section className="mb-8 p-8 bg-muted/50 rounded-xl border border-border backdrop-blur-sm">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <span className="inline-flex items-center justify-center w-8 h-8 bg-blue-600 text-white text-sm font-bold rounded-lg shadow-lg">
             AI
           </span>
-          <h3 className="text-xl font-semibold text-white tracking-tight">Summary</h3>
+          <h3 className="text-xl font-semibold text-foreground tracking-tight">Summary</h3>
         </div>
         
         <div className="flex items-center gap-3">
-          <div className="flex bg-gray-800/80 rounded-lg p-1">
+          <div className="flex bg-muted rounded-lg p-1">
             <button
               onClick={() => setSummaryLanguage('en')}
               className={`px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 ${
                 summaryLanguage === 'en'
                   ? 'bg-blue-600 text-white shadow-lg'
-                  : 'text-gray-300 hover:text-white hover:bg-gray-700/50'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-accent'
               }`}
             >
               EN
@@ -52,7 +52,7 @@ export default function AiSummary({
               className={`px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 ${
                 summaryLanguage === 'zh'
                   ? 'bg-blue-600 text-white shadow-lg'
-                  : 'text-gray-300 hover:text-white hover:bg-gray-700/50'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-accent'
               }`}
             >
               中文
@@ -61,7 +61,7 @@ export default function AiSummary({
           
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="p-2 text-gray-400 hover:text-white transition-all duration-200 hover:bg-gray-700/50 rounded-lg"
+            className="p-2 text-muted-foreground hover:text-foreground transition-all duration-200 hover:bg-accent rounded-lg"
             aria-label={isCollapsed ? 'Expand summary' : 'Collapse summary'}
           >
             {isCollapsed ? (
@@ -76,7 +76,7 @@ export default function AiSummary({
       {/* Collapsible content */}
       {!isCollapsed && (
         <>
-          <div className="article-content text-gray-200">
+          <div className="article-content text-foreground">
              <div 
                dangerouslySetInnerHTML={{
                  __html: currentSummary
@@ -89,8 +89,8 @@ export default function AiSummary({
            </div>
           
           {summaryGeneratedAt && (
-            <div className="mt-6 pt-4 border-t border-gray-600/50">
-              <p className="text-sm text-gray-400">
+            <div className="mt-6 pt-4 border-t border-border">
+              <p className="text-sm text-muted-foreground">
                 Summary generated {formatDistanceToNow(new Date(summaryGeneratedAt), { addSuffix: true })}
               </p>
             </div>

@@ -3,16 +3,16 @@ import { fetchArticles, getArticleCategories } from '@/lib/articles'
 import { ArticleFeed } from '@/components/article-feed'
 import { FeedLoading } from '@/components/feed-loading'
 
-
 interface PageProps {
   searchParams: Promise<{ category?: string; search?: string; page?: string }>
 }
 
-export default async function HomePage({ searchParams }: PageProps) {
+export default async function HistoryPage({ searchParams }: PageProps) {
   const { category, search } = await searchParams
   
+  // Fetch only History tagged articles
   const [articles, categories] = await Promise.all([
-    fetchArticles({ category, search }),
+    fetchArticles({ category, search, tag: 'History' }),
     getArticleCategories()
   ])
 

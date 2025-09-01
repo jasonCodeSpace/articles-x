@@ -29,7 +29,7 @@ export function UnifiedMobileButton({
   onLanguageChange,
   currentCategory,
   currentLanguage,
-  _categories = [],
+  categories = [],
   isLoading = false,
   language,
   setLanguage

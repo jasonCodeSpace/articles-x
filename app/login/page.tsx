@@ -10,8 +10,8 @@ import { z } from 'zod'
 import Link from 'next/link'
 
 const loginSchema = z.object({
-  email: z.string().email('请输入有效的邮箱地址'),
-  password: z.string().min(6, '密码至少需要6个字符'),
+  email: z.string().email('Please enter a valid email address'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
 })
 
 export default function Login() {
@@ -41,30 +41,30 @@ export default function Login() {
       if (error) {
         console.error('Login error:', error)
         
-        // 提供更具体的错误信息
+        // Provide more specific error messages
         if (error.message.includes('Invalid login credentials')) {
-          setError('邮箱或密码不正确，请检查后重试')
+          setError('Email or password is incorrect, please check and try again')
         } else if (error.message.includes('Email not confirmed')) {
-          setError('请先确认您的邮箱地址')
+          setError('Please confirm your email address first')
         } else if (error.message.includes('Too many requests')) {
-          setError('尝试次数过多，请稍后再试')
+          setError('Too many attempts, please try again later')
         } else {
-          setError(error.message || '登录失败，请检查邮箱和密码')
+          setError(error.message || 'Login failed, please check your email and password')
         }
       } else if (data?.user) {
-        setMessage('登录成功！正在跳转...')
+        setMessage('Login successful! Redirecting...')
         console.log('Login successful:', data.user.email)
         
-        // 登录成功后立即跳转到主页面
+        // Redirect to main page after successful login
         router.push('/new')
       } else {
-        setError('登录失败，未知错误')
+        setError('Login failed, unknown error')
       }
     } catch (error) {
       if (error instanceof z.ZodError) {
         setError(error.issues[0].message)
       } else {
-        setError('登录过程中发生错误')
+        setError('An error occurred during login')
       }
     } finally {
       setIsLoading(false)
@@ -87,7 +87,7 @@ export default function Login() {
             className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors group"
           >
             <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
-            <span className="text-sm">返回主页</span>
+            <span className="text-sm">Back to Home</span>
           </Link>
         </div>
         
@@ -105,10 +105,10 @@ export default function Login() {
             </div>
             
             <h2 className="text-2xl font-bold text-foreground mb-3 animate-slide-up">
-              登录 Xarticle
+              Sign in to Xarticle
             </h2>
             <p className="text-muted-foreground text-base mb-6 animate-slide-up" style={{animationDelay: '0.1s'}}>
-              使用您的邮箱和密码登录账户
+              Use your email and password to sign in to your account
             </p>
             
             {/* Features */}
@@ -126,7 +126,7 @@ export default function Login() {
                 <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
                 <Input
                   type="email"
-                  placeholder="输入您的邮箱"
+                  placeholder="Enter your email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -139,7 +139,7 @@ export default function Login() {
                 <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
                 <Input
                   type="password"
-                  placeholder="输入您的密码"
+                  placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -157,11 +157,11 @@ export default function Login() {
               {isLoading ? (
                 <div className="flex items-center">
                   <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
-                  登录中...
+                  Signing in...
                 </div>
               ) : (
                 <div className="flex items-center">
-                  登录
+                  Sign In
                   <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </div>
               )}
@@ -173,16 +173,16 @@ export default function Login() {
                   href="/reset-password" 
                   className="text-primary hover:text-primary/80 underline transition-colors"
                 >
-                  忘记密码？
+                  Forgot password?
                 </Link>
               </p>
               <p className="text-muted-foreground text-sm">
-                还没有账户？{' '}
+Don't have an account?{' '}
                 <Link 
                   href="/register" 
                   className="text-primary hover:text-primary/80 underline transition-colors"
                 >
-                  立即注册
+                  Sign up now
                 </Link>
               </p>
             </div>
@@ -216,13 +216,13 @@ export default function Login() {
         {/* Footer */}
         <div className="text-center mt-8 animate-slide-up" style={{animationDelay: '0.4s'}}>
           <p className="text-xs text-muted-foreground">
-            登录即表示您同意我们的{' '}
+            By signing in, you agree to our{' '}
             <a href="#" className="text-primary hover:text-primary/80 underline transition-colors">
-              服务条款
+              Terms of Service
             </a>{' '}
             •{' '}
             <a href="#" className="text-primary hover:text-primary/80 underline transition-colors">
-              隐私政策
+              Privacy Policy
             </a>
           </p>
         </div>

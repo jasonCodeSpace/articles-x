@@ -3,14 +3,15 @@ import { GoogleGenerativeAI, GenerativeModel } from '@google/generative-ai';
 let genAI: GoogleGenerativeAI | null = null;
 let model: GenerativeModel | null = null;
 
-function initializeGemini(): GenerativeModel | null {
-  if (!process.env.GEMINI_API_KEY) {
-    throw new Error('GEMINI_API_KEY environment variable is required');
+function initialize(): GenerativeModel | null {
+  const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_AI_API_KEY;
+  if (!apiKey) {
+    throw new Error('GEMINI_API_KEY or GOOGLE_AI_API_KEY environment variable is required');
   }
   
   if (!genAI) {
-    genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+    genAI = new GoogleGenerativeAI(apiKey);
+    model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
   }
   
   return model;
@@ -36,7 +37,7 @@ export interface ArticleAnalysis {
 }
 
 /**
- * 使用Gemini AI生成文章总结和分类
+ * 使用 AI生成文章总结和分类
  * @param content 文章内容
  * @param title 文章标题
  * @returns 包含中文和英文总结以及分类的对象
@@ -46,9 +47,9 @@ export async function generateArticleAnalysis(
   title: string
 ): Promise<ArticleAnalysis> {
   try {
-    const currentModel = initializeGemini();
+    const currentModel = initialize();
     if (!currentModel) {
-      throw new Error('Failed to initialize Gemini model');
+      throw new Error('Failed to initialize  model');
     }
     
     // 构建提示词，包含摘要生成、分类、语言检测和英文翻译
@@ -141,34 +142,81 @@ Detect the primary language of the article content. Use ISO 639-1 language codes
 If unsure, use 'en' as default.
 
 CATEGORY TASK:
-Select ONE category that best fits this article from the following list:
+Select ONE category that best fits this article from the following list. 
+IMPORTANT: Output EXACTLY as written below with proper capitalization (first letter uppercase, rest lowercase).
 
-CRYPTO & BLOCKCHAIN:
-AI, Agents, Models, Lending, DEX, Yield, Perps, Markets, Onchain, Airdrops, L1, L2, Wallets, Infrastructure, Oracles, DAOs, Identity, SocialFi, NFTs
+CRYPTOCURRENCY & BLOCKCHAIN (choose most specific):
+Bitcoin, Ethereum, Solana, Defi, Memecoin, Trading, Mining, Wallet, Nft, Dao
+
+TECHNOLOGY & INNOVATION:
+Software, Hardware, Ai, Startup, Fintech, Biotech, Space
 
 POLITICS & SOCIETY:
-Policy, Elections, Politics, Social, Media, History, Culture, Security, Education
+Politics, Elections, Policy, International, Security, Education, Culture
 
-BUSINESS & TECH:
-Startups, VC, Business, Tech, Hardware, Software, Science, Economics
+BUSINESS & ECONOMICS:
+Business, Economics, Markets, Investment, Banking, Energy, Real-estate
 
 LIFESTYLE & ENTERTAINMENT:
-GameFi, Esports, Gaming, Health, Lifestyle, Art, Stories, Fiction, Sports
+Gaming, Sports, Health, Travel, Food, Art, Music, Fashion
+
+MEDIA & COMMUNICATION:
+Social-media, Journalism, Publishing, Broadcasting, Marketing
+
+SCIENCE & RESEARCH:
+Science, Research, Medicine, Climate, Environment, Physics
 
 CLASSIFICATION GUIDELINES:
-- Stories, fairy tales, personal narratives, creative writing, fictional characters → Stories
-- Political analysis, international relations, conflicts, propaganda, war, elections → Politics  
-- Technology companies, software, hardware, innovation, programming → Tech
-- Cryptocurrency, blockchain, DeFi protocols, trading → Use specific crypto categories
-- Opinion pieces about social issues, community discussions → Social
-- Historical events, cultural analysis, traditions → History or Culture
-- When unsure between similar categories, choose the more specific one
+READ THE CONTENT CAREFULLY. Choose the MOST SPECIFIC category based on the PRIMARY TOPIC.
 
-EXAMPLES:
-- "Leah, The Faerie Warrior Princess" → Stories (fictional character story)
-- "Le menzogne della propaganda pro-palestinese" → Politics (political propaganda analysis)
-- "Apple releases new iPhone" → Tech (technology company product)
-- "DeFi protocol launches new yield farming" → Yield (crypto-specific)
+CRYPTOCURRENCY CONTENT:
+- Bitcoin price, analysis, adoption → Bitcoin
+- Ethereum updates, gas fees, ETH → Ethereum  
+- Solana ecosystem, SOL token → Solana
+- DeFi protocols, yield farming, lending, DEX → Defi
+- Memecoins, DOGE, SHIB, pump.fun → Memecoin
+- Crypto trading strategies, market analysis → Trading
+- Mining operations, miners, hashrate → Mining
+- Crypto wallets, security → Wallet
+- NFT collections, digital art, OpenSea → Nft
+- DAOs, governance tokens → Dao
+
+TECHNOLOGY CONTENT:
+- Software companies, apps, SaaS → Software
+- Hardware devices, chips, phones → Hardware
+- AI/ML, ChatGPT, LLMs, machine learning → Ai
+- New companies, funding rounds → Startup
+- Financial technology, payments → Fintech
+- Space exploration, rockets → Space
+- Biotechnology, medical tech → Biotech
+
+BUSINESS & FINANCE:
+- Company news, earnings, corporate → Business
+- Economic indicators, inflation, GDP → Economics
+- Stock markets, trading, Wall Street → Markets
+- Investment strategies, funds → Investment
+- Banking sector, loans → Banking
+- Oil, gas, renewable energy → Energy
+- Property, housing market → Real-estate
+
+POLITICS & SOCIETY:
+- Government, politicians, laws → Politics
+- Voting, campaigns, candidates → Elections
+- Public policy, regulations → Policy
+- International relations, diplomacy → International
+- National security, military → Security
+- Schools, universities, learning → Education
+- Arts, traditions, society → Culture
+
+EXAMPLES WITH REASONING:
+- "Tesla FSD autonomous driving" → Hardware (car technology)
+- "Foot Locker x Habbo partnership" → Gaming (gaming platform collaboration)
+- "World Liberty Financial stablecoin" → Defi (DeFi protocol/stablecoin)
+- "Bitcoin ETF approval" → Bitcoin (Bitcoin-specific news)
+- "ChatGPT new features" → Ai (AI technology)
+- "Election polling data" → Elections (election-related)
+- "Tesla stock price surge" → Markets (stock market)
+- "New startup raises $50M" → Startup (startup funding)
 
 ROLE
 TTS-ready summarizer. Output EXACTLY two paragraphs: first Chinese, then English.
@@ -197,11 +245,18 @@ CONTENT RULES
 
 OUTPUT FORMAT:
 LANGUAGE: [detected language code]
-CATEGORY: [selected category]
+CATEGORY: [selected category - EXACTLY as listed above with proper capitalization]
 
 [Chinese paragraph]
 
 [English paragraph]
+
+CRITICAL REQUIREMENTS:
+- CATEGORY must be EXACTLY one of the categories listed above
+- Use proper capitalization: First letter uppercase, rest lowercase
+- NO variations like "TECH", "tech", "Technology" - use "Software", "Hardware", or "Ai"
+- NO generic categories like "Crypto" - use specific ones like "Bitcoin", "Defi", "Memecoin"
+- Choose the MOST SPECIFIC category that fits
 
 ENGLISH_TRANSLATION: [only if article language is not English]
 TITLE: [English translation of title]
@@ -236,7 +291,88 @@ ${content.substring(0, 8000)}`; // 限制内容长度避免超出API限制
     
     // 解析分类
     const categoryMatch = text.match(/CATEGORY:\s*([^\n]+)/i);
-    const category = categoryMatch ? categoryMatch[1].trim() : 'Tech'; // 默认分类
+    let rawCategory = categoryMatch ? categoryMatch[1].trim() : 'Software'; // 默认分类
+    
+    // 定义有效分类列表
+    const validCategories = [
+      // Crypto & Blockchain
+      'Bitcoin', 'Ethereum', 'Solana', 'Defi', 'Memecoin', 'Trading', 'Mining', 'Wallet', 'Nft', 'Dao',
+      // Technology & Innovation  
+      'Software', 'Hardware', 'Ai', 'Startup', 'Fintech', 'Biotech', 'Space',
+      // Politics & Society
+      'Politics', 'Elections', 'Policy', 'International', 'Security', 'Education', 'Culture',
+      // Business & Economics
+      'Business', 'Economics', 'Markets', 'Investment', 'Banking', 'Energy', 'Real-estate',
+      // Lifestyle & Entertainment
+      'Gaming', 'Sports', 'Health', 'Travel', 'Food', 'Art', 'Music', 'Fashion',
+      // Media & Communication
+      'Social-media', 'Journalism', 'Publishing', 'Broadcasting', 'Marketing',
+      // Science & Research
+      'Science', 'Research', 'Medicine', 'Climate', 'Environment', 'Physics'
+    ];
+    
+    // 分类映射表 - 将常见的错误分类映射到正确的分类
+    const categoryMappings: { [key: string]: string } = {
+      // Technology variations
+      'tech': 'Software',
+      'technology': 'Software', 
+      'TECH': 'Software',
+      'TECHNOLOGY': 'Software',
+      'Tech': 'Software',
+      
+      // Crypto variations
+      'crypto': 'Bitcoin',
+      'CRYPTO': 'Bitcoin',
+      'Crypto': 'Bitcoin',
+      'cryptocurrency': 'Bitcoin',
+      'blockchain': 'Bitcoin',
+      'BLOCKCHAIN': 'Bitcoin',
+      'Blockchain': 'Bitcoin',
+      
+      // Politics variations
+      'political': 'Politics',
+      'POLITICS': 'Politics',
+      'politics': 'Politics',
+      
+      // Business variations
+      'BUSINESS': 'Business',
+      'business': 'Business',
+      
+      // Sports variations
+      'SPORTS': 'Sports',
+      'sports': 'Sports',
+      'sport': 'Sports',
+      'SPORT': 'Sports',
+      
+      // Gaming variations
+      'GAMING': 'Gaming',
+      'gaming': 'Gaming',
+      'games': 'Gaming',
+      'GAMES': 'Gaming',
+      
+      // AI variations
+      'AI': 'Ai',
+      'ai': 'Ai',
+      'artificial intelligence': 'Ai',
+      'machine learning': 'Ai',
+      'ML': 'Ai',
+      
+      // DeFi variations
+      'defi': 'Defi',
+      'DEFI': 'Defi',
+      'DeFi': 'Defi',
+      
+      // NFT variations
+      'nft': 'Nft',
+      'NFT': 'Nft',
+      'nfts': 'Nft',
+      'NFTS': 'Nft',
+    };
+    
+    // 修正分类
+    const category = categoryMappings[rawCategory] || 
+                    validCategories.find(cat => cat.toLowerCase() === rawCategory.toLowerCase()) ||
+                    'Software'; // 默认分类
 
     // 解析响应，新格式：中文段落在前，英文段落在后
     // 移除LANGUAGE和CATEGORY行，然后按段落分割
@@ -320,7 +456,7 @@ ${content.substring(0, 8000)}`; // 限制内容长度避免超出API限制
 }
 
 /**
- * 使用Gemini AI生成文章总结（保持向后兼容）
+ * 使用 AI生成文章总结（保持向后兼容）
  * @param content 文章内容
  * @param title 文章标题
  * @returns 包含中文和英文总结的对象
@@ -330,9 +466,9 @@ export async function generateArticleSummary(
   title: string
 ): Promise<ArticleSummary> {
   try {
-    const currentModel = initializeGemini();
+    const currentModel = initialize();
     if (!currentModel) {
-      throw new Error('Failed to initialize Gemini model');
+      throw new Error('Failed to initialize  model');
     }
     
     // 构建提示词，使用用户指定的格式
@@ -435,11 +571,11 @@ export async function batchGenerateSummaries(
 }
 
 /**
- * 检查Gemini API连接状态
+ * 检查 API连接状态
  */
-export async function testGeminiConnection(): Promise<boolean> {
+export async function testConnection(): Promise<boolean> {
   try {
-    const currentModel = initializeGemini();
+    const currentModel = initialize();
     if (!currentModel) {
       return false;
     }
@@ -447,7 +583,7 @@ export async function testGeminiConnection(): Promise<boolean> {
     const response = await result.response;
     return !!response.text();
   } catch (error) {
-    console.error('Gemini API connection test failed:', error);
+    console.error(' API connection test failed:', error);
     return false;
   }
 }

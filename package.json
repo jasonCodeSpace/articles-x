@@ -14,7 +14,8 @@
     "init:twitter-lists": "tsx scripts/init-twitter-lists.ts",
     "migrate:tweets-to-articles": "tsx scripts/migrate-tweets-to-articles.ts",
     "fix:tweet-urls": "tsx scripts/fix-tweet-urls.ts",
-    "update-article-tags": "tsx scripts/update-article-tags.ts"
+    "update-article-tags": "tsx scripts/update-article-tags.ts",
+    "re-categorize": "tsx scripts/re-categorize-articles.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

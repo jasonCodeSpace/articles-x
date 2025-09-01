@@ -139,7 +139,7 @@ export function ArticleContent({
       </header>
 
       {/* Article Content */}
-      <article className="max-w-none">
+      <article>
         {displayContent ? (
           <div className="article-content">
             <div 

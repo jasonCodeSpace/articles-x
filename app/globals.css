@@ -283,12 +283,17 @@ body {
   color: hsl(var(--foreground)); /* Use theme-aware foreground color */
   max-width: 55ch; /* Optimal reading width */
   margin: 0 auto;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 
 .article-content p {
   margin-bottom: 1.5rem;
   font-weight: 400;
   letter-spacing: 0.01em;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .article-content p:first-child {
@@ -345,6 +350,13 @@ body {
 .article-content a:hover {
   color: #93c5fd;
   text-decoration-color: #93c5fd;
+}
+
+/* Text wrapping for all content */
+.article-content * {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  max-width: 100%;
 }
 
 /* Emphasis styling */

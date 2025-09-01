@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/service';
 
 const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY || '';

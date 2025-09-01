@@ -28,10 +28,11 @@ export default async function LandingPage() {
     .from('articles')
     .select('*', { count: 'exact', head: true })
 
-  const { count: todayArticles } = await supabase
-    .from('articles')
-    .select('*', { count: 'exact', head: true })
-    .eq('tag', 'Day')
+  // Get today's articles count (currently unused)
+  // const { count: todayArticles } = await supabase
+  //   .from('articles')
+  //   .select('*', { count: 'exact', head: true })
+  //   .eq('tag', 'Day')
 
   return (
     <div className="min-h-screen bg-background">

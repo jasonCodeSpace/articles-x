@@ -5,7 +5,7 @@ const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY || '';
 const RAPIDAPI_HOST = 'twitter241.p.rapidapi.com';
 const CRON_SECRET = process.env.CRON_SECRET;
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   const checks = {
     timestamp: new Date().toISOString(),
     environment: {
@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
   // Test database connection
   try {
     const supabase = createServiceClient();
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('tweets')
       .select('count')
       .limit(1);

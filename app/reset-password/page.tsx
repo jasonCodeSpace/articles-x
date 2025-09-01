@@ -31,7 +31,7 @@ export default function ResetPassword() {
       } else {
         setMessage('密码重置链接已发送到您的邮箱，请检查邮件并点击链接重置密码。')
       }
-    } catch (error) {
+    } catch {
       setError('发送重置邮件时出错，请稍后再试')
     } finally {
       setIsLoading(false)

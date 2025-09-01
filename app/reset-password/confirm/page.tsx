@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -49,7 +49,7 @@ export default function ResetPasswordConfirm() {
           router.push('/login')
         }, 2000)
       }
-    } catch (error) {
+    } catch {
       setError('重置密码时出错，请稍后再试')
     } finally {
       setIsLoading(false)

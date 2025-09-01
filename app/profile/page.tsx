@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ArticleCard, Article } from '@/components/article-card'
-import { User, Calendar, Settings, Activity, Bookmark } from 'lucide-react'
+import { Calendar, Settings, Bookmark } from 'lucide-react'
 import { redirect } from 'next/navigation'
 import { formatDistanceToNow } from 'date-fns'
 
@@ -78,7 +78,7 @@ export default async function ProfilePage() {
   const userDisplayName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User'
   const userInitial = userDisplayName.charAt(0).toUpperCase()
   const joinDate = new Date(user.created_at)
-  const lastSignIn = user.last_sign_in_at ? new Date(user.last_sign_in_at) : null
+  // const lastSignIn = user.last_sign_in_at ? new Date(user.last_sign_in_at) : null
 
   return (
     <div className="min-h-screen bg-background">

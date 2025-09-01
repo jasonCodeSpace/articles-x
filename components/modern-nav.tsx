@@ -36,7 +36,7 @@ interface ModernNavProps {
   className?: string
 }
 
-export function ModernNav({ user, categories, className }: ModernNavProps) {
+export function ModernNav({ user, className }: ModernNavProps) {
   const [activeTab, setActiveTab] = useState("Home")
   // Theme functionality removed
   const router = useRouter()

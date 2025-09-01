@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET(_request: NextRequest) {
+export async function GET() {
   return NextResponse.json({ 
     message: 'Revalidate API endpoint',
     usage: 'POST /api/revalidate?secret=YOUR_SECRET&path=/your/path'

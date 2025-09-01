@@ -17,7 +17,7 @@ export default function DebugAuth() {
     setLoading(true)
     try {
       // Test database connection
-      const { data, error } = await supabase.from('articles').select('count').limit(1)
+      const { error } = await supabase.from('articles').select('count').limit(1)
       if (error) {
         setResult(`❌ Database connection failed: ${error.message}`)
       } else {

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Bookmark, BookmarkCheck } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
+import type { User } from '@supabase/supabase-js'
 
 interface BookmarkButtonProps {
   articleId: string
@@ -14,7 +15,7 @@ interface BookmarkButtonProps {
 export function BookmarkButton({ articleId, variant = 'card', className }: BookmarkButtonProps) {
   const [isBookmarked, setIsBookmarked] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<User | null>(null)
   const supabase = createClient()
 
   // Check authentication and bookmark status on mount

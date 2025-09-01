@@ -24,7 +24,7 @@ export type HarvestedArticle = z.infer<typeof HarvestedArticleSchema>
 export interface TweetData {
   tweet_id: string
   author_handle: string
-  is_article: boolean
+  has_article: boolean
 }
 
 export interface DatabaseArticle {
@@ -243,7 +243,7 @@ export function mapTweetToTweetData(tweet: TwitterTweet): TweetData {
   return {
     tweet_id: tweetId,
     author_handle: authorHandle,
-    is_article: isArticle,
+    has_article: isArticle,
   }
 }
 
@@ -415,7 +415,7 @@ export async function batchUpsertTweets(
             .from('tweets')
             .update({
               author_handle: tweetData.author_handle,
-              is_article: tweetData.is_article,
+              has_article: tweetData.has_article,
             })
             .eq('tweet_id', tweetData.tweet_id)
 
@@ -432,7 +432,7 @@ export async function batchUpsertTweets(
             .insert({
               tweet_id: tweetData.tweet_id,
               author_handle: tweetData.author_handle,
-              is_article: tweetData.is_article,
+              has_article: tweetData.has_article,
             })
 
           if (insertError) {
@@ -467,7 +467,6 @@ export async function ingestTweetsFromLists(
     lists: [],
   }
 
-  const allHarvestedArticles: HarvestedArticle[] = []
   const allTweetData: TweetData[] = []
 
   // Process each list
@@ -475,12 +474,12 @@ export async function ingestTweetsFromLists(
     const listStats = {
       listId,
       tweetsFound: tweets.length,
-      articlesHarvested: 0,
+      articlesHarvested: 0, // Keep for compatibility, but will always be 0
       errors: [] as string[],
     }
 
     try {
-      // Process all tweets for storage in tweets table
+      // Process all tweets for storage in tweets table only
       const tweetDataForList: TweetData[] = []
       
       for (const tweet of tweets) {
@@ -488,13 +487,6 @@ export async function ingestTweetsFromLists(
           // Convert tweet to TweetData for storage
           const tweetData = mapTweetToTweetData(tweet)
           tweetDataForList.push(tweetData)
-          
-          // Also try to extract article if it exists
-          const article = mapTweetToArticle(tweet)
-          if (article) {
-            allHarvestedArticles.push(article)
-            listStats.articlesHarvested++
-          }
         } catch (error) {
           const tweetId = tweet.legacy?.id_str || tweet.rest_id || 'unknown'
           const errorMsg = `Error processing tweet ${tweetId}: ${error}`
@@ -505,7 +497,7 @@ export async function ingestTweetsFromLists(
 
       allTweetData.push(...tweetDataForList)
 
-      console.log(`List ${listId}: Found ${tweets.length} tweets, harvested ${listStats.articlesHarvested} articles`)
+      console.log(`List ${listId}: Found ${tweets.length} tweets, saved ${tweetDataForList.length} tweet records`)
       
     } catch (error) {
       const errorMsg = `Error processing list ${listId}: ${error}`
@@ -516,23 +508,20 @@ export async function ingestTweetsFromLists(
     stats.lists.push(listStats)
   }
 
-  // First, batch upsert all tweets to tweets table
+  // Batch upsert all tweets to tweets table
   if (allTweetData.length > 0) {
     try {
       console.log(`Saving ${allTweetData.length} tweets to database...`)
       const tweetStats = await batchUpsertTweets(allTweetData, dryRun)
       console.log(`Tweet storage complete: ${tweetStats.inserted} inserted, ${tweetStats.updated} updated, ${tweetStats.skipped} skipped`)
+      
+      // Update stats with tweet results
+      stats.inserted = tweetStats.inserted
+      stats.updated = tweetStats.updated
+      stats.skipped = tweetStats.skipped
     } catch (error) {
       console.error('Error saving tweets to database:', error)
     }
-  }
-
-  // Then, batch upsert harvested articles to articles table
-  if (allHarvestedArticles.length > 0) {
-    const upsertStats = await batchUpsertArticles(allHarvestedArticles, dryRun)
-    stats.inserted = upsertStats.inserted
-    stats.updated = upsertStats.updated
-    stats.skipped = upsertStats.skipped
   }
 
   return stats

@@ -209,7 +209,10 @@ export function ModernNav({ user, categories, className }: ModernNavProps) {
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <button 
-                  onClick={() => router.push('/weekly')}
+                  onClick={() => {
+                    router.push('/new?filter=week')
+                    router.refresh()
+                  }}
                   className="w-full flex items-center justify-start text-foreground dark:text-gray-100 hover:text-foreground hover:bg-accent dark:hover:bg-gray-700 px-2 py-1.5 text-sm cursor-pointer"
                 >
                   Weekly Article

@@ -4,6 +4,24 @@ import { ArticleFeed } from '@/components/article-feed'
 import { FeedLoading } from '@/components/feed-loading'
 import { createClient } from '@/lib/supabase/server'
 import { Article } from '@/components/article-card'
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'New Articles | Articles X',
+  description: 'Discover the latest articles and insights',
+}
+
+// Enable static generation
+export const dynamic = 'force-static'
+export const revalidate = 3600 // Revalidate every hour
+
+// Generate static params for both daily and weekly views
+export async function generateStaticParams() {
+  return [
+    {}, // Default (daily)
+    { filter: 'week' }, // Weekly
+  ]
+}
 
 interface PageProps {
   searchParams: Promise<{ category?: string; search?: string; page?: string; filter?: string }>
@@ -23,7 +41,8 @@ async function fetchNewArticles(options: {
   // Determine which tags to filter by based on filter parameter
   let tagsToFilter: string[]
   if (options.filter === 'week') {
-    tagsToFilter = ['Week']
+    // Weekly Article page should include both Week and Day tagged articles
+    tagsToFilter = ['Week', 'Day']
   } else {
     tagsToFilter = ['Day']
   }

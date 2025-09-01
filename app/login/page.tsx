@@ -42,9 +42,9 @@ export default function Login() {
         setError(error.message || '登录失败，请检查邮箱和密码')
       } else {
         setMessage('登录成功！正在跳转...')
-        // 登录成功后跳转到文章页面
+        // 登录成功后跳转到主页面
         setTimeout(() => {
-          router.push('/articles')
+          router.push('/new')
         }, 1500)
       }
     } catch (error) {
@@ -70,11 +70,11 @@ export default function Login() {
         {/* Back Button */}
         <div className="mb-6 animate-slide-up">
           <Link 
-            href="/articles" 
+            href="/new" 
             className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors group"
           >
             <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
-            <span className="text-sm">返回文章列表</span>
+            <span className="text-sm">返回主页</span>
           </Link>
         </div>
         

@@ -160,7 +160,7 @@ export function UnifiedMobileButton({
       </DropdownMenuTrigger>
       <DropdownMenuContent 
         align="end" 
-        className="w-64 max-h-[400px] overflow-y-auto p-1 bg-gray-900 border-gray-700 rounded-xl"
+        className="w-64 max-h-[400px] overflow-y-auto p-1 bg-background border-border rounded-xl"
       >
         <div className="flex flex-col gap-0.5">
           {renderAllOptions()}

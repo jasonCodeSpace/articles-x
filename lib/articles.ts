@@ -10,6 +10,7 @@ export interface FetchArticlesOptions {
   category?: string
   language?: string
   tag?: string
+  tags?: string[]
 }
 
 /**
@@ -23,6 +24,7 @@ export async function fetchArticles(options: FetchArticlesOptions = {}): Promise
     category,
     language,
     tag,
+    tags,
   } = options
 
   try {
@@ -54,7 +56,11 @@ export async function fetchArticles(options: FetchArticlesOptions = {}): Promise
     }
 
     // Apply tag filter
-    if (tag && tag.trim()) {
+    if (tags && tags.length > 0) {
+      // Filter by multiple tags using OR condition
+      const tagConditions = tags.map(t => `tag.eq.${t.trim()}`).join(',')
+      query = query.or(tagConditions)
+    } else if (tag && tag.trim()) {
       query = query.eq('tag', tag.trim())
     }
 

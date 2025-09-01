@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Article } from '@/components/article-card'
 import { SortOption } from '@/lib/articles'
 import { calculatePagination } from '@/components/pagination'
@@ -45,6 +46,8 @@ export function useArticleFeed({
   initialSearchQuery = '',
   itemsPerPage = 20
 }: UseArticleFeedProps): UseArticleFeedReturn {
+  const searchParams = useSearchParams()
+  
   // State
   const [articles] = useState<Article[]>(initialArticles)
   const [searchQuery, setSearchQuery] = useState(initialSearchQuery)
@@ -54,6 +57,19 @@ export function useArticleFeed({
   const [currentPage, setCurrentPage] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Monitor URL parameter changes and reload page if filter changes
+  useEffect(() => {
+    const currentFilter = searchParams.get('filter')
+    // Force page reload when filter parameter changes
+    // This ensures the server-side data fetching runs with the new filter
+    if (typeof window !== 'undefined') {
+      const urlFilter = new URLSearchParams(window.location.search).get('filter')
+      if (urlFilter !== currentFilter) {
+        window.location.reload()
+      }
+    }
+  }, [searchParams])
 
   // Filter and sort articles client-side
   const filteredArticles = useMemo(() => {

@@ -64,9 +64,9 @@ export default function RegisterPage() {
         setError(error.message || '注册失败，请重试')
       } else {
         setMessage('注册成功！正在跳转...')
-        // 直接跳转到文章页面
+        // 直接跳转到主页面
         setTimeout(() => {
-          router.push('/articles')
+          router.push('/new')
         }, 1500)
       }
     } catch {

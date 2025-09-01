@@ -39,7 +39,7 @@ export function CategoryDropdown({ categories, selectedCategory, onCategoryChang
           <ChevronDown className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-[200px] p-1 max-h-[300px] overflow-y-auto">
+      <DropdownMenuContent align="start" className="w-[200px] p-1 max-h-[300px] overflow-y-auto bg-background border-border">
         <div className="flex flex-col gap-0.5">
           {allCategories.map((category) => {
             const categoryValue = category === 'All' ? 'all' : category

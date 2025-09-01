@@ -108,11 +108,11 @@ export default function AuthorPage() {
         <div className="container mx-auto px-4 py-8 pt-24">
           {/* Back button */}
           <Link 
-            href="/articles" 
+            href="/new" 
             className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-6"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to Articles
+            Back to Home
           </Link>
 
           {/* Author header */}

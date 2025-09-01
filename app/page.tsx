@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 
 export default function RootPage() {
-  // Redirect to articles page for better SEO
-  redirect('/articles')
+  // Redirect to new page for better SEO
+  redirect('/new')
 }

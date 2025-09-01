@@ -26,7 +26,7 @@ export default function AiSummary({
   }
   
   return (
-    <section className="mb-8 p-8 bg-muted/50 rounded-xl border border-border backdrop-blur-sm">
+    <section className="mb-8 p-8 bg-muted rounded-xl border border-border">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <span className="inline-flex items-center justify-center w-8 h-8 bg-blue-600 text-white text-sm font-bold rounded-lg shadow-lg">

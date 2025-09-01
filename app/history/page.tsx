@@ -2,6 +2,16 @@ import { Suspense } from 'react'
 import { fetchArticles, getArticleCategories } from '@/lib/articles'
 import { ArticleFeed } from '@/components/article-feed'
 import { FeedLoading } from '@/components/feed-loading'
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'History | Articles X',
+  description: 'Browse historical articles and archives',
+}
+
+// Enable static generation
+export const dynamic = 'force-static'
+export const revalidate = 3600 // Revalidate every hour
 
 interface PageProps {
   searchParams: Promise<{ category?: string; search?: string; page?: string }>
@@ -10,9 +20,9 @@ interface PageProps {
 export default async function HistoryPage({ searchParams }: PageProps) {
   const { category, search } = await searchParams
   
-  // Fetch only History tagged articles
+  // Fetch History and Week tagged articles
   const [articles, categories] = await Promise.all([
-    fetchArticles({ category, search, tag: 'History' }),
+    fetchArticles({ category, search, tags: ['History', 'Week'] }),
     getArticleCategories()
   ])
 

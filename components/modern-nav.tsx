@@ -54,7 +54,6 @@ export function ModernNav({ user, categories, className }: ModernNavProps) {
   const userInitial = userDisplayName.charAt(0).toUpperCase()
 
   const navItems: NavItem[] = [
-    { name: 'Home', url: '/articles', icon: Home },
     { name: 'Profile', url: '#', icon: User },
   ]
 
@@ -74,14 +73,14 @@ export function ModernNav({ user, categories, className }: ModernNavProps) {
 
       {/* Desktop Navigation */}
       <nav className="hidden md:block fixed top-0 left-1/2 -translate-x-1/2 z-50 mt-6">
-        <div className="flex items-center gap-4 bg-background/80 border border-border backdrop-blur-lg py-3 px-6 rounded-full shadow-2xl">
+        <div className="flex items-center gap-4 bg-background/70 backdrop-blur-md border border-border py-3 px-6 rounded-full shadow-2xl">
           {/* Logo */}
-          <Link href="/articles" className="flex items-center gap-2 group cursor-pointer">
+          <button onClick={() => router.push('/landing')} className="flex items-center gap-2 group cursor-pointer">
             <div className="w-6 h-6 bg-foreground rounded-full flex items-center justify-center hover:bg-muted transition-all duration-300 group-hover:scale-110">
               <span className="text-xs font-black text-background">𝕏</span>
             </div>
             <span className="text-sm font-bold text-foreground group-hover:text-accent-foreground transition-colors">articles</span>
-          </Link>
+          </button>
 
           {/* Navigation Items */}
           <div className="flex items-center gap-2">
@@ -93,25 +92,31 @@ export function ModernNav({ user, categories, className }: ModernNavProps) {
                   <ChevronDown className="w-3 h-3" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-40 bg-background border-border">
+              <DropdownMenuContent align="start" className="w-40 bg-white dark:bg-gray-900 border-border backdrop-blur-none shadow-lg">
                 <DropdownMenuItem asChild>
-                  <Link href="/new" className="w-full cursor-pointer">
+                  <button onClick={() => {
+                    router.push('/new')
+                    router.refresh()
+                  }} className="w-full cursor-pointer text-left">
                     Daily Article
-                  </Link>
+                  </button>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link href="/new?filter=week" className="w-full cursor-pointer">
+                  <button onClick={() => {
+                    router.push('/new?filter=week')
+                    router.refresh()
+                  }} className="w-full cursor-pointer text-left">
                     Weekly Article
-                  </Link>
+                  </button>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            <Link 
-              href="/history" 
+            <button 
+              onClick={() => router.push('/history')}
               className="px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-full transition-colors"
             >
               History
-            </Link>
+            </button>
 
             {/* User Profile Dropdown or Login Button */}
             {user ? (
@@ -130,7 +135,7 @@ export function ModernNav({ user, categories, className }: ModernNavProps) {
                     <ChevronDown size={14} className="text-muted-foreground" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="bg-background/90 backdrop-blur-lg border-border mt-2">
+                <DropdownMenuContent className="bg-white dark:bg-gray-900 border-border mt-2 backdrop-blur-none shadow-lg">
                   <DropdownMenuItem className="text-muted-foreground hover:text-foreground hover:bg-accent cursor-pointer">
                     <Settings size={16} className="mr-2" />
                     Account
@@ -191,14 +196,40 @@ export function ModernNav({ user, categories, className }: ModernNavProps) {
           className,
         )}
       >
-        <div className="flex items-center gap-2 bg-background/80 border border-border backdrop-blur-lg py-2 px-2 rounded-full shadow-2xl">
+        <div className="flex items-center gap-2 bg-background/70 backdrop-blur-md border border-border py-2 px-2 rounded-full shadow-2xl">
           {/* Mobile Logo */}
-          <Link href="/articles" className="flex items-center gap-2 group cursor-pointer">
+          <button onClick={() => router.push('/landing')} className="flex items-center gap-2 group cursor-pointer">
             <div className="w-6 h-6 bg-foreground rounded-full flex items-center justify-center hover:bg-muted transition-all duration-300 group-hover:scale-110">
               <span className="text-xs font-black text-background">𝕏</span>
             </div>
             <span className="text-sm font-bold text-foreground group-hover:text-accent-foreground transition-colors">articles</span>
-          </Link>
+          </button>
+          
+          {/* New/History Buttons for Mobile */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="relative cursor-pointer text-sm font-semibold px-4 py-2 rounded-full transition-colors text-muted-foreground hover:text-foreground">
+                <_BookOpen size={18} strokeWidth={2.5} />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="bg-white dark:bg-gray-900 border-border mb-2 backdrop-blur-none shadow-lg">
+              <DropdownMenuItem asChild>
+                <button 
+                  onClick={() => router.push('/new')}
+                  className="w-full flex items-center justify-start text-muted-foreground hover:text-foreground hover:bg-accent px-2 py-1.5 text-sm cursor-pointer"
+                >
+                  {buttonText}
+                </button>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          
+          <button
+              onClick={() => router.push('/history')}
+              className="relative cursor-pointer text-sm font-semibold px-4 py-2 rounded-full transition-colors text-muted-foreground hover:text-foreground"
+            >
+              <Bell size={18} strokeWidth={2.5} />
+            </button>
           {navItems.map((item) => {
             const Icon = item.icon
             const isActive = activeTab === item.name
@@ -231,7 +262,7 @@ if (item.name === 'Profile') {
                         )}
                       </button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent className="bg-background/90 backdrop-blur-lg border-border mb-2">
+                    <DropdownMenuContent className="bg-white dark:bg-gray-900 border-border mt-2 backdrop-blur-none shadow-lg">
                       <DropdownMenuItem className="text-muted-foreground hover:text-foreground hover:bg-accent cursor-pointer">
                         <Settings size={16} className="mr-2" />
                         Account
@@ -306,30 +337,32 @@ if (item.name === 'Profile') {
             }
 
             return (
-              <Link key={item.name} href={item.url}>
-                <button
-                  className={cn(
-                    "relative cursor-pointer text-sm font-semibold px-4 py-2 rounded-full transition-colors",
-                    "text-muted-foreground hover:text-foreground",
-                    isActive && "bg-accent/50 text-foreground",
-                  )}
-                  onClick={() => setActiveTab(item.name)}
-                >
-                  <Icon size={18} strokeWidth={2.5} />
-                  {isActive && (
-                    <motion.div
-                      layoutId="mobile-lamp"
-                      className="absolute inset-0 w-full bg-accent/20 rounded-full -z-10"
-                      initial={false}
-                      transition={{
-                        type: "spring",
-                        stiffness: 300,
-                        damping: 30,
-                      }}
-                    />
-                  )}
-                </button>
-              </Link>
+              <button
+                key={item.name}
+                className={cn(
+                  "relative cursor-pointer text-sm font-semibold px-4 py-2 rounded-full transition-colors",
+                  "text-muted-foreground hover:text-foreground",
+                  isActive && "bg-accent/50 text-foreground",
+                )}
+                onClick={() => {
+                  setActiveTab(item.name)
+                  router.push(item.url)
+                }}
+              >
+                <Icon size={18} strokeWidth={2.5} />
+                {isActive && (
+                  <motion.div
+                    layoutId="mobile-lamp"
+                    className="absolute inset-0 w-full bg-accent/20 rounded-full -z-10"
+                    initial={false}
+                    transition={{
+                      type: "spring",
+                      stiffness: 300,
+                      damping: 30,
+                    }}
+                  />
+                )}
+              </button>
             )
           })}
         </div>

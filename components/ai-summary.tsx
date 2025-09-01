@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { formatDistanceToNow } from 'date-fns'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 
@@ -17,6 +17,14 @@ export default function AiSummary({
 }: AiSummaryProps) {
   const [isCollapsed, setIsCollapsed] = useState(true)
   const [summaryLanguage, setSummaryLanguage] = useState<'en' | 'zh'>('en')
+  const [formattedTime, setFormattedTime] = useState<string>('')
+  
+  // Use useEffect to calculate relative time on client side to avoid hydration mismatch
+  useEffect(() => {
+    if (summaryGeneratedAt) {
+      setFormattedTime(formatDistanceToNow(new Date(summaryGeneratedAt), { addSuffix: true }))
+    }
+  }, [summaryGeneratedAt])
   
   const currentSummary = summaryLanguage === 'zh' ? (summaryChinese || summaryEnglish) : summaryEnglish
   
@@ -90,7 +98,7 @@ export default function AiSummary({
           {summaryGeneratedAt && (
             <div className="mt-6 pt-4 border-t border-border">
               <p className="text-sm text-muted-foreground">
-                Summary generated {formatDistanceToNow(new Date(summaryGeneratedAt), { addSuffix: true })}
+                Summary generated {formattedTime}
               </p>
             </div>
           )}

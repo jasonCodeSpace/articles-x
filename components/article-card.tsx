@@ -5,7 +5,7 @@ import { ExternalLink, Eye, MessageCircle, Repeat2, Heart, Bookmark, Share2, Che
 import { formatDistanceToNow } from 'date-fns'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { generateArticleUrl, generateShareableUrl } from '@/lib/url-utils'
 import { useLanguage } from '@/contexts/language-context'
 
@@ -116,9 +116,16 @@ export function ArticleCard({ article, className, index: _index = 0 }: ArticleCa
     : 'UN'
 
   const publishedDate = article.article_published_at || article.created_at
-  const relativeTime = publishedDate && !isNaN(new Date(publishedDate).getTime()) 
-    ? formatDistanceToNow(new Date(publishedDate), { addSuffix: true })
-    : 'Unknown time'
+  const [relativeTime, setRelativeTime] = useState<string>('Loading...')
+  
+  // Use useEffect to calculate relative time on client side to avoid hydration mismatch
+  useEffect(() => {
+    if (publishedDate && !isNaN(new Date(publishedDate).getTime())) {
+      setRelativeTime(formatDistanceToNow(new Date(publishedDate), { addSuffix: true }))
+    } else {
+      setRelativeTime('Unknown time')
+    }
+  }, [publishedDate])
 
   // Use author_handle directly
   const authorHandle = article.author_handle || 'unknown'

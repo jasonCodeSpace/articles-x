@@ -252,7 +252,7 @@ body {
   font-size: 1.125rem; /* 18px */
   line-height: 1.75; /* 28px */
   color: #e5e7eb; /* gray-200 */
-  max-width: 65ch; /* Optimal reading width */
+  max-width: 55ch; /* Optimal reading width */
   margin: 0 auto;
 }
 

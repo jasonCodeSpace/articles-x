@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: `Successfully deleted ${deletedCount} non-article tweets older than 48 hours`,
+      message: `Successfully deleted ${deletedCount} non-article tweets`,
       deletedCount
     })
 
@@ -71,7 +71,7 @@ export async function GET() {
 
     return NextResponse.json({
       success: true,
-      message: `Successfully deleted ${deletedCount} non-article tweets older than 48 hours`,
+      message: `Successfully deleted ${deletedCount} non-article tweets`,
       deletedCount
     })
 

@@ -76,51 +76,65 @@ export function ModernNav({ user, categories, className }: ModernNavProps) {
           <div className="flex items-center gap-2">
 
 
-            {/* User Profile Dropdown */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
+            {/* User Profile Dropdown or Login Button */}
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center gap-2 pl-2 hover:bg-gray-800/50 rounded-full p-2 transition-colors">
+                    <Avatar className="w-6 h-6">
+                      {user?.user_metadata?.avatar_url ? (
+                        <AvatarImage src={user.user_metadata.avatar_url} alt={userDisplayName} />
+                      ) : null}
+                      <AvatarFallback className="bg-gray-700/80 text-white text-xs font-medium">
+                        {userInitial}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-white text-xs font-medium hidden lg:block">{userDisplayName}</span>
+                    <ChevronDown size={14} className="text-gray-400" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="bg-black/90 backdrop-blur-lg border-gray-700/50 mt-2">
+                  <DropdownMenuItem className="text-gray-300 hover:text-white hover:bg-gray-800/50 cursor-pointer">
+                    <Settings size={16} className="mr-2" />
+                    Account
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="text-gray-300 hover:text-white hover:bg-gray-800/50 cursor-pointer">
+                    <Bell size={16} className="mr-2" />
+                    Subscribe
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                     <button 
+                       onClick={async () => {
+                         const { createClient } = await import('@/lib/supabase/client')
+                         const supabase = createClient()
+                         await supabase.auth.signOut()
+                         window.location.href = '/login'
+                       }}
+                       className="w-full flex items-center justify-start text-gray-300 hover:text-white hover:bg-gray-800/50 px-2 py-1.5 text-sm cursor-pointer"
+                     >
+                       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
+                         <path d="m16 17 5-5-5-5"></path>
+                         <path d="M21 12H9"></path>
+                         <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                       </svg>
+                       Logout
+                     </button>
+                   </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Link href="/login">
                 <button className="flex items-center gap-2 pl-2 hover:bg-gray-800/50 rounded-full p-2 transition-colors">
                   <Avatar className="w-6 h-6">
-                    {user?.user_metadata?.avatar_url ? (
-                      <AvatarImage src={user.user_metadata.avatar_url} alt={userDisplayName} />
-                    ) : null}
                     <AvatarFallback className="bg-gray-700/80 text-white text-xs font-medium">
-                      {userInitial}
+                      <User size={12} />
                     </AvatarFallback>
                   </Avatar>
-                  <span className="text-white text-xs font-medium hidden lg:block">{userDisplayName}</span>
+                  <span className="text-white text-xs font-medium hidden lg:block">Login</span>
                   <ChevronDown size={14} className="text-gray-400" />
                 </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="bg-black/90 backdrop-blur-lg border-gray-700/50 mt-2">
-                <DropdownMenuItem className="text-gray-300 hover:text-white hover:bg-gray-800/50 cursor-pointer">
-                  <Settings size={16} className="mr-2" />
-                  Account
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-gray-300 hover:text-white hover:bg-gray-800/50 cursor-pointer">
-                  <Bell size={16} className="mr-2" />
-                  Subscribe
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                   <button 
-                     onClick={async () => {
-                       const { createClient } = await import('@/lib/supabase/client')
-                       const supabase = createClient()
-                       await supabase.auth.signOut()
-                       window.location.href = '/login'
-                     }}
-                     className="w-full flex items-center justify-start text-gray-300 hover:text-white hover:bg-gray-800/50 px-2 py-1.5 text-sm cursor-pointer"
-                   >
-                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
-                       <path d="m16 17 5-5-5-5"></path>
-                       <path d="M21 12H9"></path>
-                       <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                     </svg>
-                     Logout
-                   </button>
-                 </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+              </Link>
+             )}
           </div>
         </div>
       </nav>
@@ -145,9 +159,66 @@ export function ModernNav({ user, categories, className }: ModernNavProps) {
             const isActive = activeTab === item.name
 
 if (item.name === 'Profile') {
-              return (
-                <DropdownMenu key={item.name}>
-                  <DropdownMenuTrigger asChild>
+              if (user) {
+                return (
+                  <DropdownMenu key={item.name}>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        className={cn(
+                          "relative cursor-pointer text-sm font-semibold px-4 py-2 rounded-full transition-colors",
+                          "text-gray-400 hover:text-white",
+                          isActive && "bg-gray-800/50 text-white",
+                        )}
+                        onClick={() => setActiveTab(item.name)}
+                      >
+                        <Icon size={18} strokeWidth={2.5} />
+                        {isActive && (
+                          <motion.div
+                            layoutId="mobile-lamp"
+                            className="absolute inset-0 w-full bg-blue-500/20 rounded-full -z-10"
+                            initial={false}
+                            transition={{
+                              type: "spring",
+                              stiffness: 300,
+                              damping: 30,
+                            }}
+                          />
+                        )}
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="bg-black/90 backdrop-blur-lg border-gray-700/50 mb-2">
+                      <DropdownMenuItem className="text-gray-300 hover:text-white hover:bg-gray-800/50 cursor-pointer">
+                        <Settings size={16} className="mr-2" />
+                        Account
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="text-gray-300 hover:text-white hover:bg-gray-800/50 cursor-pointer">
+                        <Bell size={16} className="mr-2" />
+                        Subscribe
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                         <button 
+                           onClick={async () => {
+                             const { createClient } = await import('@/lib/supabase/client')
+                             const supabase = createClient()
+                             await supabase.auth.signOut()
+                             window.location.href = '/login'
+                           }}
+                           className="w-full flex items-center justify-start text-gray-300 hover:text-white hover:bg-gray-800/50 px-2 py-1.5 text-sm cursor-pointer"
+                         >
+                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
+                             <path d="m16 17 5-5-5-5"></path>
+                             <path d="M21 12H9"></path>
+                             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                           </svg>
+                           Logout
+                         </button>
+                       </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )
+              } else {
+                return (
+                  <Link key={item.name} href="/login">
                     <button
                       className={cn(
                         "relative cursor-pointer text-sm font-semibold px-4 py-2 rounded-full transition-colors",
@@ -170,37 +241,9 @@ if (item.name === 'Profile') {
                         />
                       )}
                     </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="bg-black/90 backdrop-blur-lg border-gray-700/50 mb-2">
-                    <DropdownMenuItem className="text-gray-300 hover:text-white hover:bg-gray-800/50 cursor-pointer">
-                      <Settings size={16} className="mr-2" />
-                      Account
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="text-gray-300 hover:text-white hover:bg-gray-800/50 cursor-pointer">
-                      <Bell size={16} className="mr-2" />
-                      Subscribe
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                       <button 
-                         onClick={async () => {
-                           const { createClient } = await import('@/lib/supabase/client')
-                           const supabase = createClient()
-                           await supabase.auth.signOut()
-                           window.location.href = '/login'
-                         }}
-                         className="w-full flex items-center justify-start text-gray-300 hover:text-white hover:bg-gray-800/50 px-2 py-1.5 text-sm cursor-pointer"
-                       >
-                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
-                           <path d="m16 17 5-5-5-5"></path>
-                           <path d="M21 12H9"></path>
-                           <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                         </svg>
-                         Logout
-                       </button>
-                     </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )
+                  </Link>
+                )
+              }
             }
 
             return (

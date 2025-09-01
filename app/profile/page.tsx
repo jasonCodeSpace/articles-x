@@ -197,30 +197,30 @@ export default async function ProfilePage({
             </CardHeader>
             <CardContent>
               {bookmarkedArticles.length > 0 ? (
-                <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
+                <div className="bg-muted/50 rounded-lg border border-border overflow-hidden">
                   <div className="overflow-x-auto">
                     <table className="w-full">
-                      <thead className="bg-gray-700">
-                        <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                            Title
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                            Description
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                            Author
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-700">
+                                             <thead className="bg-muted">
+                         <tr>
+                           <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                             Title
+                           </th>
+                           <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                             Description
+                           </th>
+                           <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                             Author
+                           </th>
+                         </tr>
+                       </thead>
+                       <tbody className="divide-y divide-border">
                         {bookmarkedArticles.map((article) => {
                           return (
-                            <tr key={article.id} className="hover:bg-gray-750">
+                            <tr key={article.id} className="hover:bg-accent/50">
                               <td className="px-6 py-4 max-w-xs">
                                  <Link 
                                    href={`/article/${article.slug}`} 
-                                   className="text-white hover:text-blue-400 text-sm leading-tight block overflow-hidden"
+                                   className="text-foreground hover:text-primary text-sm leading-tight block overflow-hidden"
                                    style={{
                                      display: '-webkit-box',
                                      WebkitLineClamp: 2,
@@ -237,7 +237,7 @@ export default async function ProfilePage({
                                  {article.excerpt && (
                                    <Link 
                                      href={`/article/${article.slug}`} 
-                                     className="text-gray-300 hover:text-blue-400 text-sm leading-tight block overflow-hidden"
+                                     className="text-muted-foreground hover:text-primary text-sm leading-tight block overflow-hidden"
                                      style={{
                                        display: '-webkit-box',
                                        WebkitLineClamp: 2,
@@ -255,13 +255,13 @@ export default async function ProfilePage({
                                   {article.author_handle ? (
                                     <Link 
                                       href={`/author/${article.author_handle}`} 
-                                      className="text-gray-300 hover:text-blue-400 text-sm"
+                                      className="text-muted-foreground hover:text-primary text-sm"
                                       style={{ fontSize: '14px' }}
                                     >
                                       {article.author_name}
                                     </Link>
                                   ) : (
-                                    <span className="text-gray-300 text-sm" style={{ fontSize: '14px' }}>
+                                    <span className="text-muted-foreground text-sm" style={{ fontSize: '14px' }}>
                                       {article.author_name}
                                     </span>
                                   )}
@@ -275,29 +275,29 @@ export default async function ProfilePage({
                    
                    {/* Pagination */}
                    {totalBookmarks && totalBookmarks > itemsPerPage && (
-                     <div className="flex items-center justify-between px-6 py-4 border-t border-gray-700">
-                       <div className="text-sm text-gray-400">
+                     <div className="flex items-center justify-between px-6 py-4 border-t border-border">
+                       <div className="text-sm text-muted-foreground">
                          显示 {Math.min(offset + 1, totalBookmarks)} - {Math.min(offset + itemsPerPage, totalBookmarks)} 条，共 {totalBookmarks} 条
                        </div>
                        <div className="flex items-center space-x-2">
                          {currentPage > 1 && (
                            <Link
                              href={`/profile?page=${currentPage - 1}`}
-                             className="flex items-center px-3 py-2 text-sm text-gray-400 hover:text-white border border-gray-600 rounded-md hover:border-gray-500"
+                             className="flex items-center px-3 py-2 text-sm text-muted-foreground hover:text-foreground border border-border rounded-md hover:bg-accent/50"
                            >
                              <ChevronLeft className="w-4 h-4 mr-1" />
                              上一页
                            </Link>
                          )}
                          
-                         <span className="text-sm text-gray-400">
+                         <span className="text-sm text-muted-foreground">
                            第 {currentPage} 页，共 {Math.ceil((totalBookmarks || 0) / itemsPerPage)} 页
                          </span>
                          
                          {currentPage < Math.ceil((totalBookmarks || 0) / itemsPerPage) && (
                            <Link
                              href={`/profile?page=${currentPage + 1}`}
-                             className="flex items-center px-3 py-2 text-sm text-gray-400 hover:text-white border border-gray-600 rounded-md hover:border-gray-500"
+                             className="flex items-center px-3 py-2 text-sm text-muted-foreground hover:text-foreground border border-border rounded-md hover:bg-accent/50"
                            >
                              下一页
                              <ChevronRight className="w-4 h-4 ml-1" />

@@ -11,8 +11,9 @@ export const metadata: Metadata = {
   description: 'Discover the latest articles and insights',
 }
 
-// Enable dynamic rendering for search params
+// Enable dynamic rendering for search params to handle filter changes
 export const dynamic = 'force-dynamic'
+export const revalidate = 0 // Disable caching for real-time updates
 
 // Generate static params for both daily and weekly views
 export async function generateStaticParams() {

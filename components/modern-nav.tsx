@@ -92,16 +92,17 @@ export function ModernNav({ user, className }: ModernNavProps) {
               <DropdownMenuContent align="start" className="w-40">
                 <DropdownMenuItem asChild>
                   <button onClick={() => {
-                    router.push('/new')
-                    router.refresh()
+                    const url = new URL('/new', window.location.origin)
+                    window.location.href = url.toString()
                   }} className="w-full cursor-pointer text-left">
                     Today
                   </button>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <button onClick={() => {
-                    router.push('/new?filter=week')
-                    router.refresh()
+                    const url = new URL('/new', window.location.origin)
+                    url.searchParams.set('filter', 'week')
+                    window.location.href = url.toString()
                   }} className="w-full cursor-pointer text-left">
                     This Week
                   </button>
@@ -212,7 +213,10 @@ export function ModernNav({ user, className }: ModernNavProps) {
             <DropdownMenuContent className="mb-2">
               <DropdownMenuItem asChild>
                 <button 
-                  onClick={() => router.push('/new')}
+                  onClick={() => {
+                    const url = new URL('/new', window.location.origin)
+                    window.location.href = url.toString()
+                  }}
                   className="w-full flex items-center justify-start px-2 py-1.5 text-sm cursor-pointer"
                 >
                   Today
@@ -221,8 +225,9 @@ export function ModernNav({ user, className }: ModernNavProps) {
               <DropdownMenuItem asChild>
                 <button 
                   onClick={() => {
-                    router.push('/new?filter=week')
-                    router.refresh()
+                    const url = new URL('/new', window.location.origin)
+                    url.searchParams.set('filter', 'week')
+                    window.location.href = url.toString()
                   }}
                   className="w-full flex items-center justify-start px-2 py-1.5 text-sm cursor-pointer"
                 >

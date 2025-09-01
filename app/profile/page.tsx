@@ -3,6 +3,7 @@ import { ClientNavWrapper } from '@/components/client-nav-wrapper'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { EditProfileDialog } from '@/components/edit-profile-dialog'
 import { User, Calendar, Settings, Activity } from 'lucide-react'
 import { redirect } from 'next/navigation'
 import { formatDistanceToNow } from 'date-fns'
@@ -61,21 +62,13 @@ export default async function ProfilePage() {
                       <Calendar className="h-4 w-4" />
                       <span>Joined {formatDistanceToNow(joinDate, { addSuffix: true })}</span>
                     </div>
-                    {lastSignIn && (
-                      <div className="flex items-center gap-2">
-                        <Activity className="h-4 w-4" />
-                        <span>Last active {formatDistanceToNow(lastSignIn, { addSuffix: true })}</span>
-                      </div>
-                    )}
+
                   </div>
                 </div>
 
                 {/* Action Button */}
                 <div>
-                  <Button variant="outline" className="gap-2">
-                    <Settings className="h-4 w-4" />
-                    Edit Profile
-                  </Button>
+                  <EditProfileDialog user={user} />
                 </div>
               </div>
             </CardContent>
@@ -114,60 +107,7 @@ export default async function ProfilePage() {
             </CardContent>
           </Card>
 
-          {/* Activity Stats */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Activity className="h-5 w-5" />
-                Activity
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="text-center py-8">
-                <div className="text-3xl font-bold text-primary mb-2">Welcome!</div>
-                <p className="text-muted-foreground">
-                  Your reading activity and preferences will appear here as you use the platform.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
 
-          {/* Preferences */}
-          <Card className="md:col-span-2">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Settings className="h-5 w-5" />
-                Preferences
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between py-3 border-b border-border">
-                  <div>
-                    <h4 className="font-medium text-foreground">Email Notifications</h4>
-                    <p className="text-sm text-muted-foreground">Receive updates about new articles</p>
-                  </div>
-                  <Button variant="outline" size="sm">Configure</Button>
-                </div>
-                
-                <div className="flex items-center justify-between py-3 border-b border-border">
-                  <div>
-                    <h4 className="font-medium text-foreground">Language Preference</h4>
-                    <p className="text-sm text-muted-foreground">Default language for articles</p>
-                  </div>
-                  <Button variant="outline" size="sm">English</Button>
-                </div>
-                
-                <div className="flex items-center justify-between py-3">
-                  <div>
-                    <h4 className="font-medium text-foreground">Privacy Settings</h4>
-                    <p className="text-sm text-muted-foreground">Manage your data and privacy preferences</p>
-                  </div>
-                  <Button variant="outline" size="sm">Manage</Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         </div>
       </div>
     </div>

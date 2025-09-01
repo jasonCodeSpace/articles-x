@@ -209,48 +209,7 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5 py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center space-y-12">
-            <div className="space-y-4">
-              <h3 className="text-4xl md:text-5xl font-bold text-foreground">
-                Powered by Real Data
-              </h3>
-              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-                Live statistics from our growing platform
-              </p>
-            </div>
-            
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-              <div className="space-y-3">
-                <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                  {totalArticles?.toLocaleString() || '2,500+'}
-                </div>
-                <div className="text-muted-foreground font-medium">Total Articles</div>
-              </div>
-              <div className="space-y-3">
-                <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-accent to-primary bg-clip-text text-transparent">
-                  {todayArticles || '47'}
-                </div>
-                <div className="text-muted-foreground font-medium">Today&apos;s Articles</div>
-              </div>
-              <div className="space-y-3">
-                <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                  {categories.length}+
-                </div>
-                <div className="text-muted-foreground font-medium">Categories</div>
-              </div>
-              <div className="space-y-3">
-                <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-accent to-primary bg-clip-text text-transparent">
-                  24/7
-                </div>
-                <div className="text-muted-foreground font-medium">Auto Updates</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+
 
       {/* How It Works */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">

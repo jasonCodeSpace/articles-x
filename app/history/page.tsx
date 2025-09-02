@@ -39,7 +39,7 @@ export default async function HistoryPage({ searchParams }: PageProps) {
     return acc
   }, {} as Record<string, { name: string; articles: typeof articles }>)
 
-  const sortedMonths = Object.entries(articlesByMonth).sort(([a], [b]) => b.localeCompare(a))
+
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 md:pt-24 pb-6">

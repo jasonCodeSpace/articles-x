@@ -133,30 +133,14 @@ export default async function NewPage({ searchParams }: PageProps) {
             </p>
           </div>
           
-          {/* Newest Articles Section */}
-          <div className="space-y-4">
-            <h2 className="text-2xl md:text-3xl font-bold text-foreground border-b border-border pb-2">
-              Newest Articles
-            </h2>
-            
-            {/* Categories Subsection */}
-            {categories.length > 0 && (
-              <div className="space-y-2">
-                <h3 className="text-lg font-semibold text-foreground">
-                  Browse by Category
-                </h3>
-              </div>
-            )}
-            
-            <Suspense fallback={<FeedLoading />}>
-              <ArticleFeed 
-                initialArticles={articles} 
-                initialCategories={categories}
-                initialCategory={category || 'all'}
-                initialSearchQuery={search || ''}
-              />
-            </Suspense>
-          </div>
+          <Suspense fallback={<FeedLoading />}>
+            <ArticleFeed 
+              initialArticles={articles} 
+              initialCategories={categories}
+              initialCategory={category || 'all'}
+              initialSearchQuery={search || ''}
+            />
+          </Suspense>
           
           {/* Tags Section */}
           <div className="mt-12 space-y-4">

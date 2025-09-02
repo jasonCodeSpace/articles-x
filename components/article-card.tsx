@@ -158,12 +158,14 @@ export function ArticleCard({ article, className, priority = false }: ArticleCar
               </span>
             </div>
           )}
-          {/* Category badge */}
+          {/* Category badges */}
           {article.category && (
-            <div className="absolute top-3 right-3">
-              <span className="bg-blue-600 text-white text-xs px-2 py-1 rounded-md font-medium">
-                {article.category}
-              </span>
+            <div className="absolute top-3 right-3 flex flex-wrap gap-1 max-w-[120px]">
+              {article.category.split(',').slice(0, 2).map((cat, index) => (
+                <span key={index} className="bg-blue-600 text-white text-xs px-2 py-1 rounded-md font-medium">
+                  {cat.trim()}
+                </span>
+              ))}
             </div>
           )}
         </Link>

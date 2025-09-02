@@ -88,7 +88,6 @@ export async function POST(request: NextRequest) {
           summary_chinese: string;
           summary_english: string;
           summary_generated_at: string;
-          category: string;
           language: string;
           title_english?: string;
           article_preview_text_english?: string;
@@ -97,7 +96,6 @@ export async function POST(request: NextRequest) {
           summary_chinese: analysis.summary.chinese,
           summary_english: analysis.summary.english,
           summary_generated_at: new Date().toISOString(),
-          category: analysis.category,
           language: analysis.language
         };
 
@@ -147,7 +145,6 @@ export async function POST(request: NextRequest) {
           results.push({
             articleId: article.id,
             title: article.title,
-            category: analysis.category,
             language: analysis.language,
             summaryGenerated: true
           });

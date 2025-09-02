@@ -31,7 +31,6 @@ export interface ArticleTranslation {
 
 export interface ArticleAnalysis {
   summary: ArticleSummary;
-  category: string;
   language: string;
   english_translation?: ArticleTranslation;
 }
@@ -52,12 +51,11 @@ export async function generateArticleAnalysis(
       throw new Error('Failed to initialize  model');
     }
     
-    // 构建提示词，包含摘要生成、分类、语言检测和英文翻译
-    const prompt = `TASK: Read the article and perform four tasks:
+    // 构建提示词，只包含摘要生成、语言检测和英文翻译
+    const prompt = `TASK: Read the article and perform three tasks:
 1. Detect the primary language of the article
-2. Categorize the article with ONE category from the provided list
-3. Produce an ULTRA-CONCISE, read-aloud friendly summary in English and Chinese
-4. ALWAYS provide English translations of title, tweet text, preview text, and full content (even if the original is already in English)
+2. Produce an ULTRA-CONCISE, read-aloud friendly summary in English and Chinese
+3. ALWAYS provide English translations of title, tweet text, preview text, and full content (even if the original is already in English)
 
 LANGUAGE DETECTION:
 Detect the primary language of the article content. Use ISO 639-1 language codes:
@@ -141,47 +139,6 @@ Detect the primary language of the article content. Use ISO 639-1 language codes
 - af (Afrikaans)
 If unsure, use 'en' as default.
 
-CATEGORY TASK:
-Select ONE category that best fits this article from the following list. 
-IMPORTANT: Output EXACTLY as written below with proper capitalization (first letter uppercase, rest lowercase).
-
-AVAILABLE CATEGORIES (choose the most specific one):
-Ai, Crypto, Tech, Data, Startups, Business, Markets, Product, Security, Policy, Science, Media
-
-CLASSIFICATION GUIDELINES:
-CRITICAL: Read the FULL ARTICLE CONTENT, not just the title. Base categorization on the PRIMARY TOPIC discussed in the content.
-
-STEP-BY-STEP PROCESS:
-1. Read the entire article content
-2. Identify the main topic being discussed
-3. Match it to the most specific category below
-4. Double-check your choice makes sense
-
-CATEGORY DEFINITIONS:
-- Ai: AI/ML, ChatGPT, LLMs, machine learning, artificial intelligence, neural networks, deep learning
-- Crypto: All cryptocurrency, blockchain, Bitcoin, Ethereum, DeFi, NFTs, trading, mining, wallets
-- Tech: Software, hardware, apps, SaaS platforms, programming, devices, electronics, space tech
-- Data: Data science, analytics, databases, data processing, big data, data visualization
-- Startups: New companies, funding rounds, venture capital, entrepreneurship, startup ecosystem
-- Business: Corporate news, earnings, business strategies, company operations, mergers, acquisitions
-- Markets: Stock markets, financial markets, trading, Wall Street, investment strategies, funds
-- Product: Product development, design, UX/UI, product management, launches, features
-- Security: Cybersecurity, national security, military, defense, privacy, data protection
-- Policy: Government policy, regulations, laws, legislation, public policy, governance
-- Science: Scientific research, medicine, healthcare, biotechnology, physics, chemistry, environment
-- Media: Journalism, publishing, broadcasting, social media, marketing, content creation
-
-CRITICAL EXAMPLES:
-- "Massacres in Palestine" → International (international conflict/war)
-- "Tesla FSD testing" → Hardware (automotive technology)
-- "Foot Locker gaming partnership" → Gaming (gaming collaboration)
-- "DeFi protocol launch" → Defi (decentralized finance)
-- "ChatGPT update" → Ai (artificial intelligence)
-- "US election polls" → Elections (election coverage)
-- "Apple earnings report" → Business (corporate earnings)
-
-NEVER categorize historical events, wars, or conflicts as "Software" unless they are specifically about software development.
-
 ROLE
 TTS-ready summarizer. Output EXACTLY two paragraphs: first Chinese, then English.
 NO headings, labels, markers, asterisks, or format indicators of ANY kind.
@@ -211,34 +168,10 @@ CONTENT RULES
 
 OUTPUT FORMAT:
 LANGUAGE: [detected language code]
-CATEGORY: [selected category - EXACTLY as listed above with proper capitalization]
 
 [Chinese paragraph]
 
 [English paragraph]
-
-CRITICAL REQUIREMENTS:
-- CATEGORY must be EXACTLY one of the categories listed above
-- Use proper capitalization: First letter uppercase, rest lowercase
-- NO variations like "TECH", "tech", "Technology" - use "Software", "Hardware", or "Ai"
-- NO generic categories like "Crypto" - use specific ones like "Bitcoin", "Defi", "Memecoin"
-- Choose the MOST SPECIFIC category that fits
-- READ THE CONTENT: Do not categorize based on title alone
-- LOGIC CHECK: Does your category make sense for the content?
-
-FORBIDDEN CATEGORIZATIONS:
-- Wars, conflicts, massacres → NEVER "Software" → Use "International" or "Politics"
-- Historical events → NEVER "Software" → Use "Culture" or "International"
-- Political analysis → NEVER "Software" → Use "Politics" or "International"
-- Sports events → NEVER "Software" → Use "Sports"
-- Gaming partnerships → NEVER "Politics" → Use "Gaming"
-- Crypto/DeFi content → NEVER "Entertainment" → Use specific crypto categories
-
-QUALITY CHECK:
-Before finalizing your category, ask yourself:
-1. Does this category make logical sense for the content?
-2. Would a human reader expect to find this article in this category?
-3. Am I choosing based on content, not just keywords?
 
 ENGLISH_TRANSLATION: [ALWAYS provide this section regardless of original language]
 TITLE: [English translation or original if already in English - NEVER use "Not provided", "Not available", etc.]
@@ -252,7 +185,6 @@ RULES:
 - If the article omits something important, write "not stated".
 - If space is tight, do not drop key points—slightly exceed the targets instead.
 - Do not use asterisk symbols in the output.
-- Choose the most specific and relevant category.
 - Detect language based on the actual content, not the title.
 - For English translations: maintain original meaning, use natural English, preserve technical terms and proper nouns.
 - For English translations: ALWAYS provide actual translations, NEVER use placeholder phrases like "not provided", "not available", "not applicable", "not stated", "not translated", "not given", "not found", "unavailable", "missing", "empty", "blank", "no content", "no translation", "original text", "same as original" or similar.
@@ -272,114 +204,12 @@ ${content.substring(0, 8000)}`; // 限制内容长度避免超出API限制
     const languageMatch = text.match(/LANGUAGE:\s*([^\n]+)/i);
     const language = languageMatch ? languageMatch[1].trim() : 'en'; // 默认语言
     
-    // 解析分类
-    const categoryMatch = text.match(/CATEGORY:\s*([^\n]+)/i);
-    const rawCategory = categoryMatch ? categoryMatch[1].trim() : 'Business'; // 默认分类改为更中性的Business
-    
-    // 定义有效分类列表
-    const validCategories = [
-      'Ai', 'Crypto', 'Tech', 'Data', 'Startups', 'Business', 'Markets', 
-      'Product', 'Security', 'Policy', 'Science', 'Media'
-    ];
-    
-    // 分类映射表 - 将常见的错误分类映射到正确的分类
-    const categoryMappings: { [key: string]: string } = {
-      // AI variations
-      'AI': 'Ai',
-      'ai': 'Ai',
-      'artificial intelligence': 'Ai',
-      'machine learning': 'Ai',
-      'ML': 'Ai',
-      
-      // Crypto variations
-      'crypto': 'Crypto',
-      'CRYPTO': 'Crypto',
-      'cryptocurrency': 'Crypto',
-      'blockchain': 'Crypto',
-      'bitcoin': 'Crypto',
-      'ethereum': 'Crypto',
-      'defi': 'Crypto',
-      'nft': 'Crypto',
-      'dao': 'Crypto',
-      
-      // Tech variations
-      'tech': 'Tech',
-      'technology': 'Tech',
-      'software': 'Tech',
-      'hardware': 'Tech',
-      'programming': 'Tech',
-      
-      // Business variations
-      'BUSINESS': 'Business',
-      'business': 'Business',
-      'corporate': 'Business',
-      'company': 'Business',
-      
-      // Startups variations
-      'startup': 'Startups',
-      'STARTUP': 'Startups',
-      'venture': 'Startups',
-      'funding': 'Startups',
-      
-      // Markets variations
-      'markets': 'Markets',
-      'finance': 'Markets',
-      'investment': 'Markets',
-      'trading': 'Markets',
-      'stocks': 'Markets',
-      
-      // Media variations
-      'media': 'Media',
-      'journalism': 'Media',
-      'social media': 'Media',
-      'publishing': 'Media',
-      'broadcasting': 'Media',
-      
-      // Policy variations
-      'policy': 'Policy',
-      'politics': 'Policy',
-      'government': 'Policy',
-      'regulation': 'Policy',
-      'international': 'Policy',
-      'elections': 'Policy',
-      
-      // Security variations
-      'security': 'Security',
-      'cybersecurity': 'Security',
-      'privacy': 'Security',
-      'defense': 'Security',
-      
-      // Science variations
-      'science': 'Science',
-      'research': 'Science',
-      'medicine': 'Science',
-      'health': 'Science',
-      'biotech': 'Science',
-      'physics': 'Science',
-      'chemistry': 'Science',
-      'environment': 'Science',
-      
-      // Data variations
-      'data': 'Data',
-      'analytics': 'Data',
-      'database': 'Data',
-      'big data': 'Data',
-      
-      // Product variations
-      'product': 'Product',
-      'design': 'Product',
-      'ux': 'Product',
-      'ui': 'Product'
-    };
-    
-    // 修正分类
-    const category = categoryMappings[rawCategory] || 
-                    validCategories.find(cat => cat.toLowerCase() === rawCategory.toLowerCase()) ||
-                    'Business'; // 默认分类改为Business
+    // 设置默认分类
+    const category = 'Business';
 
     // 解析响应，新格式：中文段落在前，英文段落在后
-    // 移除LANGUAGE和CATEGORY行，然后按段落分割
-    let cleanText = text.replace(/LANGUAGE:\s*[^\n]+\n?/i, '').replace(/CATEGORY:\s*[^\n]+\n?/i, '').trim();
+    // 移除LANGUAGE行，然后按段落分割
+    let cleanText = text.replace(/LANGUAGE:\s*[^\n]+\n?/i, '').trim();
     
     // 按ENGLISH_TRANSLATION分割，取前面的部分
     const summaryPart = cleanText.split(/ENGLISH_TRANSLATION/i)[0].trim();
@@ -499,7 +329,6 @@ ${content.substring(0, 8000)}`; // 限制内容长度避免超出API限制
 
     return {
       summary,
-      category,
       language,
       english_translation
     };

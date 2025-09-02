@@ -164,13 +164,17 @@ export function ArticleContent({
       {/* Footer */}
       <footer className="mt-12 pt-8 border-t border-border">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          {/* Category */}
+          {/* Categories */}
           {article.category && (
             <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Category:</span>
-              <span className="inline-flex items-center rounded-full bg-muted text-muted-foreground border border-border px-3 py-1 text-sm">
-                {article.category}
-              </span>
+              <span className="text-sm text-muted-foreground">Categories:</span>
+              <div className="flex flex-wrap gap-2">
+                {article.category.split(',').slice(0, 2).map((cat, index) => (
+                  <span key={index} className="inline-flex items-center rounded-full bg-muted text-muted-foreground border border-border px-3 py-1 text-sm">
+                    {cat.trim()}
+                  </span>
+                ))}
+              </div>
             </div>
           )}
 

@@ -1,5 +1,5 @@
-# Robots.txt for articles-x.vercel.app
-# This file controls crawling of URLs under https://articles-x.vercel.app
+# Robots.txt for www.xarticle.news
+# This file controls crawling of URLs under https://www.xarticle.news
 
 # Allow all crawlers to access the site
 User-agent: *
@@ -31,4 +31,4 @@ Allow: /*.svg$
 Allow: /*.webp$
 
 # XML Sitemap location
-Sitemap: https://articles-x.vercel.app/sitemap.xml
+Sitemap: https://www.xarticle.news/sitemap.xml

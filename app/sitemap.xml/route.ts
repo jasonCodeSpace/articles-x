@@ -28,7 +28,7 @@ export async function GET() {
     
     const categories = [...new Set(categoriesData?.map(item => item.category).filter(Boolean) || [])]
     
-    const baseUrl = 'https://articles-x.vercel.app'
+    const baseUrl = 'https://www.xarticle.news'
     const currentDate = new Date().toISOString()
     
     // Static pages

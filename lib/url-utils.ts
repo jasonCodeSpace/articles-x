@@ -47,6 +47,6 @@ export function extractArticleIdFromSlug(slug: string): string {
  */
 export function generateShareableUrl(title: string, id: string, baseUrl?: string): string {
   const articlePath = generateArticleUrl(title, id)
-  const domain = baseUrl || 'https://articles-x.vercel.app'
+  const domain = baseUrl || 'https://www.xarticle.news'
   return `${domain}${articlePath}`
 }

@@ -14,7 +14,7 @@ jobs:
       - name: Process Article Tweets
         run: |
           # Use the production URL directly since VERCEL_URL secret may not be configured
-          curl -X GET "https://articles-x.vercel.app/api/process-articles" \
+          curl -X GET "https://www.xarticle.news/api/process-articles" \
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
             --fail --show-error --silent

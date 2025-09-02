@@ -34,7 +34,7 @@ jobs:
           echo "📅 Current UTC time: $(date -u)"
           echo "⏰ This runs quarterly (every 3 months) to find new articles"
           
-          response=$(curl -sS -X POST "https://articles-x.vercel.app/api/search-articles" \
+          response=$(curl -sS -X POST "https://www.xarticle.news/api/search-articles" \
             -H "x-cron-secret: $CRON_SECRET" \
             -H "Accept: application/json" \
             -H "User-Agent: GitHub-Actions-Search-Cron" \

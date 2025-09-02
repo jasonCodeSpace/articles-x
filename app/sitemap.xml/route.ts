@@ -11,6 +11,32 @@ function escapeXml(text: string): string {
     .replace(/'/g, '&apos;')
 }
 
+// Function to normalize timestamp to consistent ISO format with Z
+function normalizeTimestamp(timestamp: string | null | undefined): string {
+  if (!timestamp) {
+    return new Date().toISOString()
+  }
+  
+  try {
+    // Parse and convert to consistent ISO format with Z
+    return new Date(timestamp).toISOString()
+  } catch {
+    return new Date().toISOString()
+  }
+}
+
+// Function to normalize category names and handle duplicates
+function normalizeCategory(category: string): string {
+  const normalized = category.trim().toLowerCase()
+  
+  // Handle known duplicates - merge "technology" into "tech"
+  if (normalized === 'technology') {
+    return 'tech'
+  }
+  
+  return normalized
+}
+
 // Function to validate and clean article slugs
 function isValidSlug(slug: string): boolean {
   return Boolean(slug && 
@@ -27,93 +53,88 @@ function isValidSlug(slug: string): boolean {
 export async function GET() {
   try {
     const supabase = createServiceClient()
+    const currentDate = new Date().toISOString()
     
-    // Fetch all articles first, then filter invalid slugs
-    const { data: allArticles, error } = await supabase
+    // Fetch articles with valid slugs
+    const { data: articles, error: articlesError } = await supabase
       .from('articles')
-      .select('slug, article_published_at')
-      .not('slug', 'eq', '')
+      .select('slug, article_published_at, updated_at, category')
       .not('slug', 'is', null)
+      .neq('slug', '')
       .order('article_published_at', { ascending: false })
     
-    // Filter out invalid slugs with comprehensive validation
-    const validArticles: Array<{ slug: string; article_published_at?: string }> = []
-    const invalidSlugs: string[] = []
-    
-    allArticles?.forEach(article => {
-      if (article.slug && isValidSlug(article.slug)) {
-        validArticles.push(article)
-      } else if (article.slug) {
-        invalidSlugs.push(article.slug)
-      }
-    })
-    
-    // Log invalid slugs for debugging
-    if (invalidSlugs.length > 0) {
-      console.warn(`Sitemap: Filtered out ${invalidSlugs.length} invalid slugs:`, invalidSlugs.slice(0, 10))
-    }
-    
-    const articles = validArticles
-    
-    if (error) {
-      console.error('Error fetching articles for sitemap:', error)
+    if (articlesError) {
+      console.error('Error fetching articles for sitemap:', articlesError)
       return new NextResponse('Error generating sitemap', { status: 500 })
     }
     
-    // Fetch all categories
-    const { data: categoriesData, error: categoriesError } = await supabase
-      .from('articles')
-      .select('category')
-      .not('category', 'is', null)
+    // Filter articles with valid slugs and normalize categories
+    const validArticles = (articles || [])
+      .filter(article => article.slug && isValidSlug(article.slug))
+      .map(article => ({
+        ...article,
+        category: article.category ? normalizeCategory(article.category) : null
+      }))
     
-    if (categoriesError) {
-      console.error('Error fetching categories for sitemap:', categoriesError)
-    }
+    // Get unique normalized categories and their latest update times
+    const categoryMap = new Map<string, string>()
     
-    // Split comma-separated categories and normalize to lowercase, remove duplicates
-    const categories = [...new Set(
-      categoriesData?.map(item => item.category)
-        .filter(Boolean)
-        .flatMap(cat => cat.split(',').map((c: string) => c.trim().toLowerCase()))
-        .filter(cat => cat.length > 0) || []
-    )]
+    validArticles.forEach(article => {
+      if (article.category && article.category.trim() !== '') {
+        const currentLastMod = categoryMap.get(article.category)
+        const articleLastMod = normalizeTimestamp(article.updated_at || article.article_published_at)
+        
+        if (!currentLastMod || new Date(articleLastMod) > new Date(currentLastMod)) {
+          categoryMap.set(article.category, articleLastMod)
+        }
+      }
+    })
     
     const baseUrl = 'https://www.xarticle.news'
-    const currentDate = new Date().toISOString()
     
-    // Static content pages only (exclude auth pages)
+    // Core pages with priority structure
     const staticPages = [
       { url: '', priority: '1.0', changefreq: 'daily' },
       { url: '/trending', priority: '0.9', changefreq: 'hourly' },
-      { url: '/landing', priority: '0.8', changefreq: 'weekly' }
+      { url: '/landing' },
+      { url: '/weekly' }
     ]
     
-    // Generate XML with proper escaping and validation
+    // Generate optimized sitemap XML
     const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${staticPages.map(page => `  <url>
+${staticPages.map(page => {
+      if (page.priority && page.changefreq) {
+        return `  <url>
     <loc>${escapeXml(baseUrl + page.url)}</loc>
     <lastmod>${escapeXml(currentDate)}</lastmod>
     <changefreq>${escapeXml(page.changefreq)}</changefreq>
     <priority>${escapeXml(page.priority)}</priority>
-  </url>`).join('\n')}
-${categories.map((category: string) => `  <url>
-    <loc>${escapeXml(baseUrl + '/category/' + encodeURIComponent(category))}</loc>
+  </url>`
+      } else {
+        return `  <url>
+    <loc>${escapeXml(baseUrl + page.url)}</loc>
     <lastmod>${escapeXml(currentDate)}</lastmod>
+  </url>`
+      }
+    }).join('\n')}
+${Array.from(categoryMap.entries()).map(([category, lastMod]) => `  <url>
+    <loc>${escapeXml(baseUrl + '/category/' + encodeURIComponent(category))}</loc>
+    <lastmod>${escapeXml(lastMod)}</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>`).join('\n')}
-${articles?.map((article: { slug: string; article_published_at?: string }) => `  <url>
+${validArticles?.map((article: { slug: string; article_published_at?: string; updated_at?: string }) => `  <url>
     <loc>${escapeXml(baseUrl + '/article/' + encodeURIComponent(article.slug))}</loc>
-    <lastmod>${escapeXml(article.article_published_at || currentDate)}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <lastmod>${escapeXml(normalizeTimestamp(article.updated_at || article.article_published_at))}</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
   </url>`).join('\n') || ''}
 </urlset>`
     
     // Validate sitemap size constraints
     const sitemapSize = Buffer.byteLength(sitemap, 'utf8')
-    const urlCount = articles.length + categories.length + staticPages.length
+    const urlCount = validArticles.length + categoryMap.size + staticPages.length
     
     if (sitemapSize > 50 * 1024 * 1024) { // 50MB limit
       console.error(`Sitemap too large: ${sitemapSize} bytes`)

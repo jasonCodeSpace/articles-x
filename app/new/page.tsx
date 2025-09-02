@@ -7,8 +7,8 @@ import { Article } from '@/components/article-card'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'New Articles | Articles X',
-  description: 'Discover the latest articles and insights',
+  title: 'Latest X Posts & Trending News | xarticle.news',
+  description: 'Stay updated with the latest curated X posts and trending news. Discover current conversations, breaking stories, and insights from leading voices across technology, business, and more.',
 }
 
 // Enable dynamic rendering for search params to handle filter changes
@@ -86,18 +86,93 @@ export default async function NewPage({ searchParams }: PageProps) {
     getArticleCategories()
   ])
 
+  // Generate JSON-LD structured data for articles
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": "Latest X Posts & Trending News",
+    "description": "Latest curated X posts and trending news from leading voices",
+    "url": "https://xarticle.news/new",
+    "mainEntity": {
+      "@type": "ItemList",
+      "itemListElement": articles.slice(0, 10).map((article, index) => ({
+        "@type": "NewsArticle",
+        "position": index + 1,
+        "headline": article.title,
+        "datePublished": article.article_published_at,
+        "author": {
+          "@type": "Person",
+          "name": article.author_name,
+          "url": `https://x.com/${article.author_handle}`
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "xarticle.news",
+          "url": "https://xarticle.news"
+        },
+        "url": article.article_url
+      }))
+    }
+  }
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 md:pt-24 pb-6">
-      <div className="space-y-6">
-        <Suspense fallback={<FeedLoading />}>
-          <ArticleFeed 
-            initialArticles={articles} 
-            initialCategories={categories}
-            initialCategory={category || 'all'}
-            initialSearchQuery={search || ''}
-          />
-        </Suspense>
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 md:pt-24 pb-6">
+        <div className="space-y-6">
+          {/* Page Header */}
+          <div className="text-center space-y-4 mb-8">
+            <h1 className="text-4xl md:text-5xl font-bold text-foreground">
+              Latest X Posts & Trending News
+            </h1>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              Stay updated with the latest curated posts and current conversations from leading voices on X
+            </p>
+          </div>
+          
+          {/* Newest Articles Section */}
+          <div className="space-y-4">
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground border-b border-border pb-2">
+              Newest Articles
+            </h2>
+            
+            {/* Categories Subsection */}
+            {categories.length > 0 && (
+              <div className="space-y-2">
+                <h3 className="text-lg font-semibold text-foreground">
+                  Browse by Category
+                </h3>
+              </div>
+            )}
+            
+            <Suspense fallback={<FeedLoading />}>
+              <ArticleFeed 
+                initialArticles={articles} 
+                initialCategories={categories}
+                initialCategory={category || 'all'}
+                initialSearchQuery={search || ''}
+              />
+            </Suspense>
+          </div>
+          
+          {/* Tags Section */}
+          <div className="mt-12 space-y-4">
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground border-b border-border pb-2">
+              Popular Tags
+            </h2>
+            <div className="flex flex-wrap gap-2">
+              {categories.slice(0, 15).map((cat) => (
+                <span key={cat} className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm font-medium">
+                  {cat}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
+    </>
   )
 }

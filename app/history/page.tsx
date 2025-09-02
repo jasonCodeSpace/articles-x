@@ -5,8 +5,8 @@ import { FeedLoading } from '@/components/feed-loading'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'History | Articles X',
-  description: 'Browse historical articles and archives',
+  title: 'Archive of X Articles | xarticle.news',
+  description: 'Explore our complete archive of curated X articles and past discussions. Browse historical content by date, category, and discover valuable insights from previous conversations.',
 }
 
 // Enable static generation
@@ -26,17 +26,88 @@ export default async function HistoryPage({ searchParams }: PageProps) {
     getArticleCategories()
   ])
 
+  // Group articles by month for date browsing
+  const articlesByMonth = articles.reduce((acc, article) => {
+    const date = new Date(article.article_published_at || article.created_at)
+    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
+    const monthName = date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' })
+    
+    if (!acc[monthKey]) {
+      acc[monthKey] = { name: monthName, articles: [] }
+    }
+    acc[monthKey].articles.push(article)
+    return acc
+  }, {} as Record<string, { name: string; articles: typeof articles }>)
+
+  const sortedMonths = Object.entries(articlesByMonth).sort(([a], [b]) => b.localeCompare(a))
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 md:pt-24 pb-6">
       <div className="space-y-6">
-        <Suspense fallback={<FeedLoading />}>
-          <ArticleFeed 
-            initialArticles={articles} 
-            initialCategories={categories}
-            initialCategory={category || 'all'}
-            initialSearchQuery={search || ''}
-          />
-        </Suspense>
+        {/* Page Header */}
+        <div className="text-center space-y-4 mb-8">
+          <h1 className="text-4xl md:text-5xl font-bold text-foreground">
+            Archive of Past X Articles
+          </h1>
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+            Explore our complete archive of curated articles and discover valuable insights from past discussions
+          </p>
+        </div>
+        
+        {/* Browse by Date Section */}
+        <div className="space-y-6">
+          <h2 className="text-2xl md:text-3xl font-bold text-foreground border-b border-border pb-2">
+            Browse by Date
+          </h2>
+          
+          {sortedMonths.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+              {sortedMonths.slice(0, 12).map(([monthKey, monthData]) => (
+                <div key={monthKey} className="p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors">
+                  <h3 className="text-lg font-semibold text-foreground mb-2">
+                    {monthData.name}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    {monthData.articles.length} articles
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        
+        {/* Browse by Category Section */}
+        <div className="space-y-6">
+          <h2 className="text-2xl md:text-3xl font-bold text-foreground border-b border-border pb-2">
+            Browse by Category
+          </h2>
+          
+          {categories.length > 0 && (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mb-8">
+              {categories.slice(0, 20).map((cat) => (
+                <div key={cat} className="p-3 bg-primary/10 text-primary rounded-lg text-center hover:bg-primary/20 transition-colors">
+                  <span className="text-sm font-medium">{cat}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        
+        {/* All Articles Feed */}
+        <div className="space-y-4">
+          <h2 className="text-2xl md:text-3xl font-bold text-foreground border-b border-border pb-2">
+            All Archive Articles
+          </h2>
+          
+          <Suspense fallback={<FeedLoading />}>
+            <ArticleFeed 
+              initialArticles={articles} 
+              initialCategories={categories}
+              initialCategory={category || 'all'}
+              initialSearchQuery={search || ''}
+            />
+          </Suspense>
+        </div>
       </div>
     </div>
   )

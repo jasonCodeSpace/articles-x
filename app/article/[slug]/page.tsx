@@ -121,10 +121,20 @@ export async function generateMetadata({ params }: ArticlePageProps) {
   return {
     title: article.title_english || article.title,
     description: article.article_preview_text_english || article.article_preview_text || 'Read this article',
+    alternates: {
+      canonical: article.article_url, // Point to original X URL as canonical source
+    },
     openGraph: {
       title: article.title_english || article.title,
       description: article.article_preview_text_english || article.article_preview_text || 'Read this article',
       images: article.image ? [{ url: article.image }] : [],
+      url: article.article_url, // Original X URL
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: article.title_english || article.title,
+      description: article.article_preview_text_english || article.article_preview_text || 'Read this article',
+      images: article.image ? [article.image] : [],
     },
   }
 }

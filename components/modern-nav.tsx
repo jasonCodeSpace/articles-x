@@ -36,7 +36,7 @@ interface ModernNavProps {
   className?: string
 }
 
-export function ModernNav({ user, className }: ModernNavProps) {
+export function ModernNav({ user, categories, className }: ModernNavProps) {
   const [activeTab, setActiveTab] = useState("Home")
   // Theme functionality removed
   const router = useRouter()
@@ -112,6 +112,38 @@ export function ModernNav({ user, className }: ModernNavProps) {
             >
               History
             </button>
+            
+            {/* Categories Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-full transition-colors cursor-pointer">
+                  Categories
+                  <ChevronDown className="w-3 h-3" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-48 max-h-60 overflow-y-auto">
+                {categories.slice(0, 15).map((category) => (
+                  <DropdownMenuItem key={category} asChild>
+                    <button 
+                      onClick={() => router.push(`/category/${encodeURIComponent(category)}`)}
+                      className="w-full cursor-pointer text-left"
+                    >
+                      {category}
+                    </button>
+                  </DropdownMenuItem>
+                ))}
+                {categories.length > 15 && (
+                  <DropdownMenuItem asChild>
+                    <button 
+                      onClick={() => router.push('/new')}
+                      className="w-full cursor-pointer text-left font-medium text-primary"
+                    >
+                      View All Categories →
+                    </button>
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
 
             {/* User Profile Dropdown or Login Button */}
             {user ? (

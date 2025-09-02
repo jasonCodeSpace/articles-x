@@ -16,6 +16,18 @@ export async function GET() {
       return new NextResponse('Error generating sitemap', { status: 500 })
     }
     
+    // Fetch all categories
+    const { data: categoriesData, error: categoriesError } = await supabase
+      .from('articles')
+      .select('category')
+      .not('category', 'is', null)
+    
+    if (categoriesError) {
+      console.error('Error fetching categories for sitemap:', categoriesError)
+    }
+    
+    const categories = [...new Set(categoriesData?.map(item => item.category).filter(Boolean) || [])]
+    
     const baseUrl = 'https://articles-x.vercel.app'
     const currentDate = new Date().toISOString()
     
@@ -38,6 +50,12 @@ ${staticPages.map(page => `  <url>
     <lastmod>${currentDate}</lastmod>
     <changefreq>${page.changefreq}</changefreq>
     <priority>${page.priority}</priority>
+  </url>`).join('\n')}
+${categories.map((category: string) => `  <url>
+    <loc>${baseUrl}/category/${encodeURIComponent(category)}</loc>
+    <lastmod>${currentDate}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
   </url>`).join('\n')}
 ${articles?.map((article: { slug: string; article_published_at?: string }) => `  <url>
     <loc>${baseUrl}/article/${article.slug}</loc>

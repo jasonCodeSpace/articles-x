@@ -7,8 +7,8 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 
 export const metadata: Metadata = {
-  title: 'Xarticle - Curated Articles from X',
-  description: 'Discover high-quality articles automatically curated from X (Twitter). AI-powered summaries, multi-language support, and real-time updates.',
+  title: 'xarticle.news – Discover Top X Articles from Leading Voices',
+  description: 'Discover top X articles from leading voices with AI-powered curation. Get real-time updates, multi-language summaries, and quality content from diverse categories including tech, business, and trending topics.',
 }
 
 export default async function LandingPage() {
@@ -64,13 +64,13 @@ export default async function LandingPage() {
 
             {/* Hero Text */}
             <div className="space-y-6">
-              <h2 className="text-5xl md:text-7xl font-bold text-foreground leading-tight">
-                The Best Articles
+              <h1 className="text-5xl md:text-7xl font-bold text-foreground leading-tight">
+                Discover Top X Articles
                 <br />
                 <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                  From X
+                  from Leading Voices
                 </span>
-              </h2>
+              </h1>
               <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
                 Automatically discover and curate high-quality articles shared on X. 
                 <br className="hidden md:block" />
@@ -110,8 +110,19 @@ export default async function LandingPage() {
               <Link href="/new">
                 <Button variant="outline" size="lg" className="text-lg px-8 py-6 rounded-full border-2 hover:bg-accent/20 transition-all duration-300">
                   <Globe className="mr-2" size={24} />
-                  Explore Articles
+                  Latest Articles
                 </Button>
+              </Link>
+            </div>
+            
+            {/* Internal Navigation Links */}
+            <div className="flex flex-wrap justify-center gap-4 mt-8">
+              <Link href="/new" className="text-primary hover:text-primary/80 font-medium underline underline-offset-4 transition-colors">
+                Browse Latest Posts
+              </Link>
+              <span className="text-muted-foreground">•</span>
+              <Link href="/history" className="text-primary hover:text-primary/80 font-medium underline underline-offset-4 transition-colors">
+                Explore Archive
               </Link>
             </div>
           </div>
@@ -121,11 +132,11 @@ export default async function LandingPage() {
       {/* Features Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center mb-16">
-          <h3 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
-            Why Choose Xarticle?
-          </h3>
+          <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
+            Featured Categories
+          </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            The smartest way to discover and consume quality content from X
+            Explore diverse topics from leading voices across technology, business, science, and more
           </p>
         </div>
 
@@ -215,11 +226,11 @@ export default async function LandingPage() {
       {/* How It Works */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center mb-16">
-          <h3 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
-            How It Works
-          </h3>
+          <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
+            Trending Topics
+          </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Simple, automated, and intelligent article discovery
+            Stay updated with the latest conversations and trending discussions from X
           </p>
         </div>
 
@@ -261,9 +272,9 @@ export default async function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-8">
-              <h3 className="text-4xl md:text-5xl font-bold text-foreground">
-                Why Readers Love Xarticle
-              </h3>
+              <h2 className="text-4xl md:text-5xl font-bold text-foreground">
+                Subscribe or Follow
+              </h2>
               
               <div className="space-y-6">
                 <div className="flex items-start gap-4">
@@ -331,9 +342,9 @@ export default async function LandingPage() {
       {/* Categories Preview */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center mb-16">
-          <h3 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
+          <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
             Explore by Category
-          </h3>
+          </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Discover articles across diverse topics and interests
           </p>

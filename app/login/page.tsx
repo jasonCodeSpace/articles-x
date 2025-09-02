@@ -266,7 +266,7 @@ export default function Login() {
             <p className="text-muted-foreground text-sm">
               Don&apos;t have an account?{' '}
               <Link 
-                href="/register" 
+                href="/trending" 
                 className="text-primary hover:text-primary/80 underline transition-colors"
               >
                 Sign up now

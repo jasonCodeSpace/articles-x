@@ -3,7 +3,7 @@ module.exports = {
     collect: {
       url: [
         'http://localhost:3000',
-        'http://localhost:3000/new',
+        'http://localhost:3000/trending',
         'http://localhost:3000/weekly',
         'http://localhost:3000/history'
       ],

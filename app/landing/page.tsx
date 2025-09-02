@@ -85,7 +85,7 @@ export default async function LandingPage() {
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
               {user ? (
-                <Link href="/new">
+                <Link href="/trending">
                   <Button size="lg" className="text-lg px-8 py-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
                     <BookOpen className="mr-2" size={24} />
                     Continue Reading
@@ -102,7 +102,7 @@ export default async function LandingPage() {
                 </Link>
               )}
               
-              <Link href="/new">
+              <Link href="/trending">
                 <Button variant="outline" size="lg" className="text-lg px-8 py-6 rounded-full border-2 hover:bg-accent/20 transition-all duration-300">
                   <Globe className="mr-2" size={24} />
                   Latest Articles
@@ -112,7 +112,7 @@ export default async function LandingPage() {
             
             {/* Internal Navigation Links */}
             <div className="flex flex-wrap justify-center gap-4 mt-8">
-              <Link href="/new" className="text-primary hover:text-primary/80 font-medium underline underline-offset-4 transition-colors">
+              <Link href="/trending" className="text-primary hover:text-primary/80 font-medium underline underline-offset-4 transition-colors">
                 Browse Latest Posts
               </Link>
               <span className="text-muted-foreground">•</span>
@@ -347,7 +347,7 @@ export default async function LandingPage() {
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {categories.slice(0, 12).map((category) => (
-            <Link key={category} href={`/new?category=${encodeURIComponent(category)}`}>
+            <Link key={category} href={`/trending?category=${encodeURIComponent(category)}`}>
               <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 cursor-pointer group">
                 <CardContent className="p-6 text-center">
                   <h5 className="font-semibold text-foreground group-hover:text-primary transition-colors">
@@ -372,7 +372,7 @@ export default async function LandingPage() {
           
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
             {user ? (
-              <Link href="/new">
+              <Link href="/trending">
                 <Button size="lg" variant="secondary" className="text-lg px-8 py-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
                   <BookOpen className="mr-2" size={24} />
                   Go to Articles

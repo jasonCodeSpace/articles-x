@@ -6,8 +6,8 @@ import { Article } from '@/components/article-card'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Latest X Posts & Trending News | xarticle.news',
-  description: 'Stay updated with the latest curated X posts and trending news. Discover current conversations, breaking stories, and insights from leading voices across technology, business, and more.',
+  title: 'All Articles | xarticle.news',
+  description: 'Stay updated with the latest curated articles and trending news. Discover current conversations, breaking stories, and insights from leading voices across technology, business, and more.',
 }
 
 // Enable ISR for better TTFB performance
@@ -26,8 +26,8 @@ interface PageProps {
   searchParams: Promise<{ category?: string; search?: string; page?: string; filter?: string }>
 }
 
-// Custom fetch function for New articles (Day or Week tags)
-async function fetchNewArticles(options: {
+// Custom fetch function for Trending articles (Day or Week tags)
+async function fetchTrendingArticles(options: {
   search?: string
   category?: string
   limit?: number
@@ -69,26 +69,26 @@ async function fetchNewArticles(options: {
   const { data, error } = await query
   
   if (error) {
-    console.error('Error fetching new articles:', error)
+    console.error('Error fetching trending articles:', error)
     return []
   }
   
   return data || []
 }
 
-export default async function NewPage({ searchParams }: PageProps) {
+export default async function TrendingPage({ searchParams }: PageProps) {
   const { category, search, filter } = await searchParams
   
-  // Fetch New articles (Day or Week tags)
-  const articles = await fetchNewArticles({ category, search, filter })
+  // Fetch Trending articles (Day or Week tags)
+  const articles = await fetchTrendingArticles({ category, search, filter })
 
   // Generate JSON-LD structured data for articles
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
-    "name": "Latest X Posts & Trending News",
+    "name": "Trending X Posts & News",
     "description": "Latest curated X posts and trending news from leading voices",
-    "url": "https://xarticle.news/new",
+    "url": "https://xarticle.news/trending",
     "mainEntity": {
       "@type": "ItemList",
       "itemListElement": articles.slice(0, 10).map((article, index) => ({
@@ -122,10 +122,10 @@ export default async function NewPage({ searchParams }: PageProps) {
           {/* Page Header */}
           <div className="text-center space-y-4 mb-8">
             <h1 className="text-4xl md:text-5xl font-bold text-foreground">
-              Latest X Posts & Trending News
+              All Articles
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Stay updated with the latest curated posts and current conversations from leading voices on X
+              Stay updated with the latest curated articles from leading voices
             </p>
           </div>
           

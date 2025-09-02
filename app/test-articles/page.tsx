@@ -55,8 +55,8 @@ export default async function TestArticles() {
       <div className="mt-8 p-4 bg-gray-100 rounded">
         <h3 className="font-semibold mb-2">Test Links:</h3>
         <div className="space-y-2">
-          <a href="/new" className="block text-blue-600 hover:underline">Today (Day articles only)</a>
-          <a href="/new?filter=week" className="block text-blue-600 hover:underline">This Week (Day + Week articles)</a>
+          <a href="/trending" className="block text-blue-600 hover:underline">Today (Day articles only)</a>
+          <a href="/trending?filter=week" className="block text-blue-600 hover:underline">This Week (Day + Week articles)</a>
         </div>
       </div>
     </div>

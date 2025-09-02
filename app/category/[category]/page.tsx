@@ -18,14 +18,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const decodedCategory = decodeURIComponent(category)
   
   return {
-    title: `${decodedCategory} Articles from X | xarticle.news`,
-    description: `Discover curated X articles about ${decodedCategory}. Stay updated with the latest posts, insights, and discussions from leading voices in ${decodedCategory}.`,
+    title: `${decodedCategory} Articles | xarticle.news`,
+    description: `Discover curated articles about ${decodedCategory}. Stay updated with the latest posts, insights, and discussions from leading voices in ${decodedCategory}.`,
   }
 }
 
 // Enable static generation for standard categories only
 export async function generateStaticParams() {
-  const standardCategories = ['Ai', 'Crypto', 'Tech', 'Data', 'Startups', 'Business', 'Markets', 'Product', 'Security', 'Policy', 'Science', 'Media']
+  const standardCategories = ['All Category', 'AI', 'Crypto', 'Tech', 'Data', 'Startups', 'Business', 'Markets', 'Product', 'Security', 'Policy', 'Science', 'Media']
   
   // Generate static params for standard categories
   return standardCategories.map((category) => ({
@@ -50,8 +50,8 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
-    "name": `${decodedCategory} Articles from X`,
-    "description": `Curated X articles about ${decodedCategory}`,
+    "name": `${decodedCategory} Articles`,
+    "description": `Curated articles about ${decodedCategory}`,
     "url": `https://xarticle.news/category/${encodeURIComponent(decodedCategory)}`,
     "mainEntity": {
       "@type": "ItemList",
@@ -89,7 +89,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
               Home
             </Link>
             <span>/</span>
-            <Link href="/new" className="hover:text-foreground transition-colors">
+            <Link href="/trending" className="hover:text-foreground transition-colors">
               Articles
             </Link>
             <span>/</span>
@@ -99,7 +99,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
           {/* Page Header */}
           <div className="text-center space-y-4 mb-8">
             <h1 className="text-4xl md:text-5xl font-bold text-foreground">
-              {decodedCategory} Articles from X
+              {decodedCategory} Articles
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
               Discover curated articles and insights about {decodedCategory} from leading voices on X

@@ -171,10 +171,11 @@ function loadAuthorCategoryMappings(): Map<string, string> {
 
 /**
  * Get category for author handle
+ * Note: Disabled automatic category assignment to prevent unwanted updates
  */
-function getCategoryForAuthor(authorHandle: string): string {
-  const mappings = loadAuthorCategoryMappings()
-  return mappings.get(authorHandle) || 'twitter-import'
+function getCategoryForAuthor(authorHandle: string): string | undefined {
+  // Return undefined to prevent automatic category assignment
+  return undefined
 }
 
 /**
@@ -196,10 +197,10 @@ export function harvestedToDatabase(harvested: HarvestedArticle): DatabaseArticl
   // Generate tweet URL from tweet_id
   const tweetUrl = `https://twitter.com/${harvested.author_handle}/status/${harvested.tweet_id}`
 
-  // Get category based on author handle from tags.csv
+  // Get category based on author handle (disabled to prevent automatic assignment)
   const category = getCategoryForAuthor(harvested.author_handle)
 
-  return {
+  const result: DatabaseArticle = {
     title: harvested.title,
     slug,
     content,
@@ -213,13 +214,19 @@ export function harvestedToDatabase(harvested: HarvestedArticle): DatabaseArticl
     meta_description: excerpt,
     featured_image_url: harvested.featured_image_url,
     tags: ['twitter', 'imported'],
-    category: category,
     tweet_url: tweetUrl,
     tweet_published_at: publishedAt,
     tweet_id: harvested.tweet_id,
     article_published_at: publishedAt, // Assuming article published at same time as tweet
     article_url: harvested.article_url,
   }
+
+  // Only set category if it's defined to prevent automatic assignment
+  if (category !== undefined) {
+    result.category = category
+  }
+
+  return result
 }
 
 /**
@@ -306,7 +313,7 @@ export async function batchUpsertArticles(
         }
 
         if (existingArticle) {
-          // Update existing article
+          // Update existing article (exclude category to prevent overwriting)
           const { error: updateError } = await supabase
             .from('articles')
             .update({
@@ -320,7 +327,6 @@ export async function batchUpsertArticles(
               meta_description: dbArticle.meta_description,
               featured_image_url: dbArticle.featured_image_url,
               tags: dbArticle.tags,
-              category: dbArticle.category,
               tweet_url: dbArticle.tweet_url,
               tweet_published_at: dbArticle.tweet_published_at,
               tweet_id: dbArticle.tweet_id,

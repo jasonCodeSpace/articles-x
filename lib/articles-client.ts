@@ -73,24 +73,21 @@ export async function fetchArticlesClient(options: FetchArticlesOptions = {}): P
  * Client-side function to get article categories
  */
 export async function getArticleCategoriesClient(): Promise<string[]> {
-  try {
-    const supabase = createClient()
-    
-    const { data, error } = await supabase
-      .from('articles')
-      .select('category')
-      .not('category', 'is', null)
-
-    if (error) {
-      console.error('Error fetching categories:', error)
-      throw error
-    }
-
-    // Extract unique categories
-    const categories = [...new Set(data?.map(item => item.category).filter(Boolean) || [])]
-    return categories.sort()
-  } catch (error) {
-    console.error('Failed to fetch categories:', error)
-    return []
-  }
+  // Return fixed list of standard categories
+  const standardCategories = [
+    'AI',
+    'Crypto', 
+    'Tech',
+    'Data',
+    'Startups',
+    'Business',
+    'Markets',
+    'Product',
+    'Security',
+    'Policy',
+    'Science',
+    'Media'
+  ]
+  
+  return standardCategories
 }

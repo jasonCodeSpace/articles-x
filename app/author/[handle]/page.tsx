@@ -37,6 +37,26 @@ export default function AuthorPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
+  const [categories, setCategories] = useState<string[]>([])
+
+  // Fetch categories
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch('/api/categories')
+        if (response.ok) {
+          const data = await response.json()
+          if (data.categories) {
+            setCategories(data.categories)
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching categories:', error)
+      }
+    }
+
+    fetchCategories()
+  }, [])
 
   useEffect(() => {
     const fetchAuthorData = async () => {
@@ -72,7 +92,7 @@ export default function AuthorPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
-        <ModernNav categories={[]} />
+        <ModernNav categories={categories} />
         <div className="container mx-auto px-4 py-8 pt-24">
           <FeedLoading />
         </div>
@@ -83,7 +103,7 @@ export default function AuthorPage() {
   if (error || !authorInfo) {
     return (
       <div className="min-h-screen bg-background">
-        <ModernNav categories={[]} />
+        <ModernNav categories={categories} />
         <div className="container mx-auto px-4 py-8 pt-24">
           <FeedEmptyState 
             type="error"
@@ -104,11 +124,11 @@ export default function AuthorPage() {
   return (
     <LanguageProvider>
       <div className="min-h-screen bg-background">
-        <ModernNav categories={[]} />
+        <ModernNav categories={categories} />
         <div className="container mx-auto px-4 py-8 pt-24">
           {/* Back button */}
           <Link 
-            href="/new" 
+            href="/trending" 
             className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-6"
           >
             <ArrowLeft className="h-4 w-4" />

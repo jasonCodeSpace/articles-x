@@ -46,7 +46,8 @@ export async function fetchArticles(options: FetchArticlesOptions = {}): Promise
     }
 
     // Apply category filter (server-side) - safe because we ensured this column exists via migration
-    if (category && category.trim()) {
+    // Skip filter if category is "All Category" or "All" to show all articles
+    if (category && category.trim() && category.trim() !== 'All Category' && category.trim() !== 'All') {
       query = query.eq('category', category.trim())
     }
 
@@ -92,39 +93,35 @@ export async function fetchArticles(options: FetchArticlesOptions = {}): Promise
 
 
 /**
+ * Server-side function to fetch trending articles from Supabase
+ * This is essentially the same as fetchArticles but with a different name for the trending page
+ */
+export async function fetchTrendingArticles(options: FetchArticlesOptions = {}): Promise<Article[]> {
+  // Use the same logic as fetchArticles
+  return fetchArticles(options)
+}
+
+/**
  * Get available categories
  */
 export async function getArticleCategories(): Promise<string[]> {
-  type CategoryRow = { category: string | null }
-
-  try {
-    const supabase = await createClient()
-    
-    const { data, error } = await supabase
-      .from('articles')
-      .select('category')
-      .not('category', 'is', null)
-
-    if (error) {
-      // Gracefully handle missing column in some environments without using any
-      const errorWithCode = error as { code?: unknown }
-      if (typeof errorWithCode.code === 'string' && errorWithCode.code === '42703') {
-        return []
-      }
-      console.error('Error fetching categories:', error)
-      return []
-    }
-
-    const rows: CategoryRow[] = (data ?? []) as CategoryRow[]
-
-    // Extract unique categories
-    const categories = [...new Set(rows.map((item) => item.category).filter((c): c is string => Boolean(c)))]
-    return categories.sort()
-    
-  } catch (error) {
-    console.error('Unexpected error fetching categories:', error)
-    return []
-  }
+  // Return fixed list of standard categories
+  const standardCategories = [
+    'AI',
+    'Crypto', 
+    'Tech',
+    'Data',
+    'Startups',
+    'Business',
+    'Markets',
+    'Product',
+    'Security',
+    'Policy',
+    'Science',
+    'Media'
+  ]
+  
+  return standardCategories
 }
 
 /**

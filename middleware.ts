@@ -30,8 +30,8 @@ export async function middleware(request: NextRequest) {
   
   const isPublicRoute = pathname === '/' || 
                         pathname === '/landing' || 
-                        pathname === '/new' ||
-                        pathname.startsWith('/new') ||
+                        pathname === '/trending' ||
+                        pathname.startsWith('/trending') ||
                         isSharedArticleLink
   const isProtectedRoute = pathname.startsWith('/profile')
   
@@ -103,10 +103,10 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // If user is logged in and trying to access auth pages, redirect to new
+  // If user is logged in and trying to access auth pages, redirect to trending
   if (user && (pathname === '/login' || pathname === '/register')) {
     const url = request.nextUrl.clone()
-    url.pathname = '/new'
+    url.pathname = '/trending'
     return NextResponse.redirect(url)
   }
 

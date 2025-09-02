@@ -92,12 +92,18 @@ export async function POST(request: NextRequest) {
           title_english?: string;
           article_preview_text_english?: string;
           full_article_content_english?: string;
+          category?: string;
         } = {
           summary_chinese: analysis.summary.chinese,
           summary_english: analysis.summary.english,
           summary_generated_at: new Date().toISOString(),
           language: analysis.language
         };
+        
+        // 添加分类信息（如果存在）
+        if (analysis.category) {
+          updateData.category = analysis.category;
+        }
 
         // 清理无效翻译值的函数
         const cleanTranslation = (translatedText: string, fallbackText: string): string => {

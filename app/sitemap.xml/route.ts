@@ -83,7 +83,7 @@ export async function GET() {
     // Static content pages only (exclude auth pages)
     const staticPages = [
       { url: '', priority: '1.0', changefreq: 'daily' },
-      { url: '/new', priority: '0.9', changefreq: 'hourly' },
+      { url: '/trending', priority: '0.9', changefreq: 'hourly' },
       { url: '/landing', priority: '0.8', changefreq: 'weekly' },
       { url: '/history', priority: '0.7', changefreq: 'daily' },
       { url: '/weekly', priority: '0.8', changefreq: 'weekly' }

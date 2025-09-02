@@ -17,9 +17,13 @@ export function ClientNavWrapper({ initialUser, categories }: ClientNavWrapperPr
   useEffect(() => {
     // Get current user on mount
     const getCurrentUser = async () => {
-      const { data: { user: currentUser } } = await supabase.auth.getUser()
-      console.log('ClientNavWrapper - Current user:', currentUser)
-      setUser(currentUser)
+      try {
+        const { data: { user: currentUser } } = await supabase.auth.getUser()
+        setUser(currentUser)
+      } catch (error) {
+        console.error('Error getting user:', error)
+        setUser(null)
+      }
     }
 
     getCurrentUser()

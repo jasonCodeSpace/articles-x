@@ -21,13 +21,30 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   // Get user session
   const { data: { user } } = await supabase.auth.getUser()
   
-  // Get categories
-  const { data: categoriesData } = await supabase
-    .from('articles')
-    .select('category')
-    .not('category', 'is', null)
-  
-  const categories = [...new Set(categoriesData?.map(item => item.category) || [])]
+  // Fetch categories
+  let categories: string[] = [];
+  try {
+    const { data, error } = await supabase
+      .from('articles')
+      .select('category')
+      .not('category', 'is', null);
+
+    if (error) {
+      console.error('Error fetching categories:', error);
+    } else {
+      const uniqueCategories = new Set<string>();
+      data?.forEach(article => {
+        if (article.category) {
+          // Only take the first category for single tag support
+          const firstCategory = article.category.split(',')[0].trim();
+          uniqueCategories.add(firstCategory);
+        }
+      });
+      categories = Array.from(uniqueCategories).sort();
+    }
+  } catch (error) {
+    console.error('Error fetching categories:', error);
+  }
   
   // Extract short ID from the slug and find the full UUID
   const shortId = extractArticleIdFromSlug(resolvedParams.slug)

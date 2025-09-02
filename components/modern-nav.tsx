@@ -4,7 +4,7 @@ import React, { useState } from "react"
 import { motion } from "framer-motion"
 // import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
-import { User, ChevronDown, Settings, Plus, History } from "lucide-react"
+import { User, ChevronDown, Settings, Plus, TrendingUp, Grid3X3 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ThemeToggle } from '@/components/theme-toggle'
@@ -42,27 +42,14 @@ export function ModernNav({ user, categories, className }: ModernNavProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   
-  // Determine current filter and button text
-  const currentFilter = searchParams.get('filter')
-  const isWeeklyFilter = currentFilter === 'week'
-  const buttonText = isWeeklyFilter ? 'This Week' : 'Today'
+  // Remove filter logic as we're replacing with Trending
 
-  // Debug: Add console logs to understand user state
-  console.log('ModernNav - User object:', user)
-  console.log('ModernNav - User email:', user?.email)
-  console.log('ModernNav - User metadata:', user?.user_metadata)
-  
   const userDisplayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User'
   const userInitial = userDisplayName.charAt(0).toUpperCase()
-  
-  console.log('ModernNav - Display name:', userDisplayName)
-  console.log('ModernNav - User initial:', userInitial)
 
   const navItems: NavItem[] = [
     { name: 'Profile', url: '#', icon: User },
   ]
-
-
 
   return (
     <>
@@ -81,37 +68,14 @@ export function ModernNav({ user, categories, className }: ModernNavProps) {
 
           {/* Navigation Items */}
           <div className="flex items-center gap-2">
-            {/* Navigation Buttons */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-full transition-colors cursor-pointer">
-                  {buttonText}
-                  <ChevronDown className="w-3 h-3" />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-40">
-                <DropdownMenuItem asChild>
-                  <button onClick={() => {
-                    window.location.href = '/new'
-                  }} className="w-full cursor-pointer text-left">
-                    Today
-                  </button>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <button onClick={() => {
-                    window.location.href = '/new?filter=week'
-                  }} className="w-full cursor-pointer text-left">
-                    This Week
-                  </button>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {/* Trending Button */}
             <button 
-              onClick={() => router.push('/history')}
+              onClick={() => router.push('/trending')}
               className="px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-full transition-colors cursor-pointer"
             >
-              History
+              Trending
             </button>
+
             
             {/* Categories Dropdown */}
             <DropdownMenu>
@@ -122,26 +86,22 @@ export function ModernNav({ user, categories, className }: ModernNavProps) {
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="w-48 max-h-60 overflow-y-auto">
-                {categories.slice(0, 15).map((category) => (
+                {['All Categories', 'AI', 'Crypto', 'Tech', 'Data', 'Startups', 'Business', 'Markets', 'Product', 'Security', 'Policy', 'Science', 'Media'].map((category) => (
                   <DropdownMenuItem key={category} asChild>
                     <button 
-                      onClick={() => router.push(`/category/${encodeURIComponent(category)}`)}
+                      onClick={() => {
+                        if (category === 'All Categories') {
+                          router.push('/category/All')
+                        } else {
+                          router.push(`/category/${encodeURIComponent(category)}`)
+                        }
+                      }}
                       className="w-full cursor-pointer text-left"
                     >
                       {category}
                     </button>
                   </DropdownMenuItem>
                 ))}
-                {categories.length > 15 && (
-                  <DropdownMenuItem asChild>
-                    <button 
-                      onClick={() => router.push('/new')}
-                      className="w-full cursor-pointer text-left font-medium text-primary"
-                    >
-                      View All Categories →
-                    </button>
-                  </DropdownMenuItem>
-                )}
               </DropdownMenuContent>
             </DropdownMenu>
 
@@ -273,48 +233,46 @@ export function ModernNav({ user, categories, className }: ModernNavProps) {
             <span className="text-sm font-bold text-foreground group-hover:text-accent-foreground transition-colors">articles</span>
           </button>
           
-          {/* New Articles Menu for Mobile */}
+          {/* Trending Button for Mobile */}
+          <button 
+            onClick={() => router.push('/trending')}
+            className="relative cursor-pointer text-sm font-semibold px-4 py-2 rounded-full transition-colors text-muted-foreground hover:text-foreground"
+            title="Trending"
+          >
+            Trending
+          </button>
+          
+          {/* Category Dropdown for Mobile */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button 
                 className="relative cursor-pointer text-sm font-semibold px-4 py-2 rounded-full transition-colors text-muted-foreground hover:text-foreground"
-                title="New Articles"
+                title="Categories"
               >
-                <Plus size={18} strokeWidth={2.5} />
+                Category
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="mb-2">
-              <DropdownMenuItem asChild>
-                <button 
-                  onClick={() => {
-                    window.location.href = '/new'
-                  }}
-                  className="w-full flex items-center justify-start px-2 py-1.5 text-sm cursor-pointer"
-                >
-                  Today
-                </button>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <button 
-                  onClick={() => {
-                    window.location.href = '/new?filter=week'
-                  }}
-                  className="w-full flex items-center justify-start px-2 py-1.5 text-sm cursor-pointer"
-                >
-                  This Week
-                </button>
-              </DropdownMenuItem>
+            <DropdownMenuContent className="mb-2 w-48 max-h-60 overflow-y-auto">
+              {['All Categories', 'AI', 'Crypto', 'Tech', 'Data', 'Startups', 'Business', 'Markets', 'Product', 'Security', 'Policy', 'Science', 'Media'].map((category) => (
+                <DropdownMenuItem key={category} asChild>
+                  <button 
+                    onClick={() => {
+                      if (category === 'All Categories') {
+                        router.push('/category/All')
+                      } else {
+                        router.push(`/category/${encodeURIComponent(category)}`)
+                      }
+                    }}
+                    className="w-full cursor-pointer text-left px-2 py-1.5 text-sm"
+                  >
+                    {category}
+                  </button>
+                </DropdownMenuItem>
+              ))}
             </DropdownMenuContent>
           </DropdownMenu>
           
-          {/* History Button for Mobile */}
-          <button
-              onClick={() => router.push('/history')}
-              className="relative cursor-pointer text-sm font-semibold px-4 py-2 rounded-full transition-colors text-muted-foreground hover:text-foreground hover:cursor-pointer"
-              title="History"
-            >
-              <History size={18} strokeWidth={2.5} />
-            </button>
+
           {navItems.map((item) => {
             const Icon = item.icon
             const isActive = activeTab === item.name

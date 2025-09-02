@@ -314,7 +314,7 @@ export default async function ProfilePage({
                     Start bookmarking articles you want to read later or revisit.
                   </p>
                   <Button asChild>
-                    <a href="/new">Browse Articles</a>
+                    <a href="/trending">Browse Articles</a>
                   </Button>
                 </div>
               )}

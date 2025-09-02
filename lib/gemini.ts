@@ -32,6 +32,7 @@ export interface ArticleTranslation {
 export interface ArticleAnalysis {
   summary: ArticleSummary;
   language: string;
+  category?: string;
   english_translation?: ArticleTranslation;
 }
 
@@ -173,6 +174,8 @@ LANGUAGE: [detected language code]
 
 [English paragraph]
 
+CATEGORY: [Select up to 3 categories from: AI, Crypto, Tech, Data, Startups, Business, Markets, Product, Security, Policy, Science, Media. Separate multiple categories with commas. Base selection on article content analysis.]
+
 ENGLISH_TRANSLATION: [ALWAYS provide this section regardless of original language]
 TITLE: [English translation or original if already in English - NEVER use "Not provided", "Not available", etc.]
 TWEET_TEXT: [English translation or original if already in English - NEVER use "Not provided", "Not available", etc.]
@@ -204,8 +207,9 @@ ${content.substring(0, 8000)}`; // 限制内容长度避免超出API限制
     const languageMatch = text.match(/LANGUAGE:\s*([^\n]+)/i);
     const language = languageMatch ? languageMatch[1].trim() : 'en'; // 默认语言
     
-    // 设置默认分类
-    const category = 'Business';
+    // 解析分类
+    const categoryMatch = text.match(/CATEGORY:\s*([^\n]+)/i);
+    const category = categoryMatch ? categoryMatch[1].trim() : undefined;
 
     // 解析响应，新格式：中文段落在前，英文段落在后
     // 移除LANGUAGE行，然后按段落分割
@@ -330,6 +334,7 @@ ${content.substring(0, 8000)}`; // 限制内容长度避免超出API限制
     return {
       summary,
       language,
+      category,
       english_translation
     };
   } catch (error) {

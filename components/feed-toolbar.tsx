@@ -2,18 +2,27 @@
 
 import { useState } from 'react'
 import { Input } from '@/components/ui/input'
-import { Search } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Search, TrendingUp, Clock, Globe, Languages } from 'lucide-react'
 
 interface FeedToolbarProps {
   onSearchChange: (search: string) => void
   searchValue: string
   isLoading?: boolean
+  sortBy: 'latest' | 'hot'
+  onSortChange: (sort: 'latest' | 'hot') => void
+  language: 'original' | 'english'
+  onLanguageChange: (language: 'original' | 'english') => void
 }
 
 export function FeedToolbar({
   onSearchChange,
   searchValue,
-  isLoading = false
+  isLoading = false,
+  sortBy,
+  onSortChange,
+  language,
+  onLanguageChange
 }: FeedToolbarProps) {
   const [searchInput, setSearchInput] = useState(searchValue)
 
@@ -51,6 +60,46 @@ export function FeedToolbar({
           />
         </div>
       </form>
+      
+      {/* Sort Button */}
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => onSortChange(sortBy === 'latest' ? 'hot' : 'latest')}
+        className="flex items-center gap-2 rounded-full"
+      >
+        {sortBy === 'latest' ? (
+          <>
+            <Clock className="h-4 w-4" />
+            Latest
+          </>
+        ) : (
+          <>
+            <TrendingUp className="h-4 w-4" />
+            Hot
+          </>
+        )}
+      </Button>
+      
+      {/* Language Toggle Button */}
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => onLanguageChange(language === 'original' ? 'english' : 'original')}
+        className="flex items-center gap-2 rounded-full"
+      >
+        {language === 'original' ? (
+          <>
+            <Globe className="h-4 w-4" />
+            Original
+          </>
+        ) : (
+          <>
+            <Languages className="h-4 w-4" />
+            English
+          </>
+        )}
+      </Button>
     </div>
   )
 }

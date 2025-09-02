@@ -21,19 +21,42 @@ export function BookmarkButton({ articleId, variant = 'card', className }: Bookm
   // Check authentication and bookmark status on mount
   useEffect(() => {
     const checkUserAndBookmark = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      setUser(user)
-      
-      if (user) {
-        // Check if article is bookmarked
-        const { data } = await supabase
-          .from('bookmarks')
-          .select('id')
-          .eq('user_id', user.id)
-          .eq('article_id', articleId)
-          .single()
+      try {
+        const { data: { user }, error: userError } = await supabase.auth.getUser()
         
-        setIsBookmarked(!!data)
+        // Always set user state first
+        setUser(user || null)
+        
+        // If no user or error, don't attempt to query bookmarks
+        if (userError || !user) {
+          setIsBookmarked(false)
+          return
+        }
+        
+        // Only query bookmarks if user is authenticated
+        try {
+          const { data, error } = await supabase
+            .from('bookmarks')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('article_id', articleId)
+            .maybeSingle()
+          
+          if (error) {
+            console.error('Error checking bookmark status:', error)
+            setIsBookmarked(false)
+            return
+          }
+          
+          setIsBookmarked(!!data)
+        } catch (bookmarkError) {
+          console.error('Error querying bookmarks:', bookmarkError)
+          setIsBookmarked(false)
+        }
+      } catch (error) {
+        console.error('Error in checkUserAndBookmark:', error)
+        setUser(null)
+        setIsBookmarked(false)
       }
     }
 

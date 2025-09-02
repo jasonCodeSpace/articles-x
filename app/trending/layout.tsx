@@ -5,7 +5,7 @@ interface ProtectedLayoutProps {
   children: React.ReactNode
 }
 
-export default async function NewLayout({
+export default async function TrendingLayout({
   children,
 }: ProtectedLayoutProps) {
   const supabase = await createClient()

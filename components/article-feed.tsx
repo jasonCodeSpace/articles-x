@@ -1,10 +1,12 @@
 'use client'
 
 import dynamic from 'next/dynamic'
+import { useState, useEffect } from 'react'
 import { ArticleCard, Article } from '@/components/article-card'
 import { FeedEmptyState } from '@/components/feed-empty-state'
-import { FeedLoading } from '@/components/feed-loading'
 import { useArticleFeed } from '@/hooks/use-article-feed'
+import { useLanguage } from '@/contexts/language-context'
+import { FeedLoading } from '@/components/feed-loading'
 
 // Dynamic import for non-critical components
 const FeedToolbar = dynamic(() => import('@/components/feed-toolbar').then(mod => ({ default: mod.FeedToolbar })), {
@@ -24,24 +26,33 @@ interface ArticleFeedProps {
 }
 
 export function ArticleFeed({ initialArticles, initialSearchQuery = '' }: ArticleFeedProps) {
+  const [sortBy, setSortBy] = useState<'latest' | 'hot'>('latest')
+  const { language, setLanguage } = useLanguage()
+
+  // Map our sortBy state to useArticleFeed's SortOption
+  const sortOption = sortBy === 'hot' ? 'views_high' : 'newest'
+
   const {
     paginatedArticles,
-    isLoading,
+    isLoading: feedLoading,
     error,
     searchQuery,
     currentPage,
     totalPages,
+    totalItems,
     handleSearch,
+    handleSort,
     handlePageChange,
     clearSearch,
     retry,
-  } = useArticleFeed({
-    initialArticles,
-    initialSearchQuery,
-    itemsPerPage: 9,
-  })
+  } = useArticleFeed({ initialArticles, initialSearchQuery, itemsPerPage: 20 })
 
-  if (isLoading) {
+  // Update useArticleFeed's sort when our sortBy changes
+  useEffect(() => {
+    handleSort(sortOption)
+  }, [sortOption, handleSort])
+
+  if (feedLoading) {
     return <FeedLoading />
   }
 
@@ -51,7 +62,11 @@ export function ArticleFeed({ initialArticles, initialSearchQuery = '' }: Articl
       <FeedToolbar
           onSearchChange={handleSearch}
           searchValue={searchQuery}
-          isLoading={isLoading}
+          isLoading={feedLoading}
+          sortBy={sortBy}
+          onSortChange={setSortBy}
+          language={language === 'en' ? 'english' : 'original'}
+            onLanguageChange={(lang) => setLanguage(lang === 'english' ? 'en' : 'original')}
         />
 
       {/* X.com style feed - single column */}

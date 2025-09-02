@@ -5,7 +5,13 @@ import { Button } from '@/components/ui/button'
 import { ExternalLink, Languages } from 'lucide-react'
 import { BookmarkButton } from '@/components/bookmark-button'
 import Image from 'next/image'
-import AiSummary from '@/components/ai-summary'
+import dynamic from 'next/dynamic'
+
+// Dynamic import for AI Summary component
+const AiSummary = dynamic(() => import('@/components/ai-summary'), {
+  ssr: false,
+  loading: () => <div className="mb-8 p-8 bg-muted/50 rounded-xl border border-border animate-pulse h-32" />
+})
 import { useLanguage } from '@/contexts/language-context'
 import { useRouter } from 'next/navigation'
 
@@ -75,6 +81,8 @@ export function ArticleContent({
                 <AvatarImage 
                   src={avatarUrl} 
                   alt={`${article.author_name} profile picture`}
+                  loading="lazy"
+                  referrerPolicy="no-referrer"
                 />
               ) : null}
               <AvatarFallback className="text-sm font-medium bg-muted text-foreground">

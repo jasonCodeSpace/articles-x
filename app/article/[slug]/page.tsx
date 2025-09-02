@@ -6,7 +6,7 @@ import { ArticleBreadcrumb } from '@/components/article-breadcrumb'
 import { LanguageProvider } from '@/contexts/language-context'
 import { createClient } from '@/lib/supabase/server'
 import { extractArticleIdFromSlug } from '@/lib/url-utils'
-import { formatDistanceToNow } from 'date-fns'
+import { formatDistanceToNow } from '@/lib/date-utils'
 
 interface ArticlePageProps {
   params: Promise<{

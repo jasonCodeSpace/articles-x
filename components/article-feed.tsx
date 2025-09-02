@@ -1,11 +1,21 @@
 'use client'
 
+import dynamic from 'next/dynamic'
 import { ArticleCard, Article } from '@/components/article-card'
 import { FeedEmptyState } from '@/components/feed-empty-state'
 import { FeedLoading } from '@/components/feed-loading'
-import { FeedToolbar } from '@/components/feed-toolbar'
-import { Pagination } from '@/components/pagination'
 import { useArticleFeed } from '@/hooks/use-article-feed'
+
+// Dynamic import for non-critical components
+const FeedToolbar = dynamic(() => import('@/components/feed-toolbar').then(mod => ({ default: mod.FeedToolbar })), {
+  ssr: false,
+  loading: () => <div className="h-16 bg-muted/50 rounded-lg animate-pulse" />
+})
+
+const Pagination = dynamic(() => import('@/components/pagination').then(mod => ({ default: mod.Pagination })), {
+  ssr: false,
+  loading: () => <div className="h-12 bg-muted/50 rounded-lg animate-pulse" />
+})
 
 
 interface ArticleFeedProps {
@@ -37,7 +47,7 @@ export function ArticleFeed({ initialArticles, initialCategories, initialCategor
     initialCategories,
     initialCategory,
     initialSearchQuery,
-    itemsPerPage: 20,
+    itemsPerPage: 9,
   })
 
   if (isLoading) {
@@ -80,7 +90,7 @@ export function ArticleFeed({ initialArticles, initialCategories, initialCategor
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {paginatedArticles.slice(0, 18).map((article: Article, index: number) => (
+            {paginatedArticles.map((article: Article, index: number) => (
               <ArticleCard
                 key={article.id}
                 article={article}

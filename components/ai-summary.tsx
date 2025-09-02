@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { formatDistanceToNow } from 'date-fns'
+import { formatDistanceToNow } from '@/lib/date-utils'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 
 interface AiSummaryProps {

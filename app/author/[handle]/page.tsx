@@ -123,6 +123,8 @@ export default function AuthorPage() {
                   <AvatarImage 
                     src={authorInfo.avatar_url} 
                     alt={`${authorInfo.full_name} profile picture`}
+                    loading="lazy"
+                    referrerPolicy="no-referrer"
                   />
                 ) : null}
                 <AvatarFallback className="text-lg font-medium bg-gray-600 text-white">

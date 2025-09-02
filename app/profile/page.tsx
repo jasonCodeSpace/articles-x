@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Article } from '@/components/article-card'
 import { Calendar, Bookmark, ChevronLeft, ChevronRight } from 'lucide-react'
 import { redirect } from 'next/navigation'
-import { formatDistanceToNow } from 'date-fns'
+import { formatDistanceToNow } from '@/lib/date-utils'
 import Link from 'next/link'
 
 export default async function ProfilePage({
@@ -151,7 +151,12 @@ export default async function ProfilePage({
                 {/* Avatar */}
                 <Avatar className="w-24 h-24 ring-4 ring-primary/20">
                   {user.user_metadata?.avatar_url ? (
-                    <AvatarImage src={user.user_metadata.avatar_url} alt={userDisplayName} />
+                    <AvatarImage 
+                      src={user.user_metadata.avatar_url} 
+                      alt={userDisplayName}
+                      loading="lazy"
+                      referrerPolicy="no-referrer"
+                    />
                   ) : null}
                   <AvatarFallback className="text-2xl font-bold bg-primary text-primary-foreground">
                     {userInitial}

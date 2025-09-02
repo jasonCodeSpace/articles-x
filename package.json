@@ -16,7 +16,12 @@
     "fix:tweet-urls": "tsx scripts/fix-tweet-urls.ts",
     "update-article-tags": "tsx scripts/update-article-tags.ts",
     "re-categorize": "tsx scripts/re-categorize-articles.ts",
-    "test-categorization": "tsx scripts/test-categorization.ts"
+    "test-categorization": "tsx scripts/test-categorization.ts",
+    "lighthouse": "lhci autorun",
+    "lighthouse:collect": "lhci collect",
+    "lighthouse:assert": "lhci assert",
+    "perf:audit": "npm run build && npm run lighthouse",
+    "perf:budget": "node scripts/check-performance-budget.js"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
@@ -34,7 +39,6 @@
     "axios": "^1.11.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "date-fns": "^4.1.0",
     "dotenv": "^17.2.1",
     "framer-motion": "^12.23.12",
     "lucide-react": "^0.540.0",
@@ -46,6 +50,7 @@
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.3.1",
     "tsx": "^4.20.4",
+    "web-vitals": "^5.1.0",
     "zod": "^4.0.17"
   },
   "devDependencies": {
@@ -55,6 +60,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@lhci/cli": "^0.12.0",
     "eslint": "^9",
     "eslint-config-next": "15.4.7",
     "jest": "^30.0.5",

@@ -10,9 +10,14 @@ import {
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu'
 import { Search, Filter, Globe, ChevronDown, Languages } from 'lucide-react'
-import { UnifiedMobileButton } from '@/components/unified-mobile-button'
-
+import dynamic from 'next/dynamic'
 import { useLanguage } from '@/contexts/language-context'
+
+// Dynamic import for mobile button
+const UnifiedMobileButton = dynamic(() => import('@/components/unified-mobile-button').then(mod => ({ default: mod.UnifiedMobileButton })), {
+  ssr: false,
+  loading: () => <div className="h-10 bg-muted/50 rounded-full animate-pulse" />
+})
 
 interface FeedToolbarProps {
   onSearchChange: (search: string) => void

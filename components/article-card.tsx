@@ -3,7 +3,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ExternalLink, Eye, MessageCircle, Repeat2, Heart, Bookmark, Share2, Check } from 'lucide-react'
 import { BookmarkButton } from '@/components/bookmark-button'
-import { formatDistanceToNow } from 'date-fns'
+import { formatDistanceToNow } from '@/lib/date-utils'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
@@ -197,6 +197,8 @@ export function ArticleCard({ article, className, priority = false }: ArticleCar
                 <AvatarImage 
                   src={avatarUrl} 
                   alt={`${article.author_name} profile picture`}
+                  loading="lazy"
+                  referrerPolicy="no-referrer"
                 />
               ) : null}
               <AvatarFallback className="text-xs font-medium bg-muted text-foreground">

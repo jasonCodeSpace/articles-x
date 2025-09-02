@@ -1,0 +1,160 @@
+name: Lighthouse CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Build application
+        run: npm run build
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
+          
+      - name: Install Lighthouse CI
+        run: npm install -g @lhci/cli@0.12.x
+        
+      - name: Run Lighthouse CI
+        run: lhci autorun
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+          
+      - name: Upload Lighthouse reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lighthouse-reports
+          path: lighthouse-reports/
+          retention-days: 30
+          
+      - name: Comment PR with Lighthouse results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            
+            // Read Lighthouse results
+            const reportsDir = './lighthouse-reports';
+            if (fs.existsSync(reportsDir)) {
+              const files = fs.readdirSync(reportsDir);
+              const manifestFile = files.find(f => f.includes('manifest.json'));
+              
+              if (manifestFile) {
+                const manifest = JSON.parse(fs.readFileSync(path.join(reportsDir, manifestFile), 'utf8'));
+                
+                let comment = '## 🚀 Lighthouse CI Results\n\n';
+                
+                manifest.forEach(result => {
+                  const url = result.url;
+                  const summary = result.summary;
+                  
+                  comment += `### ${url}\n`;
+                  comment += `- **Performance**: ${Math.round(summary.performance * 100)}%\n`;
+                  comment += `- **Accessibility**: ${Math.round(summary.accessibility * 100)}%\n`;
+                  comment += `- **Best Practices**: ${Math.round(summary['best-practices'] * 100)}%\n`;
+                  comment += `- **SEO**: ${Math.round(summary.seo * 100)}%\n\n`;
+                });
+                
+                // Post comment
+                github.rest.issues.createComment({
+                  issue_number: context.issue.number,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  body: comment
+                });
+              }
+            }
+            
+  performance-budget:
+    runs-on: ubuntu-latest
+    needs: lighthouse
+    if: always()
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Download Lighthouse reports
+        uses: actions/download-artifact@v4
+        with:
+          name: lighthouse-reports
+          path: lighthouse-reports/
+          
+      - name: Check Performance Budget
+        run: |
+          echo "📊 Checking Performance Budget..."
+          
+          # Check if any performance scores are below threshold
+          if [ -d "lighthouse-reports" ]; then
+            echo "✅ Lighthouse reports found"
+            
+            # Parse results and check against budget
+            node -e "
+              const fs = require('fs');
+              const path = require('path');
+              
+              const reportsDir = './lighthouse-reports';
+              const files = fs.readdirSync(reportsDir);
+              const manifestFile = files.find(f => f.includes('manifest.json'));
+              
+              if (manifestFile) {
+                const manifest = JSON.parse(fs.readFileSync(path.join(reportsDir, manifestFile), 'utf8'));
+                let budgetPassed = true;
+                
+                manifest.forEach(result => {
+                  const summary = result.summary;
+                  const url = result.url;
+                  
+                  console.log('\n📈 Performance Results for:', url);
+                  console.log('Performance:', Math.round(summary.performance * 100) + '%');
+                  console.log('Accessibility:', Math.round(summary.accessibility * 100) + '%');
+                  console.log('Best Practices:', Math.round(summary['best-practices'] * 100) + '%');
+                  console.log('SEO:', Math.round(summary.seo * 100) + '%');
+                  
+                  // Check budget thresholds
+                  if (summary.performance < 0.7) {
+                    console.log('❌ Performance budget failed: ' + Math.round(summary.performance * 100) + '% < 70%');
+                    budgetPassed = false;
+                  }
+                  if (summary.accessibility < 0.9) {
+                    console.log('❌ Accessibility budget failed: ' + Math.round(summary.accessibility * 100) + '% < 90%');
+                    budgetPassed = false;
+                  }
+                });
+                
+                if (budgetPassed) {
+                  console.log('\n✅ All performance budgets passed!');
+                  process.exit(0);
+                } else {
+                  console.log('\n❌ Performance budget check failed!');
+                  process.exit(1);
+                }
+              } else {
+                console.log('❌ No manifest file found');
+                process.exit(1);
+              }
+            "
+          else
+            echo "❌ No lighthouse reports found"
+            exit 1
+          fi

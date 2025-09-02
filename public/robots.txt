@@ -1,34 +1,22 @@
 # Robots.txt for www.xarticle.news
 # This file controls crawling of URLs under https://www.xarticle.news
 
-# Allow all crawlers to access the site
 User-agent: *
+# Allow all content by default
 Allow: /
 
 # Block search result pages and query parameters
-Disallow: /*?s=*
-Disallow: /*?search=*
-Disallow: /*?filter=*
-Disallow: /*?sort=*
+Disallow: /*?s=
+Disallow: /*?search=
+Disallow: /*?filter=
+Disallow: /*?sort=
 
-# Block admin and private areas (if any exist in the future)
+# Block admin and private areas
 Disallow: /admin/
 Disallow: /private/
 Disallow: /api/auth/
-
-# Block development and testing directories
 Disallow: /test/
 Disallow: /dev/
-
-# Allow important files for rendering
-Allow: /*.css$
-Allow: /*.js$
-Allow: /*.png$
-Allow: /*.jpg$
-Allow: /*.jpeg$
-Allow: /*.gif$
-Allow: /*.svg$
-Allow: /*.webp$
 
 # XML Sitemap location
 Sitemap: https://www.xarticle.news/sitemap.xml

@@ -5,11 +5,22 @@ export async function GET() {
   try {
     const supabase = await createClient()
     
-    // Fetch all articles
-    const { data: articles, error } = await supabase
+    // Fetch all articles first, then filter invalid slugs
+    const { data: allArticles, error } = await supabase
       .from('articles')
       .select('slug, article_published_at')
+      .not('slug', 'eq', '')
+      .not('slug', 'is', null)
       .order('article_published_at', { ascending: false })
+    
+    // Filter out invalid slugs (only remove clearly invalid ones)
+    const articles = allArticles?.filter(article => 
+      article.slug && 
+      !article.slug.startsWith('--') && // Remove slugs starting with --
+      !article.slug.startsWith('-') && // Remove slugs starting with single -
+      article.slug.length > 10 && // Ensure minimum length
+      !article.slug.match(/^-+$/) // Remove slugs that are only dashes
+    ) || []
     
     if (error) {
       console.error('Error fetching articles for sitemap:', error)
@@ -26,20 +37,23 @@ export async function GET() {
       console.error('Error fetching categories for sitemap:', categoriesError)
     }
     
-    const categories = [...new Set(categoriesData?.map(item => item.category).filter(Boolean) || [])]
+    // Normalize categories to lowercase and remove duplicates
+    const categories = [...new Set(
+      categoriesData?.map(item => item.category)
+        .filter(Boolean)
+        .map(cat => cat.toLowerCase()) || []
+    )]
     
     const baseUrl = 'https://www.xarticle.news'
     const currentDate = new Date().toISOString()
     
-    // Static pages
+    // Static content pages only (exclude auth pages)
     const staticPages = [
       { url: '', priority: '1.0', changefreq: 'daily' },
       { url: '/new', priority: '0.9', changefreq: 'hourly' },
       { url: '/landing', priority: '0.8', changefreq: 'weekly' },
       { url: '/history', priority: '0.7', changefreq: 'daily' },
-      { url: '/weekly', priority: '0.8', changefreq: 'weekly' },
-      { url: '/login', priority: '0.5', changefreq: 'monthly' },
-      { url: '/register', priority: '0.5', changefreq: 'monthly' }
+      { url: '/weekly', priority: '0.8', changefreq: 'weekly' }
     ]
     
     // Generate XML

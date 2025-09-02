@@ -57,7 +57,8 @@ async function fetchTrendingArticles(options: {
   }
   
   if (options.category && options.category !== 'all' && options.category.trim()) {
-    query = query.eq('category', options.category.trim())
+    // Use ilike to match category within comma-separated values
+    query = query.ilike('category', `%${options.category.trim()}%`)
   }
   
   const { data, error } = await query

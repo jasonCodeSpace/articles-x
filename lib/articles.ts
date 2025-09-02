@@ -48,7 +48,8 @@ export async function fetchArticles(options: FetchArticlesOptions = {}): Promise
     // Apply category filter (server-side) - safe because we ensured this column exists via migration
     // Skip filter if category is "All Category" or "All" to show all articles
     if (category && category.trim() && category.trim() !== 'All Category' && category.trim() !== 'All') {
-      query = query.eq('category', category.trim())
+      // Use ilike to match category within comma-separated values
+      query = query.ilike('category', `%${category.trim()}%`)
     }
 
     // Apply language filter

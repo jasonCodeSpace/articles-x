@@ -35,9 +35,13 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       const uniqueCategories = new Set<string>();
       data?.forEach(article => {
         if (article.category) {
-          // Only take the first category for single tag support
-          const firstCategory = article.category.split(',')[0].trim();
-          uniqueCategories.add(firstCategory);
+          // Split comma-separated categories and add all of them
+          article.category.split(',').forEach((cat: string) => {
+            const trimmedCat = cat.trim();
+            if (trimmedCat) {
+              uniqueCategories.add(trimmedCat);
+            }
+          });
         }
       });
       categories = Array.from(uniqueCategories).sort();

@@ -18,9 +18,13 @@ export async function GET() {
     const uniqueCategories = new Set<string>()
     data?.forEach((article: { category: string }) => {
       if (article.category) {
-        // Only take the first category for single tag support
-        const firstCategory = article.category.split(',')[0].trim()
-        uniqueCategories.add(firstCategory)
+        // Split comma-separated categories and add all of them
+        article.category.split(',').forEach(cat => {
+          const trimmedCat = cat.trim()
+          if (trimmedCat) {
+            uniqueCategories.add(trimmedCat)
+          }
+        })
       }
     })
     

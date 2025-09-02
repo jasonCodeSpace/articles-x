@@ -29,7 +29,12 @@ export default async function ProfilePage({
     .select('category')
     .not('category', 'is', null)
   
-  const categories = [...new Set(categoriesData?.map(item => item.category) || [])]
+  // Split comma-separated categories and flatten
+  const categories = [...new Set(
+    categoriesData?.flatMap(item => 
+      item.category ? item.category.split(',').map((cat: string) => cat.trim()).filter(Boolean) : []
+    ) || []
+  )]
 
   // Pagination logic
   const resolvedSearchParams = await searchParams

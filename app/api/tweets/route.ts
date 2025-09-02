@@ -88,7 +88,7 @@ export async function GET(request: NextRequest) {
 
     const totalPages = Math.ceil((count || 0) / limit)
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       tweets: tweets || [],
       pagination: {
         page,
@@ -107,6 +107,11 @@ export async function GET(request: NextRequest) {
         sortOrder: order,
       },
     })
+    
+    // Add cache control headers for better TTFB
+    response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300')
+    
+    return response
   } catch (error) {
     console.error('Error in tweets API:', error)
     return NextResponse.json(

@@ -85,6 +85,7 @@ export function ArticleFeed({ initialArticles, initialCategories, initialCategor
                 key={article.id}
                 article={article}
                 index={index}
+                priority={index < 6}
               />
             ))}
           </div>

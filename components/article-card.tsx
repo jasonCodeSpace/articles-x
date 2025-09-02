@@ -61,11 +61,12 @@ interface ArticleCardProps {
   article: Article
   className?: string
   index?: number
+  priority?: boolean
 }
 
 
 
-export function ArticleCard({ article, className }: ArticleCardProps) {
+export function ArticleCard({ article, className, priority = false }: ArticleCardProps) {
   const [isShared, setIsShared] = useState(false)
   const { language } = useLanguage()
   
@@ -144,7 +145,8 @@ export function ArticleCard({ article, className }: ArticleCardProps) {
             alt={`Cover for ${article.title}`}
             fill
             className="object-cover transition-transform duration-300 group-hover:scale-105"
-            loading="lazy"
+            priority={priority}
+            loading={priority ? "eager" : "lazy"}
             unoptimized
             referrerPolicy="no-referrer"
           />

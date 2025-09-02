@@ -1,8 +1,25 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/service';
 import { generateArticleAnalysis } from '@/lib/gemini';
 
-export async function POST() {
+const CRON_SECRET = process.env.CRON_SECRET;
+
+export async function POST(request?: NextRequest) {
+  // Verify cron secret for security when called via HTTP
+  if (request) {
+    const authHeader = request.headers.get('authorization');
+    const querySecret = request.nextUrl.searchParams.get('secret');
+    
+    if ((!authHeader || !authHeader.startsWith('Bearer ') || authHeader.slice(7) !== CRON_SECRET) && 
+        querySecret !== CRON_SECRET) {
+      console.error('Unauthorized access attempt to generate-summaries API');
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+  }
+
   try {
     const supabase = createServiceClient();
     
@@ -135,6 +152,6 @@ export async function POST() {
 }
 
 // 支持GET请求用于手动触发
-export async function GET() {
-  return POST();
+export async function GET(request: NextRequest) {
+  return POST(request);
 }

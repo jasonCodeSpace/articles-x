@@ -1,8 +1,9 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
 const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY || '';
 const RAPIDAPI_HOST = 'twitter241.p.rapidapi.com';
+const CRON_SECRET = process.env.CRON_SECRET;
 
 // Twitter list IDs to fetch from
 const TWITTER_LISTS = [
@@ -151,7 +152,20 @@ async function saveTweetsToDatabase(tweets: Array<{
   }
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  // Verify cron secret for security
+  const authHeader = request.headers.get('authorization');
+  const querySecret = request.nextUrl.searchParams.get('secret');
+  
+  if ((!authHeader || !authHeader.startsWith('Bearer ') || authHeader.slice(7) !== CRON_SECRET) && 
+      querySecret !== CRON_SECRET) {
+    console.error('Unauthorized access attempt to fetch-timeline API');
+    return NextResponse.json(
+      { error: 'Unauthorized' },
+      { status: 401 }
+    );
+  }
+
   try {
     let totalTweets = 0;
     let totalArticles = 0;

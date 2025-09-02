@@ -25,6 +25,10 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Preconnect to external image domains for LCP optimization */}
+        <link rel="preconnect" href="https://pbs.twimg.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="//pbs.twimg.com" />
+        
         {/* Google tag (gtag.js) */}
         <script async src="https://www.googletagmanager.com/gtag/js?id=G-2TMVNWYFES"></script>
         <script

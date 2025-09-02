@@ -11,9 +11,9 @@ export const metadata: Metadata = {
   description: 'Stay updated with the latest curated X posts and trending news. Discover current conversations, breaking stories, and insights from leading voices across technology, business, and more.',
 }
 
-// Enable dynamic rendering for search params to handle filter changes
-export const dynamic = 'force-dynamic'
-export const revalidate = 0 // Disable caching for real-time updates
+// Enable ISR for better TTFB performance
+export const dynamic = 'force-static'
+export const revalidate = 60 // Revalidate every 60 seconds for ISR
 
 // Generate static params for both daily and weekly views
 export async function generateStaticParams() {

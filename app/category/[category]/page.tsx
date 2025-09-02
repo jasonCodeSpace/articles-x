@@ -33,8 +33,8 @@ export async function generateStaticParams() {
   }))
 }
 
-export const dynamic = 'force-dynamic'
-export const revalidate = 3600 // Revalidate every hour
+export const dynamic = 'force-static'
+export const revalidate = 120 // Revalidate every 2 minutes for better TTFB
 
 export default async function CategoryPage({ params, searchParams }: PageProps) {
   const { category } = await params

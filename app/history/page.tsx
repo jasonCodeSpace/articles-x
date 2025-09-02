@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 // Enable static generation
 export const dynamic = 'force-static'
-export const revalidate = 3600 // Revalidate every hour
+export const revalidate = 300 // Revalidate every 5 minutes for better TTFB
 
 interface PageProps {
   searchParams: Promise<{ category?: string; search?: string; page?: string }>

@@ -301,7 +301,6 @@ ${content.substring(0, 8000)}`; // 限制内容长度避免超出API限制
       'defi': 'Crypto',
       'nft': 'Crypto',
       'dao': 'Crypto',
-      'trading': 'Markets',
       
       // Tech variations
       'tech': 'Tech',

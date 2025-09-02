@@ -188,7 +188,7 @@ export function ModernNav({ user, categories, className }: ModernNavProps) {
                            localStorage.clear()
                            sessionStorage.clear()
                            
-                           const { error } = await supabase.auth.signOut({ scope: 'global' })
+                           const { error } = await supabase.auth.signOut()
                            if (error) {
                              console.error('Logout error:', error)
                            } else {
@@ -357,10 +357,31 @@ if (item.name === 'Profile') {
                       <DropdownMenuItem asChild>
                          <button 
                            onClick={async () => {
-                             const { createClient } = await import('@/lib/supabase/client')
-                             const supabase = createClient()
-                             await supabase.auth.signOut()
-                             window.location.href = '/login'
+                             try {
+                               console.log('Mobile logout button clicked')
+                               const { createClient } = await import('@/lib/supabase/client')
+                               const supabase = createClient()
+                               
+                               // Clear all local storage and session storage
+                               localStorage.clear()
+                               sessionStorage.clear()
+                               
+                               const { error } = await supabase.auth.signOut()
+                               if (error) {
+                                 console.error('Mobile logout error:', error)
+                               } else {
+                                 console.log('Mobile logout successful')
+                               }
+                               
+                               // Let the auth state change handler in ClientNavWrapper handle the redirect
+                               // to avoid double redirects
+                             } catch (error) {
+                               console.error('Mobile logout failed:', error)
+                               // Clear storage anyway and redirect as fallback
+                               localStorage.clear()
+                               sessionStorage.clear()
+                               window.location.replace('/login')
+                             }
                            }}
                            className="w-full flex items-center justify-start text-popover-foreground hover:bg-accent px-2 py-1.5 text-sm cursor-pointer"
                          >

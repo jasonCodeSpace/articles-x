@@ -1,5 +1,5 @@
 import { Suspense } from 'react'
-import { fetchArticles, getArticleCategories } from '@/lib/articles'
+import { fetchArticles } from '@/lib/articles'
 import { ArticleFeed } from '@/components/article-feed'
 import { FeedLoading } from '@/components/feed-loading'
 import { Metadata } from 'next'
@@ -20,10 +20,7 @@ export default async function HistoryPage({ searchParams }: PageProps) {
   const { category, search } = await searchParams
   
   // Fetch History and Week tagged articles
-  const [articles, categories] = await Promise.all([
-    fetchArticles({ category, search, tags: ['History', 'Week'] }),
-    getArticleCategories()
-  ])
+  const articles = await fetchArticles({ category, search, tags: ['History', 'Week'] })
 
   // Group articles by month for date browsing
   const articlesByMonth = articles.reduce((acc, article) => {
@@ -64,8 +61,6 @@ export default async function HistoryPage({ searchParams }: PageProps) {
           <Suspense fallback={<FeedLoading />}>
             <ArticleFeed 
               initialArticles={articles} 
-              initialCategories={categories}
-              initialCategory={category || 'all'}
               initialSearchQuery={search || ''}
             />
           </Suspense>

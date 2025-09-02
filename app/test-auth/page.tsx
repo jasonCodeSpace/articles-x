@@ -56,8 +56,29 @@ export default function TestAuth() {
           
           <button
             onClick={async () => {
-              await supabase.auth.signOut()
-              window.location.href = '/login'
+              try {
+                console.log('Test auth logout button clicked')
+                
+                // Clear all local storage and session storage
+                localStorage.clear()
+                sessionStorage.clear()
+                
+                const { error } = await supabase.auth.signOut()
+                if (error) {
+                  console.error('Test auth logout error:', error)
+                } else {
+                  console.log('Test auth logout successful')
+                }
+                
+                // Redirect to login
+                window.location.replace('/login')
+              } catch (error) {
+                console.error('Test auth logout failed:', error)
+                // Clear storage anyway and redirect as fallback
+                localStorage.clear()
+                sessionStorage.clear()
+                window.location.replace('/login')
+              }
             }}
             className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
           >

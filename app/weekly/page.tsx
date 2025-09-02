@@ -1,5 +1,4 @@
 import { Suspense } from 'react'
-import { getArticleCategories } from '@/lib/articles'
 import { ArticleFeed } from '@/components/article-feed'
 import { FeedLoading } from '@/components/feed-loading'
 import { createClient } from '@/lib/supabase/server'
@@ -41,7 +40,7 @@ async function fetchWeeklyArticles(options: {
     `)
     .in('tag', tagsToFilter)
     .order('article_published_at', { ascending: false })
-    .limit(10000)
+    .limit(1000)
   
   if (options.search && options.search.trim()) {
     query = query.or(`title.ilike.%${options.search.trim()}%,author_name.ilike.%${options.search.trim()}%,author_handle.ilike.%${options.search.trim()}%`)
@@ -64,11 +63,8 @@ async function fetchWeeklyArticles(options: {
 export default async function WeeklyPage({ searchParams }: PageProps) {
   const { category, search } = await searchParams
   
-  // Fetch Weekly articles (Day and Week tags) and categories
-  const [articles, categories] = await Promise.all([
-    fetchWeeklyArticles({ category, search }),
-    getArticleCategories()
-  ])
+  // Fetch Weekly articles (Day and Week tags)
+  const articles = await fetchWeeklyArticles({ category, search })
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 md:pt-24 pb-6">
@@ -76,8 +72,6 @@ export default async function WeeklyPage({ searchParams }: PageProps) {
         <Suspense fallback={<FeedLoading />}>
           <ArticleFeed 
             initialArticles={articles} 
-            initialCategories={categories}
-            initialCategory={category || 'all'}
             initialSearchQuery={search || ''}
           />
         </Suspense>

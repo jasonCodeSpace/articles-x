@@ -1,5 +1,4 @@
 import { Suspense } from 'react'
-import { getArticleCategories } from '@/lib/articles'
 import { ArticleFeed } from '@/components/article-feed'
 import { FeedLoading } from '@/components/feed-loading'
 import { createClient } from '@/lib/supabase/server'
@@ -57,7 +56,7 @@ async function fetchNewArticles(options: {
     `)
     .in('tag', tagsToFilter)
     .order('article_published_at', { ascending: false })
-    .limit(10000)
+    .limit(1000)
   
   if (options.search && options.search.trim()) {
     query = query.or(`title.ilike.%${options.search.trim()}%,author_name.ilike.%${options.search.trim()}%,author_handle.ilike.%${options.search.trim()}%`)
@@ -80,11 +79,8 @@ async function fetchNewArticles(options: {
 export default async function NewPage({ searchParams }: PageProps) {
   const { category, search, filter } = await searchParams
   
-  // Fetch New articles (Day or Week tags) and categories
-  const [articles, categories] = await Promise.all([
-    fetchNewArticles({ category, search, filter }),
-    getArticleCategories()
-  ])
+  // Fetch New articles (Day or Week tags)
+  const articles = await fetchNewArticles({ category, search, filter })
 
   // Generate JSON-LD structured data for articles
   const structuredData = {
@@ -136,8 +132,6 @@ export default async function NewPage({ searchParams }: PageProps) {
           <Suspense fallback={<FeedLoading />}>
             <ArticleFeed 
               initialArticles={articles} 
-              initialCategories={categories}
-              initialCategory={category || 'all'}
               initialSearchQuery={search || ''}
             />
           </Suspense>

@@ -1,47 +1,21 @@
 'use client'
 
 import { useState } from 'react'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger 
-} from '@/components/ui/dropdown-menu'
-import { Search, Filter, Globe, ChevronDown, Languages } from 'lucide-react'
-import dynamic from 'next/dynamic'
-import { useLanguage } from '@/contexts/language-context'
-
-// Dynamic import for mobile button
-const UnifiedMobileButton = dynamic(() => import('@/components/unified-mobile-button').then(mod => ({ default: mod.UnifiedMobileButton })), {
-  ssr: false,
-  loading: () => <div className="h-10 bg-muted/50 rounded-full animate-pulse" />
-})
+import { Search } from 'lucide-react'
 
 interface FeedToolbarProps {
   onSearchChange: (search: string) => void
-  onCategoryChange: (category: string) => void
-  onLanguageChange: (language: string) => void
-  currentCategory: string
-  currentLanguage: string
   searchValue: string
-  categories?: string[]
   isLoading?: boolean
 }
 
 export function FeedToolbar({
   onSearchChange,
-  onCategoryChange,
-  onLanguageChange,
-  currentCategory,
-  currentLanguage,
   searchValue,
-  categories = [],
   isLoading = false
 }: FeedToolbarProps) {
   const [searchInput, setSearchInput] = useState(searchValue)
-  const { language, setLanguage } = useLanguage()
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -50,34 +24,13 @@ export function FeedToolbar({
 
   const handleSearchChange = (value: string) => {
     setSearchInput(value)
-    // Debounced search - trigger after user stops typing
+    // Debounce search to avoid too many API calls
     const timeoutId = setTimeout(() => {
       onSearchChange(value)
-    }, 500)
-
+    }, 300)
+    
     return () => clearTimeout(timeoutId)
   }
-
-  const languageOptions = [
-    { value: 'all', label: 'All Languages' },
-    { value: 'zh', label: '中文' },
-    { value: 'en', label: 'English' },
-    { value: 'es', label: 'Español' },
-    { value: 'de', label: 'Deutsch' },
-    { value: 'it', label: 'Italiano' },
-    { value: 'ja', label: '日本語' },
-  ]
-
-  // Use standardized categories only
-  const standardCategories = ['Ai', 'Crypto', 'Tech', 'Data', 'Startups', 'Business', 'Markets', 'Product', 'Security', 'Policy', 'Science', 'Media']
-  
-  const categoryOptions = [
-    { value: 'all', label: 'All Categories' },
-    ...standardCategories.map(cat => ({ value: cat.toLowerCase(), label: cat }))
-  ]
-
-  const currentLanguageOption = languageOptions.find(opt => opt.value === currentLanguage) || languageOptions[0]
-  const currentCategoryOption = categoryOptions.find(opt => opt.value === currentCategory) || categoryOptions[0]
 
   return (
     <div className="flex flex-col sm:flex-row gap-3 items-center justify-center p-3 bg-transparent border-b border-gray-700/50">
@@ -98,109 +51,6 @@ export function FeedToolbar({
           />
         </div>
       </form>
-
-      {/* Right side - Filters and Sort */}
-      <div className="flex items-center gap-2 w-full sm:w-auto">
-        {/* Mobile: Unified Button */}
-        <div className="sm:hidden w-full">
-          <UnifiedMobileButton
-          onCategoryChange={onCategoryChange}
-          onLanguageChange={onLanguageChange}
-          currentCategory={currentCategory}
-          currentLanguage={currentLanguage}
-          categories={categories}
-          isLoading={isLoading}
-        />
-        </div>
-
-        {/* Desktop: Separate Buttons */}
-        <div className="hidden sm:flex items-center gap-2">
-          {/* Category Filter */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button 
-                variant="outline" 
-                className="gap-2 rounded-full text-sm"
-                disabled={isLoading}
-              >
-                <Filter className="h-4 w-4" />
-                <span className="truncate">{currentCategoryOption.label}</span>
-                <ChevronDown className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-[200px] max-h-[300px] overflow-y-auto p-1 rounded-xl">
-              <div className="flex flex-col gap-0.5">
-                {categoryOptions.map((option) => (
-                  <DropdownMenuItem
-                    key={option.value}
-                    onClick={() => onCategoryChange(option.value)}
-                    className={`cursor-pointer text-sm px-3 py-2 rounded-lg transition-colors ${
-                      currentCategory === option.value ? 'bg-accent text-accent-foreground font-medium' : 'hover:bg-accent/50'
-                    }`}
-                  >
-                    {option.label}
-                  </DropdownMenuItem>
-                ))}
-              </div>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          {/* Language Toggle */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button 
-                variant="outline" 
-                className="gap-2 rounded-full text-sm"
-                disabled={isLoading}
-              >
-                <Languages className="h-4 w-4" />
-                <span className="truncate">{language === 'en' ? 'English' : 'Original'}</span>
-                <ChevronDown className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-32 rounded-xl">
-              <DropdownMenuItem
-                onClick={() => setLanguage('original')}
-                className={`rounded-lg cursor-pointer ${language === 'original' ? 'bg-accent text-accent-foreground font-medium' : 'hover:bg-accent/50'}`}
-              >
-                Original
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => setLanguage('en')}
-                className={`rounded-lg cursor-pointer ${language === 'en' ? 'bg-accent text-accent-foreground font-medium' : 'hover:bg-accent/50'}`}
-              >
-                English
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          {/* Language Filter */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button 
-                variant="outline" 
-                className="gap-2 rounded-full text-sm"
-                disabled={isLoading}
-              >
-                <Globe className="h-4 w-4" />
-                <span className="truncate">{currentLanguageOption.label}</span>
-                <ChevronDown className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48 rounded-xl">
-              {languageOptions.map((option) => (
-                <DropdownMenuItem
-                  key={option.value}
-                  onClick={() => onLanguageChange(option.value)}
-                  className={`rounded-lg ${currentLanguage === option.value ? 'bg-accent' : ''}`}
-                >
-                  {option.label}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </div>
     </div>
   )
 }

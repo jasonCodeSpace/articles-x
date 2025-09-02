@@ -1,5 +1,5 @@
 import { Suspense } from 'react'
-import { fetchArticles, getArticleCategories } from '@/lib/articles'
+import { fetchArticles } from '@/lib/articles'
 import { ArticleFeed } from '@/components/article-feed'
 import { FeedLoading } from '@/components/feed-loading'
 import { Metadata } from 'next'
@@ -41,16 +41,8 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
   const { search } = await searchParams
   const decodedCategory = decodeURIComponent(category)
   
-  // Fetch articles for this category and all categories
-  const [articles, allCategories] = await Promise.all([
-    fetchArticles({ category: decodedCategory, search }),
-    getArticleCategories()
-  ])
-  
-  // Check if category exists
-  if (!allCategories.includes(decodedCategory)) {
-    notFound()
-  }
+  // Fetch articles for this category
+  const articles = await fetchArticles({ category: decodedCategory, search })
   
 
   
@@ -128,8 +120,6 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
             <Suspense fallback={<FeedLoading />}>
               <ArticleFeed 
                 initialArticles={articles} 
-                initialCategories={allCategories}
-                initialCategory={decodedCategory}
                 initialSearchQuery={search || ''}
               />
             </Suspense>

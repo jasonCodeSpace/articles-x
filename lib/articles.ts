@@ -18,7 +18,7 @@ export interface FetchArticlesOptions {
  */
 export async function fetchArticles(options: FetchArticlesOptions = {}): Promise<Article[]> {
   const {
-    limit = 10000, // Increase limit to fetch all articles (2000+ articles)
+    limit = 1000, // Reduced limit to prevent timeouts
     sort = 'newest',
     search,
     category,

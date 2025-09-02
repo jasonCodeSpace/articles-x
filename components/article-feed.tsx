@@ -20,32 +20,23 @@ const Pagination = dynamic(() => import('@/components/pagination').then(mod => (
 
 interface ArticleFeedProps {
   initialArticles: Article[]
-  initialCategories: string[]
-  initialCategory?: string
   initialSearchQuery?: string
 }
 
-export function ArticleFeed({ initialArticles, initialCategories, initialCategory = 'all', initialSearchQuery = '' }: ArticleFeedProps) {
+export function ArticleFeed({ initialArticles, initialSearchQuery = '' }: ArticleFeedProps) {
   const {
     paginatedArticles,
     isLoading,
     error,
     searchQuery,
-    selectedCategory,
-    selectedLanguage,
-    categories,
     currentPage,
     totalPages,
     handleSearch,
-    handleCategoryChange,
-    handleLanguageChange,
     handlePageChange,
     clearSearch,
     retry,
   } = useArticleFeed({
     initialArticles,
-    initialCategories,
-    initialCategory,
     initialSearchQuery,
     itemsPerPage: 9,
   })
@@ -59,12 +50,7 @@ export function ArticleFeed({ initialArticles, initialCategories, initialCategor
       {/* Feed Toolbar */}
       <FeedToolbar
           onSearchChange={handleSearch}
-          onCategoryChange={handleCategoryChange}
-          onLanguageChange={handleLanguageChange}
-          currentCategory={selectedCategory}
-          currentLanguage={selectedLanguage}
           searchValue={searchQuery}
-          categories={categories}
           isLoading={isLoading}
         />
 

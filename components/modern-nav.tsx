@@ -184,19 +184,26 @@ export function ModernNav({ user, categories, className }: ModernNavProps) {
                            const { createClient } = await import('@/lib/supabase/client')
                            const supabase = createClient()
                            
-                           // Clear all local storage and session storage
+                           // Clear all local storage and session storage first
                            localStorage.clear()
                            sessionStorage.clear()
                            
-                           const { error } = await supabase.auth.signOut()
-                           if (error) {
-                             console.error('Logout error:', error)
-                           } else {
+                           // Try to sign out with timeout
+                           const signOutPromise = supabase.auth.signOut({ scope: 'local' })
+                           const timeoutPromise = new Promise((_, reject) => 
+                             setTimeout(() => reject(new Error('Timeout')), 5000)
+                           )
+                           
+                           try {
+                             await Promise.race([signOutPromise, timeoutPromise])
                              console.log('Logout successful')
+                           } catch (signOutError) {
+                             console.warn('Sign out request failed or timed out:', signOutError)
+                             // Continue with local logout
                            }
                            
-                           // Let the auth state change handler in ClientNavWrapper handle the redirect
-                           // to avoid double redirects
+                           // Force redirect regardless of sign out result
+                           window.location.replace('/login')
                          } catch (error) {
                            console.error('Logout failed:', error)
                            // Clear storage anyway and redirect as fallback
@@ -362,19 +369,26 @@ if (item.name === 'Profile') {
                                const { createClient } = await import('@/lib/supabase/client')
                                const supabase = createClient()
                                
-                               // Clear all local storage and session storage
+                               // Clear all local storage and session storage first
                                localStorage.clear()
                                sessionStorage.clear()
                                
-                               const { error } = await supabase.auth.signOut()
-                               if (error) {
-                                 console.error('Mobile logout error:', error)
-                               } else {
+                               // Try to sign out with timeout
+                               const signOutPromise = supabase.auth.signOut({ scope: 'local' })
+                               const timeoutPromise = new Promise((_, reject) => 
+                                 setTimeout(() => reject(new Error('Timeout')), 5000)
+                               )
+                               
+                               try {
+                                 await Promise.race([signOutPromise, timeoutPromise])
                                  console.log('Mobile logout successful')
+                               } catch (signOutError) {
+                                 console.warn('Mobile sign out request failed or timed out:', signOutError)
+                                 // Continue with local logout
                                }
                                
-                               // Let the auth state change handler in ClientNavWrapper handle the redirect
-                               // to avoid double redirects
+                               // Force redirect regardless of sign out result
+                               window.location.replace('/login')
                              } catch (error) {
                                console.error('Mobile logout failed:', error)
                                // Clear storage anyway and redirect as fallback

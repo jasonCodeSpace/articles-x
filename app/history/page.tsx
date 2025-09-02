@@ -19,8 +19,8 @@ interface PageProps {
 export default async function HistoryPage({ searchParams }: PageProps) {
   const { category, search } = await searchParams
   
-  // Fetch History and Week tagged articles
-  const articles = await fetchArticles({ category, search, tags: ['History', 'Week'] })
+  // Fetch History and Week tagged articles with reduced limit to prevent timeout
+  const articles = await fetchArticles({ category, search, tags: ['History', 'Week'], limit: 500 })
 
   // Group articles by month for date browsing
   const articlesByMonth = articles.reduce((acc, article) => {
@@ -54,10 +54,6 @@ export default async function HistoryPage({ searchParams }: PageProps) {
         
         {/* All Articles Feed */}
         <div className="space-y-4">
-          <h2 className="text-2xl md:text-3xl font-bold text-foreground border-b border-border pb-2 text-center">
-            All Archive Articles
-          </h2>
-          
           <Suspense fallback={<FeedLoading />}>
             <ArticleFeed 
               initialArticles={articles} 

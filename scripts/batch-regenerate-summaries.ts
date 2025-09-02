@@ -92,7 +92,6 @@ async function batchRegenerateSummaries() {
             summary_chinese: analysis.summary.chinese,
             summary_english: analysis.summary.english,
             summary_generated_at: new Date().toISOString(),
-            category: analysis.category,
             language: analysis.language,
             title_english: analysis.english_translation?.title || article.title,
             article_preview_text_english: cleanTranslation(
@@ -107,7 +106,7 @@ async function batchRegenerateSummaries() {
             updateData
           })
           
-          console.log(`✅ Generated summary for: ${article.title} (${analysis.category}, ${analysis.language})`)
+          console.log(`✅ Generated summary for: ${article.title} (${analysis.language})`)
           
           // 短暂延迟避免API限制
           await new Promise(resolve => setTimeout(resolve, 500))

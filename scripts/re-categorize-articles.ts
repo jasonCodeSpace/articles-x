@@ -74,13 +74,11 @@ async function recategorizeArticles() {
       
       console.log(`   🤖 AI Analysis:`)
       console.log(`      Language: ${analysis.language}`)
-      console.log(`      Category: ${analysis.category}`)
       
-      // Update article with new category and language
+      // Update article with language
       const { error: updateError } = await supabase
         .from('articles')
         .update({
-          category: analysis.category,
           language: analysis.language,
           // Also update summaries if available
           summary_chinese: analysis.summary.chinese,
@@ -99,7 +97,7 @@ async function recategorizeArticles() {
         console.error(`   ❌ Error updating article ${article.id}:`, updateError)
         errors++
       } else {
-        console.log(`   ✅ Updated: ${article.category} → ${analysis.category}`)
+        console.log(`   ✅ Updated language: ${analysis.language}`)
         updated++
       }
       
@@ -141,7 +139,7 @@ async function main() {
       'Bitcoin Market Update'
     )
     console.log('✅ Gemini API connection successful')
-    console.log(`   Test result - Language: ${testAnalysis.language}, Category: ${testAnalysis.category}`)
+    console.log(`   Test result - Language: ${testAnalysis.language}`)
     
     await recategorizeArticles()
     console.log('\n🎉 Article re-categorization completed!')

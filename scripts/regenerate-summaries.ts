@@ -87,7 +87,6 @@ async function regenerateSummaries() {
           summary_chinese: string;
           summary_english: string;
           summary_generated_at: string;
-          category: string;
           language: string;
           title_english?: string;
           article_preview_text_english?: string;
@@ -96,7 +95,6 @@ async function regenerateSummaries() {
           summary_chinese: analysis.summary.chinese,
           summary_english: analysis.summary.english,
           summary_generated_at: new Date().toISOString(),
-          category: analysis.category,
           language: analysis.language
         }
 
@@ -147,7 +145,7 @@ async function regenerateSummaries() {
         } else {
           successCount++
           console.log(`✅ Successfully regenerated summary for: ${article.title}`)
-          console.log(`   Category: ${analysis.category}, Language: ${analysis.language}`)
+          console.log(`   Language: ${analysis.language}`)
         }
         
         // 添加延迟避免API限制

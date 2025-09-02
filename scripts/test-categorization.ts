@@ -48,15 +48,10 @@ async function testCategorization() {
       
       const analysis = await generateArticleAnalysis(testCase.content, testCase.title)
       
-      console.log(`   AI Result: ${analysis.category}`)
       console.log(`   Language: ${analysis.language}`)
       
-      if (analysis.category === testCase.expected) {
-        console.log(`   ✅ CORRECT\n`)
-        correct++
-      } else {
-        console.log(`   ❌ INCORRECT - Expected ${testCase.expected}, got ${analysis.category}\n`)
-      }
+      // Note: Category field has been removed from analysis
+      console.log(`   ⚠️  Category testing disabled - field removed from analysis\n`)
       
       // Wait to respect API limits
       await new Promise(resolve => setTimeout(resolve, 2000))

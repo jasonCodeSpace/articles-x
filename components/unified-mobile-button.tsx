@@ -51,18 +51,12 @@ export function UnifiedMobileButton({
     { value: 'ja', label: '日本語' },
   ]
 
+  // Use standardized categories only
+  const standardCategories = ['Ai', 'Crypto', 'Tech', 'Data', 'Startups', 'Business', 'Markets', 'Product', 'Security', 'Policy', 'Science', 'Media']
+  
   const categoryOptions = [
     { value: 'all', label: 'All Categories' },
-    { value: 'TECHNOLOGY', label: 'Technology' },
-    { value: 'BUSINESS', label: 'Business' },
-    { value: 'POLITICS', label: 'Politics' },
-    { value: 'CRYPTO', label: 'Crypto & Blockchain' },
-    { value: 'ENTERTAINMENT', label: 'Entertainment' },
-    { value: 'AI', label: 'AI & Machine Learning' },
-    { value: 'EDUCATION', label: 'Education' },
-    { value: 'SPORTS', label: 'Sports' },
-    { value: 'HISTORY', label: 'History' },
-    { value: 'POLITICS & SOCIETY', label: 'Politics & Society' }
+    ...standardCategories.map(cat => ({ value: cat.toLowerCase(), label: cat }))
   ]
 
 

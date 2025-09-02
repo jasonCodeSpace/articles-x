@@ -68,9 +68,12 @@ export function FeedToolbar({
     { value: 'ja', label: '日本語' },
   ]
 
+  // Use standardized categories only
+  const standardCategories = ['Ai', 'Crypto', 'Tech', 'Data', 'Startups', 'Business', 'Markets', 'Product', 'Security', 'Policy', 'Science', 'Media']
+  
   const categoryOptions = [
     { value: 'all', label: 'All Categories' },
-    ...categories.map(cat => ({ value: cat, label: cat }))
+    ...standardCategories.map(cat => ({ value: cat.toLowerCase(), label: cat }))
   ]
 
   const currentLanguageOption = languageOptions.find(opt => opt.value === currentLanguage) || languageOptions[0]

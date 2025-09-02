@@ -145,26 +145,8 @@ CATEGORY TASK:
 Select ONE category that best fits this article from the following list. 
 IMPORTANT: Output EXACTLY as written below with proper capitalization (first letter uppercase, rest lowercase).
 
-CRYPTOCURRENCY & BLOCKCHAIN (choose most specific):
-Bitcoin, Ethereum, Solana, Defi, Memecoin, Trading, Mining, Wallet, Nft, Dao
-
-TECHNOLOGY & INNOVATION:
-Software, Hardware, Ai, Startup, Fintech, Biotech, Space
-
-POLITICS & SOCIETY:
-Politics, Elections, Policy, International, Security, Education, Culture
-
-BUSINESS & ECONOMICS:
-Business, Economics, Markets, Investment, Banking, Energy, Real-estate
-
-LIFESTYLE & ENTERTAINMENT:
-Gaming, Sports, Health, Travel, Food, Art, Music, Fashion
-
-MEDIA & COMMUNICATION:
-Social-media, Journalism, Publishing, Broadcasting, Marketing
-
-SCIENCE & RESEARCH:
-Science, Research, Medicine, Climate, Environment, Physics
+AVAILABLE CATEGORIES (choose the most specific one):
+Ai, Crypto, Tech, Data, Startups, Business, Markets, Product, Security, Policy, Science, Media
 
 CLASSIFICATION GUIDELINES:
 CRITICAL: Read the FULL ARTICLE CONTENT, not just the title. Base categorization on the PRIMARY TOPIC discussed in the content.
@@ -175,54 +157,19 @@ STEP-BY-STEP PROCESS:
 3. Match it to the most specific category below
 4. Double-check your choice makes sense
 
-CRYPTOCURRENCY & BLOCKCHAIN:
-- Bitcoin: Bitcoin price, BTC analysis, Bitcoin adoption, Bitcoin ETFs
-- Ethereum: Ethereum updates, ETH price, gas fees, Ethereum ecosystem
-- Solana: Solana ecosystem, SOL token, Solana projects
-- Defi: DeFi protocols, yield farming, lending platforms, DEX, stablecoins
-- Memecoin: Memecoins, DOGE, SHIB, pump.fun, dog coins
-- Trading: Crypto trading strategies, market analysis, exchanges
-- Mining: Bitcoin mining, miners, hashrate, mining equipment
-- Wallet: Crypto wallets, wallet security, self-custody
-- Nft: NFT collections, digital art, NFT marketplaces
-- Dao: DAOs, governance tokens, decentralized governance
-
-TECHNOLOGY & INNOVATION:
-- Software: Software companies, apps, SaaS platforms, programming
-- Hardware: Physical devices, chips, phones, cars, electronics
-- Ai: AI/ML, ChatGPT, LLMs, machine learning, artificial intelligence
-- Startup: New companies, funding rounds, venture capital
-- Fintech: Financial technology, digital payments, banking apps
-- Space: Space exploration, rockets, satellites, aerospace
-- Biotech: Biotechnology, medical technology, pharmaceuticals
-
-POLITICS & SOCIETY:
-- Politics: Government actions, politicians, domestic politics
-- Elections: Voting, campaigns, candidates, election results
-- Policy: Public policy, regulations, laws, legislation
-- International: International relations, wars, conflicts, diplomacy, global events
-- Security: National security, military, defense, cybersecurity
-- Education: Schools, universities, learning, academic research
-- Culture: Arts, traditions, cultural events, social movements
-
-BUSINESS & ECONOMICS:
-- Business: Company news, corporate earnings, business strategies
-- Economics: Economic indicators, inflation, GDP, economic analysis
-- Markets: Stock markets, financial markets, trading, Wall Street
-- Investment: Investment strategies, funds, asset management
-- Banking: Banking sector, loans, financial institutions
-- Energy: Oil, gas, renewable energy, energy companies
-- Real-estate: Property markets, housing, real estate investment
-
-LIFESTYLE & ENTERTAINMENT:
-- Gaming: Video games, esports, gaming platforms, game development
-- Sports: Sports events, athletes, sports business, competitions
-- Health: Healthcare, medical advice, wellness, fitness
-- Travel: Tourism, travel guides, transportation
-- Food: Restaurants, cooking, food industry, nutrition
-- Art: Visual arts, artists, galleries, creative works
-- Music: Musicians, music industry, concerts, audio
-- Fashion: Fashion industry, clothing, style, designers
+CATEGORY DEFINITIONS:
+- Ai: AI/ML, ChatGPT, LLMs, machine learning, artificial intelligence, neural networks, deep learning
+- Crypto: All cryptocurrency, blockchain, Bitcoin, Ethereum, DeFi, NFTs, trading, mining, wallets
+- Tech: Software, hardware, apps, SaaS platforms, programming, devices, electronics, space tech
+- Data: Data science, analytics, databases, data processing, big data, data visualization
+- Startups: New companies, funding rounds, venture capital, entrepreneurship, startup ecosystem
+- Business: Corporate news, earnings, business strategies, company operations, mergers, acquisitions
+- Markets: Stock markets, financial markets, trading, Wall Street, investment strategies, funds
+- Product: Product development, design, UX/UI, product management, launches, features
+- Security: Cybersecurity, national security, military, defense, privacy, data protection
+- Policy: Government policy, regulations, laws, legislation, public policy, governance
+- Science: Scientific research, medicine, healthcare, biotechnology, physics, chemistry, environment
+- Media: Journalism, publishing, broadcasting, social media, marketing, content creation
 
 CRITICAL EXAMPLES:
 - "Massacres in Palestine" → International (international conflict/war)
@@ -237,14 +184,16 @@ NEVER categorize historical events, wars, or conflicts as "Software" unless they
 
 ROLE
 TTS-ready summarizer. Output EXACTLY two paragraphs: first Chinese, then English.
-No headings or labels. 不要出现"总结"二字。
+NO headings, labels, markers, asterisks, or format indicators of ANY kind.
+Do NOT use "总结", "概要", "Summary", "Chinese", "English", "Paragraph" or any similar words.
 
 TASK
 Read ARTICLE. Write an ultra-concise, natural, read-aloud description for someone who hasn't read it.
 Maximize information density. Do NOT omit key facts, names, dates, or numbers. Do NOT invent.
 
 OUTPUT
-Two SINGLE coherent paragraphs (Chinese → English). Neutral tone. Short sentences.
+Two SINGLE coherent paragraphs ONLY (Chinese → English). Neutral tone. Short sentences.
+Start directly with content - NO format markers or labels.
 
 TTS RULES
 - Numbers in words, not digits.
@@ -329,61 +278,12 @@ ${content.substring(0, 8000)}`; // 限制内容长度避免超出API限制
     
     // 定义有效分类列表
     const validCategories = [
-      // Crypto & Blockchain
-      'Bitcoin', 'Ethereum', 'Solana', 'Defi', 'Memecoin', 'Trading', 'Mining', 'Wallet', 'Nft', 'Dao',
-      // Technology & Innovation  
-      'Software', 'Hardware', 'Ai', 'Startup', 'Fintech', 'Biotech', 'Space',
-      // Politics & Society
-      'Politics', 'Elections', 'Policy', 'International', 'Security', 'Education', 'Culture',
-      // Business & Economics
-      'Business', 'Economics', 'Markets', 'Investment', 'Banking', 'Energy', 'Real-estate',
-      // Lifestyle & Entertainment
-      'Gaming', 'Sports', 'Health', 'Travel', 'Food', 'Art', 'Music', 'Fashion',
-      // Media & Communication
-      'Social-media', 'Journalism', 'Publishing', 'Broadcasting', 'Marketing',
-      // Science & Research
-      'Science', 'Research', 'Medicine', 'Climate', 'Environment', 'Physics'
+      'Ai', 'Crypto', 'Tech', 'Data', 'Startups', 'Business', 'Markets', 
+      'Product', 'Security', 'Policy', 'Science', 'Media'
     ];
     
     // 分类映射表 - 将常见的错误分类映射到正确的分类
     const categoryMappings: { [key: string]: string } = {
-      // Technology variations
-      'tech': 'Software',
-      'technology': 'Software', 
-      'TECH': 'Software',
-      'TECHNOLOGY': 'Software',
-      'Tech': 'Software',
-      
-      // Crypto variations
-      'crypto': 'Bitcoin',
-      'CRYPTO': 'Bitcoin',
-      'Crypto': 'Bitcoin',
-      'cryptocurrency': 'Bitcoin',
-      'blockchain': 'Bitcoin',
-      'BLOCKCHAIN': 'Bitcoin',
-      'Blockchain': 'Bitcoin',
-      
-      // Politics variations
-      'political': 'Politics',
-      'POLITICS': 'Politics',
-      'politics': 'Politics',
-      
-      // Business variations
-      'BUSINESS': 'Business',
-      'business': 'Business',
-      
-      // Sports variations
-      'SPORTS': 'Sports',
-      'sports': 'Sports',
-      'sport': 'Sports',
-      'SPORT': 'Sports',
-      
-      // Gaming variations
-      'GAMING': 'Gaming',
-      'gaming': 'Gaming',
-      'games': 'Gaming',
-      'GAMES': 'Gaming',
-      
       // AI variations
       'AI': 'Ai',
       'ai': 'Ai',
@@ -391,16 +291,86 @@ ${content.substring(0, 8000)}`; // 限制内容长度避免超出API限制
       'machine learning': 'Ai',
       'ML': 'Ai',
       
-      // DeFi variations
-      'defi': 'Defi',
-      'DEFI': 'Defi',
-      'DeFi': 'Defi',
+      // Crypto variations
+      'crypto': 'Crypto',
+      'CRYPTO': 'Crypto',
+      'cryptocurrency': 'Crypto',
+      'blockchain': 'Crypto',
+      'bitcoin': 'Crypto',
+      'ethereum': 'Crypto',
+      'defi': 'Crypto',
+      'nft': 'Crypto',
+      'dao': 'Crypto',
+      'trading': 'Markets',
       
-      // NFT variations
-      'nft': 'Nft',
-      'NFT': 'Nft',
-      'nfts': 'Nft',
-      'NFTS': 'Nft',
+      // Tech variations
+      'tech': 'Tech',
+      'technology': 'Tech',
+      'software': 'Tech',
+      'hardware': 'Tech',
+      'programming': 'Tech',
+      
+      // Business variations
+      'BUSINESS': 'Business',
+      'business': 'Business',
+      'corporate': 'Business',
+      'company': 'Business',
+      
+      // Startups variations
+      'startup': 'Startups',
+      'STARTUP': 'Startups',
+      'venture': 'Startups',
+      'funding': 'Startups',
+      
+      // Markets variations
+      'markets': 'Markets',
+      'finance': 'Markets',
+      'investment': 'Markets',
+      'trading': 'Markets',
+      'stocks': 'Markets',
+      
+      // Media variations
+      'media': 'Media',
+      'journalism': 'Media',
+      'social media': 'Media',
+      'publishing': 'Media',
+      'broadcasting': 'Media',
+      
+      // Policy variations
+      'policy': 'Policy',
+      'politics': 'Policy',
+      'government': 'Policy',
+      'regulation': 'Policy',
+      'international': 'Policy',
+      'elections': 'Policy',
+      
+      // Security variations
+      'security': 'Security',
+      'cybersecurity': 'Security',
+      'privacy': 'Security',
+      'defense': 'Security',
+      
+      // Science variations
+      'science': 'Science',
+      'research': 'Science',
+      'medicine': 'Science',
+      'health': 'Science',
+      'biotech': 'Science',
+      'physics': 'Science',
+      'chemistry': 'Science',
+      'environment': 'Science',
+      
+      // Data variations
+      'data': 'Data',
+      'analytics': 'Data',
+      'database': 'Data',
+      'big data': 'Data',
+      
+      // Product variations
+      'product': 'Product',
+      'design': 'Product',
+      'ux': 'Product',
+      'ui': 'Product'
     };
     
     // 修正分类
@@ -420,8 +390,17 @@ ${content.substring(0, 8000)}`; // 限制内容长度避免超出API限制
       .replace(/\*\*中文概要:\*\*/gi, '')
       .replace(/\*\*Chinese Paragraph:\*\*/gi, '')
       .replace(/\*\*中文概要：\*\*/gi, '')
+      .replace(/\*\*Chinese Summary:\*\*/gi, '')
+      .replace(/\*\*中文总结段落:\*\*/gi, '')
+      .replace(/\*\*English Summary:\*\*/gi, '')
+      .replace(/\*\*英文总结:\*\*/gi, '')
       .replace(/中文概要:/gi, '')
       .replace(/Chinese Paragraph:/gi, '')
+      .replace(/Chinese Summary:/gi, '')
+      .replace(/中文总结段落:/gi, '')
+      .replace(/English Summary:/gi, '')
+      .replace(/English paragraph:/gi, '')
+      .replace(/英文总结:/gi, '')
       .replace(/\*\*/g, '') // 移除所有星号
       .trim();
     

@@ -17,7 +17,9 @@ export async function middleware(request: NextRequest) {
                        pathname.startsWith('/test-articles')
   const isPublicFile = pathname.startsWith('/_next') ||
                        pathname.startsWith('/favicon.ico') ||
-                       pathname.startsWith('/api')
+                       pathname.startsWith('/api') ||
+                       pathname === '/robots.txt' ||
+                       pathname === '/sitemap.xml'
   
   // Check if it's a shared article link (has referrer from external source)
   const referrer = request.headers.get('referer')

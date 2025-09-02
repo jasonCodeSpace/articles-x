@@ -1,0 +1,34 @@
+# Robots.txt for articles-x.vercel.app
+# This file controls crawling of URLs under https://articles-x.vercel.app
+
+# Allow all crawlers to access the site
+User-agent: *
+Allow: /
+
+# Block search result pages and query parameters
+Disallow: /*?s=*
+Disallow: /*?search=*
+Disallow: /*?filter=*
+Disallow: /*?sort=*
+
+# Block admin and private areas (if any exist in the future)
+Disallow: /admin/
+Disallow: /private/
+Disallow: /api/auth/
+
+# Block development and testing directories
+Disallow: /test/
+Disallow: /dev/
+
+# Allow important files for rendering
+Allow: /*.css$
+Allow: /*.js$
+Allow: /*.png$
+Allow: /*.jpg$
+Allow: /*.jpeg$
+Allow: /*.gif$
+Allow: /*.svg$
+Allow: /*.webp$
+
+# XML Sitemap location
+Sitemap: https://articles-x.vercel.app/sitemap.xml

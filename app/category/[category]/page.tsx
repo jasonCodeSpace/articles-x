@@ -52,10 +52,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
     notFound()
   }
   
-  // Get related categories (similar or commonly paired categories)
-  const relatedCategories = allCategories
-    .filter(cat => cat !== decodedCategory)
-    .slice(0, 8)
+
   
   // Generate JSON-LD structured data for category page
   const structuredData = {
@@ -137,36 +134,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
               />
             </Suspense>
           </div>
-          
-          {/* Related Categories */}
-          {relatedCategories.length > 0 && (
-            <div className="mt-12 space-y-6">
-              <h2 className="text-2xl md:text-3xl font-bold text-foreground border-b border-border pb-2">
-                Related Categories
-              </h2>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                {relatedCategories.map((cat) => (
-                  <Link 
-                    key={cat} 
-                    href={`/category/${encodeURIComponent(cat)}`}
-                    className="p-3 bg-primary/10 text-primary rounded-lg text-center hover:bg-primary/20 transition-colors block"
-                  >
-                    <span className="text-sm font-medium">{cat}</span>
-                  </Link>
-                ))}
-              </div>
-              
-              {/* Link back to main categories */}
-              <div className="text-center mt-8">
-                <Link 
-                  href="/new" 
-                  className="inline-flex items-center px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium"
-                >
-                  Browse All Categories
-                </Link>
-              </div>
-            </div>
-          )}
+
         </div>
       </div>
     </>

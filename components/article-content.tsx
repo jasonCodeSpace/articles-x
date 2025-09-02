@@ -107,7 +107,7 @@ export function ArticleContent({
               onClick={toggleLanguage}
             >
               <Languages className="h-4 w-4" />
-              <span>{language === 'en' ? '中文' : 'English'}</span>
+              <span>{language === 'en' ? 'Original' : 'English'}</span>
             </Button>
           </div>
         </div>

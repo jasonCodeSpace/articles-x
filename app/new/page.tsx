@@ -141,20 +141,6 @@ export default async function NewPage({ searchParams }: PageProps) {
               initialSearchQuery={search || ''}
             />
           </Suspense>
-          
-          {/* Tags Section */}
-          <div className="mt-12 space-y-4">
-            <h2 className="text-2xl md:text-3xl font-bold text-foreground border-b border-border pb-2">
-              Popular Tags
-            </h2>
-            <div className="flex flex-wrap gap-2">
-              {categories.slice(0, 15).map((cat) => (
-                <span key={cat} className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm font-medium">
-                  {cat}
-                </span>
-              ))}
-            </div>
-          </div>
         </div>
       </div>
     </>

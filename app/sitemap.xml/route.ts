@@ -70,11 +70,12 @@ export async function GET() {
       console.error('Error fetching categories for sitemap:', categoriesError)
     }
     
-    // Normalize categories to lowercase and remove duplicates
+    // Split comma-separated categories and normalize to lowercase, remove duplicates
     const categories = [...new Set(
       categoriesData?.map(item => item.category)
         .filter(Boolean)
-        .map(cat => cat.toLowerCase()) || []
+        .flatMap(cat => cat.split(',').map((c: string) => c.trim().toLowerCase()))
+        .filter(cat => cat.length > 0) || []
     )]
     
     const baseUrl = 'https://www.xarticle.news'

@@ -17,10 +17,10 @@ export default function NotFound() {
             {/* Title */}
             <div className="space-y-2">
               <h1 className="text-2xl font-bold tracking-tight">
-                页面未找到
+                Page Not Found
               </h1>
               <p className="text-muted-foreground">
-                抱歉，您访问的页面不存在或已被移除。
+                Sorry, the page you are looking for does not exist or has been removed.
               </p>
             </div>
             
@@ -29,7 +29,7 @@ export default function NotFound() {
               <Button asChild className="w-full">
                 <Link href="/">
                   <Home className="mr-2 h-4 w-4" />
-                  返回首页
+                  Back to Home
                 </Link>
               </Button>
               
@@ -37,20 +37,20 @@ export default function NotFound() {
                 <Button variant="outline" asChild className="flex-1">
                   <Link href="/trending">
                     <Search className="mr-2 h-4 w-4" />
-                    热门文章
+                    Trending
                   </Link>
                 </Button>
                 
                 <Button variant="outline" onClick={() => window.history.back()} className="flex-1">
                   <ArrowLeft className="mr-2 h-4 w-4" />
-                  返回上页
+                  Go Back
                 </Button>
               </div>
             </div>
             
             {/* Help Text */}
             <div className="text-sm text-muted-foreground">
-              <p>如果您认为这是一个错误，请联系我们。</p>
+              <p>If you believe this is an error, please contact us.</p>
             </div>
           </div>
         </CardContent>

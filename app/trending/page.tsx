@@ -37,14 +37,8 @@ async function fetchTrendingArticles(options: {
 }): Promise<Article[]> {
   const supabase = await createClient()
   
-  // Determine which tags to filter by based on filter parameter
-  let tagsToFilter: string[]
-  if (options.filter === 'week') {
-    // Weekly Article page should include both Week and Day tagged articles
-    tagsToFilter = ['Week', 'Day']
-  } else {
-    tagsToFilter = ['Day']
-  }
+  // Trending page should always show both Day and Week tagged articles
+  const tagsToFilter = ['Day', 'Week']
   
   let query = supabase
     .from('articles')

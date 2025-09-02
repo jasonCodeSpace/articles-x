@@ -327,7 +327,7 @@ async function processTweetForArticle(tweetId: string, authorHandle: string): Pr
       
       // Update the tweet in database to mark it as not having an article
       try {
-        const supabase = await createClient();
+        const supabase = createServiceClient();
         await supabase
           .from('tweets')
           .update({ has_article: false })

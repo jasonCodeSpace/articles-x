@@ -40,27 +40,38 @@ async function batchRegenerateSummaries() {
     console.log('🔧 Batch regenerating summaries for recent articles...')
     console.log('='.repeat(60))
     
-    // 获取最近有问题的文章
-    const { data: articles, error: fetchError } = await supabase
+    // 获取最近100篇文章，然后筛选出缺少指定列内容的文章
+    const { data: recentArticles, error: fetchError } = await supabase
       .from('articles')
-      .select('id, title, full_article_content, article_preview_text, tweet_published_at')
+      .select('id, title, full_article_content, article_preview_text, tweet_published_at, full_article_content_english, article_preview_text_english, title_english, summary_generated_at, summary_english, summary_chinese, category, language')
       .not('full_article_content', 'is', null)
       .not('tweet_published_at', 'is', null)
-      .or('summary_chinese.ilike.%意大利语段落%,summary_chinese.ilike.%Chinese Summary%,summary_english.ilike.%English paragraph%,summary_english.eq.,summary_english.is.null')
       .order('tweet_published_at', { ascending: false })
-      .limit(100) // 处理最近100篇有问题的文章
+      .limit(100) // 获取最近100篇文章
     
     if (fetchError) {
-      console.error('❌ Error fetching articles:', fetchError)
+      console.error('❌ Error fetching recent articles:', fetchError)
       process.exit(1)
     }
     
+    // 筛选出缺少任一指定列内容的文章
+    const articles = recentArticles?.filter(article => 
+      !article.full_article_content_english || 
+      !article.article_preview_text_english || 
+      !article.title_english || 
+      !article.summary_generated_at || 
+      !article.summary_english || 
+      !article.summary_chinese || 
+      !article.category || 
+      !article.language
+    ) || []
+    
     if (!articles || articles.length === 0) {
-      console.log('ℹ️  No problematic articles found')
+      console.log('ℹ️  No articles found that need processing')
       return
     }
     
-    console.log(`📊 Found ${articles.length} articles with format issues`)
+    console.log(`📊 Found ${articles.length} articles from recent 100 that need processing`)
     
     const BATCH_SIZE = 10
     let totalSuccess = 0

@@ -4,20 +4,18 @@ import { generateArticleAnalysis } from '@/lib/gemini';
 
 const CRON_SECRET = process.env.CRON_SECRET;
 
-export async function POST(request?: NextRequest) {
+export async function POST(request: NextRequest) {
   // Verify cron secret for security when called via HTTP
-  if (request) {
-    const authHeader = request.headers.get('authorization');
-    const querySecret = request.nextUrl.searchParams.get('secret');
-    
-    if ((!authHeader || !authHeader.startsWith('Bearer ') || authHeader.slice(7) !== CRON_SECRET) && 
-        querySecret !== CRON_SECRET) {
-      console.error('Unauthorized access attempt to generate-summaries API');
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+  const authHeader = request.headers.get('authorization');
+  const querySecret = request.nextUrl.searchParams.get('secret');
+  
+  if ((!authHeader || !authHeader.startsWith('Bearer ') || authHeader.slice(7) !== CRON_SECRET) && 
+      querySecret !== CRON_SECRET) {
+    console.error('Unauthorized access attempt to generate-summaries API');
+    return NextResponse.json(
+      { error: 'Unauthorized' },
+      { status: 401 }
+    );
   }
 
   try {

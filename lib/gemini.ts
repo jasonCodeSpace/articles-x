@@ -22,10 +22,18 @@ export interface ArticleSummary {
   english: string;
 }
 
+export interface ArticleTranslation {
+  title: string;
+  tweet_text: string;
+  article_preview_text: string;
+  full_article_content: string;
+}
+
 export interface ArticleAnalysis {
   summary: ArticleSummary;
   category: string;
   language: string;
+  english_translation?: ArticleTranslation;
 }
 
 // 有效分类列表
@@ -92,7 +100,7 @@ Content: ${content.substring(0, 6000)}`;
     const language = languageMatch ? languageMatch[1].trim() : 'en';
     
     const categoryMatch = text.match(/CATEGORY:\s*([^\n]+)/i);
-    let rawCategory = categoryMatch ? categoryMatch[1].trim() : 'Business';
+    const rawCategory = categoryMatch ? categoryMatch[1].trim() : 'Business';
     
     // 验证分类
     const category = VALID_CATEGORIES.find(cat => 

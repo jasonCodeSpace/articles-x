@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
-import { testGeminiConnection } from '@/lib/gemini';
+import { testConnection } from '@/lib/gemini';
 
 export async function GET() {
   try {
-    const result = await testGeminiConnection();
+    const result = await testConnection();
     
     return NextResponse.json({
       success: true,

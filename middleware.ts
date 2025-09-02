@@ -19,17 +19,25 @@ export async function middleware(request: NextRequest) {
                        pathname.startsWith('/favicon.ico') ||
                        pathname.startsWith('/api')
   
+  // Check if it's a shared article link (has referrer from external source)
+  const referrer = request.headers.get('referer')
+  const isSharedArticleLink = pathname.startsWith('/article/') && 
+                              (!referrer || !referrer.includes(request.nextUrl.host))
+  
   const isPublicRoute = pathname === '/' || 
                         pathname === '/landing' || 
                         pathname === '/new' ||
                         pathname.startsWith('/new') ||
-                        pathname === '/history' ||
-                        pathname.startsWith('/history') ||
-                        pathname === '/weekly' ||
-                        pathname.startsWith('/weekly') ||
-                        pathname.startsWith('/article/') ||
-                        pathname.startsWith('/author/')
+                        isSharedArticleLink
   const isProtectedRoute = pathname.startsWith('/profile')
+  
+  // Routes that require authentication (redirect to register page)
+  const isRestrictedRoute = pathname === '/history' ||
+                           pathname.startsWith('/history') ||
+                           pathname === '/weekly' ||
+                           pathname.startsWith('/weekly') ||
+                           pathname.startsWith('/author/') ||
+                           (pathname.startsWith('/article/') && !isSharedArticleLink)
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY
@@ -70,8 +78,15 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
+  // If user is not logged in and trying to access restricted routes, redirect to register
+  if (!user && isRestrictedRoute) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/register'
+    return NextResponse.redirect(url)
+  }
+
   // If user is not logged in and trying to access protected routes
-  if (!user && !isAuthRoute && !isPublicFile && !isPublicRoute) {
+  if (!user && !isAuthRoute && !isPublicFile && !isPublicRoute && !isRestrictedRoute) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/service';
 
-const CRON_SECRET = process.env.CRON_SECRET;
+// const CRON_SECRET = process.env.CRON_SECRET;
 const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY!;
 const RAPIDAPI_HOST = process.env.RAPIDAPI_HOST!;
 
@@ -98,7 +98,19 @@ export async function POST(request: NextRequest) {
     }
 
     const results = [];
-    let tweetsToInsert: any[] = [];
+    let tweetsToInsert: Array<{
+      tweet_id: string;
+      author_handle: string;
+      tweet_text: string;
+      article_url?: string;
+      created_at: string;
+      retweet_count: number;
+      like_count: number;
+      reply_count: number;
+      quote_count: number;
+      has_article: boolean;
+      updated_at: string;
+    }> = [];
     let searchCount = 0;
 
     // Process each author
@@ -111,7 +123,7 @@ export async function POST(request: NextRequest) {
         if (searchResults.result?.timeline?.instructions) {
           // Parse Twitter API response structure
           const instructions = searchResults.result.timeline.instructions;
-          const timelineAddEntries = instructions.find((inst: any) => inst.type === 'TimelineAddEntries');
+          const timelineAddEntries = instructions.find((inst: { type: string; entries?: unknown[] }) => inst.type === 'TimelineAddEntries');
           
           if (timelineAddEntries?.entries) {
             for (const entry of timelineAddEntries.entries) {
@@ -136,7 +148,13 @@ export async function POST(request: NextRequest) {
                     tweetsToInsert.push({
                       tweet_id: tweetId,
                       author_handle: author.handle,
+                      tweet_text: tweet.full_text || '',
+                      article_url: articleUrl || undefined,
                       has_article: hasArticle,
+                      retweet_count: tweet.retweet_count || 0,
+                      like_count: tweet.favorite_count || 0,
+                      reply_count: tweet.reply_count || 0,
+                      quote_count: tweet.quote_count || 0,
                       created_at: new Date().toISOString(),
                       updated_at: new Date().toISOString()
                     });
@@ -221,7 +239,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   return NextResponse.json(
     { message: 'Search Articles API - Use POST method to trigger search' },
     { status: 200 }

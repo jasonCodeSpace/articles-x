@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Article } from '@/components/article-card'
-import { Calendar, Settings, Bookmark, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Calendar, Bookmark, ChevronLeft, ChevronRight } from 'lucide-react'
 import { redirect } from 'next/navigation'
 import { formatDistanceToNow } from 'date-fns'
 import Link from 'next/link'
@@ -172,13 +172,7 @@ export default async function ProfilePage({
                   </div>
                 </div>
 
-                {/* Action Button */}
-                <div>
-                  <Button variant="outline" className="gap-2">
-                    <Settings className="h-4 w-4" />
-                    Edit Profile
-                  </Button>
-                </div>
+
               </div>
             </CardContent>
           </Card>

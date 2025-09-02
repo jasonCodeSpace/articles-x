@@ -179,10 +179,31 @@ export function ModernNav({ user, categories, className }: ModernNavProps) {
                   <DropdownMenuItem asChild>
                      <button 
                        onClick={async () => {
-                         const { createClient } = await import('@/lib/supabase/client')
-                         const supabase = createClient()
-                         await supabase.auth.signOut()
-                         window.location.href = '/login'
+                         try {
+                           console.log('Logout button clicked')
+                           const { createClient } = await import('@/lib/supabase/client')
+                           const supabase = createClient()
+                           
+                           // Clear all local storage and session storage
+                           localStorage.clear()
+                           sessionStorage.clear()
+                           
+                           const { error } = await supabase.auth.signOut({ scope: 'global' })
+                           if (error) {
+                             console.error('Logout error:', error)
+                           } else {
+                             console.log('Logout successful')
+                           }
+                           
+                           // Force a full page reload to clear all state
+                           window.location.replace('/login')
+                         } catch (error) {
+                           console.error('Logout failed:', error)
+                           // Clear storage anyway and redirect
+                           localStorage.clear()
+                           sessionStorage.clear()
+                           window.location.replace('/login')
+                         }
                        }}
                        className="w-full flex items-center justify-start px-2 py-1.5 text-sm cursor-pointer"
                      >

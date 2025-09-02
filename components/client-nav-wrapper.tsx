@@ -30,6 +30,17 @@ export function ClientNavWrapper({ initialUser, categories }: ClientNavWrapperPr
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('ClientNavWrapper - Auth state change:', event, session?.user)
       setUser(session?.user ?? null)
+      
+      // Force page reload on sign out to clear all cached state
+      if (event === 'SIGNED_OUT') {
+        console.log('User signed out, clearing state')
+        // Small delay to ensure the state is updated
+        setTimeout(() => {
+          if (window.location.pathname !== '/login' && window.location.pathname !== '/register') {
+            window.location.replace('/login')
+          }
+        }, 100)
+      }
     })
 
     return () => subscription.unsubscribe()

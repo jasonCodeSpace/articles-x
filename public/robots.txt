@@ -10,13 +10,23 @@ Disallow: /*?s=
 Disallow: /*?search=
 Disallow: /*?filter=
 Disallow: /*?sort=
+Disallow: /*?language=
+Disallow: /*?category=
 
 # Block admin and private areas
 Disallow: /admin/
 Disallow: /private/
-Disallow: /api/auth/
+Disallow: /api/
+Disallow: /auth/
 Disallow: /test/
 Disallow: /dev/
+Disallow: /debug-auth/
+Disallow: /test-auth/
+Disallow: /test-articles/
+Disallow: /login/
+Disallow: /register/
+Disallow: /reset-password/
+Disallow: /profile/
 
 # XML Sitemap location
 Sitemap: https://www.xarticle.news/sitemap.xml

@@ -85,7 +85,6 @@ export async function GET() {
       { url: '', priority: '1.0', changefreq: 'daily' },
       { url: '/trending', priority: '0.9', changefreq: 'hourly' },
       { url: '/landing', priority: '0.8', changefreq: 'weekly' },
-      { url: '/history', priority: '0.7', changefreq: 'daily' },
       { url: '/weekly', priority: '0.8', changefreq: 'weekly' }
     ]
     

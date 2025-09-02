@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { getCLS, getFCP, getFID, getLCP, getTTFB, Metric } from 'web-vitals';
+import { onCLS, onFCP, onFID, onLCP, onTTFB, Metric } from 'web-vitals';
 
 interface WebVitalsProps {
   onMetric?: (metric: Metric) => void;
@@ -25,11 +25,11 @@ export function WebVitals({ onMetric }: WebVitalsProps) {
     };
 
     // 监听所有核心Web Vitals指标
-    getCLS(handleMetric);
-    getFCP(handleMetric);
-    getFID(handleMetric);
-    getLCP(handleMetric);
-    getTTFB(handleMetric);
+    onCLS(handleMetric);
+    onFCP(handleMetric);
+    onFID(handleMetric);
+    onLCP(handleMetric);
+    onTTFB(handleMetric);
   }, [onMetric]);
 
   return null;

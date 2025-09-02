@@ -38,9 +38,16 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // 从最近100条文章中筛选出没有中文摘要、没有分类或没有英文翻译的文章
+    // 从最近100条文章中筛选出任何字段为空的文章
     const articles = recentArticles?.filter(article => 
-      !article.summary_chinese || !article.category || (!article.title_english && article.language !== 'en')
+      !article.full_article_content_english || 
+      !article.article_preview_text_english || 
+      !article.title_english || 
+      !article.summary_generated_at || 
+      !article.summary_english || 
+      !article.summary_chinese || 
+      !article.category || 
+      !article.language
     ) || [];
     
     if (!articles || articles.length === 0) {

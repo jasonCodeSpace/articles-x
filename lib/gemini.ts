@@ -64,7 +64,7 @@ export async function generateArticleAnalysis(
 TASK:
 1. Detect language (use codes: en, zh, es, fr, de, it, etc.)
 2. Choose ONE specific category from: ${categoryList}
-3. Write two summary paragraphs (Chinese first, then English)
+3. Write two clean summary paragraphs without any format labels
 
 CATEGORIZATION RULES:
 - Bitcoin/BTC price/analysis/ETF → Bitcoin
@@ -80,13 +80,15 @@ CATEGORIZATION RULES:
 
 Choose the MOST SPECIFIC category based on the PRIMARY content topic.
 
+IMPORTANT: Do NOT include any format labels like "中文概要:", "Chinese Paragraph:", "意大利语段落:", "English Summary:" etc. Write clean paragraphs only.
+
 OUTPUT FORMAT:
 LANGUAGE: [code]
 CATEGORY: [category]
 
-[Chinese paragraph]
+[Write a clean Chinese summary paragraph here]
 
-[English paragraph]
+[Write a clean English summary paragraph here]
 
 Title: ${title}
 Content: ${content.substring(0, 6000)}`;
@@ -114,9 +116,18 @@ Content: ${content.substring(0, 6000)}`;
     
     const paragraphs = cleanText.split(/\n\s*\n/).filter(p => p.trim());
     
+    // 清理格式标记的函数
+    const cleanSummary = (text: string): string => {
+      return text
+        .replace(/^(中文概要|Chinese Paragraph|意大利语段落|English Summary|中文总结|英文总结|Summary|概要)[:：]?\s*/i, '')
+        .replace(/\*\*(中文概要|Chinese Paragraph|意大利语段落|English Summary|中文总结|英文总结|Summary|概要)[:：]?\*\*\s*/gi, '')
+        .replace(/^\*\*[^*]+\*\*[:：]?\s*/gm, '') // 移除任何粗体格式标记
+        .trim();
+    };
+    
     const summary: ArticleSummary = {
-      chinese: paragraphs[0]?.trim() || cleanText,
-      english: paragraphs[1]?.trim() || cleanText
+      chinese: cleanSummary(paragraphs[0]?.trim() || cleanText),
+      english: cleanSummary(paragraphs[1]?.trim() || cleanText)
     };
 
     return { summary, category, language };

@@ -24,8 +24,7 @@ const nextConfig = {
     ],
   },
   
-  // Enable SWC minification
-  swcMinify: true,
+  // SWC minification is enabled by default in Next.js 13+
   
   // Optimize bundle
   webpack: (config, { dev, isServer }) => {
@@ -70,6 +69,15 @@ const nextConfig = {
           {
             key: 'Permissions-Policy',
             value: 'camera=(), microphone=(), geolocation=()'
+          }
+        ],
+      },
+      {
+        source: '/:path*\.(js|css|woff|woff2|ttf|eot|ico|png|jpg|jpeg|gif|svg|webp|avif)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable'
           }
         ],
       },

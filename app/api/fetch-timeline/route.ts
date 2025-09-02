@@ -12,13 +12,36 @@ const TWITTER_LISTS = [
 ];
 
 interface TwitterTimelineResponse {
-  data?: {
-    list?: {
-      tweets_timeline?: {
-        timeline?: {
-          instructions?: Array<{
-            entries?: Array<{
-              content?: {
+  result?: {
+    timeline?: {
+      instructions?: Array<{
+        entries?: Array<{
+          content?: {
+            itemContent?: {
+              tweet_results?: {
+                result?: {
+                  rest_id?: string;
+                  core?: {
+                    user_results?: {
+                      result?: {
+                        legacy?: {
+                          screen_name?: string;
+                        };
+                      };
+                    };
+                  };
+                  legacy?: {
+                    entities?: {
+                      urls?: Array<{
+                        expanded_url?: string;
+                      }>;
+                    };
+                  };
+                };
+              };
+            };
+            items?: Array<{
+              item?: {
                 itemContent?: {
                   tweet_results?: {
                     result?: {
@@ -44,18 +67,62 @@ interface TwitterTimelineResponse {
                 };
               };
             }>;
-          }>;
-        };
-      };
+          };
+        }>;
+      }>;
     };
   };
 }
 
 function hasArticleLink(tweet: { legacy?: { entities?: { urls?: Array<{ expanded_url?: string }> } } }): boolean {
   const urls = tweet?.legacy?.entities?.urls || [];
-  return urls.some((url: { expanded_url?: string }) => 
-    url.expanded_url && url.expanded_url.includes('/i/article/')
-  );
+  
+  // Check for any external URLs that could be articles
+  return urls.some((url: { expanded_url?: string }) => {
+    if (!url.expanded_url) return false;
+    
+    const expandedUrl = url.expanded_url.toLowerCase();
+    
+    // Twitter native articles
+    if (expandedUrl.includes('/i/article/')) return true;
+    
+    // Common article domains and patterns
+    const articlePatterns = [
+      // News sites
+      'nytimes.com', 'washingtonpost.com', 'wsj.com', 'reuters.com', 'bloomberg.com',
+      'cnn.com', 'bbc.com', 'theguardian.com', 'npr.org', 'apnews.com',
+      // Tech/Business
+      'techcrunch.com', 'wired.com', 'arstechnica.com', 'theverge.com', 'engadget.com',
+      'forbes.com', 'businessinsider.com', 'fortune.com', 'fastcompany.com',
+      // Sports
+      'espn.com', 'athletic.com', 'si.com', 'bleacherreport.com',
+      // Blogs and platforms
+      'medium.com', 'substack.com', 'wordpress.com', 'blogspot.com',
+      // Academic/Research
+      'arxiv.org', 'nature.com', 'science.org', 'pnas.org',
+      // Other common article sites
+      'atlantic.com', 'newyorker.com', 'vox.com', 'slate.com', 'salon.com',
+      'huffpost.com', 'politico.com', 'axios.com', 'buzzfeed.com'
+    ];
+    
+    // Check if URL contains any article patterns
+    const hasArticlePattern = articlePatterns.some(pattern => expandedUrl.includes(pattern));
+    
+    // Additional checks for article-like URLs
+    const hasArticleKeywords = [
+      '/article/', '/story/', '/news/', '/post/', '/blog/', '/opinion/',
+      '/analysis/', '/feature/', '/report/', '/investigation/'
+    ].some(keyword => expandedUrl.includes(keyword));
+    
+    // Exclude common non-article URLs
+    const isNonArticle = [
+      'youtube.com', 'youtu.be', 'twitter.com', 'x.com', 'instagram.com',
+      'facebook.com', 'linkedin.com', 'tiktok.com', 'reddit.com',
+      'github.com', 'stackoverflow.com', 'amazon.com', 'ebay.com'
+    ].some(pattern => expandedUrl.includes(pattern));
+    
+    return (hasArticlePattern || hasArticleKeywords) && !isNonArticle;
+  });
 }
 
 function extractTweetsFromTimeline(response: TwitterTimelineResponse): Array<{
@@ -69,12 +136,13 @@ function extractTweetsFromTimeline(response: TwitterTimelineResponse): Array<{
     hasArticle: boolean;
   }> = [];
 
-  const instructions = response.data?.list?.tweets_timeline?.timeline?.instructions || [];
+  const instructions = response.result?.timeline?.instructions || [];
   
   for (const instruction of instructions) {
     const entries = instruction.entries || [];
     
     for (const entry of entries) {
+      // Check direct itemContent
       const tweetResult = entry.content?.itemContent?.tweet_results?.result;
       
       if (tweetResult?.rest_id && tweetResult?.core?.user_results?.result?.legacy?.screen_name) {
@@ -87,6 +155,24 @@ function extractTweetsFromTimeline(response: TwitterTimelineResponse): Array<{
           authorHandle,
           hasArticle
         });
+      }
+      
+      // Check items array for conversation threads
+      const items = entry.content?.items || [];
+      for (const item of items) {
+        const itemTweetResult = item.item?.itemContent?.tweet_results?.result;
+        
+        if (itemTweetResult?.rest_id && itemTweetResult?.core?.user_results?.result?.legacy?.screen_name) {
+          const tweetId = itemTweetResult.rest_id;
+          const authorHandle = itemTweetResult.core.user_results.result.legacy.screen_name;
+          const hasArticle = hasArticleLink(itemTweetResult);
+          
+          tweets.push({
+            tweetId,
+            authorHandle,
+            hasArticle
+          });
+        }
       }
     }
   }

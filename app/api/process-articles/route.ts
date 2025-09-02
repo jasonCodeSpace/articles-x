@@ -4,6 +4,7 @@ import { createServiceClient } from '@/lib/supabase/service';
 const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY || '';
 const RAPIDAPI_HOST = 'twitter241.p.rapidapi.com';
 const CRON_SECRET = process.env.CRON_SECRET;
+const supabase = createServiceClient();
 
 interface ArticleData {
   id?: string;
@@ -617,97 +618,141 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const body = await request.json();
-    const { tweetIds } = body;
+      const body = await request.json().catch(() => ({}));
+      let { tweetIds } = body;
 
-    if (!tweetIds || !Array.isArray(tweetIds) || tweetIds.length === 0) {
-      return NextResponse.json(
-        { error: 'tweetIds array is required' },
-        { status: 400 }
-      );
-    }
-
-    console.log(`Processing ${tweetIds.length} specific tweet IDs`);
-    
-    const results = [];
-    const errors = [];
-    
-    // Process each tweet ID
-    for (const tweetId of tweetIds) {
-      try {
-        console.log(`Processing tweet ${tweetId}...`);
+      // If no tweetIds provided, fetch recent tweets with has_article = true
+      if (!tweetIds || !Array.isArray(tweetIds) || tweetIds.length === 0) {
+        console.log('No tweetIds provided, fetching recent tweets with has_article = true');
         
-        // We need to get the author_handle from the tweet data
-        // For now, we'll extract it from the API response
-        const data = await fetchTweetDetails(tweetId);
+        const { data: tweetsWithArticles, error } = await supabase
+          .from('tweets')
+          .select('tweet_id, created_at')
+          .eq('has_article', true)
+          .order('created_at', { ascending: false })
+          .limit(500);
         
-        if (!data) {
-          errors.push({
-            tweetId: tweetId,
-            error: 'Failed to fetch tweet data'
-          });
-          continue;
+        if (error) {
+          console.error('Error fetching tweets with articles:', error);
+          return NextResponse.json(
+            { error: 'Failed to fetch tweets with articles' },
+            { status: 500 }
+          );
         }
         
-        // Extract author handle from the response
-        let authorHandle = 'unknown';
+        // Only process tweets from the most recent fetch (within 10 minutes of the latest tweet)
+        if (tweetsWithArticles && tweetsWithArticles.length > 0) {
+          const latestTime = new Date(tweetsWithArticles[0].created_at);
+          const timeThreshold = new Date(latestTime.getTime() - 10 * 60 * 1000);
+          
+          tweetIds = tweetsWithArticles
+            .filter((tweet: { tweet_id: string; created_at: string }) => new Date(tweet.created_at) >= timeThreshold)
+            .map((tweet: { tweet_id: string; created_at: string }) => tweet.tweet_id);
+        } else {
+          tweetIds = [];
+        }
+        
+        if (tweetIds.length === 0) {
+          return NextResponse.json({
+            success: true,
+            message: 'No recent tweets with articles found to process',
+            processed: 0,
+            errors: 0
+          });
+        }
+        
+        console.log(`Found ${tweetIds.length} recent tweets with articles to process`);
+      } else {
+        console.log(`Processing ${tweetIds.length} specific tweet IDs`);
+      }
+      
+      const results = [];
+      const errors = [];
+      
+      // Process tweets concurrently with limited concurrency
+      const concurrencyLimit = 5;
+      const processTweet = async (tweetId: string) => {
         try {
-          const instructions = data.data?.threaded_conversation_with_injections_v2?.instructions;
-          if (instructions) {
-            for (const instruction of instructions) {
-              if (instruction.type === 'TimelineAddEntries' && instruction.entries) {
-                for (const entry of instruction.entries) {
-                  const tweetResult = entry.content?.itemContent?.tweet_results?.result;
-                  if (tweetResult) {
-                    authorHandle = tweetResult.core?.user_results?.result?.legacy?.screen_name || 'unknown';
-                    break;
+          console.log(`Processing tweet ${tweetId}...`);
+          
+          // We need to get the author_handle from the tweet data
+          // For now, we'll extract it from the API response
+          const data = await fetchTweetDetails(tweetId);
+          
+          if (!data) {
+            return {
+              tweetId: tweetId,
+              error: 'Failed to fetch tweet data'
+            };
+          }
+          
+          // Extract author handle from the response
+          let authorHandle = 'unknown';
+          try {
+            const instructions = data.data?.threaded_conversation_with_injections_v2?.instructions;
+            if (instructions) {
+              for (const instruction of instructions) {
+                if (instruction.type === 'TimelineAddEntries' && instruction.entries) {
+                  for (const entry of instruction.entries) {
+                    const tweetResult = entry.content?.itemContent?.tweet_results?.result;
+                    if (tweetResult) {
+                      authorHandle = tweetResult.core?.user_results?.result?.legacy?.screen_name || 'unknown';
+                      break;
+                    }
                   }
+                  if (authorHandle !== 'unknown') break;
                 }
-                if (authorHandle !== 'unknown') break;
               }
             }
+          } catch (e) {
+            console.error('Error extracting author handle:', e);
           }
-        } catch (e) {
-          console.error('Error extracting author handle:', e);
-        }
-        
-        const articleData = await processTweetForArticle(tweetId, authorHandle);
-        
-        if (articleData) {
-          const insertSuccess = await insertArticle(articleData);
           
-          if (insertSuccess) {
-            results.push({
-              tweetId: tweetId,
-              success: true,
-              title: articleData.title
-            });
+          const articleData = await processTweetForArticle(tweetId, authorHandle);
+          
+          if (articleData) {
+            const insertSuccess = await insertArticle(articleData);
+            
+            if (insertSuccess) {
+              return {
+                tweetId: tweetId,
+                success: true,
+                title: articleData.title
+              };
+            } else {
+              return {
+                tweetId: tweetId,
+                error: 'Failed to insert article into database'
+              };
+            }
           } else {
-            errors.push({
+            return {
               tweetId: tweetId,
-              error: 'Failed to insert article into database'
-            });
+              error: 'Failed to extract article data from tweet'
+            };
           }
-        } else {
-          errors.push({
+        } catch (error) {
+          console.error(`Error processing tweet ${tweetId}:`, error);
+          return {
             tweetId: tweetId,
-            error: 'Failed to extract article data from tweet'
-          });
+            error: error instanceof Error ? error.message : 'Unknown error'
+          };
         }
+      };
+      
+      // Process tweets in batches with concurrency limit
+      for (let i = 0; i < tweetIds.length; i += concurrencyLimit) {
+        const batch = tweetIds.slice(i, i + concurrencyLimit);
+        const batchResults = await Promise.all(batch.map(processTweet));
         
-        console.log(`Successfully processed tweet ${tweetId}`);
-        
-        // Add delay to avoid rate limiting
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-      } catch (error) {
-        console.error(`Error processing tweet ${tweetId}:`, error);
-        errors.push({
-          tweetId: tweetId,
-          error: error instanceof Error ? error.message : 'Unknown error'
-        });
+        for (const result of batchResults) {
+          if ('success' in result && result.success) {
+            results.push(result);
+          } else {
+            errors.push(result);
+          }
+        }
       }
-    }
     
     return NextResponse.json({
       success: true,

@@ -38,14 +38,18 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // 从最近100条文章中筛选出任何字段为空的文章
+    // 从最近100条文章中筛选出需要重新生成总结的文章
     const articles = recentArticles?.filter(article => 
+      !article.summary_generated_at || // 没有生成过总结
+      !article.summary_english || 
+      !article.summary_chinese ||
+      article.summary_chinese.includes('意大利语段落') ||
+      article.summary_chinese.includes('Chinese Summary') ||
+      article.summary_english.includes('English paragraph') ||
+      article.summary_english === '' ||
       !article.full_article_content_english || 
       !article.article_preview_text_english || 
       !article.title_english || 
-      !article.summary_generated_at || 
-      !article.summary_english || 
-      !article.summary_chinese || 
       !article.category || 
       !article.language
     ) || [];

@@ -42,7 +42,7 @@ export default function AiSummary({
             onClick={() => setSummaryLanguage(summaryLanguage === 'en' ? 'zh' : 'en')}
             className="px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 bg-background border border-border hover:bg-accent hover:text-accent-foreground shadow-sm"
           >
-            {summaryLanguage === 'en' ? '中文' : 'EN'}
+            {summaryLanguage === 'en' ? 'EN' : '中文'}
           </button>
           
           <button

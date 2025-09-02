@@ -95,12 +95,11 @@ export function ArticleContent({
             {/* Language Toggle */}
             <Button 
               variant="outline" 
-              size="sm"
-              className="gap-2 text-xs h-8 px-3"
+              className="gap-2"
               onClick={toggleLanguage}
             >
-              <Languages className="h-3 w-3" />
-              <span>{language === 'en' ? 'English' : 'Original'}</span>
+              <Languages className="h-4 w-4" />
+              <span>{language === 'en' ? '中文' : 'English'}</span>
             </Button>
           </div>
         </div>

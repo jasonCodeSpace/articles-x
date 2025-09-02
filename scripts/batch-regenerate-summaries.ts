@@ -40,31 +40,15 @@ async function batchRegenerateSummaries() {
     console.log('🔧 Batch regenerating summaries for recent articles...')
     console.log('='.repeat(60))
     
-    // 获取最近100篇文章，然后筛选出缺少指定列内容的文章
-    const { data: recentArticles, error: fetchError } = await supabase
+    // 直接查询100篇缺少指定字段的文章，按tweet_published_at排序
+    const { data: articles, error: fetchError } = await supabase
       .from('articles')
       .select('id, title, full_article_content, article_preview_text, tweet_published_at, full_article_content_english, article_preview_text_english, title_english, summary_generated_at, summary_english, summary_chinese, category, language')
       .not('full_article_content', 'is', null)
       .not('tweet_published_at', 'is', null)
+      .or('full_article_content_english.is.null,article_preview_text_english.is.null,title_english.is.null,summary_generated_at.is.null,summary_english.is.null,summary_chinese.is.null,category.is.null,language.is.null')
       .order('tweet_published_at', { ascending: false })
-      .limit(100) // 获取最近100篇文章
-    
-    if (fetchError) {
-      console.error('❌ Error fetching recent articles:', fetchError)
-      process.exit(1)
-    }
-    
-    // 筛选出缺少任一指定列内容的文章
-    const articles = recentArticles?.filter(article => 
-      !article.full_article_content_english || 
-      !article.article_preview_text_english || 
-      !article.title_english || 
-      !article.summary_generated_at || 
-      !article.summary_english || 
-      !article.summary_chinese || 
-      !article.category || 
-      !article.language
-    ) || []
+      .limit(100) // 获取100篇缺少字段的文章
     
     if (!articles || articles.length === 0) {
       console.log('ℹ️  No articles found that need processing')

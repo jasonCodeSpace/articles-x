@@ -6,7 +6,7 @@ import { Article } from '@/components/article-card'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'All Articles | xarticle.news',
+  title: 'Trending Articles From X | xarticle.news',
   description: 'Stay updated with the latest curated articles and trending news. Discover current conversations, breaking stories, and insights from leading voices across technology, business, and more.',
 }
 
@@ -116,7 +116,7 @@ export default async function TrendingPage({ searchParams }: PageProps) {
           {/* Page Header */}
           <div className="text-center space-y-4 mb-8">
             <h1 className="text-4xl md:text-5xl font-bold text-foreground">
-              All Articles
+              Trending Articles From X
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
               Stay updated with the latest curated articles from leading voices

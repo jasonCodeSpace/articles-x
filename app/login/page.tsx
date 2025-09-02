@@ -256,7 +256,7 @@ export default function Login() {
                   onClick={handleBackToEmail}
                   className="text-sm text-muted-foreground hover:text-primary transition-colors"
                 >
-                  Didn't receive the code? Try again
+                  Didn&apos;t receive the code? Try again
                 </button>
               </div>
             </form>
@@ -264,7 +264,7 @@ export default function Login() {
           
           <div className="text-center space-y-2 mt-6">
             <p className="text-muted-foreground text-sm">
-              Don't have an account?{' '}
+              Don&apos;t have an account?{' '}
               <Link 
                 href="/register" 
                 className="text-primary hover:text-primary/80 underline transition-colors"

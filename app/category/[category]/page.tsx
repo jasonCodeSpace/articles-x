@@ -41,6 +41,11 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
   const { search } = await searchParams
   const decodedCategory = decodeURIComponent(category)
   
+  // Check if category contains comma - if so, return 404
+  if (decodedCategory.includes(',')) {
+    notFound()
+  }
+  
   // Fetch articles for this category
   const articles = await fetchArticles({ category: decodedCategory, search })
   

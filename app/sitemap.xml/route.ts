@@ -85,8 +85,7 @@ export async function GET() {
     const staticPages = [
       { url: '', priority: '1.0', changefreq: 'daily' },
       { url: '/trending', priority: '0.9', changefreq: 'hourly' },
-      { url: '/landing', priority: '0.8', changefreq: 'weekly' },
-      { url: '/weekly', priority: '0.8', changefreq: 'weekly' }
+      { url: '/landing', priority: '0.8', changefreq: 'weekly' }
     ]
     
     // Generate XML with proper escaping and validation

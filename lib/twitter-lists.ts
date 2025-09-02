@@ -25,7 +25,15 @@ export interface TwitterListStats {
 
 
 export async function getTwitterLists(): Promise<TwitterList[]> {
-  const supabase = await createClient()
+  // Use direct Supabase client with service role key for better permissions
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  
+  if (!supabaseUrl || !serviceKey) {
+    throw new Error('Missing Supabase environment variables')
+  }
+  
+  const supabase = createSupabaseClient(supabaseUrl, serviceKey)
   
   const { data, error } = await supabase
     .from('twitter_lists')
@@ -37,6 +45,7 @@ export async function getTwitterLists(): Promise<TwitterList[]> {
     throw new Error('Failed to fetch Twitter lists')
   }
   
+  console.log(`Found ${data?.length || 0} Twitter lists`)
   return data || []
 }
 

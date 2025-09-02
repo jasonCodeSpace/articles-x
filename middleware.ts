@@ -19,7 +19,9 @@ export async function middleware(request: NextRequest) {
                        pathname.startsWith('/favicon.ico') ||
                        pathname.startsWith('/api') ||
                        pathname === '/robots.txt' ||
-                       pathname === '/sitemap.xml'
+                       pathname === '/sitemap.xml' ||
+                       pathname === '/sitemap-ping.xml' ||
+                       pathname.startsWith('/sitemap') && pathname.endsWith('.xml')
   
   // Check if it's a shared article link (has referrer from external source)
   const referrer = request.headers.get('referer')

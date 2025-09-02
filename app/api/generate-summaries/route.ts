@@ -92,13 +92,31 @@ export async function POST(request: NextRequest) {
           language: analysis.language
         };
 
-        // 如果有英文翻译，添加翻译字段
+        // 清理无效翻译值的函数
+        const cleanTranslation = (translatedText: string, fallbackText: string): string => {
+          const invalidValues = [
+            'not provided', 'not available', 'not applicable', 'not stated', 
+            'not translated', 'not given', 'not found', 'unavailable', 'missing',
+            'empty', 'blank', 'no content', 'no translation', 'original text',
+            'same as original', 'n/a', 'na', 'none', 'null', 'undefined'
+          ];
+          
+          if (!translatedText || 
+              translatedText.trim().length === 0 ||
+              invalidValues.some(invalid => translatedText.toLowerCase().includes(invalid))) {
+            return fallbackText || '';
+          }
+          
+          return translatedText;
+        };
+
+        // 始终添加英文翻译字段
         if (analysis.english_translation) {
-          updateData.title_english = analysis.english_translation.title;
-          updateData.article_preview_text_english = analysis.english_translation.article_preview_text;
-          updateData.full_article_content_english = analysis.english_translation.full_article_content;
-        } else if (analysis.language === 'en') {
-          // 如果文章本身就是英文，直接复制原内容
+          updateData.title_english = cleanTranslation(analysis.english_translation.title, article.title);
+          updateData.article_preview_text_english = cleanTranslation(analysis.english_translation.article_preview_text, article.article_preview_text || '');
+          updateData.full_article_content_english = cleanTranslation(analysis.english_translation.full_article_content, article.full_article_content);
+        } else {
+          // 如果没有翻译，使用原文（可能已经是英文或作为备用方案）
           updateData.title_english = article.title;
           updateData.article_preview_text_english = article.article_preview_text || '';
           updateData.full_article_content_english = article.full_article_content;

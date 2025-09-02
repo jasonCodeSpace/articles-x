@@ -110,7 +110,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-function calculateStats(data: any[]) {
+function calculateStats(data: Array<{ metric_name: string; metric_value: number }>) {
   if (!data.length) return {};
   
   const groupedByMetric = data.reduce((acc, item) => {
@@ -118,9 +118,9 @@ function calculateStats(data: any[]) {
     if (!acc[metric]) acc[metric] = [];
     acc[metric].push(item.metric_value);
     return acc;
-  }, {});
+  }, {} as Record<string, number[]>);
   
-  const stats: any = {};
+  const stats: Record<string, { count: number; min: number; max: number; p50: number; p75: number; p95: number; p99: number; avg: number }> = {};
   
   Object.entries(groupedByMetric).forEach(([metric, values]) => {
     const typedValues = values as number[];
@@ -135,6 +135,7 @@ function calculateStats(data: any[]) {
       p50: sortedValues[Math.floor(length * 0.5)],
       p75: sortedValues[Math.floor(length * 0.75)],
       p95: sortedValues[Math.floor(length * 0.95)],
+      p99: sortedValues[Math.floor(length * 0.99)],
     };
   });
   

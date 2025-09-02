@@ -26,8 +26,8 @@ export async function GET(request: NextRequest) {
     // Get articles that need tag updates (articles without tags or with outdated tags)
     const { data: articles, error: fetchError } = await supabase
       .from('articles')
-      .select('id, title, content, category, tags')
-      .or('tags.is.null,tags.eq.{}')
+      .select('id, title, full_article_content, category, tag')
+      .or('tag.is.null,tag.eq.""')
       .limit(50) // Process in batches
 
     if (fetchError) {
@@ -53,12 +53,12 @@ export async function GET(request: NextRequest) {
     for (const article of articles) {
       try {
         // Generate tags based on title, content, and category
-        const tags = generateTagsFromContent(article.title, article.content, article.category)
+        const tags = generateTagsFromContent(article.title, article.full_article_content, article.category)
         
         if (tags.length > 0) {
           const { error: updateError } = await supabase
             .from('articles')
-            .update({ tags })
+            .update({ tag: tags.join(', ') }) // Store as comma-separated string
             .eq('id', article.id)
 
           if (updateError) {

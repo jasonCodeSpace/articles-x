@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { onCLS, onFCP, onFID, onLCP, onTTFB, Metric } from 'web-vitals';
+import { onCLS, onFCP, onINP, onLCP, onTTFB, Metric } from 'web-vitals';
 
 interface WebVitalsProps {
   onMetric?: (metric: Metric) => void;
@@ -27,7 +27,7 @@ export function WebVitals({ onMetric }: WebVitalsProps) {
     // 监听所有核心Web Vitals指标
     onCLS(handleMetric);
     onFCP(handleMetric);
-    onFID(handleMetric);
+    onINP(handleMetric);
     onLCP(handleMetric);
     onTTFB(handleMetric);
   }, [onMetric]);
@@ -95,6 +95,6 @@ export function getConnectionType(): string {
     return 'unknown';
   }
   
-  const connection = (navigator as any).connection;
+  const connection = (navigator as unknown as { connection?: { effectiveType?: string } }).connection;
   return connection?.effectiveType || 'unknown';
 }

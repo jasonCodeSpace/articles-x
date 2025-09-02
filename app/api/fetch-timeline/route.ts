@@ -5,12 +5,6 @@ const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY || '';
 const RAPIDAPI_HOST = 'twitter241.p.rapidapi.com';
 const CRON_SECRET = process.env.CRON_SECRET;
 
-// Twitter list IDs to fetch from
-const TWITTER_LISTS = [
-  '78468360',
-  // Add other list IDs here
-];
-
 interface TwitterTimelineResponse {
   result?: {
     timeline?: {
@@ -186,23 +180,40 @@ async function fetchListTimeline(listId: string): Promise<Array<{
   hasArticle: boolean;
 }>> {
   try {
-    const response = await fetch(
-      `https://${RAPIDAPI_HOST}/list-timeline?listId=${listId}`,
-      {
-        method: 'GET',
-        headers: {
-          'x-rapidapi-host': RAPIDAPI_HOST,
-          'x-rapidapi-key': RAPIDAPI_KEY,
-        },
-      }
-    );
+    console.log(`Making API request for list ${listId}...`);
+    const url = `https://${RAPIDAPI_HOST}/list-timeline?listId=${listId}`;
+    console.log(`Request URL: ${url}`);
+    
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'x-rapidapi-host': RAPIDAPI_HOST,
+        'x-rapidapi-key': RAPIDAPI_KEY,
+      },
+    });
+
+    console.log(`API response status for list ${listId}: ${response.status}`);
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorText = await response.text();
+      console.error(`API error for list ${listId}:`, {
+        status: response.status,
+        statusText: response.statusText,
+        body: errorText
+      });
+      throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
     }
 
     const data: TwitterTimelineResponse = await response.json();
-    return extractTweetsFromTimeline(data);
+    console.log(`API data received for list ${listId}:`, {
+      hasResult: !!data.result,
+      hasTimeline: !!data.result?.timeline,
+      instructionsCount: data.result?.timeline?.instructions?.length || 0
+    });
+    
+    const tweets = extractTweetsFromTimeline(data);
+    console.log(`Extracted ${tweets.length} tweets from list ${listId}`);
+    return tweets;
   } catch (error) {
     console.error(`Error fetching timeline for list ${listId}:`, error);
     return [];
@@ -253,21 +264,51 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    // Use hardcoded list IDs for reliability (first 3 from the default list)
+    const allTwitterLists = [
+      '1937404509015216229', // Crypto News 1
+      '1935584949018493392', // Crypto News 2  
+      '1935589446247735425'  // Crypto News 3
+    ];
+    
+    console.log(`Processing ${allTwitterLists.length} Twitter lists`);
+
     let totalTweets = 0;
     let totalArticles = 0;
     
-    for (const listId of TWITTER_LISTS) {
-      console.log(`Fetching timeline for list ${listId}...`);
-      
-      const tweets = await fetchListTimeline(listId);
-      const articleTweets = tweets.filter(tweet => tweet.hasArticle);
-      
-      console.log(`Found ${tweets.length} tweets, ${articleTweets.length} with articles`);
-      
-      await saveTweetsToDatabase(tweets, listId);
-      
-      totalTweets += tweets.length;
-      totalArticles += articleTweets.length;
+    const results = [];
+    
+    for (const listId of allTwitterLists) {
+      try {
+        console.log(`Fetching timeline for list ${listId}...`);
+        
+        const tweets = await fetchListTimeline(listId);
+        const articleTweets = tweets.filter(tweet => tweet.hasArticle);
+        
+        console.log(`Found ${tweets.length} tweets, ${articleTweets.length} with articles`);
+        
+        await saveTweetsToDatabase(tweets, listId);
+        
+        totalTweets += tweets.length;
+        totalArticles += articleTweets.length;
+        
+        results.push({
+          listId,
+          success: true,
+          tweets: tweets.length,
+          articles: articleTweets.length
+        });
+        
+        console.log(`Successfully processed list ${listId}`);
+        
+      } catch (error) {
+        console.error(`Error processing list ${listId}:`, error);
+        results.push({
+          listId,
+          success: false,
+          error: error instanceof Error ? error.message : 'Unknown error'
+        });
+      }
       
       // Add delay between requests to avoid rate limiting
       await new Promise(resolve => setTimeout(resolve, 2000));
@@ -275,9 +316,10 @@ export async function GET(request: NextRequest) {
     
     return NextResponse.json({
       success: true,
-      message: `Processed ${TWITTER_LISTS.length} lists`,
+      message: `Processed ${allTwitterLists.length} lists`,
       totalTweets,
       totalArticles,
+      results,
       timestamp: new Date().toISOString()
     });
   } catch (error) {

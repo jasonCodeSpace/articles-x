@@ -55,13 +55,15 @@ async function initializeDefaultTwitterLists(): Promise<void> {
   })
   
   // Check if lists already exist
-  const { data: existingLists } = await supabase
+  const { data: existingLists, error: checkError } = await supabase
     .from('twitter_lists')
     .select('list_id')
     .limit(1)
   
+  console.log('Check existing lists result:', { existingLists, checkError })
+  
   if (existingLists && existingLists.length > 0) {
-    console.log('Twitter lists already initialized')
+    console.log(`Twitter lists already initialized (${existingLists.length} found)`)
     return
   }
   

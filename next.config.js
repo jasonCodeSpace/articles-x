@@ -72,15 +72,7 @@ const nextConfig = {
           }
         ],
       },
-      {
-        source: '/(.*\\.(js|css|woff|woff2|ttf|eot|ico|png|jpg|jpeg|gif|svg|webp|avif))',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable'
-          }
-        ],
-      },
+      // Static assets caching handled by Next.js automatically
     ];
   },
 };

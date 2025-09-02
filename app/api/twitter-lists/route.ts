@@ -5,11 +5,14 @@ import { getTwitterLists, updateTwitterList, getTwitterListStats } from '@/lib/t
 
 export async function GET(request: NextRequest) {
   try {
+    console.log('Twitter lists API called')
     const { searchParams } = new URL(request.url)
     const includeStats = searchParams.get('includeStats') === 'true'
     
     // Get all Twitter lists
+    console.log('Fetching Twitter lists...')
     const lists = await getTwitterLists()
+    console.log(`Fetched ${lists.length} lists`)
     
     // Add statistics if requested
     if (includeStats) {

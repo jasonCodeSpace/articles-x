@@ -9,9 +9,8 @@ export const metadata: Metadata = {
   description: 'Explore our complete archive of curated X articles and past discussions. Browse historical content by date, category, and discover valuable insights from previous conversations.',
 }
 
-// Enable static generation
-export const dynamic = 'force-static'
-export const revalidate = 300 // Revalidate every 5 minutes for better TTFB
+// Enable dynamic rendering to avoid build-time database queries
+export const dynamic = 'force-dynamic'
 
 interface PageProps {
   searchParams: Promise<{ category?: string; search?: string; page?: string }>

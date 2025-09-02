@@ -11,9 +11,8 @@ export const metadata: Metadata = {
   description: 'Discover weekly articles and insights',
 }
 
-// Enable static generation
-export const dynamic = 'force-static'
-export const revalidate = 3600 // Revalidate every hour
+// Enable dynamic rendering to avoid build-time database queries
+export const dynamic = 'force-dynamic'
 
 interface PageProps {
   searchParams: Promise<{ category?: string; search?: string; page?: string }>

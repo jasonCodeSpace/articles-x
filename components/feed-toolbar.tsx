@@ -42,7 +42,7 @@ export function FeedToolbar({
   }
 
   return (
-    <div className="flex flex-col sm:flex-row gap-3 items-center justify-center p-3 bg-transparent border-b border-gray-700/50">
+    <div className="flex flex-col gap-3 items-center justify-center p-3 bg-transparent border-b border-gray-700/50">
       {/* Centered Search */}
       <form onSubmit={handleSearchSubmit} className="w-full max-w-md sm:max-w-sm">
         <div className="relative">
@@ -61,45 +61,48 @@ export function FeedToolbar({
         </div>
       </form>
       
-      {/* Sort Button */}
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => onSortChange(sortBy === 'latest' ? 'hot' : 'latest')}
-        className="flex items-center gap-2 rounded-full"
-      >
-        {sortBy === 'latest' ? (
-          <>
-            <Clock className="h-4 w-4" />
-            Latest
-          </>
-        ) : (
-          <>
-            <TrendingUp className="h-4 w-4" />
-            Hot
-          </>
-        )}
-      </Button>
-      
-      {/* Language Toggle Button */}
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => onLanguageChange(language === 'original' ? 'english' : 'original')}
-        className="flex items-center gap-2 rounded-full"
-      >
-        {language === 'original' ? (
-          <>
-            <Globe className="h-4 w-4" />
-            Original
-          </>
-        ) : (
-          <>
-            <Languages className="h-4 w-4" />
-            English
-          </>
-        )}
-      </Button>
+      {/* Button Row - Side by side on all screen sizes */}
+      <div className="flex flex-row gap-3 items-center justify-center">
+        {/* Sort Button */}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => onSortChange(sortBy === 'latest' ? 'hot' : 'latest')}
+          className="flex items-center gap-2 rounded-full"
+        >
+          {sortBy === 'latest' ? (
+            <>
+              <Clock className="h-4 w-4" />
+              Latest
+            </>
+          ) : (
+            <>
+              <TrendingUp className="h-4 w-4" />
+              Hot
+            </>
+          )}
+        </Button>
+        
+        {/* Language Toggle Button */}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => onLanguageChange(language === 'original' ? 'english' : 'original')}
+          className="flex items-center gap-2 rounded-full"
+        >
+          {language === 'original' ? (
+            <>
+              <Globe className="h-4 w-4" />
+              Original
+            </>
+          ) : (
+            <>
+              <Languages className="h-4 w-4" />
+              English
+            </>
+          )}
+        </Button>
+      </div>
     </div>
   )
 }

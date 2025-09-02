@@ -111,7 +111,7 @@ export default async function TrendingPage({ searchParams }: PageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 md:pt-24 pb-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 md:pt-24 pb-6">
         <div className="space-y-6">
           {/* Page Header */}
           <div className="text-center space-y-4 mb-8">

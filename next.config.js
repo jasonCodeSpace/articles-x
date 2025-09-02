@@ -5,7 +5,8 @@ const nextConfig = {
   
   // Enable experimental features for better performance
   experimental: {
-    optimizeCss: true,
+    // Disable optimizeCss to fix Vercel deployment issues
+    // optimizeCss: true,
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
   },
   

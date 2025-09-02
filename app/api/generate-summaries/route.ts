@@ -21,14 +21,14 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = createServiceClient();
     
-    // 先获取最近发布的100条推文对应的文章
+    // 先获取最近发布的200条推文对应的文章
     const { data: recentArticles, error: fetchError } = await supabase
       .from('articles')
       .select('id, title, full_article_content, summary_chinese, summary_english, summary_generated_at, tweet_published_at, category, language, title_english, article_preview_text_english, full_article_content_english, tweet_text, article_preview_text')
       .not('full_article_content', 'is', null)
       .not('tweet_published_at', 'is', null)
       .order('tweet_published_at', { ascending: false })
-      .limit(100);
+      .limit(200);
     
     if (fetchError) {
       console.error('Error fetching recent articles:', fetchError);
@@ -38,14 +38,16 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // 从最近100条文章中筛选出需要重新生成总结的文章
-    const articles = recentArticles?.filter(article => 
+    // 从最近200条文章中筛选出需要重新生成总结的文章，但限制处理数量
+    const problematicArticles = recentArticles?.filter(article => 
       !article.summary_generated_at || // 没有生成过总结
       !article.summary_english || 
       !article.summary_chinese ||
       article.summary_chinese.includes('意大利语段落') ||
       article.summary_chinese.includes('Chinese Summary') ||
+      article.summary_chinese.includes('中文总结段落') ||
       article.summary_english.includes('English paragraph') ||
+      article.summary_english.includes('English Summary') ||
       article.summary_english === '' ||
       !article.full_article_content_english || 
       !article.article_preview_text_english || 
@@ -53,6 +55,9 @@ export async function POST(request: NextRequest) {
       !article.category || 
       !article.language
     ) || [];
+    
+    // 限制每次只处理50篇文章，避免超时
+    const articles = problematicArticles.slice(0, 50);
     
     if (!articles || articles.length === 0) {
       return NextResponse.json(

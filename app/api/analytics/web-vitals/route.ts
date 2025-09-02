@@ -29,21 +29,16 @@ export async function POST(request: NextRequest) {
 
     const supabase = await createClient();
 
-    // 插入Web Vitals数据
+    // 插入Web Vitals数据 (只使用存在的列)
     const { error } = await supabase
       .from('web_vitals')
       .insert({
         metric_name: name,
         metric_value: value,
-        metric_delta: delta,
-        metric_id: id,
         page_url: url,
         user_agent: userAgent,
-        ip_address: ip,
-        country,
-        city,
-        timestamp: new Date(timestamp).toISOString(),
-        created_at: new Date().toISOString(),
+        connection_type: 'unknown', // 可以通过前端传递
+        timestamp: timestamp ? new Date(timestamp).toISOString() : new Date().toISOString(),
       });
 
     if (error) {

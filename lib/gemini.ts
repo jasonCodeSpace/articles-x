@@ -325,7 +325,7 @@ ${content.substring(0, 8000)}`; // 限制内容长度避免超出API限制
     
     // 解析分类
     const categoryMatch = text.match(/CATEGORY:\s*([^\n]+)/i);
-    let rawCategory = categoryMatch ? categoryMatch[1].trim() : 'Business'; // 默认分类改为更中性的Business
+    const rawCategory = categoryMatch ? categoryMatch[1].trim() : 'Business'; // 默认分类改为更中性的Business
     
     // 定义有效分类列表
     const validCategories = [

@@ -128,21 +128,21 @@ export default function Login() {
         {/* Back Button */}
         <div className="mb-6 animate-slide-up">
           {step === 'verification' ? (
-            <button 
+            <Button 
+              variant="ghost"
               onClick={handleBackToEmail}
-              className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors group"
+              className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors group p-0 h-auto"
             >
               <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
               <span className="text-sm">Back to Email</span>
-            </button>
+            </Button>
           ) : (
-            <Link 
-              href="/new" 
-              className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors group"
-            >
-              <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
-              <span className="text-sm">Back to Home</span>
-            </Link>
+            <Button variant="ghost" asChild className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors group p-0 h-auto">
+              <Link href="/new">
+                <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
+                <span className="text-sm">Back to Home</span>
+              </Link>
+            </Button>
           )}
         </div>
         
@@ -251,13 +251,14 @@ export default function Login() {
               </Button>
               
               <div className="text-center">
-                <button
+                <Button
+                  variant="ghost"
                   type="button"
                   onClick={handleBackToEmail}
-                  className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                  className="text-sm text-muted-foreground hover:text-primary transition-colors p-0 h-auto"
                 >
                   Didn&apos;t receive the code? Try again
-                </button>
+                </Button>
               </div>
             </form>
           )}

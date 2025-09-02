@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/service'
 
 // Function to escape XML special characters
 function escapeXml(text: string): string {
@@ -26,7 +26,7 @@ function isValidSlug(slug: string): boolean {
 
 export async function GET() {
   try {
-    const supabase = await createClient()
+    const supabase = createServiceClient()
     
     // Fetch all articles first, then filter invalid slugs
     const { data: allArticles, error } = await supabase

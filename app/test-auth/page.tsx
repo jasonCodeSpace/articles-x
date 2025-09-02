@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { User } from '@supabase/supabase-js'
+import { Button } from '@/components/ui/button'
+import Link from 'next/link'
 
 export default function TestAuth() {
   const [user, setUser] = useState<User | null>(null)
@@ -54,7 +56,7 @@ export default function TestAuth() {
             )}
           </div>
           
-          <button
+          <Button
             onClick={async () => {
               try {
                 console.log('Test auth logout button clicked')
@@ -80,10 +82,10 @@ export default function TestAuth() {
                 window.location.replace('/login')
               }
             }}
-            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+            variant="destructive"
           >
             Sign Out
-          </button>
+          </Button>
         </div>
       ) : (
         <div className="space-y-4">
@@ -92,12 +94,11 @@ export default function TestAuth() {
             <p className="text-red-700">Please log in to continue</p>
           </div>
           
-          <a
-            href="/login"
-            className="inline-block px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-          >
-            Go to Login
-          </a>
+          <Button asChild>
+            <Link href="/login">
+              Go to Login
+            </Link>
+          </Button>
         </div>
       )}
     </div>

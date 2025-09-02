@@ -56,8 +56,8 @@ export async function POST(request: NextRequest) {
       !article.language
     ) || [];
     
-    // 限制每次只处理50篇文章，避免超时
-    const articles = problematicArticles.slice(0, 50);
+    // 限制每次只处理10篇文章，避免超时
+    const articles = problematicArticles.slice(0, 10);
     
     if (!articles || articles.length === 0) {
       return NextResponse.json(
@@ -155,7 +155,7 @@ export async function POST(request: NextRequest) {
         }
         
         // 添加延迟避免API限制
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        await new Promise(resolve => setTimeout(resolve, 1000));
         
       } catch (error) {
         console.error(`Error processing article ${article.id}:`, error);

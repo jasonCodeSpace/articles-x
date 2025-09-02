@@ -323,7 +323,20 @@ async function processTweetForArticle(tweetId: string, authorHandle: string): Pr
     const articleResult = tweetResult.article_results?.result || tweetResult.article?.article_results?.result;
     
     if (!articleResult) {
-      console.log(`No article data found for tweet ${tweetId}, skipping...`);
+      console.log(`No article data found for tweet ${tweetId}, marking as non-article...`);
+      
+      // Update the tweet in database to mark it as not having an article
+      try {
+        const supabase = await createClient();
+        await supabase
+          .from('tweets')
+          .update({ has_article: false })
+          .eq('tweet_id', tweetId);
+        console.log(`Updated tweet ${tweetId} has_article to false`);
+      } catch (updateError) {
+        console.error(`Error updating tweet ${tweetId}:`, updateError);
+      }
+      
       return null;
     }
     

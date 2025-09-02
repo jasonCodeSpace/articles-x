@@ -35,10 +35,10 @@ export async function POST(request: NextRequest) {
       .insert({
         metric_name: name,
         metric_value: value,
-        page_url: url,
         user_agent: userAgent,
-        connection_type: 'unknown', // 可以通过前端传递
-        timestamp: timestamp ? new Date(timestamp).toISOString() : new Date().toISOString(),
+        connection_type: 'unknown',
+        page_url: url,
+        timestamp: new Date().toISOString()
       });
 
     if (error) {

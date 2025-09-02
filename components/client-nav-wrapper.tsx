@@ -33,13 +33,26 @@ export function ClientNavWrapper({ initialUser, categories }: ClientNavWrapperPr
       
       // Force page reload on sign out to clear all cached state
       if (event === 'SIGNED_OUT') {
-        console.log('User signed out, clearing state')
+        console.log('User signed out, clearing state and redirecting')
+        
+        // Clear any remaining local storage items
+        try {
+          localStorage.removeItem('supabase.auth.token')
+          sessionStorage.clear()
+        } catch (error) {
+          console.warn('Error clearing storage:', error)
+        }
+        
         // Small delay to ensure the state is updated
         setTimeout(() => {
-          if (window.location.pathname !== '/login' && window.location.pathname !== '/register') {
+          const currentPath = window.location.pathname
+          console.log('Current path:', currentPath)
+          
+          if (currentPath !== '/login' && currentPath !== '/register' && currentPath !== '/landing') {
+            console.log('Redirecting to login page')
             window.location.replace('/login')
           }
-        }, 100)
+        }, 150)
       }
     })
 

@@ -195,11 +195,11 @@ export function ModernNav({ user, categories, className }: ModernNavProps) {
                              console.log('Logout successful')
                            }
                            
-                           // Force a full page reload to clear all state
-                           window.location.replace('/login')
+                           // Let the auth state change handler in ClientNavWrapper handle the redirect
+                           // to avoid double redirects
                          } catch (error) {
                            console.error('Logout failed:', error)
-                           // Clear storage anyway and redirect
+                           // Clear storage anyway and redirect as fallback
                            localStorage.clear()
                            sessionStorage.clear()
                            window.location.replace('/login')

@@ -40,7 +40,7 @@ export default function Login() {
       const { error } = await supabase.auth.signInWithOtp({
         email: validatedData.email,
         options: {
-          shouldCreateUser: false, // Only allow existing users to login
+          shouldCreateUser: true, // Allow new user creation during login
         },
       })
 

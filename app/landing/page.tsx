@@ -15,13 +15,8 @@ export default async function LandingPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   
-  // Get categories and stats
-  const { data: categoriesData } = await supabase
-    .from('articles')
-    .select('category')
-    .not('category', 'is', null)
-  
-  const categories = [...new Set(categoriesData?.map((item: { category: string }) => item.category).filter(Boolean) || [])] as string[]
+  // Use standardized categories only
+  const categories = ['Ai', 'Crypto', 'Tech', 'Data', 'Startups', 'Business', 'Markets', 'Product', 'Security', 'Policy', 'Science', 'Media']
 
   // Get real stats from database
   const { count: totalArticles } = await supabase

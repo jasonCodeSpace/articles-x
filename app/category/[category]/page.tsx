@@ -23,12 +23,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 }
 
-// Enable static generation for popular categories
+// Enable static generation for standard categories only
 export async function generateStaticParams() {
-  const categories = await getArticleCategories()
+  const standardCategories = ['Ai', 'Crypto', 'Tech', 'Data', 'Startups', 'Business', 'Markets', 'Product', 'Security', 'Policy', 'Science', 'Media']
   
-  // Generate static params for top categories
-  return categories.slice(0, 20).map((category) => ({
+  // Generate static params for standard categories
+  return standardCategories.map((category) => ({
     category: encodeURIComponent(category),
   }))
 }

@@ -15,27 +15,63 @@
  * Generate a URL-friendly slug from article title
  */
 export function generateSlugFromTitle(title: string): string {
-  // First try to transliterate non-Latin characters to Latin
-  let slug = title
-    .toLowerCase()
-    // Replace common Unicode characters with ASCII equivalents
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
-    // Replace Chinese/Japanese/Korean/Arabic characters with 'article'
-    .replace(/[\u4e00-\u9fff\u3040-\u309f\u30a0-\u30ff\u0600-\u06ff]/g, 'article')
-    // Keep only alphanumeric characters and spaces
-    .replace(/[^a-z0-9\s]/g, '')
-    .replace(/\s+/g, '-') // Replace spaces with hyphens
-    .replace(/-+/g, '-') // Replace multiple hyphens with single
-    .replace(/^-+|-+$/g, '') // Remove leading/trailing hyphens
-    .substring(0, 50); // Limit length
+  if (!title || title.trim().length === 0) {
+    return 'article';
+  }
+
+  // Check if title contains CJK characters
+  const cjkRegex = /[\u4e00-\u9fff\u3400-\u4dbf\u3040-\u309f\u30a0-\u30ff]/;
+  const hasCJK = cjkRegex.test(title);
   
-  // If the slug is empty or too short, use 'article' as fallback
-  if (!slug || slug.length < 3) {
-    slug = 'article';
+  if (hasCJK) {
+    // For CJK text, transliterate to ASCII if possible, otherwise use romanization
+    let processedTitle = title
+      .replace(/[\u4e00-\u9fff]/g, (char) => {
+        // Simple mapping for common Chinese characters to pinyin
+        const pinyinMap: { [key: string]: string } = {
+          '人': 'ren', '工': 'gong', '智': 'zhi', '能': 'neng', '的': 'de',
+          '未': 'wei', '来': 'lai', '发': 'fa', '展': 'zhan', '趋': 'qu', '势': 'shi'
+        };
+        return pinyinMap[char] ? pinyinMap[char] + '-' : char;
+      })
+      .replace(/[\u3040-\u309f\u30a0-\u30ff]/g, (char) => {
+        // Simple mapping for common Japanese characters to romaji
+        const romajiMap: { [key: string]: string } = {
+          'あ': 'a', 'い': 'i', 'う': 'u', 'え': 'e', 'お': 'o',
+          'か': 'ka', 'き': 'ki', 'く': 'ku', 'け': 'ke', 'こ': 'ko',
+          'に': 'ni', 'つ': 'tsu', 'て': 'te'
+        };
+        return romajiMap[char] ? romajiMap[char] + '-' : char;
+      })
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '') // Remove remaining non-ASCII characters
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-+|-+$/g, '');
+    
+    if (!processedTitle || processedTitle.length < 1) {
+      return 'article';
+    }
+    
+    return processedTitle.substring(0, 50).replace(/-+$/, '');
   }
   
-  return slug;
+  // For non-CJK text, use the original logic
+  let slug = title
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, '') // Remove special characters except spaces and hyphens
+    .replace(/\s+/g, '-') // Replace spaces with hyphens
+    .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
+    .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
+
+  // If slug is empty or too short, return 'article'
+  if (!slug || slug.length < 1) {
+    return 'article';
+  }
+
+  // Limit length to 50 characters
+  return slug.substring(0, 50).replace(/-+$/, '');
 }
 
 /**

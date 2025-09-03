@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/service';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { ArticleTranslation, TRANSLATION_PROMPT, parseTranslationResponse } from '@/lib/translation-prompts';
-import { generateSlugFromTitle } from '@/lib/url-utils';
+import { generateSlugFromTitle, extractArticleIdFromSlug } from '@/lib/url-utils';
 
 const CRON_SECRET = process.env.CRON_SECRET;
 
@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     // 直接查询所有需要翻译的文章（英文字段为空的）
     const { data: articlesToTranslate, error: fetchError } = await supabase
       .from('articles')
-      .select('id, title, article_preview_text, full_article_content, title_english, article_preview_text_english, full_article_content_english, tweet_published_at')
+      .select('id, title, slug, article_preview_text, full_article_content, title_english, article_preview_text_english, full_article_content_english, tweet_published_at')
       .not('full_article_content', 'is', null)
       .or('title_english.is.null,title_english.eq.,article_preview_text_english.is.null,article_preview_text_english.eq.,full_article_content_english.is.null,full_article_content_english.eq.')
       .order('updated_at', { ascending: false })
@@ -129,13 +129,7 @@ export async function POST(request: NextRequest) {
           updateData.full_article_content_english = cleanTranslation(translation.full_article_content, article.full_article_content);
         }
 
-        // 如果更新了title_english，同时更新slug
-        if (updateData.title_english) {
-          const newSlug = generateSlugFromTitle(updateData.title_english);
-          if (newSlug && newSlug.length > 0) {
-            updateData.slug = newSlug;
-          }
-        }
+        // 注意：slug 一旦生成就不应该再被修改，即使翻译了标题也保持原有的 slug
 
         // 只有当有字段需要更新时才执行数据库更新
         if (Object.keys(updateData).length > 0) {

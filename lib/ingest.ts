@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { TwitterTweet } from '@/lib/twitter'
+import { generateSlugFromTitle, generateShortId } from '@/lib/url-utils'
 import fs from 'fs'
 import path from 'path'
 
@@ -183,8 +184,10 @@ function getCategoryForAuthor(_authorHandle: string): string | undefined {
  * Convert harvested article to database article format
  */
 export function harvestedToDatabase(harvested: HarvestedArticle): DatabaseArticle {
-  // Generate slug from title
-  const slug = generateSlug(harvested.title)
+  // Generate slug from title with short ID
+  const titleSlug = generateSlugFromTitle(harvested.title)
+  const shortId = generateShortId(harvested.tweet_id)
+  const slug = `${titleSlug}--${shortId}`
   
   // Use excerpt or create one from title
   const excerpt = harvested.excerpt || `Article by ${harvested.author_handle}`
@@ -534,18 +537,7 @@ export async function ingestTweetsFromLists(
   return stats
 }
 
-/**
- * Generate URL-friendly slug from title
- */
-function generateSlug(title: string): string {
-  return title
-    .toLowerCase()
-    .replace(/[^\w\s-]/g, '') // Remove special characters
-    .replace(/\s+/g, '-') // Replace spaces with hyphens
-    .replace(/-+/g, '-') // Replace multiple hyphens with single
-    .slice(0, 100) // Limit length
-    .replace(/^-|-$/g, '') // Remove leading/trailing hyphens
-}
+
 
 /**
  * Parse Twitter date format to ISO string

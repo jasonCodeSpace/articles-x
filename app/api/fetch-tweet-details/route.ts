@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { generateSlugFromTitle, generateShortId } from '@/lib/url-utils';
 
 const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY || '';
 const RAPIDAPI_HOST = 'twitter241.p.rapidapi.com';
@@ -263,8 +264,10 @@ async function saveArticleToDatabase(articleData: any, tweetId: string) {
   const supabase = await createClient();
   
   try {
-    // Generate slug from author handle and tweet ID
-    const slug = `${articleData.author.handle}-${tweetId}`.toLowerCase().replace(/[^a-z0-9-]/g, '-');
+    // Generate slug from title and tweet ID
+    const titleSlug = generateSlugFromTitle(articleData.articlePreview.title || 'Untitled Article');
+    const shortId = generateShortId(tweetId);
+    const slug = `${titleSlug}--${shortId}`;
     
     console.log('Article data received:', JSON.stringify(articleData, null, 2));
     

@@ -1,18 +1,41 @@
 /**
  * Utility functions for generating and parsing article URLs
+ * 
+ * IMPORTANT: Article slugs should ONLY be generated ONCE when creating a new article.
+ * Once a slug is generated, it should NEVER be modified by any other code.
+ * This ensures URL stability and prevents broken links.
+ * 
+ * The only place where article slugs should be generated:
+ * - lib/ingest.ts (when creating articles from harvested data)
+ * - app/api/fetch-tweet-details/route.ts (when creating articles from tweet details)
+ * - app/api/process-articles/route.ts (when creating articles from processed tweets)
  */
 
 /**
  * Generate a URL-friendly slug from article title
  */
 export function generateSlugFromTitle(title: string): string {
-  return title
+  // First try to transliterate non-Latin characters to Latin
+  let slug = title
     .toLowerCase()
-    .replace(/[^a-z0-9\s]/g, '') // Remove special characters but keep spaces
+    // Replace common Unicode characters with ASCII equivalents
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
+    // Replace Chinese/Japanese/Korean/Arabic characters with 'article'
+    .replace(/[\u4e00-\u9fff\u3040-\u309f\u30a0-\u30ff\u0600-\u06ff]/g, 'article')
+    // Keep only alphanumeric characters and spaces
+    .replace(/[^a-z0-9\s]/g, '')
     .replace(/\s+/g, '-') // Replace spaces with hyphens
     .replace(/-+/g, '-') // Replace multiple hyphens with single
     .replace(/^-+|-+$/g, '') // Remove leading/trailing hyphens
-    .substring(0, 50) // Limit length
+    .substring(0, 50); // Limit length
+  
+  // If the slug is empty or too short, use 'article' as fallback
+  if (!slug || slug.length < 3) {
+    slug = 'article';
+  }
+  
+  return slug;
 }
 
 /**

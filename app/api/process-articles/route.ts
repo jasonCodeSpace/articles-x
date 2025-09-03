@@ -31,16 +31,7 @@ interface ArticleData {
   full_article_content?: string;
 }
 
-// Function to generate a slug from title
-function generateSlug(title: string): string {
-  return title
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .trim()
-    .substring(0, 50);
-}
+
 
 // Define interfaces for API response types
 interface ContentBlock {
@@ -190,16 +181,7 @@ function extractUrlsFromTweet(legacy: TweetLegacy): string[] {
   return urls;
 }
 
-// Helper function to generate URL-friendly slug
-function generateSlugHelper(text: string): string {
-  return text
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
-    .replace(/\s+/g, '-') // Replace spaces with hyphens
-    .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
-    .trim()
-    .substring(0, 50); // Limit length
-}
+
 
 // Function to validate if content is a legitimate article
 function isValidArticleContent(title: string, content: string, tweetText: string): boolean {

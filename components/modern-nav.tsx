@@ -3,8 +3,8 @@
 import React, { useState } from "react"
 import { motion } from "framer-motion"
 // import Link from "next/link"
-import { useRouter, useSearchParams } from "next/navigation"
-import { User, ChevronDown, Settings, Plus, TrendingUp, Grid3X3 } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { User, ChevronDown, Settings } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ThemeToggle } from '@/components/theme-toggle'
@@ -36,11 +36,10 @@ interface ModernNavProps {
   className?: string
 }
 
-export function ModernNav({ user, categories, className }: ModernNavProps) {
+export function ModernNav({ user, className }: ModernNavProps) {
   const [activeTab, setActiveTab] = useState("Home")
   // Theme functionality removed
   const router = useRouter()
-  const searchParams = useSearchParams()
   
   // Remove filter logic as we're replacing with Trending
 

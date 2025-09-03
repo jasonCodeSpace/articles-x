@@ -687,7 +687,7 @@ async function insertArticle(article: ArticleData, retryCount = 0): Promise<bool
     let error;
     if (existingArticle) {
       // Update existing article (exclude category to prevent overwriting)
-      const { category, ...articleWithoutCategory } = article;
+      const { category: _, ...articleWithoutCategory } = article;
       const { error: updateError } = await supabase
         .from('articles')
         .update(articleWithoutCategory)

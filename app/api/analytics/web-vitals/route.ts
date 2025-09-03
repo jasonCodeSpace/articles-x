@@ -7,11 +7,9 @@ export async function POST(request: NextRequest) {
     const {
       name,
       value,
-      delta,
       id,
       url,
       userAgent,
-      timestamp,
     } = body;
 
     // 验证必需字段
@@ -22,10 +20,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 获取客户端IP和其他元数据
-    const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
-    const country = 'unknown'; // Vercel geo data would be available in production
-    const city = 'unknown';
+
 
     const supabase = await createClient();
 

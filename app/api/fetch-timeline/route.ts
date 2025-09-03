@@ -133,7 +133,22 @@ function hasArticleLink(tweet: { legacy?: { entities?: { urls?: Array<{ expanded
   });
 }
 
-function hasRealArticle(tweetResult: any): boolean {
+function hasRealArticle(tweetResult: {
+  article_results?: {
+    result?: {
+      rest_id?: string;
+      title?: string;
+      preview_text?: string;
+    };
+  };
+  legacy?: {
+    entities?: {
+      urls?: Array<{
+        expanded_url?: string;
+      }>;
+    };
+  };
+}): boolean {
   // First priority: Check if there's actual article_results data
   const articleResults = tweetResult?.article_results?.result;
   if (articleResults?.title && articleResults?.preview_text) {

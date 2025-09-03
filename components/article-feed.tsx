@@ -39,7 +39,6 @@ export function ArticleFeed({ initialArticles, initialSearchQuery = '' }: Articl
     searchQuery,
     currentPage,
     totalPages,
-    totalItems,
     handleSearch,
     handleSort,
     handlePageChange,

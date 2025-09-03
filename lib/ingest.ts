@@ -133,6 +133,7 @@ let authorCategoryCache: Map<string, string> | null = null
 /**
  * Load author category mappings from tags.csv
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function loadAuthorCategoryMappings(): Map<string, string> {
   if (authorCategoryCache) {
     return authorCategoryCache
@@ -173,7 +174,7 @@ function loadAuthorCategoryMappings(): Map<string, string> {
  * Get category for author handle
  * Note: Disabled automatic category assignment to prevent unwanted updates
  */
-function getCategoryForAuthor(authorHandle: string): string | undefined {
+function getCategoryForAuthor(_authorHandle: string): string | undefined {
   // Return undefined to prevent automatic category assignment
   return undefined
 }

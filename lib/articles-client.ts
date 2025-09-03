@@ -75,8 +75,19 @@ export async function fetchArticlesClient(options: FetchArticlesOptions = {}): P
 export async function getArticleCategoriesClient(): Promise<string[]> {
   // Return fixed list of standard categories
   const standardCategories = [
+    'Hardware',
+    'Gaming',
+    'Health',
+    'Environment',
+    'Personal Story',
+    'Culture',
+    'Philosophy',
+    'History',
+    'Education',
+    'Design',
+    'Marketing',
     'AI',
-    'Crypto', 
+    'Crypto',
     'Tech',
     'Data',
     'Startups',

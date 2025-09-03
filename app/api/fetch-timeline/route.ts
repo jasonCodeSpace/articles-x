@@ -31,6 +31,13 @@ interface TwitterTimelineResponse {
                       }>;
                     };
                   };
+                  article_results?: {
+                    result?: {
+                      rest_id?: string;
+                      title?: string;
+                      preview_text?: string;
+                    };
+                  };
                 };
               };
             };
@@ -54,6 +61,13 @@ interface TwitterTimelineResponse {
                           urls?: Array<{
                             expanded_url?: string;
                           }>;
+                        };
+                      };
+                      article_results?: {
+                        result?: {
+                          rest_id?: string;
+                          title?: string;
+                          preview_text?: string;
                         };
                       };
                     };
@@ -119,6 +133,44 @@ function hasArticleLink(tweet: { legacy?: { entities?: { urls?: Array<{ expanded
   });
 }
 
+function hasRealArticle(tweetResult: any): boolean {
+  // First priority: Check if there's actual article_results data
+  const articleResults = tweetResult?.article_results?.result;
+  if (articleResults?.title && articleResults?.preview_text) {
+    const title = articleResults.title.toLowerCase();
+    
+    // Filter out promotional/marketing content
+    const promotionalKeywords = [
+      'how to manage',
+      'guide to monitoring',
+      'developer\'s guide',
+      'tutorial',
+      'step by step',
+      'best practices for',
+      'tips for',
+      'ultimate guide'
+    ];
+    
+    // Check if title contains promotional keywords
+    const isPromotional = promotionalKeywords.some(keyword => title.includes(keyword));
+    
+    // Also check for specific company/service promotion patterns
+    const isServicePromotion = title.includes('circleboom') || 
+                              title.includes('sentio') ||
+                              (title.includes('twitter') && title.includes('manage')) ||
+                              (title.includes('dashboard') && title.includes('monitoring'));
+    
+    if (isPromotional || isServicePromotion) {
+      return false;
+    }
+    
+    return true;
+  }
+  
+  // Second priority: Check for article links only if no article_results
+  return hasArticleLink(tweetResult);
+}
+
 function extractTweetsFromTimeline(response: TwitterTimelineResponse): Array<{
   tweetId: string;
   authorHandle: string;
@@ -142,7 +194,7 @@ function extractTweetsFromTimeline(response: TwitterTimelineResponse): Array<{
       if (tweetResult?.rest_id && tweetResult?.core?.user_results?.result?.legacy?.screen_name) {
         const tweetId = tweetResult.rest_id;
         const authorHandle = tweetResult.core.user_results.result.legacy.screen_name;
-        const hasArticle = hasArticleLink(tweetResult);
+        const hasArticle = hasRealArticle(tweetResult);
         
         tweets.push({
           tweetId,
@@ -159,7 +211,7 @@ function extractTweetsFromTimeline(response: TwitterTimelineResponse): Array<{
         if (itemTweetResult?.rest_id && itemTweetResult?.core?.user_results?.result?.legacy?.screen_name) {
           const tweetId = itemTweetResult.rest_id;
           const authorHandle = itemTweetResult.core.user_results.result.legacy.screen_name;
-          const hasArticle = hasArticleLink(itemTweetResult);
+          const hasArticle = hasRealArticle(itemTweetResult);
           
           tweets.push({
             tweetId,
@@ -227,7 +279,10 @@ async function saveTweetsToDatabase(tweets: Array<{
 }>, listId: string) {
   const supabase = await createClient();
   
-  for (const tweet of tweets) {
+  // Only save tweets that have articles
+  const articleTweets = tweets.filter(tweet => tweet.hasArticle);
+  
+  for (const tweet of articleTweets) {
     try {
       const { error } = await supabase
         .from('tweets')
@@ -264,11 +319,11 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // Use hardcoded list IDs for reliability (first 3 from the default list)
+    // Use hardcoded list IDs for reliability
     const allTwitterLists = [
-      '1937404509015216229', // Crypto News 1
-      '1935584949018493392', // Crypto News 2  
-      '1935589446247735425'  // Crypto News 3
+      '1961293346099589584', // List 1
+      '1961296267004502233', // List 2  
+      '1961298657371910342'  // List 3
     ];
     
     console.log(`Processing ${allTwitterLists.length} Twitter lists`);

@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/service'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(request: NextRequest) {
@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const supabase = await createClient()
+    const supabase = createServiceClient()
 
     // Call the cleanup function
     const { data, error } = await supabase.rpc('cleanup_non_article_tweets')
@@ -44,19 +44,25 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// GET method for manual testing (only in development)
-export async function GET() {
-  if (process.env.NODE_ENV !== 'development') {
-    return NextResponse.json(
-      { error: 'GET method only available in development' },
-      { status: 403 }
-    )
-  }
-
-  // For development, allow GET requests without auth
-  const supabase = await createClient()
-
+// GET method for Vercel Cron jobs and manual testing
+export async function GET(request: NextRequest) {
   try {
+    // Verify cron secret for security when called via HTTP
+    const authHeader = request.headers.get('authorization')
+    const querySecret = request.nextUrl.searchParams.get('secret')
+    
+    if ((!authHeader || !authHeader.startsWith('Bearer ') || authHeader.slice(7) !== process.env.CRON_SECRET) && 
+        querySecret !== process.env.CRON_SECRET) {
+      console.error('Unauthorized access attempt to cleanup-tweets API')
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    const supabase = createServiceClient()
+
+    // Call the cleanup function
     const { data, error } = await supabase.rpc('cleanup_non_article_tweets')
 
     if (error) {
@@ -68,6 +74,8 @@ export async function GET() {
     }
 
     const deletedCount = data || 0
+
+    console.log(`Tweets cleanup completed. Deleted ${deletedCount} non-article tweets.`)
 
     return NextResponse.json({
       success: true,

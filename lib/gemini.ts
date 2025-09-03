@@ -174,7 +174,7 @@ LANGUAGE: [detected language code]
 
 [English paragraph]
 
-CATEGORY: [Select up to 3 categories from: AI, Crypto, Tech, Data, Startups, Business, Markets, Product, Security, Policy, Science, Media. Separate multiple categories with commas. Base selection on article content analysis.]
+CATEGORY: [Select up to 3 categories from: Hardware, Gaming, Health, Environment, Personal Story, Culture, Philosophy, History, Education, Design, Marketing, AI, Crypto, Tech, Data, Startups, Business, Markets, Product, Security, Policy, Science, Media. Separate multiple categories with commas. Base selection on article content analysis.]
 
 ENGLISH_TRANSLATION: [ALWAYS provide this section regardless of original language]
 TITLE: [English translation or original if already in English - NEVER use "Not provided", "Not available", etc.]

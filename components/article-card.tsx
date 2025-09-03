@@ -160,9 +160,9 @@ export function ArticleCard({ article, className, priority = false }: ArticleCar
           )}
           {/* Category badges */}
           {article.category && (
-            <div className="absolute top-3 right-3 flex flex-wrap gap-1 max-w-[120px]">
+            <div className="absolute top-3 right-3 flex flex-nowrap gap-1 max-w-[140px] overflow-hidden">
               {article.category.split(',').slice(0, 2).map((cat, index) => (
-                <span key={index} className="bg-blue-600 text-white text-xs px-2 py-1 rounded-md font-medium">
+                <span key={index} className="bg-blue-600 text-white text-xs px-2 py-1 rounded-md font-medium whitespace-nowrap flex-shrink-0">
                   {cat.trim()}
                 </span>
               ))}

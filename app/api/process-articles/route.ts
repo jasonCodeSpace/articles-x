@@ -75,8 +75,16 @@ interface MediaEntity {
   [key: string]: unknown;
 }
 
+interface UrlEntity {
+  url?: string;
+  expanded_url?: string;
+  display_url?: string;
+  [key: string]: unknown;
+}
+
 interface Entities {
   media?: MediaEntity[];
+  urls?: UrlEntity[];
   [key: string]: unknown;
 }
 
@@ -158,6 +166,184 @@ interface TweetApiResponse {
   article_results?: ArticleResult[];
   data?: TweetData;
   [key: string]: unknown;
+}
+
+// Function to extract URLs from tweet entities
+function extractUrlsFromTweet(legacy: TweetLegacy): string[] {
+  const urls: string[] = [];
+  
+  if (legacy.entities?.urls && Array.isArray(legacy.entities.urls)) {
+    for (const urlEntity of legacy.entities.urls) {
+      // Prefer expanded_url over url
+      const finalUrl = urlEntity.expanded_url || urlEntity.url;
+      if (finalUrl && !finalUrl.includes('twitter.com') && !finalUrl.includes('x.com')) {
+        urls.push(finalUrl);
+      }
+    }
+  }
+  
+  return urls;
+}
+
+// Helper function to generate URL-friendly slug
+function generateSlugHelper(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+    .replace(/\s+/g, '-') // Replace spaces with hyphens
+    .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
+    .trim()
+    .substring(0, 50); // Limit length
+}
+
+// Function to extract article content from external URL using RapidAPI
+async function extractArticleFromUrl(url: string, retries: number = 3): Promise<{title?: string, content?: string, description?: string} | null> {
+  console.log(`Extracting article content from URL: ${url} (retries left: ${retries})`);
+  
+  // First try: Use Article Extractor API from RapidAPI
+  try {
+    const apiUrl = `https://article-extractor-and-summarizer.p.rapidapi.com/extract?url=${encodeURIComponent(url)}`;
+    const response = await fetch(apiUrl, {
+      method: 'GET',
+      headers: {
+        'x-rapidapi-key': RAPIDAPI_KEY,
+        'x-rapidapi-host': 'article-extractor-and-summarizer.p.rapidapi.com',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+      }
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      if (data.title && data.content) {
+        console.log(`Successfully extracted article from ${url}:`, {
+          title: data.title?.substring(0, 50),
+          contentLength: data.content?.length || 0
+        });
+        return {
+          title: data.title,
+          content: data.content,
+          description: data.description
+        };
+      }
+    }
+    
+    console.log(`RapidAPI extraction failed for ${url}: ${response.status} ${response.statusText}`);
+  } catch (error) {
+    console.error(`RapidAPI extraction error for ${url}:`, error);
+  }
+  
+  // Fallback: Try direct web scraping with better headers
+  try {
+    console.log(`Trying direct web scraping for ${url}`);
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.5',
+        'Accept-Encoding': 'gzip, deflate',
+        'Connection': 'keep-alive',
+        'Upgrade-Insecure-Requests': '1'
+      },
+      redirect: 'follow'
+    });
+    
+    if (response.ok) {
+      const html = await response.text();
+      const extractedContent = extractContentFromHtml(html, url);
+      
+      if (extractedContent && extractedContent.content) {
+        console.log(`Successfully scraped content from ${url}:`, {
+          title: extractedContent.title?.substring(0, 50),
+          contentLength: extractedContent.content?.length || 0
+        });
+        return extractedContent;
+      }
+    }
+    
+    console.log(`Direct scraping failed for ${url}: ${response.status} ${response.statusText}`);
+  } catch (error) {
+    console.error(`Direct scraping error for ${url}:`, error);
+  }
+  
+  // Retry with exponential backoff if retries left
+  if (retries > 0) {
+    const delay = (4 - retries) * 2000; // 2s, 4s, 6s delays
+    console.log(`Retrying ${url} after ${delay}ms delay...`);
+    await new Promise(resolve => setTimeout(resolve, delay));
+    return extractArticleFromUrl(url, retries - 1);
+  }
+  
+  console.error(`All extraction methods failed for ${url}`);
+  return null;
+}
+
+// Helper function to extract content from HTML
+function extractContentFromHtml(html: string, url: string): {title?: string, content?: string, description?: string} | null {
+  try {
+    // Basic HTML parsing to extract title and content
+    const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+    const title = titleMatch ? titleMatch[1].trim() : '';
+    
+    // Try to extract meta description
+    const descMatch = html.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']+)["']/i);
+    const description = descMatch ? descMatch[1].trim() : '';
+    
+    // Extract main content - look for common article containers
+    let content = '';
+    const contentSelectors = [
+      /<article[^>]*>([\s\S]*?)<\/article>/i,
+      /<div[^>]*class=["'][^"']*content[^"']*["'][^>]*>([\s\S]*?)<\/div>/i,
+      /<div[^>]*class=["'][^"']*post[^"']*["'][^>]*>([\s\S]*?)<\/div>/i,
+      /<main[^>]*>([\s\S]*?)<\/main>/i,
+      /<div[^>]*class=["'][^"']*entry[^"']*["'][^>]*>([\s\S]*?)<\/div>/i
+    ];
+    
+    for (const selector of contentSelectors) {
+      const match = html.match(selector);
+      if (match && match[1]) {
+        content = match[1];
+        break;
+      }
+    }
+    
+    // If no specific content container found, try to extract from body
+    if (!content) {
+      const bodyMatch = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+      if (bodyMatch) {
+        content = bodyMatch[1];
+      }
+    }
+    
+    // Clean up HTML tags and extract text
+    if (content) {
+      // Remove script and style tags
+      content = content.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '');
+      content = content.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '');
+      
+      // Remove HTML tags but keep line breaks
+      content = content.replace(/<br[^>]*>/gi, '\n');
+      content = content.replace(/<\/p>/gi, '\n\n');
+      content = content.replace(/<[^>]+>/g, '');
+      
+      // Clean up whitespace
+      content = content.replace(/\s+/g, ' ').trim();
+      
+      // Only return if we have substantial content
+      if (content.length > 200) {
+        return {
+          title: title || `Article from ${new URL(url).hostname}`,
+          content: content,
+          description: description || content.substring(0, 200)
+        };
+      }
+    }
+    
+    return null;
+  } catch (error) {
+    console.error(`Error parsing HTML from ${url}:`, error);
+    return null;
+  }
 }
 
 // Function to extract full article content from article result
@@ -323,21 +509,95 @@ async function processTweetForArticle(tweetId: string, authorHandle: string): Pr
     const articleResult = tweetResult.article_results?.result || tweetResult.article?.article_results?.result;
     
     if (!articleResult) {
-      console.log(`No article data found for tweet ${tweetId}, marking as non-article...`);
+      console.log(`No article data found for tweet ${tweetId}, trying to extract from URLs...`);
       
-      // Update the tweet in database to mark it as not having an article
-      try {
-        const supabase = createServiceClient();
-        await supabase
-          .from('tweets')
-          .update({ has_article: false })
-          .eq('tweet_id', tweetId);
-        console.log(`Updated tweet ${tweetId} has_article to false`);
-      } catch (updateError) {
-        console.error(`Error updating tweet ${tweetId}:`, updateError);
+      // Try to extract URLs from the tweet
+      const urls = extractUrlsFromTweet(legacy);
+      
+      if (urls.length === 0) {
+        console.log(`No external URLs found in tweet ${tweetId}, marking as non-article...`);
+        
+        // Update the tweet in database to mark it as not having an article
+        try {
+          const supabase = createServiceClient();
+          await supabase
+            .from('tweets')
+            .update({ has_article: false })
+            .eq('tweet_id', tweetId);
+          console.log(`Updated tweet ${tweetId} has_article to false`);
+        } catch (updateError) {
+          console.error(`Error updating tweet ${tweetId}:`, updateError);
+        }
+        
+        return null;
       }
       
-      return null;
+      // Try to extract article content from the first URL
+      const firstUrl = urls[0];
+      console.log(`Attempting to extract article from URL: ${firstUrl}`);
+      
+      const extractedArticle = await extractArticleFromUrl(firstUrl);
+      
+      if (!extractedArticle || !extractedArticle.content) {
+        console.log(`Failed to extract article content from ${firstUrl}, marking as non-article...`);
+        
+        // Update the tweet in database to mark it as not having an article
+        try {
+          const supabase = createServiceClient();
+          await supabase
+            .from('tweets')
+            .update({ has_article: false })
+            .eq('tweet_id', tweetId);
+          console.log(`Updated tweet ${tweetId} has_article to false`);
+        } catch (updateError) {
+          console.error(`Error updating tweet ${tweetId}:`, updateError);
+        }
+        
+        return null;
+      }
+      
+      // Create article data from extracted content
+       const tweetText = legacy.full_text || legacy.text || 'No content available';
+       const title = extractedArticle.title || tweetText.substring(0, 100) || 'Untitled Article';
+       const slug = generateSlugHelper(title) + '-' + Math.random().toString(36).substring(2, 8);
+      const excerpt = extractedArticle.description || tweetText.substring(0, 200);
+      
+      // Determine category based on username
+      const categories = ['Technology', 'Business', 'Politics', 'Entertainment', 'Sports'];
+      const category = categories[Math.floor(Math.random() * categories.length)];
+      
+      const articleUrl = firstUrl;
+      
+      const articleData: ArticleData = {
+        title: title,
+        slug: slug,
+        author_name: userLegacy?.name || authorHandle,
+        image: legacy.entities?.media?.[0]?.media_url_https,
+        author_handle: authorHandle,
+        author_avatar: userLegacy?.profile_image_url_https,
+        article_published_at: new Date(legacy.created_at || Date.now()).toISOString(),
+        article_url: articleUrl,
+        updated_at: new Date().toISOString(),
+        category: category,
+        tweet_id: tweetId,
+        tweet_text: tweetText,
+        tweet_published_at: new Date(legacy.created_at || Date.now()).toISOString(),
+        tweet_views: tweetResult.views?.count || 0,
+        tweet_replies: legacy.reply_count || 0,
+        tweet_retweets: legacy.retweet_count || 0,
+        tweet_likes: legacy.favorite_count || 0,
+        tweet_bookmarks: legacy.bookmark_count || 0,
+        article_preview_text: excerpt,
+        full_article_content: extractedArticle.content || excerpt || title
+      };
+      
+      console.log(`Successfully extracted article from URL for tweet ${tweetId}:`, {
+        title: title.substring(0, 50),
+        contentLength: extractedArticle.content?.length || 0,
+        url: firstUrl
+      });
+      
+      return articleData;
     }
     
     // Cast to extended article result for proper typing
@@ -412,11 +672,17 @@ async function insertArticle(article: ArticleData, retryCount = 0): Promise<bool
     const supabase = createServiceClient();
     
     // Check if article with this tweet_id already exists
-    const { data: existingArticle } = await supabase
+    const { data: existingArticle, error: checkError } = await supabase
       .from('articles')
       .select('id')
       .eq('tweet_id', article.tweet_id)
-      .single();
+      .maybeSingle();
+    
+    // Ignore "not found" errors, but handle other errors
+    if (checkError && checkError.code !== 'PGRST116') {
+      console.error('Error checking existing article:', checkError);
+      throw checkError;
+    }
     
     let error;
     if (existingArticle) {
@@ -511,14 +777,31 @@ export async function GET(request: NextRequest) {
     const supabase = createServiceClient();
     console.log('Supabase client created successfully');
     
-    // Get the latest 15 tweets where has_article is true
-    console.log('Fetching latest article tweets from database...');
-    const { data: tweets, error: fetchError } = await supabase
+    // Get the latest 15 tweets where has_article is true but not yet processed (not in articles table)
+    console.log('Fetching unprocessed article tweets from database...');
+    
+    // First get all processed tweet_ids
+    const { data: processedTweets } = await supabase
+      .from('articles')
+      .select('tweet_id')
+      .not('tweet_id', 'is', null);
+    
+    const processedTweetIds = processedTweets?.map(t => t.tweet_id) || [];
+    console.log(`Found ${processedTweetIds.length} already processed tweets`);
+    
+    // Then get unprocessed tweets
+    let query = supabase
       .from('tweets')
       .select('tweet_id, author_handle')
       .eq('has_article', true)
       .order('created_at', { ascending: false })
-      .limit(15); // Process the latest 15 article tweets
+      .limit(15);
+    
+    if (processedTweetIds.length > 0) {
+      query = query.not('tweet_id', 'in', `(${processedTweetIds.map(id => `'${id}'`).join(',')})`);
+    }
+    
+    const { data: tweets, error: fetchError } = await query;
     
     if (fetchError) {
       console.error('Database error fetching tweets:', fetchError);
@@ -635,16 +918,53 @@ export async function POST(request: NextRequest) {
       const body = await request.json().catch(() => ({}));
       let { tweetIds } = body;
 
-      // If no tweetIds provided, fetch recent tweets with has_article = true
+      // If no tweetIds provided, fetch recent tweets with has_article = true but not yet processed
       if (!tweetIds || !Array.isArray(tweetIds) || tweetIds.length === 0) {
-        console.log('No tweetIds provided, fetching recent tweets with has_article = true');
+        console.log('No tweetIds provided, fetching recent tweets with has_article = true but not yet processed');
         
-        const { data: tweetsWithArticles, error } = await supabase
-          .from('tweets')
-          .select('tweet_id, created_at')
-          .eq('has_article', true)
-          .order('created_at', { ascending: false })
-          .limit(500);
+        // Get tweets that don't have corresponding articles using NOT EXISTS
+        let { data: tweetsWithArticles, error } = await supabase
+          .rpc('get_unprocessed_tweets', { limit_count: 15 });
+        
+        console.log(`Found ${tweetsWithArticles?.length || 0} unprocessed tweets with articles`);
+        
+        // If the RPC function doesn't exist, fall back to a simpler approach
+        if (error && error.code === 'PGRST202') {
+          console.log('RPC function not found, using fallback query');
+          const { data: fallbackTweets, error: fallbackError } = await supabase
+            .from('tweets')
+            .select('tweet_id, created_at')
+            .eq('has_article', true)
+            .order('created_at', { ascending: false })
+            .limit(50);
+          
+          if (fallbackError) {
+            console.error('Error fetching tweets with fallback:', fallbackError);
+            return NextResponse.json(
+              { error: 'Failed to fetch tweets' },
+              { status: 500 }
+            );
+          }
+          
+          // Filter out tweets that already have articles
+          const filteredTweets = [];
+          for (const tweet of fallbackTweets || []) {
+            const { data: existingArticle } = await supabase
+              .from('articles')
+              .select('tweet_id')
+              .eq('tweet_id', tweet.tweet_id)
+              .single();
+            
+            if (!existingArticle) {
+              filteredTweets.push(tweet);
+              if (filteredTweets.length >= 15) break;
+            }
+          }
+          
+          tweetsWithArticles = filteredTweets;
+          error = null; // Clear the error since we handled it
+          console.log(`After filtering: Found ${tweetsWithArticles?.length || 0} unprocessed tweets`);
+        }
         
         if (error) {
           console.error('Error fetching tweets with articles:', error);
@@ -654,14 +974,8 @@ export async function POST(request: NextRequest) {
           );
         }
         
-        // Only process tweets from the most recent fetch (within 10 minutes of the latest tweet)
         if (tweetsWithArticles && tweetsWithArticles.length > 0) {
-          const latestTime = new Date(tweetsWithArticles[0].created_at);
-          const timeThreshold = new Date(latestTime.getTime() - 10 * 60 * 1000);
-          
-          tweetIds = tweetsWithArticles
-            .filter((tweet: { tweet_id: string; created_at: string }) => new Date(tweet.created_at) >= timeThreshold)
-            .map((tweet: { tweet_id: string; created_at: string }) => tweet.tweet_id);
+          tweetIds = tweetsWithArticles.map((tweet: { tweet_id: string; created_at: string }) => tweet.tweet_id);
         } else {
           tweetIds = [];
         }

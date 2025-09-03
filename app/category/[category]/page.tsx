@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 // Enable static generation for standard categories only
 export async function generateStaticParams() {
-  const standardCategories = ['All Category', 'AI', 'Crypto', 'Tech', 'Data', 'Startups', 'Business', 'Markets', 'Product', 'Security', 'Policy', 'Science', 'Media']
+  const standardCategories = ['All Category', 'Hardware', 'Gaming', 'Health', 'Environment', 'Personal Story', 'Culture', 'Philosophy', 'History', 'Education', 'Design', 'Marketing', 'AI', 'Crypto', 'Tech', 'Data', 'Startups', 'Business', 'Markets', 'Product', 'Security', 'Policy', 'Science', 'Media']
   
   // Generate static params for standard categories
   return standardCategories.map((category) => ({

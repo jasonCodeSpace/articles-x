@@ -6,6 +6,7 @@ import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { Article } from '@/components/article-card'
+import { generateCategorySlug, categorySlugToDisplayName } from '@/lib/url-utils'
 
 interface PageProps {
   params: Promise<{ category: string }>
@@ -15,7 +16,7 @@ interface PageProps {
 // Generate metadata for category pages
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { category } = await params
-  const decodedCategory = decodeURIComponent(category)
+  const decodedCategory = categorySlugToDisplayName(category)
   
   return {
     title: `${decodedCategory} Articles | xarticle.news`,
@@ -53,7 +54,7 @@ export async function generateStaticParams() {
   
   // Generate static params for standard categories
   return standardCategories.map((category) => ({
-    category: encodeURIComponent(category),
+    category: generateCategorySlug(category),
   }))
 }
 
@@ -63,7 +64,7 @@ export const revalidate = 120 // Revalidate every 2 minutes for better TTFB
 export default async function CategoryPage({ params, searchParams }: PageProps) {
   const { category } = await params
   const { search } = await searchParams
-  const decodedCategory = decodeURIComponent(category)
+  const decodedCategory = categorySlugToDisplayName(category)
   
   // Check if category contains comma - if so, return 404
   if (decodedCategory.includes(',')) {
@@ -81,7 +82,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
     "@type": "CollectionPage",
     "name": `${decodedCategory} Articles`,
     "description": `Curated articles about ${decodedCategory}`,
-    "url": `https://xarticle.news/category/${encodeURIComponent(decodedCategory)}`,
+    "url": `https://xarticle.news/category/${generateCategorySlug(decodedCategory)}`,
     "mainEntity": {
       "@type": "ItemList",
       "itemListElement": articles.slice(0, 10).map((article: Article, index: number) => ({

@@ -8,6 +8,7 @@ import { User, ChevronDown, Settings } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ThemeToggle } from '@/components/theme-toggle'
+import { generateCategorySlug } from '@/lib/url-utils'
 
 
 import {
@@ -92,7 +93,7 @@ export function ModernNav({ user, className }: ModernNavProps) {
                         if (category === 'All Categories') {
                           router.push('/category/All')
                         } else {
-                          router.push(`/category/${encodeURIComponent(category)}`)
+                          router.push(`/category/${generateCategorySlug(category)}`)
                         }
                       }}
                       className="w-full cursor-pointer text-left"
@@ -259,7 +260,7 @@ export function ModernNav({ user, className }: ModernNavProps) {
                       if (category === 'All Categories') {
                         router.push('/category/All')
                       } else {
-                        router.push(`/category/${encodeURIComponent(category)}`)
+                        router.push(`/category/${generateCategorySlug(category)}`)
                       }
                     }}
                     className="w-full cursor-pointer text-left px-2 py-1.5 text-sm"

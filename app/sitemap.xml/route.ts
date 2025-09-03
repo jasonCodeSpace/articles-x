@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/service'
+import { generateCategorySlug } from '@/lib/url-utils'
 
 // Function to escape XML special characters
 function escapeXml(text: string): string {
@@ -119,7 +120,7 @@ ${staticPages.map(page => {
       }
     }).join('\n')}
 ${Array.from(categoryMap.entries()).map(([category, lastMod]) => `  <url>
-    <loc>${escapeXml(baseUrl + '/category/' + encodeURIComponent(category))}</loc>
+    <loc>${escapeXml(baseUrl + '/category/' + generateCategorySlug(category))}</loc>
     <lastmod>${escapeXml(lastMod)}</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>

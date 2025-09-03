@@ -16,6 +16,28 @@ export function generateSlugFromTitle(title: string): string {
 }
 
 /**
+ * Generate a URL-friendly slug from category name
+ */
+export function generateCategorySlug(category: string): string {
+  return category
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+    .replace(/\s+/g, '-') // Replace spaces with hyphens
+    .replace(/-+/g, '-') // Replace multiple hyphens with single
+    .trim()
+}
+
+/**
+ * Convert category slug back to display name
+ */
+export function categorySlugToDisplayName(slug: string): string {
+  return slug
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
+}
+
+/**
  * Generate a short ID from UUID (first 6 characters)
  */
 export function generateShortId(uuid: string): string {

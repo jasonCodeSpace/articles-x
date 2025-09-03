@@ -563,7 +563,7 @@ async function processTweetForArticle(tweetId: string, authorHandle: string): Pr
       const excerpt = extractedArticle.description || tweetText.substring(0, 200);
       
       // Determine category based on username
-      const categories = ['Technology', 'Business', 'Politics', 'Entertainment', 'Sports'];
+      const categories = ['Hardware', 'Gaming', 'Health', 'Environment', 'Personal Story', 'Culture', 'Philosophy', 'History', 'Education', 'Design', 'Marketing', 'AI', 'Crypto', 'Tech', 'Data', 'Startups', 'Business', 'Markets', 'Product', 'Security', 'Policy', 'Science', 'Media'];
       const category = categories[Math.floor(Math.random() * categories.length)];
       
       const articleUrl = firstUrl;
@@ -627,7 +627,7 @@ async function processTweetForArticle(tweetId: string, authorHandle: string): Pr
     });
     
     // Determine category based on username
-    const categories = ['Technology', 'Business', 'Politics', 'Entertainment', 'Sports'];
+    const categories = ['Hardware', 'Gaming', 'Health', 'Environment', 'Personal Story', 'Culture', 'Philosophy', 'History', 'Education', 'Design', 'Marketing', 'AI', 'Crypto', 'Tech', 'Data', 'Startups', 'Business', 'Markets', 'Product', 'Security', 'Policy', 'Science', 'Media'];
     const category = categories[Math.floor(Math.random() * categories.length)];
     
     const articleUrl = `https://x.com/${authorHandle}/status/${tweetId}`;

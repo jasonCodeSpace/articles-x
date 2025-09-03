@@ -15,7 +15,31 @@ export default async function CategoryLayout({
   } = await supabase.auth.getUser()
 
   // Use fixed categories instead of fetching from database
-  const categories = ['AI', 'Crypto', 'Tech', 'Data', 'Startups', 'Business', 'Markets', 'Product', 'Security', 'Policy', 'Science', 'Media']
+  const categories = [
+    'Hardware',
+    'Gaming',
+    'Health',
+    'Environment',
+    'Personal Story',
+    'Culture',
+    'Philosophy',
+    'History',
+    'Education',
+    'Design',
+    'Marketing',
+    'AI',
+    'Crypto',
+    'Tech',
+    'Data',
+    'Startups',
+    'Business',
+    'Markets',
+    'Product',
+    'Security',
+    'Policy',
+    'Science',
+    'Media'
+  ]
 
   return (
     <div className="min-h-screen bg-background">

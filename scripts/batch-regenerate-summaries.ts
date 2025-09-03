@@ -41,7 +41,32 @@ async function batchRegenerateSummaries() {
     console.log('='.repeat(60))
     
     // 标准分类列表
-    const standardCategories = ['Ai', 'Crypto', 'Tech', 'Data', 'Startups', 'Business', 'Markets', 'Product', 'Security', 'Policy', 'Science', 'Media']
+    const standardCategories = [
+      'Hardware',
+      'Gaming',
+      'Health',
+      'Environment',
+      'Personal Story',
+  
+      'Culture',
+      'Philosophy',
+      'History',
+      'Education',
+      'Design',
+      'Marketing',
+      'AI',
+      'Crypto',
+      'Tech',
+      'Data',
+      'Startups',
+      'Business',
+      'Markets',
+      'Product',
+      'Security',
+      'Policy',
+      'Science',
+      'Media'
+    ]
     
     // 直接查询缺少指定字段或分类不标准的文章，按tweet_published_at排序
     const { data: articles, error: fetchError } = await supabase

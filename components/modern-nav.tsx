@@ -85,7 +85,7 @@ export function ModernNav({ user, className }: ModernNavProps) {
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="w-48 max-h-60 overflow-y-auto">
-                {['All Categories', 'AI', 'Crypto', 'Tech', 'Data', 'Startups', 'Business', 'Markets', 'Product', 'Security', 'Policy', 'Science', 'Media'].map((category) => (
+                {['All Categories', 'Hardware', 'Gaming', 'Health', 'Environment', 'Personal Story', 'Culture', 'Philosophy', 'History', 'Education', 'Design', 'Marketing', 'AI', 'Crypto', 'Tech', 'Data', 'Startups', 'Business', 'Markets', 'Product', 'Security', 'Policy', 'Science', 'Media'].map((category) => (
                   <DropdownMenuItem key={category} asChild>
                     <button 
                       onClick={() => {
@@ -252,7 +252,7 @@ export function ModernNav({ user, className }: ModernNavProps) {
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="mb-2 w-48 max-h-60 overflow-y-auto">
-              {['All Categories', 'AI', 'Crypto', 'Tech', 'Data', 'Startups', 'Business', 'Markets', 'Product', 'Security', 'Policy', 'Science', 'Media'].map((category) => (
+              {['All Categories', 'Hardware', 'Gaming', 'Health', 'Environment', 'Personal Story', 'Culture', 'Philosophy', 'History', 'Education', 'Design', 'Marketing', 'AI', 'Crypto', 'Tech', 'Data', 'Startups', 'Business', 'Markets', 'Product', 'Security', 'Policy', 'Science', 'Media'].map((category) => (
                 <DropdownMenuItem key={category} asChild>
                   <button 
                     onClick={() => {

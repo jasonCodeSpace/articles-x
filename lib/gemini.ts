@@ -206,8 +206,12 @@ CRITICAL CLASSIFICATION RULES:
 1. **Crypto分类规则：**
    - 仅当文章主要讨论区块链技术、加密货币、DeFi协议、NFT、代币经济学时才分类为Crypto
    - 如果加密货币只是个人故事的背景，不分类为Crypto
+   - 绝对不要将政治、政策、国际关系、战争、人道主义危机等内容分类为Crypto
+   - 绝对不要将环境、气候、能源等内容分类为Crypto
+   - 绝对不要将健康、医疗、教育等内容分类为Crypto
    - 例子：分析"回购销毁 vs 收益共享"的加密协议 = Crypto + Tech
    - 例子：个人故事中提到在加密行业工作 = Personal Story（不含Crypto）
+   - 例子："联合国加沙饥饿游戏" = Policy + Security（绝对不是Crypto）
 
 2. **Business分类规则：**
    - 仅限于：定价与变现策略、GTM与销售运营、渠道与合作伙伴管理、组织流程优化、单位经济学分析
@@ -584,8 +588,16 @@ CRITICAL CLASSIFICATION RULES:
 1. **Crypto分类规则：**
    - 仅当文章主要讨论区块链技术、加密货币、DeFi协议、NFT、代币经济学时才分类为Crypto
    - 如果加密货币只是个人故事的背景，不分类为Crypto
+   - **绝对不要将以下内容分类为Crypto（除非明确涉及区块链/加密技术）：**
+     * 政治、政策、国际关系、战争、人道主义危机
+     * 环境、气候、能源（除非是区块链能源消耗讨论）
+     * 健康、医疗、教育
+     * 传统金融市场、股票、债券
+     * 一般商业运营、管理话题
    - 例子：分析"回购销毁 vs 收益共享"的加密协议 = Crypto + Tech
    - 例子：个人故事中提到在加密行业工作 = Personal Story（不含Crypto）
+   - 例子："联合国加沙饥饿游戏" = Policy + Security（绝对不是Crypto）
+   - 例子："气候变化对经济的影响" = Environment + Policy（不是Crypto）
 
 2. **Business分类规则：**
    - 仅限于：定价与变现策略、GTM与销售运营、渠道与合作伙伴管理、组织流程优化、单位经济学分析
@@ -615,6 +627,16 @@ INSTRUCTIONS:
 4. When in doubt between similar categories, choose the most specific one
 5. Do NOT assign categories based on superficial keyword matching
 6. Focus on the article's main purpose and core discussion
+7. CRITICAL: Never assign Crypto category unless the article is PRIMARILY about blockchain/cryptocurrency technology
+8. **绝对禁止将以下主题分类为Crypto（除非明确涉及区块链技术）：**
+   - 政治、政策、国际关系、战争、人道主义危机
+   - 环境、气候、能源政策
+   - 健康、医疗、教育
+   - 传统金融、股票、债券市场
+   - 一般商业、管理、组织话题
+9. 只有当文章的核心内容是关于区块链、加密货币、DeFi、NFT等技术或应用时，才能分类为Crypto
+10. Always consider the context and main theme, not just individual words or phrases
+11. 如果文章只是偶然提到加密货币但主要讨论其他主题，不要分类为Crypto
 
 OUTPUT FORMAT:
 CATEGORIES: [List categories separated by commas, maximum 3]

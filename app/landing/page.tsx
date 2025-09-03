@@ -16,7 +16,32 @@ export default async function LandingPage() {
   const { data: { user } } = await supabase.auth.getUser()
   
   // Use standardized categories only
-  const categories = ['Ai', 'Crypto', 'Tech', 'Data', 'Startups', 'Business', 'Markets', 'Product', 'Security', 'Policy', 'Science', 'Media']
+  const categories = [
+    'Hardware',
+    'Gaming',
+    'Health',
+    'Environment',
+    'Personal Story',
+
+    'Culture',
+    'Philosophy',
+    'History',
+    'Education',
+    'Design',
+    'Marketing',
+    'AI',
+    'Crypto',
+    'Tech',
+    'Data',
+    'Startups',
+    'Business',
+    'Markets',
+    'Product',
+    'Security',
+    'Policy',
+    'Science',
+    'Media'
+  ]
 
   // Get real stats from database
   const { count: totalArticles } = await supabase

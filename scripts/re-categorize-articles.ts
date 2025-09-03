@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 
 import { createClient } from '@supabase/supabase-js'
-import { generateArticleAnalysis } from '@/lib/gemini'
+import { generateArticleAnalysis, generateCategories } from '@/lib/gemini'
 import * as dotenv from 'dotenv'
 
 // Load environment variables
@@ -72,32 +72,48 @@ async function recategorizeArticles() {
       // Generate new analysis using Gemini
       const analysis = await generateArticleAnalysis(content, article.title)
       
+      // Generate categories
+      const categories = await generateCategories(article.title, content)
+      // Take up to 2 categories and join with comma
+      const selectedCategories = categories.slice(0, 2)
+      const categoryString = selectedCategories.length > 0 ? selectedCategories.join(', ') : null
+      
       console.log(`   🤖 AI Analysis:`)
       console.log(`      Language: ${analysis.language}`)
+      if (categoryString) {
+        console.log(`      New categories: ${categoryString}`)
+      }
       
-      // Update article with language
+      // Update article with language and category
+      const updateData: any = {
+        language: analysis.language,
+        // Also update summaries if available
+        summary_chinese: analysis.summary.chinese,
+        summary_english: analysis.summary.english,
+        summary_generated_at: new Date().toISOString(),
+        // Update English translations if available
+        ...(analysis.english_translation && {
+          title_english: analysis.english_translation.title,
+          article_preview_text_english: analysis.english_translation.article_preview_text,
+          full_article_content_english: analysis.english_translation.full_article_content,
+        })
+      }
+      
+      // Add categories if available
+      if (categoryString) {
+        updateData.category = categoryString
+      }
+      
       const { error: updateError } = await supabase
         .from('articles')
-        .update({
-          language: analysis.language,
-          // Also update summaries if available
-          summary_chinese: analysis.summary.chinese,
-          summary_english: analysis.summary.english,
-          summary_generated_at: new Date().toISOString(),
-          // Update English translations if available
-          ...(analysis.english_translation && {
-            title_english: analysis.english_translation.title,
-            article_preview_text_english: analysis.english_translation.article_preview_text,
-            full_article_content_english: analysis.english_translation.full_article_content,
-          })
-        })
+        .update(updateData)
         .eq('id', article.id)
       
       if (updateError) {
         console.error(`   ❌ Error updating article ${article.id}:`, updateError)
         errors++
       } else {
-        console.log(`   ✅ Updated language: ${analysis.language}`)
+        console.log(`   ✅ Updated language: ${analysis.language}${categoryString ? `, categories: ${categoryString}` : ''}`)
         updated++
       }
       

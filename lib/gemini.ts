@@ -53,10 +53,15 @@ export async function generateArticleAnalysis(
     }
     
     // 构建提示词，只包含摘要生成、语言检测和英文翻译
-    const prompt = `TASK: Read the article and perform three tasks:
+    const prompt = `CRITICAL: You MUST follow this EXACT output format. Any deviation will cause system failure.
+
+TASK: Analyze this article and provide the response in the EXACT format specified below.
+
+You must:
 1. Detect the primary language of the article
 2. Produce an ULTRA-CONCISE, read-aloud friendly summary in English and Chinese
-3. ALWAYS provide English translations of title, tweet text, preview text, and full content (even if the original is already in English)
+3. Categorize the article
+4. ALWAYS provide English translations of title, tweet text, preview text, and full content (even if the original is already in English)
 
 LANGUAGE DETECTION:
 Detect the primary language of the article content. Use ISO 639-1 language codes:
@@ -167,14 +172,22 @@ CONTENT RULES
 - 中英尽量信息对齐；无引号、无链接、无项目符号、无表情。
 - 若信息缺失：写"未提及" / "not stated"。
 
-OUTPUT FORMAT:
+OUTPUT FORMAT (FOLLOW EXACTLY):
 LANGUAGE: [detected language code]
 
 [Chinese paragraph]
 
 [English paragraph]
 
-CATEGORY: [Select up to 3 categories from: Hardware, Gaming, Health, Environment, Personal Story, Culture, Philosophy, History, Education, Design, Marketing, AI, Crypto, Tech, Data, Startups, Business, Markets, Product, Security, Policy, Science, Media. Separate multiple categories with commas. 
+CATEGORY: [Select up to 3 categories from: Hardware, Gaming, Health, Environment, Personal Story, Culture, Philosophy, History, Education, Design, Marketing, AI, Crypto, Tech, Data, Startups, Business, Markets, Product, Security, Policy, Science, Media. Separate multiple categories with commas.
+
+ENGLISH_TRANSLATION:
+TITLE: [English translation or original if already in English - REQUIRED]
+TWEET_TEXT: [English translation or original if already in English - REQUIRED]
+PREVIEW_TEXT: [English translation or original if already in English - REQUIRED]
+FULL_CONTENT: [English translation or original if already in English - REQUIRED]
+
+IMPORTANT: You MUST include ALL sections above, especially ENGLISH_TRANSLATION with ALL four fields. 
 
 CATEGORY GUIDELINES:
 
@@ -234,23 +247,17 @@ CRITICAL CLASSIFICATION RULES:
    - Media适用于媒体和创作者经济产业，不适用于文化批评（用Culture）
    - 严格按照文章的主要目的和内容分类，不要因为背景提及就错误分类]
 
-ENGLISH_TRANSLATION: [ALWAYS provide this section regardless of original language]
-TITLE: [English translation or original if already in English - NEVER use "Not provided", "Not available", etc.]
-TWEET_TEXT: [English translation or original if already in English - NEVER use "Not provided", "Not available", etc.]
-PREVIEW_TEXT: [English translation or original if already in English - NEVER use "Not provided", "Not available", etc.]
-FULL_CONTENT: [English translation or original if already in English - NEVER use "Not provided", "Not available", etc.]
+IMPORTANT: You MUST follow this EXACT output format. Do not deviate from it.
 
 RULES:
 - No intro/outro, no repetition, no adjectives unless essential.
 - Prefer active voice; keep parallel structure across bullets.
-- If the article omits something important, write "not stated".
-- If space is tight, do not drop key points—slightly exceed the targets instead.
 - Do not use asterisk symbols in the output.
 - Detect language based on the actual content, not the title.
 - For English translations: maintain original meaning, use natural English, preserve technical terms and proper nouns.
-- For English translations: ALWAYS provide actual translations, NEVER use placeholder phrases like "not provided", "not available", "not applicable", "not stated", "not translated", "not given", "not found", "unavailable", "missing", "empty", "blank", "no content", "no translation", "original text", "same as original" or similar.
+- For English translations: ALWAYS provide actual translations, NEVER use placeholder phrases.
 - ALWAYS include ENGLISH_TRANSLATION section regardless of original language.
-- If content is missing or unclear, provide a reasonable English interpretation or paraphrase instead of placeholder text.
+- If content is missing or unclear, provide a reasonable English interpretation instead of placeholder text.
 
 Article Title: ${title}
 
@@ -351,28 +358,28 @@ ${content.substring(0, 8000)}`; // 限制内容长度避免超出API限制
     let english_translation: ArticleTranslation | undefined;
     const translationMatch = text.match(/ENGLISH_TRANSLATION:[\s\S]*$/i);
     
+    // 过滤无效翻译值的函数
+    const isValidTranslation = (text: string): boolean => {
+      const invalidValues = [
+        'not applicable', 'not stated', 'n/a', 'na', 'none', 'null', 'undefined',
+        'not provided', 'not available', 'no translation', 'no content',
+        'not specified', 'not mentioned', 'not given', 'not found',
+        'unavailable', 'missing', 'empty', 'blank', 'not applicable',
+        'not translated', 'original text', 'same as original'
+      ];
+      return Boolean(text) && 
+             text.trim().length > 0 && 
+             !invalidValues.includes(text.toLowerCase().trim()) &&
+             !text.toLowerCase().includes('not provided') &&
+             !text.toLowerCase().includes('not available');
+    };
+    
     if (translationMatch) {
       const translationText = translationMatch[0];
-      const titleMatch = translationText.match(/TITLE:\s*([^\n]+)/i);
-      const tweetMatch = translationText.match(/TWEET_TEXT:\s*([^\n]+)/i);
-      const previewMatch = translationText.match(/PREVIEW_TEXT:\s*([^\n]+)/i);
-      const contentMatch = translationText.match(/FULL_CONTENT:\s*([\s\S]*?)(?=\n\w+:|$)/i);
-      
-      // 过滤无效翻译值的函数
-       const isValidTranslation = (text: string): boolean => {
-         const invalidValues = [
-           'not applicable', 'not stated', 'n/a', 'na', 'none', 'null', 'undefined',
-           'not provided', 'not available', 'no translation', 'no content',
-           'not specified', 'not mentioned', 'not given', 'not found',
-           'unavailable', 'missing', 'empty', 'blank', 'not applicable',
-           'not translated', 'original text', 'same as original'
-         ];
-         return Boolean(text) && 
-                text.trim().length > 0 && 
-                !invalidValues.includes(text.toLowerCase().trim()) &&
-                !text.toLowerCase().includes('not provided') &&
-                !text.toLowerCase().includes('not available');
-       };
+      const titleMatch = translationText.match(/\*\*TITLE:\*\*\s*([^\n]+)/i) || translationText.match(/TITLE:\s*([^\n]+)/i);
+      const tweetMatch = translationText.match(/\*\*TWEET_TEXT:\*\*\s*([^\n]+)/i) || translationText.match(/TWEET_TEXT:\s*([^\n]+)/i);
+      const previewMatch = translationText.match(/\*\*PREVIEW_TEXT:\*\*\s*([^\n]+)/i) || translationText.match(/PREVIEW_TEXT:\s*([^\n]+)/i);
+      const contentMatch = translationText.match(/\*\*FULL_CONTENT:\*\*\s*([\s\S]*?)(?=\n\*\*\w+:|\n\w+:|$)/i) || translationText.match(/FULL_CONTENT:\s*([\s\S]*?)(?=\n\w+:|$)/i);
       
       if (titleMatch || tweetMatch || previewMatch || contentMatch) {
         const titleText = titleMatch ? titleMatch[1].trim() : '';
@@ -387,6 +394,20 @@ ${content.substring(0, 8000)}`; // 限制内容长度避免超出API限制
           full_article_content: isValidTranslation(contentText) ? contentText : content.substring(0, 8000)
         };
       }
+    }
+    
+    // 如果AI没有提供ENGLISH_TRANSLATION部分，提供备用逻辑
+    if (!english_translation) {
+      // 生成简单的英文翻译作为备用
+      const shortContent = content.substring(0, 1000);
+      const previewText = content.substring(0, 200).replace(/\n/g, ' ').trim();
+      
+      english_translation = {
+        title: title,
+        tweet_text: `${title.substring(0, 100)}... Read more about this important topic.`,
+        article_preview_text: previewText + (previewText.length >= 200 ? '...' : ''),
+        full_article_content: content.substring(0, 8000)
+      };
     }
 
     return {

@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     // 先获取最近发布的200条推文对应的文章
     const { data: recentArticles, error: fetchError } = await supabase
       .from('articles')
-      .select('id, title, full_article_content, summary_chinese, summary_english, summary_generated_at, tweet_published_at, category, language, title_english, article_preview_text_english, full_article_content_english, tweet_text, article_preview_text')
+      .select('id, title, full_article_content, summary_chinese, summary_english, summary_generated_at, tweet_published_at, category, language')
       .not('full_article_content', 'is', null)
       .not('tweet_published_at', 'is', null)
       .order('tweet_published_at', { ascending: false })
@@ -49,9 +49,6 @@ export async function POST(request: NextRequest) {
       article.summary_english.includes('English paragraph') ||
       article.summary_english.includes('English Summary') ||
       article.summary_english === '' ||
-      !article.full_article_content_english || 
-      !article.article_preview_text_english || 
-      !article.title_english || 
       !article.category || 
       !article.language
     ) || [];
@@ -89,9 +86,6 @@ export async function POST(request: NextRequest) {
           summary_english: string;
           summary_generated_at: string;
           language: string;
-          title_english?: string;
-          article_preview_text_english?: string;
-          full_article_content_english?: string;
           category?: string;
         } = {
           summary_chinese: analysis.summary.chinese,
@@ -103,36 +97,6 @@ export async function POST(request: NextRequest) {
         // 添加分类信息（如果存在）
         if (analysis.category) {
           updateData.category = analysis.category;
-        }
-
-        // 清理无效翻译值的函数
-        const cleanTranslation = (translatedText: string, fallbackText: string): string => {
-          const invalidValues = [
-            'not provided', 'not available', 'not applicable', 'not stated', 
-            'not translated', 'not given', 'not found', 'unavailable', 'missing',
-            'empty', 'blank', 'no content', 'no translation', 'original text',
-            'same as original', 'n/a', 'na', 'none', 'null', 'undefined'
-          ];
-          
-          if (!translatedText || 
-              translatedText.trim().length === 0 ||
-              invalidValues.some(invalid => translatedText.toLowerCase().includes(invalid))) {
-            return fallbackText || '';
-          }
-          
-          return translatedText;
-        };
-
-        // 始终添加英文翻译字段
-        if (analysis.english_translation) {
-          updateData.title_english = cleanTranslation(analysis.english_translation.title, article.title);
-          updateData.article_preview_text_english = cleanTranslation(analysis.english_translation.article_preview_text, article.article_preview_text || '');
-          updateData.full_article_content_english = cleanTranslation(analysis.english_translation.full_article_content, article.full_article_content);
-        } else {
-          // 如果没有翻译，使用原文（可能已经是英文或作为备用方案）
-          updateData.title_english = article.title;
-          updateData.article_preview_text_english = article.article_preview_text || '';
-          updateData.full_article_content_english = article.full_article_content;
         }
 
         // 更新数据库

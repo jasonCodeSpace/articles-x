@@ -7,6 +7,16 @@ export async function middleware(request: NextRequest) {
   })
 
   const pathname = request.nextUrl.pathname
+  
+  // URL normalization: redirect uppercase category URLs to lowercase
+  if (pathname.startsWith('/category/')) {
+    const categoryPart = pathname.split('/category/')[1]
+    if (categoryPart && categoryPart !== categoryPart.toLowerCase()) {
+      const url = request.nextUrl.clone()
+      url.pathname = `/category/${categoryPart.toLowerCase()}`
+      return NextResponse.redirect(url, 301)
+    }
+  }
   const isAuthRoute = pathname.startsWith('/login') || 
                        pathname.startsWith('/auth') || 
                        pathname.startsWith('/register') || 

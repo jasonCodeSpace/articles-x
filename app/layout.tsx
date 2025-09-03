@@ -15,6 +15,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://www.xarticle.news'),
   title: "Articles X",
   description: "A modern article platform",
 };

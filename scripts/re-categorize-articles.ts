@@ -91,12 +91,7 @@ async function recategorizeArticles() {
         summary_chinese: analysis.summary.chinese,
         summary_english: analysis.summary.english,
         summary_generated_at: new Date().toISOString(),
-        // Update English translations if available
-        ...(analysis.english_translation && {
-          title_english: analysis.english_translation.title,
-          article_preview_text_english: analysis.english_translation.article_preview_text,
-          full_article_content_english: analysis.english_translation.full_article_content,
-        })
+        // English translations are now handled by separate translation cronjob
       }
       
       // Add categories if available

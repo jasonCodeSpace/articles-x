@@ -17,10 +17,24 @@ interface PageProps {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { category } = await params
   const decodedCategory = categorySlugToDisplayName(category)
+  const slug = category.toLowerCase()
   
   return {
-    title: `${decodedCategory} Articles | xarticle.news`,
-    description: `Discover curated articles about ${decodedCategory}. Stay updated with the latest posts, insights, and discussions from leading voices in ${decodedCategory}.`,
+    title: `${decodedCategory} Articles on X | Xarticle.news`,
+    description: `Discover daily curated ${decodedCategory.toLowerCase()} articles shared on X—expert insights and must-read posts, cleaned from social noise.`,
+    alternates: { canonical: `/category/${slug}` },
+    robots: { index: true, follow: true },
+    openGraph: {
+      type: 'website',
+      url: `/category/${slug}`,
+      title: `${decodedCategory} Articles on X | Xarticle.news`,
+      description: `Daily curated ${decodedCategory.toLowerCase()} articles from X—expert insights and must-read posts.`,
+    },
+    twitter: {
+      card: 'summary',
+      title: `${decodedCategory} Articles on X`,
+      description: `Daily curated ${decodedCategory.toLowerCase()} articles from X.`,
+    },
   }
 }
 
@@ -64,7 +78,8 @@ export const revalidate = 120 // Revalidate every 2 minutes for better TTFB
 export default async function CategoryPage({ params, searchParams }: PageProps) {
   const { category } = await params
   const { search } = await searchParams
-  const decodedCategory = categorySlugToDisplayName(category)
+  const slug = category.toLowerCase()
+  const decodedCategory = categorySlugToDisplayName(slug)
   
   // Check if category contains comma - if so, return 404
   if (decodedCategory.includes(',')) {
@@ -82,7 +97,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
     "@type": "CollectionPage",
     "name": `${decodedCategory} Articles`,
     "description": `Curated articles about ${decodedCategory}`,
-    "url": `https://xarticle.news/category/${generateCategorySlug(decodedCategory)}`,
+    "url": `https://xarticle.news/category/${slug}`,
     "mainEntity": {
       "@type": "ItemList",
       "itemListElement": articles.slice(0, 10).map((article: Article, index: number) => ({
@@ -105,25 +120,61 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
     }
   }
 
+  // Generate breadcrumb structured data
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://xarticle.news"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Categories",
+        "item": "https://xarticle.news/category"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": decodedCategory,
+        "item": `https://xarticle.news/category/${slug}`
+      }
+    ]
+  }
+
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 md:pt-24 pb-6">
         <div className="space-y-6">
           {/* Breadcrumb Navigation */}
-          <nav className="flex items-center space-x-2 text-sm text-muted-foreground mb-6">
-            <Link href="/" className="hover:text-foreground transition-colors">
-              Home
-            </Link>
-            <span>/</span>
-            <Link href="/trending" className="hover:text-foreground transition-colors">
-              Articles
-            </Link>
-            <span>/</span>
-            <span className="text-foreground font-medium">{decodedCategory}</span>
+          <nav aria-label="Breadcrumb" className="flex items-center space-x-2 text-sm text-muted-foreground mb-6">
+            <ol className="flex items-center space-x-2">
+              <li>
+                <Link href="/" className="hover:text-foreground transition-colors">
+                  Home
+                </Link>
+              </li>
+              <li>/</li>
+              <li>
+                <Link href="/category" className="hover:text-foreground transition-colors">
+                  Categories
+                </Link>
+              </li>
+              <li>/</li>
+              <li aria-current="page" className="text-foreground font-medium">{decodedCategory}</li>
+            </ol>
           </nav>
           
           {/* Page Header */}
@@ -131,9 +182,11 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
             <h1 className="text-4xl md:text-5xl font-bold text-foreground">
               {decodedCategory} Articles
             </h1>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Discover curated articles and insights about {decodedCategory} from leading voices on X
-            </p>
+            <div className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              <p>
+                Daily curated {decodedCategory.toLowerCase()} articles from X, updated regularly.
+              </p>
+            </div>
             <div className="flex items-center justify-center space-x-4 text-sm text-muted-foreground">
               <span>{articles.length} articles found</span>
               {articles.length > 0 && (

@@ -95,14 +95,12 @@ ${(article.full_article_content || '').substring(0, 2000)}`
     console.log('\n📊 AI Analysis Result:')
     console.log(`   Language: ${analysis.language}`)
     console.log(`   Category: ${analysis.category}`)
-    console.log(`   Has english_translation: ${!!analysis.english_translation}`)
+    console.log(`   Summary: ${analysis.summary}`)
     
-    if (analysis.english_translation) {
-      console.log('\n🌍 English Translation:')
-      console.log(`   Title: ${analysis.english_translation.title}`)
-      console.log(`   Tweet Text: ${analysis.english_translation.tweet_text}`)
-      console.log(`   Preview Text: ${analysis.english_translation.article_preview_text}`)
-      console.log(`   Full Content (first 200 chars): ${analysis.english_translation.full_article_content.substring(0, 200)}...`)
+    if (analysis.summary) {
+       console.log('\n📝 Article Summary:')
+       console.log(`   Chinese: ${analysis.summary.chinese.substring(0, 100)}...`)
+       console.log(`   English: ${analysis.summary.english.substring(0, 100)}...`)
       
       // Debug the parsing
        console.log('\n🔍 Debug Parsing:')
@@ -152,14 +150,14 @@ ${(article.full_article_content || '').substring(0, 2000)}`
          console.log('   ❌ ENGLISH_TRANSLATION section NOT found in raw response!')
        }
       
-      // Check if preview text is empty
-      if (!analysis.english_translation.article_preview_text) {
-        console.log('\n❌ ISSUE FOUND: article_preview_text is empty in AI response')
+      // Check if summary is complete
+      if (!analysis.summary.chinese || !analysis.summary.english) {
+        console.log('\n❌ ISSUE FOUND: Incomplete summary in AI response')
       } else {
-        console.log('\n✅ Preview text is present in AI response')
+        console.log('\n✅ Summary is complete in AI response')
       }
     } else {
-      console.log('\n❌ ISSUE FOUND: No english_translation in AI response')
+      console.log('\n❌ ISSUE FOUND: No summary in AI response')
     }
     
   } catch (error) {

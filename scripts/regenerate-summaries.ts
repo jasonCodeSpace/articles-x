@@ -98,17 +98,7 @@ async function regenerateSummaries() {
           language: analysis.language
         }
 
-        // 始终添加英文翻译字段
-        if (analysis.english_translation) {
-          updateData.title_english = cleanTranslation(analysis.english_translation.title, article.title);
-          updateData.article_preview_text_english = cleanTranslation(analysis.english_translation.article_preview_text, article.article_preview_text || '');
-          updateData.full_article_content_english = cleanTranslation(analysis.english_translation.full_article_content, article.full_article_content);
-        } else {
-          // 如果没有翻译，使用原文
-          updateData.title_english = article.title;
-          updateData.article_preview_text_english = article.article_preview_text || '';
-          updateData.full_article_content_english = article.full_article_content;
-        }
+        // English translations are now handled by separate translation cronjob
 
         // 验证总结内容
         if (updateData.summary_chinese.includes('Chinese') || updateData.summary_chinese.includes('Summary') ||

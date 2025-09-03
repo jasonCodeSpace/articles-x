@@ -49,14 +49,15 @@ export function useArticleFeed({
 
   // Monitor URL parameter changes and reload page if filter changes
   useEffect(() => {
+    // Only run on client side after hydration
+    if (typeof window === 'undefined') return
+    
     const currentFilter = searchParams.get('filter')
     // Force page reload when filter parameter changes
     // This ensures the server-side data fetching runs with the new filter
-    if (typeof window !== 'undefined') {
-      const urlFilter = new URLSearchParams(window.location.search).get('filter')
-      if (urlFilter !== currentFilter) {
-        window.location.reload()
-      }
+    const urlFilter = new URLSearchParams(window.location.search).get('filter')
+    if (urlFilter !== currentFilter) {
+      window.location.reload()
     }
   }, [searchParams])
 

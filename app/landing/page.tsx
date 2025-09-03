@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { XLink } from '@/components/x-link'
+import { generateCategorySlug } from '@/lib/url-utils'
 
 export const metadata: Metadata = {
   title: 'Xarticle — The Best Articles from X, Curated and Summarized',
@@ -453,7 +454,7 @@ export default async function LandingPage() {
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {categories.slice(0, 12).map((category) => (
-            <Link key={category} href={`/trending?category=${encodeURIComponent(category)}`}>
+            <Link key={category} href={`/category/${generateCategorySlug(category)}`}>
               <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 cursor-pointer group">
                 <CardContent className="p-6 text-center">
                   <h5 className="font-semibold text-foreground group-hover:text-primary transition-colors">

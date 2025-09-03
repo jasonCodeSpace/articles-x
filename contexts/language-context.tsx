@@ -13,9 +13,11 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguage] = useState<Language>('en')
+  const [isHydrated, setIsHydrated] = useState(false)
 
   // Load saved language preference on mount
   useEffect(() => {
+    setIsHydrated(true)
     const savedLanguage = localStorage.getItem('preferred-language') as Language
     if (savedLanguage && (savedLanguage === 'en' || savedLanguage === 'original')) {
       setLanguage(savedLanguage)
@@ -24,10 +26,12 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
-  // Save language preference to localStorage when it changes
+  // Save language preference to localStorage when it changes (only after hydration)
   useEffect(() => {
-    localStorage.setItem('preferred-language', language)
-  }, [language])
+    if (isHydrated) {
+      localStorage.setItem('preferred-language', language)
+    }
+  }, [language, isHydrated])
 
   return (
     <LanguageContext.Provider value={{ language, setLanguage }}>

@@ -87,7 +87,14 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
   }
   
   // Fetch articles for this category
-  const articles = await fetchArticles({ category: decodedCategory, search })
+  const allArticles = await fetchArticles({ category: decodedCategory, search })
+  
+  // Client-side filter to ensure exact category match
+  const articles = allArticles.filter((article: Article) => {
+    if (!article.category) return false
+    const categories = article.category.split(',').map(cat => cat.trim())
+    return categories.includes(decodedCategory)
+  })
   
 
   

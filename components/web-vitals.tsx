@@ -38,6 +38,9 @@ export function WebVitals({ onMetric }: WebVitalsProps) {
 // 发送指标到分析服务
 async function sendToAnalytics(metric: Metric) {
   try {
+    // 确保只在客户端执行
+    if (typeof window === 'undefined') return;
+    
     // 发送到自定义API端点
     await fetch('/api/analytics/web-vitals', {
       method: 'POST',

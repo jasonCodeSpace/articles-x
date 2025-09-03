@@ -126,6 +126,7 @@ export function ArticleCard({ article, className, priority = false }: ArticleCar
   // Field fallbacks for content based on language preference
   const displayTitle = language === 'original' ? article.title : (article.title_english || article.title)
   const displayPreview = language === 'original' ? article.article_preview_text : (article.article_preview_text_english || article.article_preview_text)
+  // Always prioritize article_preview_text over summaries for trending/category pages
   const descriptionText = displayPreview || article.description || article.excerpt || article.content
 
   // Field fallbacks for images
@@ -184,7 +185,7 @@ export function ArticleCard({ article, className, priority = false }: ArticleCar
         <div className="flex-grow">
           {descriptionText && (
             <Link href={articleUrl} className="block">
-              <p className="text-muted-foreground text-sm leading-relaxed line-clamp-3 mb-4 hover:text-foreground transition-colors cursor-pointer">
+              <p className="text-muted-foreground/15 text-xs leading-relaxed line-clamp-3 mb-4 hover:text-muted-foreground/25 transition-colors cursor-pointer">
                 {descriptionText}
               </p>
             </Link>

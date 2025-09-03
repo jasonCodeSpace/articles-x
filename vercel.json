@@ -64,10 +64,6 @@
     {
       "path": "/api/cron/translate-articles",
       "schedule": "*/15 * * * *"
-    },
-    {
-      "path": "/api/cron/update-slugs",
-      "schedule": "*/15 * * * *"
     }
   ]
 }

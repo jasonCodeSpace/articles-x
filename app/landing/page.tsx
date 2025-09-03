@@ -159,14 +159,14 @@ export default async function LandingPage() {
                         
                         {/* Quick Actions */}
                         <div className="flex items-center justify-between pt-2">
-                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                            <Eye size={12} />
-                            <span>{article.tweet_views?.toLocaleString() || '0'}</span>
-                          </div>
-                          
-                          {/* Author line moved to the right */}
-                          <div className="text-xs text-muted-foreground">
-                            article by {article.author_handle || 'unknown'}
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <div>
+                              by {article.author_handle || 'unknown'}
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Eye size={12} />
+                              <span>{article.tweet_views?.toLocaleString() || '0'}</span>
+                            </div>
                           </div>
                           
                           <div className="flex gap-2">

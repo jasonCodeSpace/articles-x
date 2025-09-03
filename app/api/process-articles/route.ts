@@ -176,7 +176,11 @@ function extractUrlsFromTweet(legacy: TweetLegacy): string[] {
     for (const urlEntity of legacy.entities.urls) {
       // Prefer expanded_url over url
       const finalUrl = urlEntity.expanded_url || urlEntity.url;
-      if (finalUrl && !finalUrl.includes('twitter.com') && !finalUrl.includes('x.com')) {
+      // Only accept external article URLs, exclude twitter/x.com links
+      if (finalUrl && 
+          !finalUrl.includes('twitter.com') && 
+          !finalUrl.includes('x.com') &&
+          (finalUrl.startsWith('http://') || finalUrl.startsWith('https://'))) {
         urls.push(finalUrl);
       }
     }
@@ -194,6 +198,48 @@ function generateSlugHelper(text: string): string {
     .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
     .trim()
     .substring(0, 50); // Limit length
+}
+
+// Function to validate if content is a legitimate article
+function isValidArticleContent(title: string, content: string, tweetText: string): boolean {
+  // Check minimum content length (articles should be substantial)
+  if (content.length < 500) {
+    console.log('Content too short to be a valid article');
+    return false;
+  }
+  
+  // Check if title is meaningful (not just tweet text)
+  if (title.length < 10) {
+    console.log('Title too short to be a valid article');
+    return false;
+  }
+  
+  // Check if content is significantly different from tweet text
+  const tweetWords = tweetText.toLowerCase().split(/\s+/);
+  const contentWords = content.toLowerCase().split(/\s+/);
+  
+  // If content is mostly the same as tweet, it's not a real article
+  if (contentWords.length < tweetWords.length * 3) {
+    console.log('Content not substantially longer than tweet');
+    return false;
+  }
+  
+  // Check for common article indicators
+  const articleIndicators = [
+    'paragraph', 'section', 'article', 'published', 'author', 'read more',
+    'continue reading', 'full story', 'news', 'report', 'analysis'
+  ];
+  
+  const hasArticleIndicators = articleIndicators.some(indicator => 
+    content.toLowerCase().includes(indicator)
+  );
+  
+  if (!hasArticleIndicators) {
+    console.log('Content lacks typical article structure indicators');
+    return false;
+  }
+  
+  return true;
 }
 
 // Function to extract article content from external URL using RapidAPI
@@ -556,15 +602,36 @@ async function processTweetForArticle(tweetId: string, authorHandle: string): Pr
         return null;
       }
       
+      // Validate article content quality
+      const tweetText = legacy.full_text || legacy.text || 'No content available';
+      const title = extractedArticle.title || tweetText.substring(0, 100) || 'Untitled Article';
+      const content = extractedArticle.content || '';
+      
+      // Check if this is a legitimate article
+      if (!isValidArticleContent(title, content, tweetText)) {
+        console.log(`Content validation failed for ${firstUrl}, marking as non-article...`);
+        
+        // Update the tweet in database to mark it as not having an article
+        try {
+          const supabase = createServiceClient();
+          await supabase
+            .from('tweets')
+            .update({ has_article: false })
+            .eq('tweet_id', tweetId);
+          console.log(`Updated tweet ${tweetId} has_article to false due to content validation`);
+        } catch (updateError) {
+          console.error(`Error updating tweet ${tweetId}:`, updateError);
+        }
+        
+        return null;
+      }
+      
       // Create article data from extracted content
-       const tweetText = legacy.full_text || legacy.text || 'No content available';
-       const title = extractedArticle.title || tweetText.substring(0, 100) || 'Untitled Article';
-       const slug = generateSlugHelper(title) + '-' + Math.random().toString(36).substring(2, 8);
+      const slug = generateSlugHelper(title) + '-' + Math.random().toString(36).substring(2, 8);
       const excerpt = extractedArticle.description || tweetText.substring(0, 200);
       
-      // Determine category based on username
-      const categories = ['Hardware', 'Gaming', 'Health', 'Environment', 'Personal Story', 'Culture', 'Philosophy', 'History', 'Education', 'Design', 'Marketing', 'AI', 'Crypto', 'Tech', 'Data', 'Startups', 'Business', 'Markets', 'Product', 'Security', 'Policy', 'Science', 'Media'];
-      const category = categories[Math.floor(Math.random() * categories.length)];
+      // Category will be assigned by AI cron job
+      const category = '';
       
       const articleUrl = firstUrl;
       
@@ -626,9 +693,27 @@ async function processTweetForArticle(tweetId: string, authorHandle: string): Pr
       preview: fullArticleContent.substring(0, 100) + '...'
     });
     
-    // Determine category based on username
-    const categories = ['Hardware', 'Gaming', 'Health', 'Environment', 'Personal Story', 'Culture', 'Philosophy', 'History', 'Education', 'Design', 'Marketing', 'AI', 'Crypto', 'Tech', 'Data', 'Startups', 'Business', 'Markets', 'Product', 'Security', 'Policy', 'Science', 'Media'];
-    const category = categories[Math.floor(Math.random() * categories.length)];
+    // Validate article content quality
+    if (!isValidArticleContent(title, fullArticleContent, tweetText)) {
+      console.log(`Content validation failed for tweet ${tweetId}, marking as non-article...`);
+      
+      // Update the tweet in database to mark it as not having an article
+      try {
+        const supabase = createServiceClient();
+        await supabase
+          .from('tweets')
+          .update({ has_article: false })
+          .eq('tweet_id', tweetId);
+        console.log(`Updated tweet ${tweetId} has_article to false due to content validation`);
+      } catch (updateError) {
+        console.error(`Error updating tweet ${tweetId}:`, updateError);
+      }
+      
+      return null;
+    }
+    
+    // Category will be assigned by AI cron job
+    const category = '';
     
     const articleUrl = `https://x.com/${authorHandle}/status/${tweetId}`;
     

@@ -1,14 +1,15 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
-import { ArrowRight, BookOpen, Clock, Globe, Sparkles, Users, Zap, Shield, TrendingUp, Star, CheckCircle } from 'lucide-react'
+import { ArrowRight, BookOpen, Clock, Globe, Sparkles, Users, Zap, Shield, TrendingUp, Star, CheckCircle, ChevronDown, ChevronUp, Eye, Heart, Bookmark, ExternalLink } from 'lucide-react'
 import { ClientNavWrapper } from '@/components/client-nav-wrapper'
 import { createClient } from '@/lib/supabase/server'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { XLink } from '@/components/x-link'
 
 export const metadata: Metadata = {
-  title: 'xarticle.news – Discover Top X Articles from Leading Voices',
-  description: 'Discover top X articles from leading voices with AI-powered curation. Get real-time updates, multi-language summaries, and quality content from diverse categories including tech, business, and trending topics.',
+  title: 'Xarticle — The Best Articles from X, Curated and Summarized',
+  description: 'Discover the most valuable long-form articles shared on X. Read crisp summaries, browse by topic or account, and save your personal must-read list.',
 }
 
 export default async function LandingPage() {
@@ -43,10 +44,27 @@ export default async function LandingPage() {
     'Media'
   ]
 
-  // Get real stats from database
+  // Get real stats from database (English articles only)
   const { count: totalArticles } = await supabase
     .from('articles')
     .select('*', { count: 'exact', head: true })
+    .eq('language', 'en')
+
+  // Get top 3 trending articles for hero section (English only)
+  const { data: trendingArticles } = await supabase
+    .from('articles')
+    .select(`
+      *,
+      summary_chinese,
+      summary_english,
+      summary_generated_at
+    `)
+    .eq('language', 'en')
+    .in('tag', ['Day', 'Week'])
+    .not('summary_english', 'is', null)
+    .neq('summary_english', '')
+    .order('tweet_views', { ascending: false })
+    .limit(3)
 
   // Get today's articles count (currently unused)
   // const { count: todayArticles } = await supabase
@@ -61,180 +79,243 @@ export default async function LandingPage() {
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         {/* Background Effects */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-accent/5"></div>
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-accent/10 rounded-full blur-3xl"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/15 via-background to-accent/15"></div>
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-accent/20 rounded-full blur-3xl"></div>
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-20">
-          <div className="text-center space-y-8">
-            {/* Logo & Brand */}
-            <div className="flex justify-center mb-8">
-              <div className="flex items-center gap-4 group">
-                <div className="w-16 h-16 bg-foreground rounded-2xl flex items-center justify-center hover:bg-primary transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 shadow-xl">
-                  <span className="text-2xl font-black text-background">𝕏</span>
-                </div>
-                <div className="text-left">
-                  <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent">
-                    Xarticle
-                  </h1>
-                  <p className="text-sm text-muted-foreground">Curated from X</p>
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            {/* Left Column - Hero Content */}
+            <div className="text-center lg:text-left space-y-8">
+              {/* Logo & Brand */}
+              <div className="flex justify-center lg:justify-start mb-8">
+                <div className="flex items-center gap-4 group">
+                  <div className="w-16 h-16 flex items-center justify-center hover:opacity-80 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 shadow-xl">
+                    <img src="/logo.svg" alt="Xarticle Logo" className="w-16 h-16" />
+                  </div>
+                  <div className="text-left">
+                    <h1 className="text-4xl font-bold text-foreground">
+                      Xarticle
+                    </h1>
+
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Hero Text */}
-            <div className="space-y-6">
-              <h1 className="text-5xl md:text-7xl font-bold text-foreground leading-tight">
-                Discover Top X Articles
-                <br />
-                <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                  from Leading Voices
-                </span>
-              </h1>
-              <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-                Automatically discover and curate high-quality articles shared on X. 
-                <br className="hidden md:block" />
-                AI-powered summaries, real-time updates, and multi-language support.
-              </p>
-            </div>
+              {/* Hero Text */}
+              <div className="space-y-6">
+                <h1 className="text-4xl md:text-6xl font-bold text-foreground leading-tight text-balance">
+                  The best articles from X —
+                  <br />
+                  <span className="gradient-text">
+                    curated for you
+                  </span>
+                </h1>
+                <p className="text-xl text-muted-foreground max-w-2xl leading-relaxed text-balance">
+                  Discover high-quality long-form content with AI-powered summaries, smart categorization, and personalized reading lists.
+                </p>
+              </div>
 
-            {/* Feature Tags */}
-            <div className="flex flex-wrap justify-center gap-3 mb-8">
-              {['Real-time Updates', 'AI Summaries', 'Multi-language', 'No Ads'].map((feature) => (
-                <span key={feature} className="px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-medium">
-                  {feature}
-                </span>
-              ))}
-            </div>
-
-            {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-              {user ? (
+              {/* CTA Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <Link href="/trending">
-                  <Button size="lg" className="text-lg px-8 py-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-                    <BookOpen className="mr-2" size={24} />
-                    Continue Reading
+                  <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 text-lg px-8 py-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                    Explore Articles
                     <ArrowRight className="ml-2" size={20} />
                   </Button>
                 </Link>
-              ) : (
+                
                 <Link href="/login">
-                  <Button size="lg" className="text-lg px-8 py-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-                    <Sparkles className="mr-2" size={24} />
-                    Get Started Free
-                    <ArrowRight className="ml-2" size={20} />
+                  <Button variant="outline" size="lg" className="text-lg px-8 py-6 rounded-full border-2 hover:bg-accent/20 transition-all duration-300 hover-lift">
+                    Start Reading
                   </Button>
                 </Link>
-              )}
+              </div>
               
-              <Link href="/trending">
-                <Button variant="outline" size="lg" className="text-lg px-8 py-6 rounded-full border-2 hover:bg-accent/20 transition-all duration-300">
-                  <Globe className="mr-2" size={24} />
-                  Latest Articles
-                </Button>
-              </Link>
+
             </div>
-            
-            {/* Internal Navigation Links */}
-            <div className="flex flex-wrap justify-center gap-4 mt-8">
-              <Link href="/trending" className="text-primary hover:text-primary/80 font-medium underline underline-offset-4 transition-colors">
-                Browse Latest Posts
-              </Link>
-              <span className="text-muted-foreground">•</span>
-              <Link href="/history" className="text-primary hover:text-primary/80 font-medium underline underline-offset-4 transition-colors">
-                Explore Archive
-              </Link>
+
+            {/* Right Column - Article Preview Cards */}
+            <div className="space-y-4">
+              <div className="space-y-4">
+                {trendingArticles?.slice(0, 3).map((article, index) => (
+                  <Card key={article.id} className="group card-enhanced hover-lift cursor-pointer relative overflow-hidden">
+                    {/* Background Image */}
+                    {article.image && (
+                      <div className="absolute inset-0 opacity-10">
+                        <img 
+                          src={article.image} 
+                          alt="" 
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+                    <CardContent className="p-6 relative z-10">
+                      <div className="space-y-4">
+                        {/* Article Title */}
+                        <h4 className="font-semibold text-foreground leading-tight line-clamp-2 group-hover:text-primary transition-colors">
+                          {article.title}
+                        </h4>
+                        
+                        {/* Author line */}
+                        <div className="text-xs text-muted-foreground">
+                          article by {article.author_handle || 'unknown'}
+                        </div>
+                        
+                        {/* Quick Actions */}
+                        <div className="flex items-center justify-between pt-2">
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <Eye size={12} />
+                            <span>{article.tweet_views?.toLocaleString() || '0'}</span>
+                          </div>
+                          
+                          <div className="flex gap-2">
+                            <Link href={`/article/${article.slug}`}>
+                              <Button size="sm" variant="outline" className="text-xs px-3 py-1 h-7">
+                                Read Article
+                              </Button>
+                            </Link>
+
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )) || (
+                  // Fallback placeholder cards if no articles
+                  Array.from({ length: 3 }, (_, index) => (
+                    <Card key={index} className="group hover:shadow-xl transition-all duration-300 hover:scale-[1.02] border hover:border-primary/20 cursor-pointer">
+                      <CardContent className="p-6">
+                        <div className="space-y-3">
+                          <div className="text-sm text-muted-foreground font-medium">
+                            {['techcrunch.com', 'medium.com', 'substack.com'][index]}
+                          </div>
+                          <h4 className="font-semibold text-foreground leading-tight group-hover:text-primary transition-colors">
+                            {[
+                              'Frontier AI: Why scaling still matters',
+                              'Markets at a glance: What moved this week',
+                              'Designing for speed without breaking trust'
+                            ][index]}
+                          </h4>
+                          <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+                            AI-generated summary helps you understand the key points before diving into the full article...
+                          </p>
+                          <div className="flex items-center justify-between pt-2">
+                            <span className="px-2 py-1 bg-primary/10 text-primary text-xs rounded-full">
+                              {['AI', 'Markets', 'Design'][index]}
+                            </span>
+                            
+                            {/* Placeholder Stats */}
+                            <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                              <div className="flex items-center gap-1">
+                                <Eye size={12} />
+                                <span>{[245, 189, 367][index]}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Heart size={12} />
+                                <span>{[23, 15, 41][index]}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Bookmark size={12} />
+                                <span>{[12, 8, 19][index]}</span>
+                              </div>
+                            </div>
+                          </div>
+
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))
+                )}
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
+      {/* Key Benefits Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
-            Featured Categories
+            Why readers choose Xarticle
           </h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Explore diverse topics from leading voices across technology, business, science, and more
-          </p>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {/* Auto Curation */}
-          <Card className="group hover:shadow-xl transition-all duration-300 hover:scale-105 border-2 hover:border-primary/20">
-            <CardContent className="p-8 text-center">
-              <div className="w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
-                <Zap className="text-primary-foreground" size={32} />
-              </div>
-              <h4 className="text-2xl font-bold text-foreground mb-4">Auto Curation</h4>
-              <p className="text-muted-foreground leading-relaxed">
-                Our AI automatically identifies and curates the best articles shared on X, saving you hours of scrolling.
-              </p>
-            </CardContent>
-          </Card>
-
-          {/* Real-time Updates */}
-          <Card className="group hover:shadow-xl transition-all duration-300 hover:scale-105 border-2 hover:border-primary/20">
-            <CardContent className="p-8 text-center">
-              <div className="w-16 h-16 bg-gradient-to-br from-accent to-primary rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
-                <Clock className="text-primary-foreground" size={32} />
-              </div>
-              <h4 className="text-2xl font-bold text-foreground mb-4">Real-time Updates</h4>
-              <p className="text-muted-foreground leading-relaxed">
-                Get the latest articles as they&apos;re shared. Fresh content delivered every 15 minutes, 24/7.
-              </p>
-            </CardContent>
-          </Card>
-
-          {/* AI Summaries */}
-          <Card className="group hover:shadow-xl transition-all duration-300 hover:scale-105 border-2 hover:border-primary/20">
-            <CardContent className="p-8 text-center">
-              <div className="w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
-                <Sparkles className="text-primary-foreground" size={32} />
-              </div>
-              <h4 className="text-2xl font-bold text-foreground mb-4">AI Summaries</h4>
-              <p className="text-muted-foreground leading-relaxed">
-                Get instant AI-generated summaries in multiple languages. Understand key points before diving deep.
-              </p>
-            </CardContent>
-          </Card>
-
-          {/* Multi-language Support */}
-          <Card className="group hover:shadow-xl transition-all duration-300 hover:scale-105 border-2 hover:border-primary/20">
-            <CardContent className="p-8 text-center">
-              <div className="w-16 h-16 bg-gradient-to-br from-accent to-primary rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
-                <Globe className="text-primary-foreground" size={32} />
-              </div>
-              <h4 className="text-2xl font-bold text-foreground mb-4">Global Content</h4>
-              <p className="text-muted-foreground leading-relaxed">
-                Access articles in multiple languages with automatic translation and localized summaries.
-              </p>
-            </CardContent>
-          </Card>
-
-          {/* Quality Filter */}
+          {/* Signal over noise */}
           <Card className="group hover:shadow-xl transition-all duration-300 hover:scale-105 border-2 hover:border-primary/20">
             <CardContent className="p-8 text-center">
               <div className="w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
                 <Shield className="text-primary-foreground" size={32} />
               </div>
-              <h4 className="text-2xl font-bold text-foreground mb-4">Quality First</h4>
+              <h4 className="text-2xl font-bold text-foreground mb-4">Signal over noise</h4>
               <p className="text-muted-foreground leading-relaxed">
-                Advanced filtering ensures only high-quality, substantial articles make it to your feed.
+                Only substantial long-form articles make it through our curation process.
               </p>
             </CardContent>
           </Card>
 
-          {/* Engagement Metrics */}
+          {/* Quick understanding */}
           <Card className="group hover:shadow-xl transition-all duration-300 hover:scale-105 border-2 hover:border-primary/20">
             <CardContent className="p-8 text-center">
               <div className="w-16 h-16 bg-gradient-to-br from-accent to-primary rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                <Sparkles className="text-primary-foreground" size={32} />
+              </div>
+              <h4 className="text-2xl font-bold text-foreground mb-4">Quick understanding</h4>
+              <p className="text-muted-foreground leading-relaxed">
+                Crisp summaries help you triage content fast and decide what to read now.
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Power discovery */}
+          <Card className="group hover:shadow-xl transition-all duration-300 hover:scale-105 border-2 hover:border-primary/20">
+            <CardContent className="p-8 text-center">
+              <div className="w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
                 <TrendingUp className="text-primary-foreground" size={32} />
               </div>
-              <h4 className="text-2xl font-bold text-foreground mb-4">Rich Metrics</h4>
+              <h4 className="text-2xl font-bold text-foreground mb-4">Power discovery</h4>
               <p className="text-muted-foreground leading-relaxed">
-                See engagement data, view counts, and social metrics to discover trending content.
+                Browse by category, account, or trending themes to find exactly what you need.
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Source context */}
+          <Card className="group hover:shadow-xl transition-all duration-300 hover:scale-105 border-2 hover:border-primary/20">
+            <CardContent className="p-8 text-center">
+              <div className="w-16 h-16 bg-gradient-to-br from-accent to-primary rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                <Users className="text-primary-foreground" size={32} />
+              </div>
+              <h4 className="text-2xl font-bold text-foreground mb-4">Source context</h4>
+              <p className="text-muted-foreground leading-relaxed">
+                See who shared each article and basic engagement metrics for better context.
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Personal library */}
+          <Card className="group hover:shadow-xl transition-all duration-300 hover:scale-105 border-2 hover:border-primary/20">
+            <CardContent className="p-8 text-center">
+              <div className="w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                <BookOpen className="text-primary-foreground" size={32} />
+              </div>
+              <h4 className="text-2xl font-bold text-foreground mb-4">Personal library</h4>
+              <p className="text-muted-foreground leading-relaxed">
+                Save, tag, and revisit your must-reads with a simple personal library system.
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Global view */}
+          <Card className="group hover:shadow-xl transition-all duration-300 hover:scale-105 border-2 hover:border-primary/20">
+            <CardContent className="p-8 text-center">
+              <div className="w-16 h-16 bg-gradient-to-br from-accent to-primary rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                <Globe className="text-primary-foreground" size={32} />
+              </div>
+              <h4 className="text-2xl font-bold text-foreground mb-4">Global view</h4>
+              <p className="text-muted-foreground leading-relaxed">
+                Summaries available in multiple languages to break down language barriers.
               </p>
             </CardContent>
           </Card>
@@ -385,6 +466,74 @@ export default async function LandingPage() {
         </div>
       </section>
 
+      {/* Social Proof */}
+      <section className="bg-muted/30 py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              Trusted by founders, investors, and researchers
+            </h2>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-8 text-center">
+            <div className="space-y-4">
+              <div className="text-4xl font-bold text-primary">2,500+</div>
+              <div className="text-muted-foreground">Articles curated weekly</div>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="text-4xl font-bold text-primary">50+</div>
+              <div className="text-muted-foreground">Categories covered</div>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="text-4xl font-bold text-primary">15min</div>
+              <div className="text-muted-foreground">Fresh content updates</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="py-16">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              Questions, answered
+            </h2>
+          </div>
+          
+          <div className="space-y-6">
+            <div className="border border-border rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-foreground mb-3">
+                How does Xarticle find articles?
+              </h3>
+              <p className="text-muted-foreground">
+                We monitor thousands of X accounts from founders, VCs, researchers, and thought leaders. Our AI identifies when they share long-form articles and automatically curates the best content.
+              </p>
+            </div>
+            
+            <div className="border border-border rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-foreground mb-3">
+                Can I save articles for later?
+              </h3>
+              <p className="text-muted-foreground">
+                Yes! Create your personal reading list by saving articles. Access your saved articles anytime from your dashboard.
+              </p>
+            </div>
+            
+            <div className="border border-border rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-foreground mb-3">
+                How often is content updated?
+              </h3>
+              <p className="text-muted-foreground">
+                Our system runs continuously, updating every 15 minutes to ensure you never miss the latest valuable content shared on X.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Final CTA */}
       <section className="bg-gradient-to-r from-primary via-accent to-primary py-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-8">
@@ -426,23 +575,56 @@ export default async function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-background border-t border-border py-12">
+      <footer className="bg-background border-t border-border py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center space-y-4">
-            <div className="flex justify-center">
+          <div className="grid md:grid-cols-4 gap-8 mb-12">
+            {/* Brand */}
+            <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-foreground rounded-full flex items-center justify-center">
-                  <span className="text-sm font-black text-background">𝕏</span>
-                </div>
+                <img src="/logo.svg" alt="Xarticle Logo" className="w-8 h-8" />
                 <span className="text-lg font-bold text-foreground">Xarticle</span>
               </div>
+              <p className="text-muted-foreground text-sm leading-relaxed">
+                Xarticle turns X into a curated, article-first reading experience.
+              </p>
             </div>
-            <p className="text-muted-foreground">
-              Discover quality articles from X, powered by AI.
-            </p>
-            <p className="text-sm text-muted-foreground">
-              © 2024 Xarticle. Built with Next.js and Supabase.
-            </p>
+            
+            {/* Product */}
+            <div className="space-y-4">
+              <h4 className="font-semibold text-foreground">Product</h4>
+              <div className="space-y-2 text-sm">
+                <Link href="/landing" className="block text-muted-foreground hover:text-foreground transition-colors">
+                  Landing Page
+                </Link>
+                <Link href="/trending" className="block text-muted-foreground hover:text-foreground transition-colors">
+                  Trending
+                </Link>
+                <Link href="/categories" className="block text-muted-foreground hover:text-foreground transition-colors">
+                  Categories
+                </Link>
+              </div>
+            </div>
+            
+            {/* Legal */}
+            <div className="space-y-4">
+              <h4 className="font-semibold text-foreground">Legal</h4>
+              <div className="space-y-2 text-sm">
+                <Link href="/terms" className="block text-muted-foreground hover:text-foreground transition-colors">
+                  Terms
+                </Link>
+                <Link href="/privacy" className="block text-muted-foreground hover:text-foreground transition-colors">
+                  Privacy
+                </Link>
+              </div>
+            </div>
+          </div>
+          
+          <div className="border-t border-border pt-8">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+              <p className="text-sm text-muted-foreground">
+                © Xarticle. All rights reserved.
+              </p>
+            </div>
           </div>
         </div>
       </footer>

@@ -30,32 +30,32 @@
 }
 
 .dark {
-  --background: 0 0% 0%; /* Pure black like X.com */
-  --foreground: 0 0% 98%; /* Near white text */
-  --card: 0 0% 3%; /* Very dark gray for cards */
-  --card-foreground: 0 0% 98%;
-  --popover: 0 0% 3%;
-  --popover-foreground: 0 0% 98%;
-  --primary: 203 89% 53%; /* X.com blue */
-  --primary-foreground: 0 0% 98%;
-  --secondary: 0 0% 9%; /* Dark gray */
-  --secondary-foreground: 0 0% 98%;
-  --muted: 0 0% 9%;
-  --muted-foreground: 0 0% 60%; /* Medium gray */
-  --accent: 0 0% 9%;
-  --accent-foreground: 0 0% 98%;
+  --background: 222 84% 5%; /* #0B0F14 - Deep tech blue-black background */
+  --foreground: 210 40% 98%; /* #F8FAFC - Crisp white text */
+  --card: 220 39% 11%; /* #141B22 - Tech card background */
+  --card-foreground: 210 40% 98%;
+  --popover: 220 39% 11%;
+  --popover-foreground: 210 40% 98%;
+  --primary: 217 91% 60%; /* #3B82F6 - Tech blue primary */
+  --primary-foreground: 222 84% 5%;
+  --secondary: 215 25% 27%; /* #374151 - Tech gray secondary */
+  --secondary-foreground: 210 40% 98%;
+  --muted: 215 25% 27%;
+  --muted-foreground: 215 20% 65%; /* #9CA3AF - Tech muted text */
+  --accent: 142 76% 36%; /* #10B981 - Tech green accent */
+  --accent-foreground: 222 84% 5%;
   --destructive: 0 84% 60%;
-  --destructive-foreground: 0 0% 98%;
-  --border: 0 0% 15%; /* Subtle border */
-  --input: 0 0% 9%;
-  --ring: 203 89% 53%; /* X.com blue for focus */
-  --radius: 0.75rem; /* Slightly more rounded */
+  --destructive-foreground: 210 40% 98%;
+  --border: 215 25% 27%; /* #374151 - Tech border */
+  --input: 215 25% 27%;
+  --ring: 217 91% 60%; /* Tech blue for focus */
+  --radius: 0.75rem;
   
   /* Custom X.com colors */
   --x-blue: 203 89% 53%;
-  --x-gray: 0 0% 60%;
-  --x-dark-gray: 0 0% 15%;
-  --x-hover: 0 0% 6%;
+  --x-gray: 0 0% 65%;
+  --x-dark-gray: 220 13% 18%;
+  --x-hover: 220 13% 16%;
 }
 
 * {
@@ -65,9 +65,11 @@
 body {
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
-  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  letter-spacing: -0.011em;
 }
 
 /* X.com inspired scrollbar */
@@ -101,6 +103,99 @@ body {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
+}
+
+/* Enhanced design improvements */
+.gradient-text {
+  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.glass-effect {
+  backdrop-filter: blur(20px);
+  background: hsla(var(--background), 0.8);
+  border: 1px solid hsla(var(--border), 0.2);
+}
+
+.hover-lift {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 25px -5px hsla(var(--foreground), 0.1), 0 10px 10px -5px hsla(var(--foreground), 0.04);
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+/* Improved button styles */
+.btn-primary {
+  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary)) 50%, hsl(var(--accent)));
+  border: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, hsla(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.btn-primary:hover::before {
+  left: 100%;
+}
+
+/* Enhanced card styles */
+.card-enhanced {
+  background: hsla(var(--card), 0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid hsla(var(--border), 0.5);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-enhanced:hover {
+  background: hsla(var(--card), 0.9);
+  border-color: hsl(var(--primary));
+  box-shadow: 0 10px 40px hsla(var(--primary), 0.1);
+}
+
+/* Typography improvements */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+}
+
+.text-lg {
+  font-size: 1.125rem;
+  line-height: 1.6;
+}
+
+.text-xl {
+  font-size: 1.25rem;
+  line-height: 1.6;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Focus styles */
+*:focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 
 /* X.com inspired animations */

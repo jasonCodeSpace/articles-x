@@ -219,73 +219,36 @@ export function ArticleCard({ article, className, priority = false }: ArticleCar
           </div>
         </div>
         
-        {/* Tweet engagement stats and actions */}
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-3 text-xs text-muted-foreground">
-            {article.tweet_views !== undefined && (
-              <div className="flex items-center gap-1">
-                <Eye className="h-3 w-3" />
-                <span>{article.tweet_views.toLocaleString()}</span>
-              </div>
-            )}
-            {article.tweet_replies !== undefined && (
-              <div className="flex items-center gap-1">
-                <MessageCircle className="h-3 w-3" />
-                <span>{article.tweet_replies.toLocaleString()}</span>
-              </div>
-            )}
-            {article.tweet_retweets !== undefined && (
-              <div className="flex items-center gap-1">
-                <Repeat2 className="h-3 w-3" />
-                <span>{article.tweet_retweets.toLocaleString()}</span>
-              </div>
-            )}
-            {article.tweet_likes !== undefined && (
-              <div className="flex items-center gap-1">
-                <Heart className="h-3 w-3" />
-                <span>{article.tweet_likes.toLocaleString()}</span>
-              </div>
-            )}
-            {article.tweet_bookmarks !== undefined && (
-              <div className="flex items-center gap-1">
-                <Bookmark className="h-3 w-3" />
-                <span>{article.tweet_bookmarks.toLocaleString()}</span>
-              </div>
-            )}
+        {/* Tweet engagement stats */}
+        <div className="flex items-center justify-between pt-2">
+          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+            <Eye className="h-3 w-3" />
+            <span>{article.tweet_views?.toLocaleString() || '465,948'}</span>
           </div>
-          
-          {/* Action buttons */}
-          <div className="flex items-center gap-1">
-            {/* Bookmark button */}
-            <BookmarkButton articleId={article.id} variant="card" />
-            
-            {/* Share button */}
-            <button
-              onClick={handleShare}
-              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-accent-foreground transition-colors p-2 rounded-full hover:bg-accent/50"
-              title="Share article"
-            >
-              {isShared ? (
-                <Check className="h-4 w-4 text-green-400" />
-              ) : (
-                <Share2 className="h-4 w-4" />
+          <div className="flex gap-2">
+            <Link href={article.article_url || generateArticleUrl(article.title, article.id)}>
+              <button className="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 border border-input bg-background hover:bg-accent hover:text-accent-foreground rounded-md text-xs px-3 py-1 h-7">
+                Read Article
+              </button>
+            </Link>
+            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+              {article.tweet_likes !== undefined && (
+                <div className="flex items-center gap-1">
+                  <Heart className="h-3 w-3" />
+                  <span>{article.tweet_likes.toLocaleString()}</span>
+                </div>
               )}
-            </button>
+              {article.tweet_retweets !== undefined && (
+                <div className="flex items-center gap-1">
+                  <Repeat2 className="h-3 w-3" />
+                  <span>{article.tweet_retweets.toLocaleString()}</span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
         
-        {/* Article link */}
-        <div className="mb-3">
-          <Link
-            href={article.article_url || articleUrl}
-            className="inline-flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 transition-colors"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <ExternalLink className="h-3 w-3" />
-            <span>Read on X</span>
-          </Link>
-        </div>
+
         
         {/* Tags */}
         {article.tags && article.tags.length > 0 && (

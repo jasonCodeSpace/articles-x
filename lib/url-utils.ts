@@ -8,10 +8,10 @@
 export function generateSlugFromTitle(title: string): string {
   return title
     .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+    .replace(/[^a-z0-9\s]/g, '') // Remove special characters but keep spaces
     .replace(/\s+/g, '-') // Replace spaces with hyphens
     .replace(/-+/g, '-') // Replace multiple hyphens with single
-    .trim()
+    .replace(/^-+|-+$/g, '') // Remove leading/trailing hyphens
     .substring(0, 50) // Limit length
 }
 

@@ -60,10 +60,10 @@ export function ModernNav({ user, className }: ModernNavProps) {
         <div className="flex items-center gap-4 bg-background/70 backdrop-blur-md border border-border py-3 px-6 rounded-full shadow-2xl">
           {/* Logo */}
           <button onClick={() => router.push('/landing')} className="flex items-center gap-2 group cursor-pointer hover:cursor-pointer">
-            <div className="w-6 h-6 bg-foreground rounded-full flex items-center justify-center hover:bg-muted transition-all duration-300 group-hover:scale-110">
-              <span className="text-xs font-black text-background">𝕏</span>
+            <div className="w-6 h-6 flex items-center justify-center hover:opacity-80 transition-all duration-300 group-hover:scale-110">
+              <img src="/logo.svg" alt="Xarticle Logo" className="w-6 h-6" />
             </div>
-            <span className="text-sm font-bold text-foreground group-hover:text-accent-foreground transition-colors">articles</span>
+            <span className="text-sm font-bold text-foreground group-hover:text-accent-foreground transition-colors">Xarticle</span>
           </button>
 
           {/* Navigation Items */}
@@ -227,10 +227,10 @@ export function ModernNav({ user, className }: ModernNavProps) {
         <div className="flex items-center gap-2 bg-background/70 backdrop-blur-md border border-border py-2 px-2 rounded-full shadow-2xl">
           {/* Mobile Logo */}
           <button onClick={() => router.push('/landing')} className="flex items-center gap-2 group cursor-pointer hover:cursor-pointer">
-            <div className="w-6 h-6 bg-foreground rounded-full flex items-center justify-center hover:bg-muted transition-all duration-300 group-hover:scale-110">
-              <span className="text-xs font-black text-background">𝕏</span>
+            <div className="w-6 h-6 flex items-center justify-center hover:opacity-80 transition-all duration-300 group-hover:scale-110">
+              <img src="/logo.svg" alt="Xarticle Logo" className="w-6 h-6" />
             </div>
-            <span className="text-sm font-bold text-foreground group-hover:text-accent-foreground transition-colors">articles</span>
+            <span className="text-sm font-bold text-foreground group-hover:text-accent-foreground transition-colors">Xarticle</span>
           </button>
           
           {/* Trending Button for Mobile */}

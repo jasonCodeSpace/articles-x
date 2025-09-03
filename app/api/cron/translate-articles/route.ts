@@ -85,6 +85,11 @@ export async function POST(request: NextRequest) {
         
         // 清理无效翻译值的函数
         const cleanTranslation = (translatedText: string, fallbackText: string): string => {
+          // 如果翻译为空字符串，直接返回空字符串（表示需要跳过此字段）
+          if (!translatedText || translatedText.trim().length === 0) {
+            return '';
+          }
+          
           const invalidValues = [
             'not provided', 'not available', 'not applicable', 'not stated', 
             'not translated', 'not given', 'not found', 'unavailable', 'missing',
@@ -92,16 +97,15 @@ export async function POST(request: NextRequest) {
             'same as original', 'n/a', 'na', 'none', 'null', 'undefined'
           ];
           
-          if (!translatedText || 
-              translatedText.trim().length === 0 ||
-              invalidValues.some(invalid => translatedText.toLowerCase().includes(invalid))) {
-            console.log(`Invalid translation detected: ${translatedText}`);
+          // 检查是否包含无效值
+          if (invalidValues.some(invalid => translatedText.toLowerCase().includes(invalid))) {
+            console.log(`Quality control: Filtering out invalid translation placeholder: "${translatedText.substring(0, 100)}..."`);
             return '';
           }
           
           // 检查翻译是否与原文完全相同（表示翻译失败）
           if (translatedText.trim() === fallbackText.trim()) {
-            console.log(`Translation is same as original: ${translatedText.substring(0, 100)}...`);
+            console.log(`Quality control: Translation identical to original, skipping: "${translatedText.substring(0, 100)}..."`);
             return '';
           }
           

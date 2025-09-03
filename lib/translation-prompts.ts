@@ -8,41 +8,46 @@ export interface ArticleTranslation {
 }
 
 // 专门用于翻译的提示词
-export const TRANSLATION_PROMPT = `CRITICAL: You MUST follow this EXACT output format. Any deviation will cause system failure.
+export const TRANSLATION_PROMPT = `CRITICAL INSTRUCTIONS: You are a professional translator. You MUST follow this EXACT output format. Any deviation will cause system failure.
 
-TASK: Translate the provided article content into ENGLISH ONLY. You must provide accurate, natural English translations while preserving the original meaning and technical terms. DO NOT return any Chinese, Japanese, Korean, or other non-English text.
+TASK: Translate the provided article content from any language into HIGH-QUALITY ENGLISH ONLY. 
 
-You must:
-1. Translate the title into natural, engaging ENGLISH
-2. Create an appropriate tweet text in ENGLISH (under 280 characters)
-3. Translate the preview text into clear, concise ENGLISH
-4. Translate the full article content into fluent ENGLISH
+STRICT REQUIREMENTS:
+1. ALL output must be in ENGLISH ONLY - absolutely no Chinese, Spanish, French, German, Japanese, Korean, Arabic, or any other language
+2. If the source is already in English, improve and refine it while maintaining the original meaning
+3. Use natural, fluent, professional English
+4. Maintain the original meaning, tone, and context
+5. Preserve proper nouns, technical terms, and specific references
 
-OUTPUT FORMAT (FOLLOW EXACTLY):
-TITLE: [English translation of the title - natural and engaging]
-TWEET_TEXT: [English tweet text - under 280 characters, engaging and informative]
-PREVIEW_TEXT: [English translation of preview text - clear and concise]
-FULL_CONTENT: [English translation of full article content - fluent and accurate]
+OUTPUT FORMAT (FOLLOW EXACTLY - NO DEVIATIONS):
+TITLE: [Professional English title - engaging and clear]
+TWEET_TEXT: [Engaging English tweet under 280 characters with relevant hashtags]
+PREVIEW_TEXT: [Clear, concise English summary in 1-2 sentences]
+FULL_CONTENT: [Complete English translation maintaining paragraph structure]
 
-TRANSLATION RULES:
-- ALL OUTPUT MUST BE IN ENGLISH ONLY - NO EXCEPTIONS
-- Maintain original meaning and context
-- Use natural, fluent English
-- Preserve technical terms and proper nouns
-- For tweet text: make it engaging and informative, include relevant hashtags if appropriate
-- For preview text: keep it concise but informative
-- For full content: maintain paragraph structure and formatting
-- If content is already in English, improve clarity and readability while keeping the original meaning
-- Do not add explanatory text or commentary
-- Do not use placeholder phrases like "not applicable" or "not provided"
-- NEVER return Chinese, Japanese, Korean, or any non-English text
-- If you cannot translate something, use the closest English equivalent
+QUALITY STANDARDS:
+- Use sophisticated vocabulary and sentence structure
+- Ensure grammatical correctness
+- Make content engaging and readable
+- Preserve the author's voice and style
+- Include relevant context for international readers
+- For tweet: make it shareable and informative
+- For preview: capture the essence in 1-2 compelling sentences
+- For content: maintain journalistic quality and flow
 
-Article Title: {title}
-Article Preview: {preview}
-Full Article Content: {content}
+FORBIDDEN:
+- Do NOT use phrases like "not provided", "not available", "not applicable"
+- Do NOT return original non-English text
+- Do NOT add explanatory comments
+- Do NOT use placeholder text
+- Do NOT mix languages
 
-Provide the translations in the exact format specified above.`;
+SOURCE CONTENT:
+Title: {title}
+Preview: {preview}
+Full Content: {content}
+
+Translate now using the exact format above:`;
 
 // 用于验证翻译质量的函数
 export const isValidTranslation = (text: string): boolean => {
@@ -60,6 +65,22 @@ export const isValidTranslation = (text: string): boolean => {
          !text.toLowerCase().includes('not available');
 };
 
+// 检查文本是否为英文的函数
+const isEnglishText = (text: string): boolean => {
+  if (!text || text.trim().length === 0) return false;
+  
+  // 检查是否包含非拉丁字符（中文、日文、韩文、阿拉伯文等）
+  const nonLatinRegex = /[\u4e00-\u9fff\u3400-\u4dbf\u3040-\u309f\u30a0-\u30ff\uac00-\ud7af\u0600-\u06ff]/;
+  if (nonLatinRegex.test(text)) return false;
+  
+  // 检查是否主要由英文单词组成
+  const words = text.split(/\s+/);
+  const englishWords = words.filter(word => /^[a-zA-Z][a-zA-Z0-9'\-]*$/.test(word));
+  
+  // 至少70%的单词应该是英文单词
+  return englishWords.length / words.length >= 0.7;
+};
+
 // 解析翻译结果的函数
 export const parseTranslationResponse = (response: string, originalTitle: string, originalContent: string): ArticleTranslation => {
   const titleMatch = response.match(/TITLE:\s*([^\n]+)/i);
@@ -72,10 +93,11 @@ export const parseTranslationResponse = (response: string, originalTitle: string
   const previewText = previewMatch ? previewMatch[1].trim() : '';
   const contentText = contentMatch ? contentMatch[1].trim() : '';
   
+  // 只有当翻译有效且为英文时才使用，否则返回空字符串
   return {
-    title: isValidTranslation(titleText) ? titleText : originalTitle,
-    tweet_text: isValidTranslation(tweetText) ? tweetText : `${originalTitle.substring(0, 100)}... Read more about this important topic.`,
-    article_preview_text: isValidTranslation(previewText) ? previewText : originalContent.substring(0, 200).replace(/\n/g, ' ').trim() + '...',
-    full_article_content: isValidTranslation(contentText) ? contentText : originalContent.substring(0, 8000)
+    title: (isValidTranslation(titleText) && isEnglishText(titleText)) ? titleText : '',
+    tweet_text: (isValidTranslation(tweetText) && isEnglishText(tweetText)) ? tweetText : '',
+    article_preview_text: (isValidTranslation(previewText) && isEnglishText(previewText)) ? previewText : '',
+    full_article_content: (isValidTranslation(contentText) && isEnglishText(contentText)) ? contentText : ''
   };
 };

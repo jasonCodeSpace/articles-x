@@ -220,32 +220,42 @@ export function ArticleCard({ article, className, priority = false }: ArticleCar
         </div>
         
         {/* Tweet engagement stats */}
-        <div className="flex items-center justify-between pt-2">
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <Eye className="h-3 w-3" />
-            <span>{article.tweet_views?.toLocaleString() || '465,948'}</span>
-          </div>
-          <div className="flex gap-2">
-            <Link href={article.article_url || generateArticleUrl(article.title, article.id)}>
-              <button className="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 border border-input bg-background hover:bg-accent hover:text-accent-foreground rounded-md text-xs px-3 py-1 h-7">
-                Read Article
-              </button>
-            </Link>
-            <div className="flex items-center gap-3 text-xs text-muted-foreground">
-              {article.tweet_likes !== undefined && (
-                <div className="flex items-center gap-1">
-                  <Heart className="h-3 w-3" />
-                  <span>{article.tweet_likes.toLocaleString()}</span>
-                </div>
-              )}
-              {article.tweet_retweets !== undefined && (
-                <div className="flex items-center gap-1">
-                  <Repeat2 className="h-3 w-3" />
-                  <span>{article.tweet_retweets.toLocaleString()}</span>
-                </div>
-              )}
+        <div className="flex items-center justify-between text-xs text-muted-foreground mb-3">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1">
+              <Eye className="h-3 w-3" />
+              <span>{article.tweet_views?.toLocaleString() || '465,948'}</span>
             </div>
+            {article.tweet_likes !== undefined && (
+              <div className="flex items-center gap-1">
+                <Heart className="h-3 w-3" />
+                <span>{article.tweet_likes.toLocaleString()}</span>
+              </div>
+            )}
+            {article.tweet_retweets !== undefined && (
+              <div className="flex items-center gap-1">
+                <Repeat2 className="h-3 w-3" />
+                <span>{article.tweet_retweets.toLocaleString()}</span>
+              </div>
+            )}
+            {article.tweet_bookmarks !== undefined && (
+              <div className="flex items-center gap-1">
+                <Bookmark className="h-3 w-3" />
+                <span>{article.tweet_bookmarks.toLocaleString()}</span>
+              </div>
+            )}
           </div>
+        </div>
+        
+        {/* Action buttons */}
+        <div className="flex items-center justify-between pt-2">
+          <Link href={article.article_url || generateArticleUrl(article.title, article.id)}>
+            <button className="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 border border-input bg-background hover:bg-accent hover:text-accent-foreground rounded-md text-xs px-3 py-1 h-7">
+              <ExternalLink className="h-3 w-3" />
+              Read on X
+            </button>
+          </Link>
+          <BookmarkButton articleId={article.id} variant="card" />
         </div>
         
 

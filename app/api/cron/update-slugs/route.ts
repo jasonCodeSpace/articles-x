@@ -48,18 +48,23 @@ export async function POST(request: NextRequest) {
         // Generate new slug from English title
         const newSlug = generateSlugFromTitle(article.title_english)
         
+        // Extract the short ID from current slug to preserve it
+        const shortIdMatch = article.slug.match(/--([a-f0-9]{6})$/)
+        const shortId = shortIdMatch ? shortIdMatch[1] : article.slug.split('--').pop() || article.id.replace(/-/g, '').substring(0, 6)
+        const finalSlug = `${newSlug}--${shortId}`
+        
         // Only update if the slug is different and valid
-        if (newSlug && newSlug !== article.slug && newSlug.length > 0) {
+        if (finalSlug && finalSlug !== article.slug && newSlug.length > 0) {
           const { error: updateError } = await supabase
             .from('articles')
-            .update({ slug: newSlug })
+            .update({ slug: finalSlug })
             .eq('id', article.id)
 
           if (updateError) {
             console.error(`Error updating article ${article.id}:`, updateError)
             errors.push(`Failed to update article ${article.id}: ${updateError.message}`)
           } else {
-            console.log(`Updated article ${article.id}: "${article.title}" slug: ${article.slug} -> ${newSlug}`)
+            console.log(`Updated article ${article.id}: "${article.title}" slug: ${article.slug} -> ${finalSlug}`)
             updatedCount++
           }
         }

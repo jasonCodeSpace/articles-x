@@ -84,8 +84,8 @@ export default function Register() {
       }
 
       setMessage('登录成功！正在跳转...')
-      // Redirect will happen automatically due to auth state change
-      window.location.href = '/'
+      // Redirect to trending page for logged in users
+      window.location.href = '/trending'
     } catch (error) {
       if (error instanceof z.ZodError) {
         setError(error.issues[0].message)

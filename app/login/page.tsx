@@ -94,7 +94,7 @@ export default function Login() {
       } else if (data?.user) {
         setMessage('Login successful! Redirecting...')
         console.log('Login successful:', data.user.email)
-        router.push('/new')
+        router.push('/trending')
       } else {
         setError('Login failed, unknown error')
       }
@@ -138,7 +138,7 @@ export default function Login() {
             </Button>
           ) : (
             <Button variant="ghost" asChild className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors group p-0 h-auto">
-              <Link href="/new">
+              <Link href="/">
                 <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
                 <span className="text-sm">Back to Home</span>
               </Link>

@@ -97,9 +97,6 @@ export function ArticleContent({
           
           {/* Action Buttons */}
           <div className="flex items-center gap-3">
-            {/* Bookmark Button */}
-            <BookmarkButton articleId={article.id} variant="page" />
-            
             {/* Language Toggle */}
             <Button 
               variant="outline" 
@@ -178,18 +175,21 @@ export function ArticleContent({
             </div>
           )}
 
-          {/* Original Article Link */}
-          {article.article_url && (
-            <a
-              href={article.article_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors"
-            >
-              <ExternalLink className="h-4 w-4" />
-              <span>View original article</span>
-            </a>
-          )}
+          {/* Bookmark and Original Article Link */}
+          <div className="flex items-center gap-4">
+            <BookmarkButton articleId={article.id} variant="page" />
+            {article.article_url && (
+              <a
+                href={article.article_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors"
+              >
+                <ExternalLink className="h-4 w-4" />
+                <span>View original article</span>
+              </a>
+            )}
+          </div>
         </div>
       </footer>
     </>

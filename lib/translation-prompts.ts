@@ -1,5 +1,19 @@
 // 翻译相关的接口和提示词
 
+/**
+ * CRITICAL: Translation interface for English article fields.
+ * 
+ * This interface defines the ONLY English translation fields that should be generated:
+ * - title: English translation of the original title
+ * - tweet_text: English translation for social media sharing
+ * - article_preview_text: English translation of the original preview text
+ * - full_article_content: English translation of the original full content
+ * 
+ * RULES:
+ * 1. These fields should ONLY be populated through Gemini API translation
+ * 2. These fields should ONLY contain English text
+ * 3. Translation should be done ONLY in app/api/cron/translate-articles/route.ts
+ */
 export interface ArticleTranslation {
   title: string;
   tweet_text: string;

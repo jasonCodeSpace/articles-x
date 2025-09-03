@@ -1,3 +1,20 @@
+/**
+ * CRITICAL: This is the ONLY file that should generate English translations for articles.
+ * 
+ * This file is responsible for translating the following fields ONLY:
+ * - title -> title_english
+ * - article_preview_text -> article_preview_text_english  
+ * - full_article_content -> full_article_content_english
+ * 
+ * RULES:
+ * 1. These English fields should ONLY be generated through Gemini API translation
+ * 2. These fields should ONLY contain English text
+ * 3. NO other code should modify these English translation fields
+ * 4. This translation should happen ONLY after the original article is created
+ * 
+ * If you need to modify translation logic, do it HERE and ONLY here.
+ */
+
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/service';
 import { GoogleGenerativeAI } from '@google/generative-ai';

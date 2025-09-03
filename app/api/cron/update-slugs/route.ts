@@ -3,7 +3,7 @@ import { createServiceClient } from '@/lib/supabase/service'
 import { generateSlugFromTitle } from '@/lib/url-utils'
 
 /**
- * Update slugs for Chinese articles based on their English titles
+ * Update slugs for all articles based on their English titles
  * This endpoint should be called every 15 minutes via cron job
  */
 export async function POST(request: NextRequest) {
@@ -16,11 +16,10 @@ export async function POST(request: NextRequest) {
 
     const supabase = createServiceClient()
     
-    // Get the most recent 100 Chinese articles that have English titles
+    // Get the most recent 100 articles that have English titles
     const { data: articles, error } = await supabase
       .from('articles')
       .select('id, title, title_english, slug, language')
-      .eq('language', 'zh')
       .not('title_english', 'is', null)
       .not('title_english', 'eq', '')
       .order('tweet_published_at', { ascending: false })
@@ -33,12 +32,12 @@ export async function POST(request: NextRequest) {
 
     if (!articles || articles.length === 0) {
       return NextResponse.json({ 
-        message: 'No Chinese articles with English titles found',
+        message: 'No articles with English titles found',
         updated: 0 
       })
     }
 
-    console.log(`Found ${articles.length} Chinese articles to process`)
+    console.log(`Found ${articles.length} articles to process`)
     
     let updatedCount = 0
     const errors: string[] = []

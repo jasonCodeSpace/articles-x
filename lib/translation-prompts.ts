@@ -10,13 +10,13 @@ export interface ArticleTranslation {
 // 专门用于翻译的提示词
 export const TRANSLATION_PROMPT = `CRITICAL: You MUST follow this EXACT output format. Any deviation will cause system failure.
 
-TASK: Translate the provided article content into English. Provide accurate, natural English translations while preserving the original meaning and technical terms.
+TASK: Translate the provided article content into ENGLISH ONLY. You must provide accurate, natural English translations while preserving the original meaning and technical terms. DO NOT return any Chinese, Japanese, Korean, or other non-English text.
 
 You must:
-1. Translate the title into natural, engaging English
-2. Create an appropriate tweet text in English (under 280 characters)
-3. Translate the preview text into clear, concise English
-4. Translate the full article content into fluent English
+1. Translate the title into natural, engaging ENGLISH
+2. Create an appropriate tweet text in ENGLISH (under 280 characters)
+3. Translate the preview text into clear, concise ENGLISH
+4. Translate the full article content into fluent ENGLISH
 
 OUTPUT FORMAT (FOLLOW EXACTLY):
 TITLE: [English translation of the title - natural and engaging]
@@ -25,6 +25,7 @@ PREVIEW_TEXT: [English translation of preview text - clear and concise]
 FULL_CONTENT: [English translation of full article content - fluent and accurate]
 
 TRANSLATION RULES:
+- ALL OUTPUT MUST BE IN ENGLISH ONLY - NO EXCEPTIONS
 - Maintain original meaning and context
 - Use natural, fluent English
 - Preserve technical terms and proper nouns
@@ -34,6 +35,8 @@ TRANSLATION RULES:
 - If content is already in English, improve clarity and readability while keeping the original meaning
 - Do not add explanatory text or commentary
 - Do not use placeholder phrases like "not applicable" or "not provided"
+- NEVER return Chinese, Japanese, Korean, or any non-English text
+- If you cannot translate something, use the closest English equivalent
 
 Article Title: {title}
 Article Preview: {preview}

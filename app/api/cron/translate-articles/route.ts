@@ -23,35 +23,25 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = createServiceClient();
     
-    // 获取最近100篇文章，检查哪些需要翻译
-    const { data: recentArticles, error: fetchError } = await supabase
+    // 直接查询所有需要翻译的文章（英文字段为空的）
+    const { data: articlesToTranslate, error: fetchError } = await supabase
       .from('articles')
       .select('id, title, article_preview_text, full_article_content, title_english, article_preview_text_english, full_article_content_english, tweet_published_at')
       .not('full_article_content', 'is', null)
-      .not('tweet_published_at', 'is', null)
-      .order('tweet_published_at', { ascending: false })
-      .limit(100);
+      .or('title_english.is.null,title_english.eq.,article_preview_text_english.is.null,article_preview_text_english.eq.,full_article_content_english.is.null,full_article_content_english.eq.')
+      .order('updated_at', { ascending: false })
+      .limit(50);
     
     if (fetchError) {
-      console.error('Error fetching recent articles:', fetchError);
+      console.error('Error fetching articles to translate:', fetchError);
       return NextResponse.json(
-        { error: 'Failed to fetch recent articles' },
+        { error: 'Failed to fetch articles to translate' },
         { status: 500 }
       );
     }
     
-    // 筛选出需要翻译的文章（英文字段为空的）
-    const articlesToTranslate = recentArticles?.filter(article => 
-      !article.title_english || 
-      !article.article_preview_text_english || 
-      !article.full_article_content_english ||
-      article.title_english.trim() === '' ||
-      article.article_preview_text_english.trim() === '' ||
-      article.full_article_content_english.trim() === ''
-    ) || [];
-    
-    // 限制每次只处理5篇文章，避免超时和API限制
-    const articles = articlesToTranslate.slice(0, 5);
+    // 限制每次只处理20篇文章，避免超时和API限制
+    const articles = (articlesToTranslate || []).slice(0, 20);
     
     if (!articles || articles.length === 0) {
       return NextResponse.json(
@@ -85,6 +75,8 @@ export async function POST(request: NextRequest) {
           .replace('{preview}', article.article_preview_text || 'No preview available')
           .replace('{content}', article.full_article_content);
         
+        console.log(`Translating article: ${article.title}`);
+        
         const result = await model.generateContent(prompt);
         const response = await result.response.text();
         
@@ -103,7 +95,14 @@ export async function POST(request: NextRequest) {
           if (!translatedText || 
               translatedText.trim().length === 0 ||
               invalidValues.some(invalid => translatedText.toLowerCase().includes(invalid))) {
-            return fallbackText || '';
+            console.log(`Invalid translation detected: ${translatedText}`);
+            return '';
+          }
+          
+          // 检查翻译是否与原文完全相同（表示翻译失败）
+          if (translatedText.trim() === fallbackText.trim()) {
+            console.log(`Translation is same as original: ${translatedText.substring(0, 100)}...`);
+            return '';
           }
           
           return translatedText;

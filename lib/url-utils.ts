@@ -31,9 +31,23 @@ export function generateCategorySlug(category: string): string {
  * Convert category slug back to display name
  */
 export function categorySlugToDisplayName(slug: string): string {
+  // Special handling for "all" category
+  if (slug.toLowerCase() === 'all') {
+    return 'All Category'
+  }
+  
+  // Special handling for common acronyms that should be uppercase
+  const acronyms = ['ai', 'ui', 'ux', 'api', 'seo', 'ceo', 'cto', 'ipo']
+  
   return slug
     .split('-')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .map(word => {
+      const lowerWord = word.toLowerCase()
+      if (acronyms.includes(lowerWord)) {
+        return lowerWord.toUpperCase()
+      }
+      return word.charAt(0).toUpperCase() + word.slice(1)
+    })
     .join(' ')
 }
 

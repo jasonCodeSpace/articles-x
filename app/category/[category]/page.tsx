@@ -86,15 +86,22 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
     notFound()
   }
   
-  // Fetch articles for this category
-  const allArticles = await fetchArticles({ category: decodedCategory, search })
-  
-  // Client-side filter to ensure exact category match
-  const articles = allArticles.filter((article: Article) => {
-    if (!article.category) return false
-    const categories = article.category.split(',').map(cat => cat.trim())
-    return categories.includes(decodedCategory)
-  })
+  // Special handling for "all" category to show all articles
+  let articles: Article[]
+  if (slug === 'all') {
+    // For "all" category, fetch all articles without category filter
+    articles = await fetchArticles({ search })
+  } else {
+    // Fetch articles for this category
+    const allArticles = await fetchArticles({ category: decodedCategory, search })
+    
+    // Client-side filter to ensure exact category match (case-insensitive)
+    articles = allArticles.filter((article: Article) => {
+      if (!article.category) return false
+      const categories = article.category.split(',').map(cat => cat.trim())
+      return categories.some(cat => cat.toLowerCase() === decodedCategory.toLowerCase())
+    })
+  }
   
 
   

@@ -174,7 +174,61 @@ LANGUAGE: [detected language code]
 
 [English paragraph]
 
-CATEGORY: [Select up to 3 categories from: Hardware, Gaming, Health, Environment, Personal Story, Culture, Philosophy, History, Education, Design, Marketing, AI, Crypto, Tech, Data, Startups, Business, Markets, Product, Security, Policy, Science, Media. Separate multiple categories with commas. Base selection on article content analysis.]
+CATEGORY: [Select up to 3 categories from: Hardware, Gaming, Health, Environment, Personal Story, Culture, Philosophy, History, Education, Design, Marketing, AI, Crypto, Tech, Data, Startups, Business, Markets, Product, Security, Policy, Science, Media. Separate multiple categories with commas. 
+
+CATEGORY GUIDELINES:
+
+- Hardware: 硬件与器件的设计、制造与评测。包含：芯片、终端、IoT、拆解、供应链工艺；不含：纯软件工程（→ Tech）、AI算法（→ AI）。
+- Gaming: 游戏与电竞生态。包含：作品评测、运营与赛事、游戏设计与商业化；不含：博彩/金融化市场（→ Markets）、通用软件工程（→ Tech）。
+- Health: 健康与医疗。包含：临床研究、公共卫生、心理健康、营养与运动医学；不含：环境政策（→ Environment）、可穿戴硬件评测（→ Hardware）。
+- Environment: 环境与气候/能源转型。包含：减排、碳市场、生态与可持续实践；不含：基础科学机理（→ Science）、纯政策法规解读（→ Policy）。
+- Personal Story: 第一人称经历与人生体悟。包含：经验复盘、职业/生活故事；不含：行业新闻与分析（→ Media/Business/Markets）。
+- Culture: 文化与社会现象。包含：艺术、文学、亚文化与网络文化解读；不含：媒体产业与平台策略（→ Media）、品牌营销（→ Marketing）。
+- Philosophy: 哲学与伦理思辨。包含：认识论、价值与技术伦理；不含：可执行的商业/产品方法（→ Business/Product）。
+- History: 历史与史料解读。包含：事件脉络、人物与制度沿革；不含：当下新闻（→ Media）、政策落地操作（→ Policy）。
+- Education: 教育方法与学习科学。包含：教学设计、评估体系、学习工具与策略；不含：研究成果本身（→ Science）、产品功能教程（→ Product/Tech）。
+- Design: 设计学科与实践。包含：UX/UI、视觉与品牌、工业设计与设计系统；不含：代码实现（→ Tech）、营销投放与渠道（→ Marketing）。
+- Marketing: 增长与营销。包含：渠道与投放、品牌与内容、增长模型与衡量；不含：定价与销售运营（→ Business）、产品路线（→ Product）。
+- AI: 人工智能理论与应用。包含：模型/代理、训练与推理、应用落地与安全；不含：数据管道与BI（→ Data）、通用云与工程（→ Tech）、链上AI币（→ Crypto）。
+- Crypto: 区块链与加密原生主题。包含：公链/协议、DeFi、NFT/RWA、钱包与治理、链上数据与行情；不含：传统宏观与股债（→ Markets）、AI非上链议题（→ AI）。
+- Tech: 通用软件与基础设施工程。包含：云原生、架构、DevOps/平台工程、开发工具；不含：数据分析与指标（→ Data）、硬件（→ Hardware）、模型研发（→ AI）。
+- Data: 数据工程与分析。包含：数据仓库/湖、ETL/ELT、指标体系、实验与可视化、MLOps（工程侧）；不含：模型方法与研究（→ AI）。
+- Startups: 创业与早期公司。包含：PMF探索、融资、股权与团队、0→1 增长路径；不含：成熟企业运营与定价（→ Business）、宏观市场（→ Markets）。
+- Business: 商业运营与变现。包含：定价与货币化、销售与渠道、组织与流程、单位经济学；不含：早期PMF/融资（→ Startups）、市场行情（→ Markets）。
+- Markets: 宏观与资本市场（非加密为主）。包含：股债汇商品、宏观变量与交易框架；不含：加密原生市场（→ Crypto）、公司经营实务（→ Business）。
+- Product: 产品管理与策略。包含：用户研究、定位与路线图、优先级与度量、A/B 与增长机制；不含：视觉/品牌（→ Design/Marketing）、工程实现（→ Tech）、定价（→ Business）。
+- Security: 安全与隐私工程。包含：AppSec、InfraSec、红蓝对抗、合规技术、链上安全；不含：法律条文与政策解读（→ Policy）、可用性/性能工程（→ Tech）。
+- Policy: 政策、法律与合规。包含：立法/监管解读、数据与隐私合规、治理框架；不含：技术实现（→ Security/Tech）、商业运营细节（→ Business）。
+- Science: 基础与应用科学研究。包含：物理/化学/生物/空间等前沿成果与方法；不含：工程落地（→ Tech/Hardware）、气候治理实践（→ Environment）。
+- Media: 媒体与创作者经济产业面。包含：平台策略（X/YouTube等）、分发与变现、新闻业与内容生态；不含：文化批评（→ Culture）、广告投放实务（→ Marketing）。
+
+CRITICAL CLASSIFICATION RULES:
+1. **Crypto分类规则：**
+   - 仅当文章主要讨论区块链技术、加密货币、DeFi协议、NFT、代币经济学时才分类为Crypto
+   - 如果加密货币只是个人故事的背景，不分类为Crypto
+   - 例子：分析"回购销毁 vs 收益共享"的加密协议 = Crypto + Tech
+   - 例子：个人故事中提到在加密行业工作 = Personal Story（不含Crypto）
+
+2. **Business分类规则：**
+   - 仅限于：定价与变现策略、GTM与销售运营、渠道与合作伙伴管理、组织流程优化、单位经济学分析
+   - 绝对不包括：代币经济学技术分析、宏观市场分析、产品设计、融资话题
+   - 例子："回购销毁"加密机制分析 = Crypto + Tech（不是Business）
+
+3. **Personal Story分类规则：**
+   - 必须是第一人称亲身经历：个人成长故事、职业经历分享、生活感悟
+   - 如果提到职业或行业只是背景，重点关注个人体验方面
+   - 除非文章提供该行业的实质性分析，否则不添加额外行业分类
+   - 例子："Weed destroyed my life"有加密背景 = Personal Story + Culture（不含Crypto）
+
+4. **Tech分类规则：**
+   - 适用于：软件工程实践、云原生架构、DevOps工具链、开发框架
+   - 也适用于：加密协议和区块链技术的技术分析
+   - 不适用于：仅在个人故事中顺带提及技术
+
+5. **其他规则：**
+   - Markets分类仅限于：股票债券市场、宏观经济指标、传统金融工具交易
+   - Media适用于媒体和创作者经济产业，不适用于文化批评（用Culture）
+   - 严格按照文章的主要目的和内容分类，不要因为背景提及就错误分类]
 
 ENGLISH_TRANSLATION: [ALWAYS provide this section regardless of original language]
 TITLE: [English translation or original if already in English - NEVER use "Not provided", "Not available", etc.]
@@ -456,6 +510,140 @@ export async function batchGenerateSummaries(
   }
   
   return results;
+}
+
+/**
+ * 生成文章分类
+ * @param title 文章标题
+ * @param content 文章内容
+ * @returns 分类数组
+ */
+export async function generateCategories(
+  title: string,
+  content: string
+): Promise<string[]> {
+  try {
+    const currentModel = initialize();
+    if (!currentModel) {
+      throw new Error('Failed to initialize model');
+    }
+    
+    // 构建专门用于分类的提示词
+    const prompt = `TASK: Analyze the article and assign appropriate categories.
+
+CATEGORY GUIDELINES:
+
+Hardware — 硬件与器件的设计、制造与评测。包含：芯片、终端、IoT、拆解、供应链工艺；不含：纯软件工程（→ Tech）、AI算法（→ AI）。
+
+Gaming — 游戏与电竞生态。包含：作品评测、运营与赛事、游戏设计与商业化；不含：博彩/金融化市场（→ Markets）、通用软件工程（→ Tech）。
+
+Health — 健康与医疗。包含：临床研究、公共卫生、心理健康、营养与运动医学；不含：环境政策（→ Environment）、可穿戴硬件评测（→ Hardware）。
+
+Environment — 环境与气候/能源转型。包含：减排、碳市场、生态与可持续实践；不含：基础科学机理（→ Science）、纯政策法规解读（→ Policy）。
+
+Personal Story — 第一人称经历与人生体悟。包含：经验复盘、职业/生活故事；不含：行业新闻与分析（→ Media/Business/Markets）。
+
+Culture — 文化与社会现象。包含：艺术、文学、亚文化与网络文化解读；不含：媒体产业与平台策略（→ Media）、品牌营销（→ Marketing）。
+
+Philosophy — 哲学与伦理思辨。包含：认识论、价值与技术伦理；不含：可执行的商业/产品方法（→ Business/Product）。
+
+History — 历史与史料解读。包含：事件脉络、人物与制度沿革；不含：当下新闻（→ Media）、政策落地操作（→ Policy）。
+
+Education — 教育方法与学习科学。包含：教学设计、评估体系、学习工具与策略；不含：研究成果本身（→ Science）、产品功能教程（→ Product/Tech）。
+
+Design — 设计学科与实践。包含：UX/UI、视觉与品牌、工业设计与设计系统；不含：代码实现（→ Tech）、营销投放与渠道（→ Marketing）。
+
+Marketing — 增长与营销。包含：渠道与投放、品牌与内容、增长模型与衡量；不含：定价与销售运营（→ Business）、产品路线（→ Product）。
+
+AI — 人工智能理论与应用。包含：模型/代理、训练与推理、应用落地与安全；不含：数据管道与BI（→ Data）、通用云与工程（→ Tech）、链上AI币（→ Crypto）。
+
+Crypto — 区块链与加密原生主题。包含：公链/协议、DeFi、NFT/RWA、钱包与治理、链上数据与行情；不含：传统宏观与股债（→ Markets）、AI非上链议题（→ AI）。
+
+Tech — 通用软件与基础设施工程。包含：云原生、架构、DevOps/平台工程、开发工具；不含：数据分析与指标（→ Data）、硬件（→ Hardware）、模型研发（→ AI）。
+
+Data — 数据工程与分析。包含：数据仓库/湖、ETL/ELT、指标体系、实验与可视化、MLOps（工程侧）；不含：模型方法与研究（→ AI）。
+
+Startups — 创业与早期公司。包含：PMF探索、融资、股权与团队、0→1 增长路径；不含：成熟企业运营与定价（→ Business）、宏观市场（→ Markets）。
+
+Business — 商业运营与变现。包含：定价与货币化、销售与渠道、组织与流程、单位经济学；不含：早期PMF/融资（→ Startups）、市场行情（→ Markets）。
+
+Markets — 宏观与资本市场（非加密为主）。包含：股债汇商品、宏观变量与交易框架；不含：加密原生市场（→ Crypto）、公司经营实务（→ Business）。
+
+Product — 产品管理与策略。包含：用户研究、定位与路线图、优先级与度量、A/B 与增长机制；不含：视觉/品牌（→ Design/Marketing）、工程实现（→ Tech）、定价（→ Business）。
+
+Security — 安全与隐私工程。包含：AppSec、InfraSec、红蓝对抗、合规技术、链上安全；不含：法律条文与政策解读（→ Policy）、可用性/性能工程（→ Tech）。
+
+Policy — 政策、法律与合规。包含：立法/监管解读、数据与隐私合规、治理框架；不含：技术实现（→ Security/Tech）、商业运营细节（→ Business）。
+
+Science — 基础与应用科学研究。包含：物理/化学/生物/空间等前沿成果与方法；不含：工程落地（→ Tech/Hardware）、气候治理实践（→ Environment）。
+
+Media — 媒体与创作者经济产业面。包含：平台策略（X/YouTube等）、分发与变现、新闻业与内容生态；不含：文化批评（→ Culture）、广告投放实务（→ Marketing）。
+
+CRITICAL CLASSIFICATION RULES:
+
+1. **Crypto分类规则：**
+   - 仅当文章主要讨论区块链技术、加密货币、DeFi协议、NFT、代币经济学时才分类为Crypto
+   - 如果加密货币只是个人故事的背景，不分类为Crypto
+   - 例子：分析"回购销毁 vs 收益共享"的加密协议 = Crypto + Tech
+   - 例子：个人故事中提到在加密行业工作 = Personal Story（不含Crypto）
+
+2. **Business分类规则：**
+   - 仅限于：定价与变现策略、GTM与销售运营、渠道与合作伙伴管理、组织流程优化、单位经济学分析
+   - 绝对不包括：代币经济学技术分析、宏观市场分析、产品设计、融资话题
+   - 例子："回购销毁"加密机制分析 = Crypto + Tech（不是Business）
+
+3. **Personal Story分类规则：**
+   - 必须是第一人称亲身经历：个人成长故事、职业经历分享、生活感悟
+   - 如果提到职业或行业只是背景，重点关注个人体验方面
+   - 除非文章提供该行业的实质性分析，否则不添加额外行业分类
+   - 例子："Weed destroyed my life"有加密背景 = Personal Story + Culture（不含Crypto）
+
+4. **Tech分类规则：**
+   - 适用于：软件工程实践、云原生架构、DevOps工具链、开发框架
+   - 也适用于：加密协议和区块链技术的技术分析
+   - 不适用于：仅在个人故事中顺带提及技术
+
+5. **其他规则：**
+   - Markets分类仅限于：股票债券市场、宏观经济指标、传统金融工具交易
+   - Media适用于媒体和创作者经济产业，不适用于文化批评（用Culture）
+   - 严格按照文章的主要目的和内容分类，不要因为背景提及就错误分类
+
+INSTRUCTIONS:
+1. Read the article carefully and identify the PRIMARY themes
+2. Select 1-3 most relevant categories based on actual content
+3. Prioritize specificity over generality
+4. When in doubt between similar categories, choose the most specific one
+5. Do NOT assign categories based on superficial keyword matching
+6. Focus on the article's main purpose and core discussion
+
+OUTPUT FORMAT:
+CATEGORIES: [List categories separated by commas, maximum 3]
+
+ARTICLE:
+Title: ${title}
+Content: ${content.substring(0, 4000)}
+
+Analyze and categorize:`;
+    
+    const result = await currentModel.generateContent(prompt);
+    const text = result.response.text();
+    
+    // 解析分类
+    const categoryMatch = text.match(/CATEGORIES:\s*([^\n]+)/i);
+    if (categoryMatch) {
+      const categoriesText = categoryMatch[1].trim();
+      const categories = categoriesText
+        .split(',')
+        .map(cat => cat.trim())
+        .filter(cat => cat.length > 0);
+      return categories;
+    }
+    
+    return [];
+  } catch (error) {
+    console.error('Error generating categories:', error);
+    throw new Error('Failed to generate categories');
+  }
 }
 
 /**

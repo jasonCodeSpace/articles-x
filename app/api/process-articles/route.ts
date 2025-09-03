@@ -786,22 +786,16 @@ export async function GET(request: NextRequest) {
       .select('tweet_id')
       .not('tweet_id', 'is', null);
     
-    const processedTweetIds = processedTweets?.map(t => t.tweet_id) || [];
-    console.log(`Found ${processedTweetIds.length} already processed tweets`);
+    const processedTweetIds = new Set(processedTweets?.map(t => t.tweet_id) || []);
+    console.log(`Found ${processedTweetIds.size} already processed tweets`);
     
-    // Then get unprocessed tweets
-    let query = supabase
+    // Get all tweets with articles
+    const { data: allTweets, error: fetchError } = await supabase
       .from('tweets')
       .select('tweet_id, author_handle')
       .eq('has_article', true)
       .order('created_at', { ascending: false })
-      .limit(15);
-    
-    if (processedTweetIds.length > 0) {
-      query = query.not('tweet_id', 'in', `(${processedTweetIds.map(id => `'${id}'`).join(',')})`);
-    }
-    
-    const { data: tweets, error: fetchError } = await query;
+      .limit(100); // Get more to filter locally
     
     if (fetchError) {
       console.error('Database error fetching tweets:', fetchError);
@@ -815,6 +809,9 @@ export async function GET(request: NextRequest) {
         { status: 500 }
       );
     }
+    
+    // Filter out already processed tweets locally
+     const tweets = allTweets?.filter(tweet => !processedTweetIds.has(tweet.tweet_id)).slice(0, 15) || [];
     
     if (!tweets || tweets.length === 0) {
       return NextResponse.json({

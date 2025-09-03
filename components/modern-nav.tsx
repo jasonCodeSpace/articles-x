@@ -224,7 +224,7 @@ export function ModernNav({ user, className }: ModernNavProps) {
           className,
         )}
       >
-        <div className="flex items-center gap-2 bg-background/70 backdrop-blur-md border border-border py-2 px-2 rounded-full shadow-2xl">
+        <div className="flex items-center gap-1 bg-background/70 backdrop-blur-md border border-border py-2 px-2 rounded-full shadow-2xl">
           {/* Mobile Logo */}
           <button onClick={() => router.push('/landing')} className="flex items-center gap-2 group cursor-pointer hover:cursor-pointer">
             <div className="w-6 h-6 flex items-center justify-center hover:opacity-80 transition-all duration-300 group-hover:scale-110">
@@ -236,7 +236,7 @@ export function ModernNav({ user, className }: ModernNavProps) {
           {/* Trending Button for Mobile */}
           <button 
             onClick={() => router.push('/trending')}
-            className="relative cursor-pointer text-sm font-semibold px-4 py-2 rounded-full transition-colors text-muted-foreground hover:text-foreground"
+            className="relative cursor-pointer text-sm font-semibold px-2 py-2 rounded-full transition-colors text-muted-foreground hover:text-foreground"
             title="Trending"
           >
             Trending
@@ -246,7 +246,7 @@ export function ModernNav({ user, className }: ModernNavProps) {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button 
-                className="relative cursor-pointer text-sm font-semibold px-4 py-2 rounded-full transition-colors text-muted-foreground hover:text-foreground"
+                className="relative cursor-pointer text-sm font-semibold px-2 py-2 rounded-full transition-colors text-muted-foreground hover:text-foreground"
                 title="Categories"
               >
                 Category
@@ -284,7 +284,7 @@ if (item.name === 'Profile') {
                     <DropdownMenuTrigger asChild>
                       <button
                         className={cn(
-                          "relative cursor-pointer text-sm font-semibold px-4 py-2 rounded-full transition-colors",
+                          "relative cursor-pointer text-sm font-semibold px-2 py-2 rounded-full transition-colors",
                           "text-muted-foreground hover:text-foreground",
                           isActive && "bg-accent/50 text-foreground",
                         )}
@@ -374,13 +374,13 @@ if (item.name === 'Profile') {
                     <DropdownMenuTrigger asChild>
                       <button
                         className={cn(
-                          "relative cursor-pointer text-sm font-semibold px-4 py-2 rounded-full transition-colors",
+                          "relative cursor-pointer text-sm font-semibold px-2 py-2 rounded-full transition-colors",
                           "text-muted-foreground hover:text-foreground",
                           isActive && "bg-accent/50 text-foreground",
                         )}
                         onClick={() => setActiveTab(item.name)}
                       >
-                        <Icon size={18} strokeWidth={2.5} />
+                        Login
                         {isActive && (
                           <motion.div
                             layoutId="mobile-lamp"
@@ -418,7 +418,7 @@ if (item.name === 'Profile') {
               <button
                 key={item.name}
                 className={cn(
-                  "relative cursor-pointer text-sm font-semibold px-4 py-2 rounded-full transition-colors",
+                  "relative cursor-pointer text-sm font-semibold px-2 py-2 rounded-full transition-colors",
                   "text-muted-foreground hover:text-foreground",
                   isActive && "bg-accent/50 text-foreground",
                 )}

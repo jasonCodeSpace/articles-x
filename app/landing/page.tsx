@@ -157,16 +157,16 @@ export default async function LandingPage() {
                           {article.title}
                         </h4>
                         
-                        {/* Author line */}
-                        <div className="text-xs text-muted-foreground">
-                          article by {article.author_handle || 'unknown'}
-                        </div>
-                        
                         {/* Quick Actions */}
                         <div className="flex items-center justify-between pt-2">
                           <div className="flex items-center gap-1 text-xs text-muted-foreground">
                             <Eye size={12} />
                             <span>{article.tweet_views?.toLocaleString() || '0'}</span>
+                          </div>
+                          
+                          {/* Author line moved to the right */}
+                          <div className="text-xs text-muted-foreground">
+                            article by {article.author_handle || 'unknown'}
                           </div>
                           
                           <div className="flex gap-2">
@@ -467,32 +467,7 @@ export default async function LandingPage() {
       </section>
 
       {/* Social Proof */}
-      <section className="bg-muted/30 py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Trusted by founders, investors, and researchers
-            </h2>
-          </div>
-          
-          <div className="grid md:grid-cols-3 gap-8 text-center">
-            <div className="space-y-4">
-              <div className="text-4xl font-bold text-primary">2,500+</div>
-              <div className="text-muted-foreground">Articles curated weekly</div>
-            </div>
-            
-            <div className="space-y-4">
-              <div className="text-4xl font-bold text-primary">50+</div>
-              <div className="text-muted-foreground">Categories covered</div>
-            </div>
-            
-            <div className="space-y-4">
-              <div className="text-4xl font-bold text-primary">15min</div>
-              <div className="text-muted-foreground">Fresh content updates</div>
-            </div>
-          </div>
-        </div>
-      </section>
+
 
       {/* FAQ Section */}
       <section className="py-16">

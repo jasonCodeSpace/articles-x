@@ -85,51 +85,16 @@ interface TwitterTimelineResponse {
 function hasArticleLink(tweet: { legacy?: { entities?: { urls?: Array<{ expanded_url?: string }> } } }): boolean {
   const urls = tweet?.legacy?.entities?.urls || [];
   
-  // Check for any external URLs that could be articles
+  // Only check for X/Twitter native articles
   return urls.some((url: { expanded_url?: string }) => {
     if (!url.expanded_url) return false;
     
     const expandedUrl = url.expanded_url.toLowerCase();
     
-    // Twitter native articles
-    if (expandedUrl.includes('/i/article/')) return true;
-    
-    // Common article domains and patterns
-    const articlePatterns = [
-      // News sites
-      'nytimes.com', 'washingtonpost.com', 'wsj.com', 'reuters.com', 'bloomberg.com',
-      'cnn.com', 'bbc.com', 'theguardian.com', 'npr.org', 'apnews.com',
-      // Tech/Business
-      'techcrunch.com', 'wired.com', 'arstechnica.com', 'theverge.com', 'engadget.com',
-      'forbes.com', 'businessinsider.com', 'fortune.com', 'fastcompany.com',
-      // Sports
-      'espn.com', 'athletic.com', 'si.com', 'bleacherreport.com',
-      // Blogs and platforms
-      'medium.com', 'substack.com', 'wordpress.com', 'blogspot.com',
-      // Academic/Research
-      'arxiv.org', 'nature.com', 'science.org', 'pnas.org',
-      // Other common article sites
-      'atlantic.com', 'newyorker.com', 'vox.com', 'slate.com', 'salon.com',
-      'huffpost.com', 'politico.com', 'axios.com', 'buzzfeed.com'
-    ];
-    
-    // Check if URL contains any article patterns
-    const hasArticlePattern = articlePatterns.some(pattern => expandedUrl.includes(pattern));
-    
-    // Additional checks for article-like URLs
-    const hasArticleKeywords = [
-      '/article/', '/story/', '/news/', '/post/', '/blog/', '/opinion/',
-      '/analysis/', '/feature/', '/report/', '/investigation/'
-    ].some(keyword => expandedUrl.includes(keyword));
-    
-    // Exclude common non-article URLs
-    const isNonArticle = [
-      'youtube.com', 'youtu.be', 'twitter.com', 'x.com', 'instagram.com',
-      'facebook.com', 'linkedin.com', 'tiktok.com', 'reddit.com',
-      'github.com', 'stackoverflow.com', 'amazon.com', 'ebay.com'
-    ].some(pattern => expandedUrl.includes(pattern));
-    
-    return (hasArticlePattern || hasArticleKeywords) && !isNonArticle;
+    // Only allow Twitter/X native articles
+    return expandedUrl.includes('/i/article/') || 
+           (expandedUrl.includes('x.com') && expandedUrl.includes('/i/article/')) ||
+           (expandedUrl.includes('twitter.com') && expandedUrl.includes('/i/article/'));
   });
 }
 

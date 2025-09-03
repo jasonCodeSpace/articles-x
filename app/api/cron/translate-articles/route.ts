@@ -75,8 +75,6 @@ export async function POST(request: NextRequest) {
           .replace('{preview}', article.article_preview_text || 'No preview available')
           .replace('{content}', article.full_article_content);
         
-        console.log(`Translating article: ${article.title}`);
-        
         const result = await model.generateContent(prompt);
         const response = await result.response.text();
         

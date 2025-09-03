@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/service';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { ArticleTranslation, TRANSLATION_PROMPT, parseTranslationResponse } from '@/lib/translation-prompts';
+import { generateSlugFromTitle } from '@/lib/url-utils';
 
 const CRON_SECRET = process.env.CRON_SECRET;
 
@@ -113,6 +114,7 @@ export async function POST(request: NextRequest) {
           title_english?: string;
           article_preview_text_english?: string;
           full_article_content_english?: string;
+          slug?: string;
         } = {};
 
         // 只更新空白的英文字段
@@ -124,6 +126,14 @@ export async function POST(request: NextRequest) {
         }
         if (!article.full_article_content_english || article.full_article_content_english.trim() === '') {
           updateData.full_article_content_english = cleanTranslation(translation.full_article_content, article.full_article_content);
+        }
+
+        // 如果更新了title_english，同时更新slug
+        if (updateData.title_english) {
+          const newSlug = generateSlugFromTitle(updateData.title_english);
+          if (newSlug && newSlug.length > 0) {
+            updateData.slug = newSlug;
+          }
         }
 
         // 只有当有字段需要更新时才执行数据库更新

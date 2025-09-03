@@ -117,13 +117,7 @@ async function batchRegenerateSummaries() {
             summary_chinese: analysis.summary.chinese,
             summary_english: analysis.summary.english,
             summary_generated_at: new Date().toISOString(),
-            language: analysis.language,
-            title_english: analysis.english_translation?.title || article.title,
-            article_preview_text_english: cleanTranslation(
-              analysis.english_translation?.article_preview_text || '', 
-              article.article_preview_text || ''
-            ),
-            full_article_content_english: analysis.english_translation?.full_article_content || article.full_article_content
+            language: analysis.language
           }
 
           batchResults.push({

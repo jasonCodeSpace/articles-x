@@ -43,14 +43,12 @@ async function updateArticleTags(): Promise<void> {
   try {
     console.log('Starting article tag update process...');
     
-    // Get articles from the last 8 days that need tag updates
-    const eightDaysAgo = new Date();
-    eightDaysAgo.setDate(eightDaysAgo.getDate() - 8);
-    
+    // Get ALL articles that might need tag updates (not just recent ones)
+    // This ensures articles older than 7 days get marked as 'History'
     const { data: articles, error } = await supabase
       .from('articles')
       .select('id, article_published_at, tag')
-      .gte('article_published_at', eightDaysAgo.toISOString())
+      .not('article_published_at', 'is', null)
       .order('article_published_at', { ascending: false });
     
     if (error) {

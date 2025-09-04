@@ -584,9 +584,9 @@ export default async function LandingPage() {
                 <Link href="/trending" className="block text-muted-foreground hover:text-foreground transition-colors">
                   Trending
                 </Link>
-                <Link href="/categories" className="block text-muted-foreground hover:text-foreground transition-colors">
+                <a href="https://www.xarticle.news/category/all" className="block text-muted-foreground hover:text-foreground transition-colors">
                   Categories
-                </Link>
+                </a>
               </div>
             </div>
             

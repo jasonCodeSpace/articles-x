@@ -359,7 +359,7 @@ export default async function Privacy() {
                 <strong>Subject Line:</strong> Privacy Policy Inquiry
               </p>
               <p>
-                We will respond to your inquiry within 30 days of receipt.
+                We will respond to your inquiry within 2 days of receipt.
               </p>
             </CardContent>
           </Card>

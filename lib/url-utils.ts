@@ -25,7 +25,7 @@ export function generateSlugFromTitle(title: string): string {
   
   if (hasCJK) {
     // For CJK text, transliterate to ASCII if possible, otherwise use romanization
-    let processedTitle = title
+    const processedTitle = title
       .replace(/[\u4e00-\u9fff]/g, (char) => {
         // Simple mapping for common Chinese characters to pinyin
         const pinyinMap: { [key: string]: string } = {

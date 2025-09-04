@@ -283,7 +283,7 @@ export default function Login() {
             <p className="text-muted-foreground text-sm">
               Don&apos;t have an account?{' '}
               <Link 
-                href="/trending" 
+                href="/register" 
                 className="text-primary hover:text-primary/80 underline transition-colors"
               >
                 Sign up now
@@ -320,13 +320,13 @@ export default function Login() {
         <div className="text-center mt-8 animate-slide-up" style={{animationDelay: '0.4s'}}>
           <p className="text-xs text-muted-foreground">
             By signing in, you agree to our{' '}
-            <a href="#" className="text-primary hover:text-primary/80 underline transition-colors">
+            <Link href="/terms" className="text-primary hover:text-primary/80 underline transition-colors">
               Terms of Service
-            </a>{' '}
+            </Link>{' '}
             •{' '}
-            <a href="#" className="text-primary hover:text-primary/80 underline transition-colors">
+            <Link href="/privacy" className="text-primary hover:text-primary/80 underline transition-colors">
               Privacy Policy
-            </a>
+            </Link>
           </p>
         </div>
       </div>

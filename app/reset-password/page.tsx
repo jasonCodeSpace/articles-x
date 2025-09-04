@@ -6,12 +6,15 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Mail, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
+import { Turnstile } from '@marsidev/react-turnstile'
 
 export default function ResetPassword() {
   const [email, setEmail] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
+  const [captchaToken, setCaptchaToken] = useState<string>()
 
   const supabase = createClient()
 
@@ -24,6 +27,7 @@ export default function ResetPassword() {
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/auth/callback?next=/reset-password/confirm`,
+        captchaToken,
       })
 
       if (error) {
@@ -62,8 +66,8 @@ export default function ResetPassword() {
           {/* Header */}
           <div className="text-center mb-8">
             <div className="flex items-center justify-center gap-3 mb-6 group">
-              <div className="w-14 h-14 bg-foreground rounded-2xl flex items-center justify-center transform transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 shadow-lg">
-                <span className="text-3xl font-bold text-background">X</span>
+              <div className="w-14 h-14 flex items-center justify-center transform transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 shadow-lg">
+                <Image src="/logo.svg" alt="Xarticle Logo" width={56} height={56} className="w-14 h-14" />
               </div>
               <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent">
                 Xarticle
@@ -89,10 +93,19 @@ export default function ResetPassword() {
               />
             </div>
             
+            <div className="flex justify-center">
+              <Turnstile
+                siteKey="your-sitekey"
+                onSuccess={(token) => {
+                  setCaptchaToken(token)
+                }}
+              />
+            </div>
+            
             <Button 
               type="submit" 
               className="w-full h-14 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary text-primary-foreground font-medium rounded-2xl transition-all duration-300 text-base shadow-lg hover:shadow-primary/25 transform hover:scale-[1.02] active:scale-[0.98]" 
-              disabled={isLoading}
+              disabled={isLoading || !captchaToken}
             >
               {isLoading ? (
                 <div className="flex items-center">

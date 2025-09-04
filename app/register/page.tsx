@@ -8,6 +8,7 @@ import { Mail, ArrowRight, CheckCircle, XCircle, ArrowLeft, KeyRound } from 'luc
 import { z } from 'zod'
 import Link from 'next/link'
 import Image from 'next/image'
+import { Turnstile } from '@marsidev/react-turnstile'
 
 const emailSchema = z.object({
   email: z.string().email('请输入有效的邮箱地址'),
@@ -24,6 +25,7 @@ export default function Register() {
   const [isLoading, setIsLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
+  const [captchaToken, setCaptchaToken] = useState<string>()
 
   const supabase = createClient()
 
@@ -42,6 +44,7 @@ export default function Register() {
         options: {
           shouldCreateUser: true,
           emailRedirectTo: undefined, // Prevent magic link
+          captchaToken,
         },
       })
 
@@ -138,10 +141,19 @@ export default function Register() {
                 />
               </div>
               
+              <div className="flex justify-center">
+                <Turnstile
+                  siteKey="your-sitekey"
+                  onSuccess={(token) => {
+                    setCaptchaToken(token)
+                  }}
+                />
+              </div>
+              
               <Button 
                 type="submit" 
                 className="w-full h-14 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary text-primary-foreground font-medium rounded-2xl transition-all duration-300 text-base shadow-lg hover:shadow-primary/25 transform hover:scale-[1.02] active:scale-[0.98]" 
-                disabled={isLoading}
+                disabled={isLoading || !captchaToken}
               >
                 {isLoading ? (
                   <div className="flex items-center">

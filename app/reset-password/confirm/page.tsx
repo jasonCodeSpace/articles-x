@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Lock, ArrowLeft, CheckCircle, XCircle } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 
 export default function ResetPasswordConfirm() {
   const [password, setPassword] = useState('')
@@ -80,8 +81,8 @@ export default function ResetPasswordConfirm() {
           {/* Header */}
           <div className="text-center mb-8">
             <div className="flex items-center justify-center gap-3 mb-6 group">
-              <div className="w-14 h-14 bg-foreground rounded-2xl flex items-center justify-center transform transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 shadow-lg">
-                <span className="text-3xl font-bold text-background">X</span>
+              <div className="w-14 h-14 flex items-center justify-center transform transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
+                <Image src="/logo.svg" alt="Xarticle Logo" width={56} height={56} className="w-14 h-14" />
               </div>
               <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent">
                 Xarticle

@@ -13,6 +13,27 @@ export const metadata: Metadata = {
   description: 'Discover the most valuable long-form articles shared on X. Read crisp summaries, browse by topic or account, and save your personal must-read list.',
   alternates: {
     canonical: '/landing'
+  },
+  openGraph: {
+    title: 'Xarticle — The Best Articles from X, Curated and Summarized',
+    description: 'Discover the most valuable long-form articles shared on X. Read crisp summaries, browse by topic or account, and save your personal must-read list.',
+    url: '/landing',
+    siteName: 'Xarticle',
+    type: 'website',
+    images: [
+      {
+        url: '/logo.svg',
+        width: 1200,
+        height: 630,
+        alt: 'Xarticle - Curated Articles from X'
+      }
+    ]
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Xarticle — The Best Articles from X, Curated and Summarized',
+    description: 'Discover the most valuable long-form articles shared on X. Read crisp summaries, browse by topic or account, and save your personal must-read list.',
+    images: ['/logo.svg']
   }
 }
 
@@ -149,7 +170,7 @@ export default async function LandingPage() {
                       <div className="absolute inset-0 opacity-10">
                         <Image 
                           src={article.image} 
-                          alt="" 
+                          alt={`Background image for ${article.title}`} 
                           fill
                           className="object-cover"
                         />

@@ -4,7 +4,6 @@ module.exports = {
       url: [
         'http://localhost:3000',
         'http://localhost:3000/trending',
-        'http://localhost:3000/weekly',
         'http://localhost:3000/history'
       ],
       startServerCommand: 'npm run build && npm run start',
@@ -86,7 +85,6 @@ if (process.env.VERCEL_URL) {
   module.exports.ci.collect.url = [
     `https://${process.env.VERCEL_URL}`,
     `https://${process.env.VERCEL_URL}/new`,
-    `https://${process.env.VERCEL_URL}/weekly`,
     `https://${process.env.VERCEL_URL}/history`
   ];
   delete module.exports.ci.collect.startServerCommand;

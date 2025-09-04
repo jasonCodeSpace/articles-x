@@ -51,8 +51,6 @@ export async function middleware(request: NextRequest) {
   // Routes that require authentication (redirect to register page)
   const isRestrictedRoute = pathname === '/history' ||
                            pathname.startsWith('/history') ||
-                           pathname === '/weekly' ||
-                           pathname.startsWith('/weekly') ||
                            pathname.startsWith('/author/') ||
                            (pathname.startsWith('/article/') && !isSharedArticleLink)
 

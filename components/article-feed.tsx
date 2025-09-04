@@ -44,7 +44,7 @@ export function ArticleFeed({ initialArticles, initialSearchQuery = '' }: Articl
     handlePageChange,
     clearSearch,
     retry,
-  } = useArticleFeed({ initialArticles, initialSearchQuery, itemsPerPage: 20 })
+  } = useArticleFeed({ initialArticles, initialSearchQuery, itemsPerPage: 15 })
 
   // Update useArticleFeed's sort when our sortBy changes
   useEffect(() => {

@@ -97,8 +97,7 @@ export async function GET() {
     const staticPages = [
       { url: '', priority: '1.0', changefreq: 'daily' },
       { url: '/trending', priority: '0.9', changefreq: 'hourly' },
-      { url: '/landing' },
-      { url: '/weekly' }
+      { url: '/landing' }
     ]
     
     // Generate optimized sitemap XML

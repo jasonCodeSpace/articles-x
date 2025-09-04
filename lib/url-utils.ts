@@ -95,15 +95,33 @@ export function generateSlugFromTitle(title: string): string {
     return 'article';
   }
 
-  // Limit length to 50 characters and ensure it doesn't end with a hyphen
-  if (slug.length > 50) {
-    // Find the last complete word within 50 characters
-    const truncated = slug.substring(0, 50);
+  // Limit length to 40 characters to account for '--' + 6-char ID (total ~50 chars)
+  if (slug.length > 40) {
+    // Find the last complete word within 40 characters
+    const truncated = slug.substring(0, 40);
     const lastHyphenIndex = truncated.lastIndexOf('-');
-    if (lastHyphenIndex > 20) { // Only truncate at word boundary if it's not too short
+    if (lastHyphenIndex > 15) { // Only truncate at word boundary if it's not too short
       slug = truncated.substring(0, lastHyphenIndex);
     } else {
       slug = truncated;
+    }
+  }
+  
+  // Ensure there are hyphens between words if the slug is very long without separators
+  if (slug.length > 20 && !slug.includes('-')) {
+    // Insert hyphens every 10-15 characters at natural break points
+    const words = [];
+    let currentWord = '';
+    for (let i = 0; i < slug.length; i++) {
+      currentWord += slug[i];
+      if (currentWord.length >= 10 && (i === slug.length - 1 || /[aeiou]/.test(slug[i]) && /[bcdfghjklmnpqrstvwxyz]/.test(slug[i + 1]))) {
+        words.push(currentWord);
+        currentWord = '';
+      }
+    }
+    if (currentWord) words.push(currentWord);
+    if (words.length > 1) {
+      slug = words.join('-');
     }
   }
   

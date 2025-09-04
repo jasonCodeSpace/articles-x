@@ -154,13 +154,10 @@ export default function Login() {
         <div className="bg-card/50 backdrop-blur-xl p-8 rounded-3xl border border-border shadow-2xl animate-fade-in">
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="flex items-center justify-center gap-3 mb-6 group">
+            <div className="flex items-center justify-center mb-6 group">
               <div className="w-14 h-14 flex items-center justify-center transform transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
                 <Image src="/logo.svg" alt="Xarticle Logo" width={56} height={56} className="w-14 h-14" />
               </div>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent">
-                Xarticle
-              </h1>
             </div>
             
             <h2 className="text-2xl font-bold text-foreground mb-3 animate-slide-up">

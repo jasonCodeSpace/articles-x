@@ -192,7 +192,7 @@ export function sanitizeErrorMessage(message: string): string {
  * @returns NextResponse with success format
  */
 export function createSuccessResponse(
-  data: any,
+  data: Record<string, unknown>,
   message?: string
 ): NextResponse {
   const response = {

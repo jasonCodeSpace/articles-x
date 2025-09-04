@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
       });
       logApiResponse(requestId, isHealthy ? 200 : 503, startTime);
       return response;
-    } catch (error) {
+    } catch {
       const response = NextResponse.json({
         healthy: false,
         timestamp: basicChecks.timestamp,
@@ -107,7 +107,7 @@ export async function GET(request: NextRequest) {
     } else {
       checks.database.status = 'healthy';
     }
-  } catch (error) {
+  } catch {
     checks.database.status = 'error';
     checks.database.error = 'Database connection failed';
   }
@@ -139,7 +139,7 @@ export async function GET(request: NextRequest) {
       } else {
         checks.twitterApi.status = 'healthy';
       }
-    } catch (error) {
+    } catch {
       checks.twitterApi.status = 'error';
       checks.twitterApi.error = 'API connection failed';
     }

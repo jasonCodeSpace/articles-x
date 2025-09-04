@@ -31,20 +31,20 @@ export async function GET(request: NextRequest) {
     // 检查速率限制
     const rateLimitResult = checkRateLimit(clientId, RATE_LIMIT_CONFIGS.authenticated)
     if (!rateLimitResult) {
-      logApiResponse(requestId, 429, startTime, 'Rate limit exceeded')
-      return createErrorResponse('RATE_LIMITED', 429)
+      logApiResponse(requestId, 429, Date.now() - startTime, 'Rate limit exceeded')
+      return createErrorResponse('RATE_LIMITED')
     }
 
     // 检查管理员权限
     if (!isAuthorized(request)) {
-      logApiResponse(requestId, 401, startTime, 'Unauthorized access attempt')
-      return createErrorResponse('UNAUTHORIZED', 401)
+      logApiResponse(requestId, 401, Date.now() - startTime, 'Unauthorized access attempt')
+      return createErrorResponse('UNAUTHORIZED')
     }
 
     // 获取 API 使用统计
     const stats = getApiUsageStats()
     
-    logApiResponse(requestId, 200, startTime)
+    logApiResponse(requestId, 200, Date.now() - startTime)
 
     return NextResponse.json({
       success: true,
@@ -61,8 +61,8 @@ export async function GET(request: NextRequest) {
       }
     })
   } catch (error) {
-    logApiResponse(requestId, 500, startTime, 'Internal server error')
-    return handleApiError(error)
+    logApiResponse(requestId, 500, Date.now() - startTime, 'Internal server error')
+    return handleApiError(error, 'API usage stats retrieval')
   }
 }
 
@@ -79,24 +79,22 @@ export async function POST(request: NextRequest) {
     // 检查速率限制
     const rateLimitResult = checkRateLimit(clientId, RATE_LIMIT_CONFIGS.authenticated)
     if (!rateLimitResult) {
-      logApiResponse(requestId, 429, startTime, 'Rate limit exceeded')
-      return createErrorResponse('RATE_LIMITED', 429)
+      logApiResponse(requestId, 429, Date.now() - startTime, 'Rate limit exceeded')
+      return createErrorResponse('RATE_LIMITED')
     }
 
     // 检查管理员权限
     if (!isAuthorized(request)) {
-      logApiResponse(requestId, 401, startTime, 'Unauthorized access attempt')
-      return createErrorResponse('UNAUTHORIZED', 401)
+      logApiResponse(requestId, 401, Date.now() - startTime, 'Unauthorized access attempt')
+      return createErrorResponse('UNAUTHORIZED')
     }
 
     const body = await request.json()
     const { action } = body
 
     if (action !== 'reset') {
-      logApiResponse(requestId, 400, startTime, 'Invalid action')
-      return createErrorResponse('BAD_REQUEST', 400, {
-        message: 'Invalid action. Only "reset" is supported.'
-      })
+      logApiResponse(requestId, 400, Date.now() - startTime, 'Invalid action')
+      return createErrorResponse('BAD_REQUEST', 'Invalid action. Only "reset" is supported.')
     }
 
     // 重置计数器
@@ -104,7 +102,7 @@ export async function POST(request: NextRequest) {
     
     const newStats = getApiUsageStats()
     
-    logApiResponse(requestId, 200, startTime)
+    logApiResponse(requestId, 200, Date.now() - startTime)
 
     return NextResponse.json({
       success: true,
@@ -122,7 +120,7 @@ export async function POST(request: NextRequest) {
       }
     })
   } catch (error) {
-    logApiResponse(requestId, 500, startTime, 'Internal server error')
-    return handleApiError(error)
+    logApiResponse(requestId, 500, Date.now() - startTime, 'Internal server error')
+    return handleApiError(error, 'API usage reset')
   }
 }

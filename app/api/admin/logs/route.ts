@@ -1,10 +1,10 @@
 // Admin API logs endpoint
 // Provides access to API logs and statistics for monitoring
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { getApiLogs, getApiStats } from '@/lib/api-logger';
 import { checkRateLimit, RATE_LIMIT_CONFIGS, getClientId, getRateLimitInfo } from '@/lib/rate-limit';
-import { createErrorResponse, createSuccessResponse, ERROR_CODES } from '@/lib/error-handler';
+import { createErrorResponse, createSuccessResponse } from '@/lib/error-handler';
 
 /**
  * Check if request is authorized (admin access)

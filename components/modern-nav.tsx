@@ -2,8 +2,8 @@
 
 import React, { useState } from "react"
 import { motion } from "framer-motion"
-// import Link from "next/link"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
 import { User, ChevronDown, Settings } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -61,7 +61,7 @@ export function ModernNav({ user, className }: ModernNavProps) {
           {/* Logo */}
           <button onClick={() => router.push('/landing')} className="flex items-center gap-2 group cursor-pointer hover:cursor-pointer">
             <div className="w-6 h-6 flex items-center justify-center hover:opacity-80 transition-all duration-300 group-hover:scale-110">
-              <img src="/logo.svg" alt="Xarticle Logo" className="w-6 h-6" />
+              <Image src="/logo.svg" alt="Xarticle Logo" width={24} height={24} className="w-6 h-6" />
             </div>
             <span className="text-sm font-bold text-foreground group-hover:text-accent-foreground transition-colors">Xarticle</span>
           </button>
@@ -228,7 +228,7 @@ export function ModernNav({ user, className }: ModernNavProps) {
           {/* Mobile Logo */}
           <button onClick={() => router.push('/landing')} className="flex items-center gap-2 group cursor-pointer hover:cursor-pointer">
             <div className="w-6 h-6 flex items-center justify-center hover:opacity-80 transition-all duration-300 group-hover:scale-110">
-              <img src="/logo.svg" alt="Xarticle Logo" className="w-6 h-6" />
+              <Image src="/logo.svg" alt="Xarticle Logo" width={24} height={24} className="w-6 h-6" />
             </div>
             <span className="text-sm font-bold text-foreground group-hover:text-accent-foreground transition-colors">Xarticle</span>
           </button>

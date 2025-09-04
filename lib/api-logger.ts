@@ -202,7 +202,7 @@ export function getApiStats(timeWindow: number = 60): {
  * @param handler - API route handler
  * @returns Wrapped handler with logging
  */
-export function withApiLogging<T extends any[]>(
+export function withApiLogging<T extends unknown[]>(
   handler: (request: NextRequest, ...args: T) => Promise<Response>
 ) {
   return async (request: NextRequest, ...args: T): Promise<Response> => {

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/service';
-import { generateSlugFromTitle, generateShortId } from '@/lib/url-utils';
 
 const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY || '';
 const RAPIDAPI_HOST = 'twitter241.p.rapidapi.com';
@@ -10,7 +9,6 @@ const supabase = createServiceClient();
 interface ArticleData {
   id?: string;
   title: string;
-  slug: string;
   author_name: string;
   image?: string;
   author_handle: string;
@@ -610,7 +608,6 @@ async function processTweetForArticle(tweetId: string, authorHandle: string): Pr
       }
       
       // Create article data from extracted content
-      const slug = generateSlugFromTitle(title) + '--' + generateShortId(tweetId);
       const excerpt = extractedArticle.description || tweetText.substring(0, 200);
       
       // Category will be assigned by AI cron job
@@ -620,7 +617,6 @@ async function processTweetForArticle(tweetId: string, authorHandle: string): Pr
       
       const articleData: ArticleData = {
         title: title,
-        slug: slug,
         author_name: userLegacy?.name || authorHandle,
         image: legacy.entities?.media?.[0]?.media_url_https,
         author_handle: authorHandle,
@@ -663,7 +659,6 @@ async function processTweetForArticle(tweetId: string, authorHandle: string): Pr
     // Generate article data from article_results
     const tweetText = legacy.full_text || legacy.text || 'No content available';
     const title = extendedArticleResult.title || tweetText.substring(0, 100) || 'Untitled Article';
-    const slug = generateSlugFromTitle(title) + '--' + generateShortId(tweetId);
     const excerpt = extendedArticleResult.preview_text || extendedArticleResult.description || tweetText.substring(0, 200);
     const featuredImageUrl = extendedArticleResult.cover_media?.media_info?.original_img_url;
     
@@ -702,7 +697,6 @@ async function processTweetForArticle(tweetId: string, authorHandle: string): Pr
     
     const articleData: ArticleData = {
       title: title,
-      slug: slug,
       author_name: userLegacy?.name || authorHandle,
       image: featuredImageUrl || legacy.entities?.media?.[0]?.media_url_https,
       author_handle: authorHandle,

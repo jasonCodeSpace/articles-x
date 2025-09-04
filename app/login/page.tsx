@@ -26,7 +26,7 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
-  const [captchaToken, setCaptchaToken] = useState<string>('dummy-token') // Temporarily bypass captcha
+  const [captchaToken, setCaptchaToken] = useState<string>()
 
   const router = useRouter()
   const supabase = createClient()
@@ -44,7 +44,7 @@ export default function Login() {
         email: validatedData.email,
         options: {
           shouldCreateUser: true, // Allow new user creation during login
-          // captchaToken, // Temporarily disabled
+          captchaToken,
         },
       })
 
@@ -191,22 +191,26 @@ export default function Login() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    disabled={isLoading}
+                    disabled={isLoading || !captchaToken}
                     className="pl-12 h-14 bg-input border-border focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-2xl text-foreground placeholder-muted-foreground text-base backdrop-blur-sm transition-all duration-300 hover:bg-muted/50"
                   />
                 </div>
               </div>
               
-              {/* Temporarily disabled captcha verification
               <div className="flex justify-center">
                 <Turnstile
-                  siteKey="your-sitekey"
+                  siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
                   onSuccess={(token) => {
                     setCaptchaToken(token)
                   }}
+                  onError={() => {
+                    setCaptchaToken(undefined)
+                  }}
+                  onExpire={() => {
+                    setCaptchaToken(undefined)
+                  }}
                 />
               </div>
-              */}
               
               <Button 
                 type="submit" 

@@ -57,7 +57,7 @@ const nextConfig = {
           },
           {
             key: 'Content-Security-Policy',
-            value: "default-src 'self'; img-src 'self' https://pbs.twimg.com https://images.unsplash.com data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com; connect-src 'self' https://api.twitter.com https://www.google-analytics.com https://analytics.google.com https://pskhqphqikghdyqmgsud.supabase.co; style-src 'self' 'unsafe-inline'; font-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests;"
+            value: "default-src 'self'; img-src 'self' https://pbs.twimg.com https://images.unsplash.com data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://va.vercel-scripts.com https://challenges.cloudflare.com; connect-src 'self' https://api.twitter.com https://www.google-analytics.com https://analytics.google.com https://pskhqphqikghdyqmgsud.supabase.co https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; font-src 'self' data:; frame-src 'self' https://challenges.cloudflare.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests;"
           },
           {
             key: 'X-Frame-Options',

@@ -143,9 +143,15 @@ export default function Register() {
               
               <div className="flex justify-center">
                 <Turnstile
-                  siteKey="your-sitekey"
+                  siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
                   onSuccess={(token) => {
                     setCaptchaToken(token)
+                  }}
+                  onError={() => {
+                    setCaptchaToken(undefined)
+                  }}
+                  onExpire={() => {
+                    setCaptchaToken(undefined)
                   }}
                 />
               </div>

@@ -95,11 +95,17 @@ export default function ResetPassword() {
             
             <div className="flex justify-center">
               <Turnstile
-                siteKey="your-sitekey"
-                onSuccess={(token) => {
-                  setCaptchaToken(token)
-                }}
-              />
+                  siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
+                  onSuccess={(token) => {
+                    setCaptchaToken(token)
+                  }}
+                  onError={() => {
+                    setCaptchaToken(undefined)
+                  }}
+                  onExpire={() => {
+                    setCaptchaToken(undefined)
+                  }}
+                />
             </div>
             
             <Button 

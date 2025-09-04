@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@supabase/supabase-js'
 import { generateSlugFromTitle, generateShortId } from '@/lib/url-utils'
 
 /**
@@ -49,15 +49,26 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const supabase = await createClient()
+    // Use service role key for admin operations
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
+        }
+      }
+    )
     
     console.log('🔧 Starting slug regeneration process...')
     
-    // Find articles with potentially problematic slugs
+    // Find articles with potentially problematic slugs, ordered by publication date
     const { data: articles, error: fetchError } = await supabase
       .from('articles')
-      .select('id, title, slug')
+      .select('id, title, slug, article_published_at')
       .not('title', 'is', null)
+      .order('article_published_at', { ascending: false })
       .limit(200)
     
     if (fetchError) {
@@ -163,14 +174,25 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const supabase = await createClient()
+    // Use service role key for admin operations
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
+        }
+      }
+    )
     
-    // Get articles with potentially problematic slugs
+    // Get articles with potentially problematic slugs, ordered by publication date
     const { data: articles, error } = await supabase
       .from('articles')
-      .select('id, slug, title')
+      .select('id, slug, title, article_published_at')
       .not('title', 'is', null)
-      .limit(100)
+      .order('article_published_at', { ascending: false })
+      .limit(200)
     
     if (error) {
       console.error('Error fetching articles:', error)

@@ -56,22 +56,53 @@ export function generateSlugFromTitle(title: string): string {
     return processedTitle.substring(0, 50).replace(/-+$/, '');
   }
   
-  // For non-CJK text, use the original logic
+  // For non-CJK text, use improved logic with better word separation
   let slug = title
     .toLowerCase()
     .trim()
-    .replace(/[^a-z0-9\s-]/g, '') // Remove special characters except spaces and hyphens
-    .replace(/\s+/g, '-') // Replace spaces with hyphens
-    .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
-    .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
+    // First, normalize common punctuation to spaces to preserve word boundaries
+    .replace(/['"''""]/g, '') // Remove quotes
+    .replace(/[.,!?;:()\[\]{}]/g, ' ') // Replace punctuation with spaces
+    .replace(/[&+]/g, ' and ') // Replace & and + with 'and'
+    .replace(/[@#$%^*=|\\/<>]/g, ' ') // Replace other special chars with spaces
+    // Handle common contractions and abbreviations
+    .replace(/\b(can't|won't|don't|isn't|aren't|wasn't|weren't|hasn't|haven't|hadn't|wouldn't|shouldn't|couldn't)\b/g, (match) => {
+      const contractions: { [key: string]: string } = {
+        "can't": "cannot", "won't": "will-not", "don't": "do-not", 
+        "isn't": "is-not", "aren't": "are-not", "wasn't": "was-not", 
+        "weren't": "were-not", "hasn't": "has-not", "haven't": "have-not", 
+        "hadn't": "had-not", "wouldn't": "would-not", "shouldn't": "should-not", 
+        "couldn't": "could-not"
+      };
+      return contractions[match] || match;
+    })
+    // Remove remaining non-alphanumeric characters except spaces and existing hyphens
+    .replace(/[^a-z0-9\s-]/g, '')
+    // Normalize whitespace and convert to hyphens
+    .replace(/\s+/g, '-')
+    // Remove multiple consecutive hyphens
+    .replace(/-+/g, '-')
+    // Remove leading/trailing hyphens
+    .replace(/^-+|-+$/g, '');
 
   // If slug is empty or too short, return 'article'
   if (!slug || slug.length < 1) {
     return 'article';
   }
 
-  // Limit length to 50 characters
-  return slug.substring(0, 50).replace(/-+$/, '');
+  // Limit length to 50 characters and ensure it doesn't end with a hyphen
+  if (slug.length > 50) {
+    // Find the last complete word within 50 characters
+    const truncated = slug.substring(0, 50);
+    const lastHyphenIndex = truncated.lastIndexOf('-');
+    if (lastHyphenIndex > 20) { // Only truncate at word boundary if it's not too short
+      slug = truncated.substring(0, lastHyphenIndex);
+    } else {
+      slug = truncated;
+    }
+  }
+  
+  return slug.replace(/-+$/, ''); // Remove any trailing hyphens
 }
 
 /**

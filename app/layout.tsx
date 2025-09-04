@@ -25,6 +25,18 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Xarticle",
+    "url": "https://www.xarticle.news/",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://www.xarticle.news/search?q={query}",
+      "query-input": "required name=query"
+    }
+  };
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -41,6 +53,10 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="//www.googletagmanager.com" />
       </head>
       <body className={`${inter.variable} font-sans antialiased bg-background text-foreground`}>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
         {/* Google Analytics - delayed for performance */}
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-2TMVNWYFES"

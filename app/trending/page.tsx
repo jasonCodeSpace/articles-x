@@ -6,8 +6,32 @@ import { Article } from '@/components/article-card'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Trending Articles From X | xarticle.news',
-  description: 'Stay updated with the latest curated articles and trending news. Discover current conversations, breaking stories, and insights from leading voices across technology, business, and more.',
+  title: 'Trending Articles From X | Xarticle',
+  description: 'Discover the latest curated reads from leading voices on X. Explore tech, business, crypto, and culture with fast search and clean, noise-free reading.',
+  openGraph: {
+    title: 'Trending Articles From X | Xarticle',
+    description: 'Curated, up-to-date reads from leading voices on X across tech, business, crypto, and more.',
+    url: 'https://www.xarticle.news/',
+    siteName: 'Xarticle',
+    type: 'website',
+    images: [
+      {
+        url: 'https://www.xarticle.news/og/home.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'Xarticle — Trending Articles From X',
+      },
+    ],
+    locale: 'en_US',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Trending Articles From X | Xarticle',
+    description: 'Curated, up-to-date reads from leading voices on X.',
+    images: ['https://www.xarticle.news/og/home.jpg'],
+  },
+  alternates: { canonical: 'https://www.xarticle.news/' },
+  robots: { index: true, follow: true },
 }
 
 // Enable ISR for better TTFB performance
@@ -112,26 +136,34 @@ export default async function TrendingPage({ searchParams }: PageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 md:pt-24 pb-6">
-        <div className="space-y-6">
-          {/* Page Header */}
-          <div className="text-center space-y-4 mb-8">
-            <h1 className="text-4xl md:text-5xl font-bold text-foreground">
-              Trending Articles From X
-            </h1>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Stay updated with the latest curated articles from leading voices
-            </p>
-          </div>
-          
+      <main className="mx-auto max-w-7xl px-6 py-12">
+        {/* H1 + 副标题 */}
+        <header className="text-center mb-8">
+          <h1 className="text-5xl font-bold tracking-tight">
+            Trending Articles From X
+          </h1>
+          <p className="mt-3 text-lg text-muted-foreground">
+            The latest curated reads from leading voices.
+          </p>
+        </header>
+
+        {/* H2: Search（语义可见，视觉隐藏） */}
+        <section aria-labelledby="search" className="mb-6">
+          <h2 id="search" className="sr-only">Search</h2>
+          {/* 搜索组件将通过ArticleFeed渲染 */}
+        </section>
+
+        {/* H2: Article Feed（语义可见，视觉隐藏；替代"Latest Trending Articles"可见标题） */}
+        <section aria-labelledby="feed" className="mb-12">
+          <h2 id="feed" className="sr-only">Article Feed</h2>
           <Suspense fallback={<FeedLoading />}>
             <ArticleFeed 
               initialArticles={articles} 
               initialSearchQuery={search || ''}
             />
           </Suspense>
-        </div>
-      </div>
+        </section>
+      </main>
     </>
   )
 }

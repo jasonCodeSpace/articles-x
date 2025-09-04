@@ -479,10 +479,25 @@ export async function generateCategories(
       throw new Error('Failed to initialize model');
     }
     
+    // 允许的分类列表
+    const allowedCategories = [
+      'Hardware', 'Gaming', 'Health', 'Environment', 'Personal Story', 'Culture',
+      'Philosophy', 'History', 'Education', 'Design', 'Marketing', 'AI', 'Crypto',
+      'Tech', 'Data', 'Startups', 'Business', 'Markets', 'Product', 'Security',
+      'Policy', 'Science', 'Media'
+    ];
+    
     // 构建专门用于分类的提示词
-    const prompt = `TASK: Analyze the article and assign appropriate categories.
+    const prompt = `TASK: Analyze the article and assign 1-3 most relevant categories.
 
-CATEGORY GUIDELINES:
+CRITICAL RULES:
+1. You MUST select 1-3 categories from the allowed list
+2. You CANNOT create new categories
+3. You CANNOT use categories not in the allowed list
+4. Select the MOST RELEVANT categories, prioritizing specificity
+5. Maximum 3 categories, minimum 1 category
+
+ALLOWED CATEGORIES (choose 1-3 most relevant):
 
 Hardware — 硬件与器件的设计、制造与评测。包含：芯片、终端、IoT、拆解、供应链工艺；不含：纯软件工程（→ Tech）、AI算法（→ AI）。
 
@@ -532,58 +547,30 @@ Media — 媒体与创作者经济产业面。包含：平台策略（X/YouTube�
 
 CRITICAL CLASSIFICATION RULES:
 
-1. **Crypto分类规则：**
-   - 仅当文章主要讨论区块链技术、加密货币、DeFi协议、NFT、代币经济学时才分类为Crypto
-   - 如果加密货币只是个人故事的背景，不分类为Crypto
-   - **绝对不要将以下内容分类为Crypto（除非明确涉及区块链/加密技术）：**
-     * 政治、政策、国际关系、战争、人道主义危机
-     * 环境、气候、能源（除非是区块链能源消耗讨论）
-     * 健康、医疗、教育
-     * 传统金融市场、股票、债券
-     * 一般商业运营、管理话题
-   - 例子：分析"回购销毁 vs 收益共享"的加密协议 = Crypto + Tech
-   - 例子：个人故事中提到在加密行业工作 = Personal Story（不含Crypto）
-   - 例子："联合国加沙饥饿游戏" = Policy + Security（绝对不是Crypto）
-   - 例子："气候变化对经济的影响" = Environment + Policy（不是Crypto）
+1. **ALLOWED CATEGORIES ONLY**: You MUST only use categories from the allowed list exactly as written
+2. **MAXIMUM 3 CATEGORIES**: Select 1-3 most relevant categories, never more
+3. **EXACT MATCH**: Category names must match the allowed list exactly
+4. **NO FORBIDDEN CATEGORIES**: Never use Politics, Law, Crime, Robotics, Auto, Space, Sociology or any other unlisted categories
 
-2. **Business分类规则：**
-   - 仅限于：定价与变现策略、GTM与销售运营、渠道与合作伙伴管理、组织流程优化、单位经济学分析
-   - 绝对不包括：代币经济学技术分析、宏观市场分析、产品设计、融资话题
-   - 例子："回购销毁"加密机制分析 = Crypto + Tech（不是Business）
+SPECIFIC GUIDELINES:
 
-3. **Personal Story分类规则：**
-   - 必须是第一人称亲身经历：个人成长故事、职业经历分享、生活感悟
-   - 如果提到职业或行业只是背景，重点关注个人体验方面
-   - 除非文章提供该行业的实质性分析，否则不添加额外行业分类
-   - 例子："Weed destroyed my life"有加密背景 = Personal Story + Culture（不含Crypto）
-
-4. **Tech分类规则：**
-   - 适用于：软件工程实践、云原生架构、DevOps工具链、开发框架
-   - 也适用于：加密协议和区块链技术的技术分析
-   - 不适用于：仅在个人故事中顺带提及技术
-
-5. **其他规则：**
-   - Markets分类仅限于：股票债券市场、宏观经济指标、传统金融工具交易
-   - Media适用于媒体和创作者经济产业，不适用于文化批评（用Culture）
-   - 严格按照文章的主要目的和内容分类，不要因为背景提及就错误分类
+- **Crypto**: For blockchain technology, cryptocurrency, DeFi protocols, NFT, token economics
+- **Personal Story**: For first-person personal experience, growth story, life insights
+- **Business**: For pricing/monetization, sales operations, organizational processes, unit economics
+- **Tech**: For software engineering, cloud architecture, DevOps, development frameworks
+- **Markets**: For traditional financial markets (stocks, bonds), macro economics
+- **Policy**: For legislation, regulation, compliance frameworks (use instead of Politics/Law)
+- **Media**: For media industry, creator economy, platform strategies
+- **Culture**: For arts, literature, social phenomena, cultural criticism
+- **Security**: For cybersecurity, data protection, privacy (use instead of Crime)
+- **Science**: For scientific research, discoveries (use instead of Space/Sociology)
 
 INSTRUCTIONS:
-1. Read the article carefully and identify the PRIMARY themes
-2. Select 1-3 most relevant categories based on actual content
+1. Read the article carefully and identify the main themes
+2. Select 1-3 most relevant categories from the allowed list
 3. Prioritize specificity over generality
-4. When in doubt between similar categories, choose the most specific one
-5. Do NOT assign categories based on superficial keyword matching
-6. Focus on the article's main purpose and core discussion
-7. CRITICAL: Never assign Crypto category unless the article is PRIMARILY about blockchain/cryptocurrency technology
-8. **绝对禁止将以下主题分类为Crypto（除非明确涉及区块链技术）：**
-   - 政治、政策、国际关系、战争、人道主义危机
-   - 环境、气候、能源政策
-   - 健康、医疗、教育
-   - 传统金融、股票、债券市场
-   - 一般商业、管理、组织话题
-9. 只有当文章的核心内容是关于区块链、加密货币、DeFi、NFT等技术或应用时，才能分类为Crypto
-10. Always consider the context and main theme, not just individual words or phrases
-11. 如果文章只是偶然提到加密货币但主要讨论其他主题，不要分类为Crypto
+4. Map forbidden categories to allowed ones (Politics→Policy, Crime→Security, etc.)
+5. Never use categories not in the allowed list
 
 OUTPUT FORMAT:
 CATEGORIES: [List categories separated by commas, maximum 3]
@@ -592,23 +579,35 @@ ARTICLE:
 Title: ${title}
 Content: ${content.substring(0, 4000)}
 
-Analyze and categorize:`;
-    
-    const result = await currentModel.generateContent(prompt);
-    const text = result.response.text();
-    
-    // 解析分类
-    const categoryMatch = text.match(/CATEGORIES:\s*([^\n]+)/i);
-    if (categoryMatch) {
-      const categoriesText = categoryMatch[1].trim();
-      const categories = categoriesText
-        .split(',')
-        .map(cat => cat.trim())
-        .filter(cat => cat.length > 0);
-      return categories;
-    }
-    
-    return [];
+Analyze and select 1-3 most relevant categories:`;
+     
+     const result = await currentModel.generateContent(prompt);
+      const text = result.response.text();
+      
+      // 解析分类 - 支持1-3个分类
+      const categoryMatch = text.match(/CATEGORIES:\s*([^\n]+)/i);
+      if (categoryMatch) {
+        const categoriesText = categoryMatch[1].trim();
+        const categories = categoriesText
+          .split(',')
+          .map(cat => cat.trim())
+          .filter(cat => allowedCategories.includes(cat))
+          .slice(0, 3); // 最多3个分类
+        
+        if (categories.length > 0) {
+          return categories;
+        }
+      }
+      
+      // 备用方案：在响应中查找任何允许的分类
+      const foundCategories = [];
+      for (const category of allowedCategories) {
+        if (text.toLowerCase().includes(category.toLowerCase()) && foundCategories.length < 3) {
+          foundCategories.push(category);
+        }
+      }
+      
+      return foundCategories.length > 0 ? foundCategories : [];
   } catch (error) {
     console.error('Error generating categories:', error);
     throw new Error('Failed to generate categories');

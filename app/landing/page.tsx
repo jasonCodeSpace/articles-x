@@ -11,6 +11,9 @@ import { generateCategorySlug } from '@/lib/url-utils'
 export const metadata: Metadata = {
   title: 'Xarticle — The Best Articles from X, Curated and Summarized',
   description: 'Discover the most valuable long-form articles shared on X. Read crisp summaries, browse by topic or account, and save your personal must-read list.',
+  alternates: {
+    canonical: '/landing'
+  }
 }
 
 export default async function LandingPage() {
@@ -95,9 +98,9 @@ export default async function LandingPage() {
                     <img src="/logo.svg" alt="Xarticle Logo" className="w-16 h-16" />
                   </div>
                   <div className="text-left">
-                    <h1 className="text-4xl font-bold text-foreground">
+                    <div className="text-4xl font-bold text-foreground">
                       Xarticle
-                    </h1>
+                    </div>
 
                   </div>
                 </div>

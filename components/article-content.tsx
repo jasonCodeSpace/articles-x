@@ -124,6 +124,7 @@ export function ArticleContent({
               alt={`Cover for ${displayTitle}`}
               width={800}
               height={400}
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 800px"
               className="w-full h-64 md:h-96 object-cover rounded-lg border border-border"
               loading="lazy"
               unoptimized

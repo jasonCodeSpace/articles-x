@@ -1,11 +1,10 @@
 # Robots.txt for Articles X (www.xarticle.news)
 # Modern article curation platform
-# Last updated: $(date +%Y-%m-%d)
+# Last updated: 2025-01-10
 
 User-agent: *
 
 # Allow main content areas
-Allow: /
 Allow: /article/
 Allow: /articles/
 Allow: /category/
@@ -15,9 +14,23 @@ Allow: /about
 Allow: /privacy
 Allow: /terms
 
-# Block dynamic search and filter URLs
+# DO NOT block rendering assets - critical for Google indexing
+Allow: /_next/
+Allow: /static/
+Allow: /favicon.ico
+Allow: /*.css
+Allow: /*.js
+Allow: /*.png
+Allow: /*.jpg
+Allow: /*.jpeg
+Allow: /*.gif
+Allow: /*.svg
+Allow: /*.webp
+Allow: /*.woff
+Allow: /*.woff2
+
+# Block dynamic search and filter URLs (all query strings)
 Disallow: /*?*
-Disallow: /search?*
 Disallow: /*&*
 
 # Block authentication and user areas
@@ -29,39 +42,22 @@ Disallow: /settings/
 
 # Block API endpoints
 Disallow: /api/
+# Allow public feeds if needed:
+# Allow: /api/rss
+# Allow: /api/sitemap
 
 # Block admin and development areas
 Disallow: /admin/
 Disallow: /dev/
 Disallow: /test/
 Disallow: /debug/
-Disallow: /_next/
-Disallow: /static/
 
 # Block temporary and backup files
-Disallow: /*.tmp
-Disallow: /*.temp
-Disallow: /*.bak
-Disallow: /*.backup
-Disallow: /*.log
+Disallow: /*.tmp$
+Disallow: /*.temp$
+Disallow: /*.bak$
+Disallow: /*.backup$
+Disallow: /*.log$
 
-# Crawl delay for respectful crawling
-Crawl-delay: 1
-
-# Sitemaps
+# Sitemap
 Sitemap: https://www.xarticle.news/sitemap.xml
-Sitemap: https://www.xarticle.news/sitemap-articles.xml
-Sitemap: https://www.xarticle.news/sitemap-categories.xml
-
-# Special rules for major search engines
-User-agent: Googlebot
-Allow: /
-Crawl-delay: 1
-
-User-agent: Bingbot
-Allow: /
-Crawl-delay: 2
-
-User-agent: Slurp
-Allow: /
-Crawl-delay: 3

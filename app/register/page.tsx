@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Mail, ArrowRight, CheckCircle, XCircle, ArrowLeft, KeyRound } from 'lucide-react'
 import { z } from 'zod'
 import Link from 'next/link'
+import Image from 'next/image'
 
 const emailSchema = z.object({
   email: z.string().email('请输入有效的邮箱地址'),
@@ -103,8 +104,14 @@ export default function Register() {
         <div className="bg-card/80 backdrop-blur-xl border border-border rounded-3xl shadow-2xl p-8 space-y-8">
           {/* Header */}
           <div className="text-center space-y-4">
-            <div className="mx-auto w-16 h-16 bg-gradient-to-br from-primary to-primary/60 rounded-2xl flex items-center justify-center shadow-lg">
-              <span className="text-2xl font-bold text-primary-foreground">X</span>
+            <div className="mx-auto w-16 h-16 flex items-center justify-center">
+              <Image
+                src="/logo.svg"
+                alt="Xarticle Logo"
+                width={64}
+                height={64}
+                className="w-16 h-16"
+              />
             </div>
             <div>
               <h1 className="text-3xl font-bold text-foreground mb-2">

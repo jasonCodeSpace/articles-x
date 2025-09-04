@@ -27,7 +27,7 @@ function isValidArticleSlug(slug: string): boolean {
   
   // Title part should be properly formatted with hyphens separating words
   // Reject slugs that are too long without proper word separation
-  if (titlePart.length > 50) {
+  if (titlePart.length > 100) {
     return false
   }
   
@@ -176,23 +176,36 @@ export async function generateMetadata({ params }: ArticlePageProps) {
     }
   }
 
+  const articleUrl = `https://www.xarticle.news/article/${resolvedParams.slug}`
+  
   return {
     title: article.title_english || article.title,
     description: article.article_preview_text_english || article.article_preview_text || 'Read this article',
     alternates: {
-      canonical: article.article_url, // Point to original X URL as canonical source
+      canonical: articleUrl,
     },
     openGraph: {
       title: article.title_english || article.title,
       description: article.article_preview_text_english || article.article_preview_text || 'Read this article',
-      images: article.image ? [{ url: article.image }] : [],
-      url: article.article_url, // Original X URL
+      type: 'article',
+      url: articleUrl,
+      siteName: 'Articles X',
+      images: article.image ? [{ 
+        url: article.image,
+        width: 1200,
+        height: 630,
+        alt: article.title_english || article.title
+      }] : [],
     },
     twitter: {
       card: 'summary_large_image',
+      site: '@xarticle_news',
       title: article.title_english || article.title,
       description: article.article_preview_text_english || article.article_preview_text || 'Read this article',
-      images: article.image ? [article.image] : [],
+      images: article.image ? [{
+        url: article.image,
+        alt: article.title_english || article.title
+      }] : [],
     },
   }
 }

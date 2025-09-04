@@ -17,7 +17,11 @@ const inter = Inter({
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.xarticle.news'),
   title: "Articles X",
-  description: "A modern article platform",
+  description: "A modern article platform for discovering and reading curated content from X (Twitter)",
+  keywords: ['articles', 'news', 'twitter', 'x', 'social media', 'content'],
+  authors: [{ name: 'Articles X' }],
+  creator: 'Articles X',
+  publisher: 'Articles X',
   icons: {
     icon: [
       {
@@ -32,6 +36,41 @@ export const metadata: Metadata = {
       },
     ],
     shortcut: '/logo.svg',
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    url: 'https://www.xarticle.news',
+    siteName: 'Articles X',
+    title: 'Articles X - Modern Article Platform',
+    description: 'A modern article platform for discovering and reading curated content from X (Twitter)',
+    images: [
+       {
+         url: '/og-image.svg',
+         width: 1200,
+         height: 630,
+         alt: 'Articles X - Modern Article Platform',
+       },
+     ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    site: '@xarticle_news',
+    creator: '@xarticle_news',
+    title: 'Articles X - Modern Article Platform',
+    description: 'A modern article platform for discovering and reading curated content from X (Twitter)',
+    images: ['/og-image.svg'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
   },
 };
 

@@ -35,7 +35,7 @@ interface UseArticleFeedReturn {
 export function useArticleFeed({
   initialArticles,
   initialSearchQuery = '',
-  itemsPerPage = 20
+  itemsPerPage = 15
 }: UseArticleFeedProps): UseArticleFeedReturn {
   const searchParams = useSearchParams()
   

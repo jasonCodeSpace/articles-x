@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI, GenerativeModel } from '@google/generative-ai';
+import { checkApiLimit, recordApiCall } from '@/lib/api-usage-tracker';
 
 let genAI: GoogleGenerativeAI | null = null;
 let model: GenerativeModel | null = null;
@@ -41,6 +42,18 @@ export async function generateArticleAnalysis(
   title: string
 ): Promise<ArticleAnalysis> {
   try {
+    // 检查 Gemini API 每日调用限制
+    const apiLimitCheck = checkApiLimit('gemini');
+    if (!apiLimitCheck.allowed) {
+      throw new Error(`Daily Gemini API limit exceeded: ${apiLimitCheck.message}`);
+    }
+
+    // 记录 API 调用
+    const apiCallResult = recordApiCall('gemini');
+    if (!apiCallResult.success) {
+      throw new Error('Daily Gemini API limit exceeded during call recording');
+    }
+
     const currentModel = initialize();
     if (!currentModel) {
       throw new Error('Failed to initialize  model');
@@ -359,6 +372,18 @@ export async function generateArticleSummary(
   title: string
 ): Promise<ArticleSummary> {
   try {
+    // 检查 Gemini API 每日调用限制
+    const apiLimitCheck = checkApiLimit('gemini');
+    if (!apiLimitCheck.allowed) {
+      throw new Error(`Daily Gemini API limit exceeded: ${apiLimitCheck.message}`);
+    }
+
+    // 记录 API 调用
+    const apiCallResult = recordApiCall('gemini');
+    if (!apiCallResult.success) {
+      throw new Error('Daily Gemini API limit exceeded during call recording');
+    }
+
     const currentModel = initialize();
     if (!currentModel) {
       throw new Error('Failed to initialize  model');
@@ -474,6 +499,18 @@ export async function generateCategories(
   content: string
 ): Promise<string[]> {
   try {
+    // 检查 Gemini API 每日调用限制
+    const apiLimitCheck = checkApiLimit('gemini');
+    if (!apiLimitCheck.allowed) {
+      throw new Error(`Daily Gemini API limit exceeded: ${apiLimitCheck.message}`);
+    }
+
+    // 记录 API 调用
+    const apiCallResult = recordApiCall('gemini');
+    if (!apiCallResult.success) {
+      throw new Error('Daily Gemini API limit exceeded during call recording');
+    }
+
     const currentModel = initialize();
     if (!currentModel) {
       throw new Error('Failed to initialize model');
@@ -619,6 +656,20 @@ Analyze and select 1-3 most relevant categories:`;
  */
 export async function testConnection(): Promise<boolean> {
   try {
+    // 检查 Gemini API 每日调用限制
+    const apiLimitCheck = checkApiLimit('gemini');
+    if (!apiLimitCheck.allowed) {
+      console.error(`Daily Gemini API limit exceeded: ${apiLimitCheck.message}`);
+      return false;
+    }
+
+    // 记录 API 调用
+    const apiCallResult = recordApiCall('gemini');
+    if (!apiCallResult.success) {
+      console.error('Daily Gemini API limit exceeded during call recording');
+      return false;
+    }
+
     const currentModel = initialize();
     if (!currentModel) {
       return false;

@@ -19,6 +19,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/service';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { TRANSLATION_PROMPT, parseTranslationResponse } from '@/lib/translation-prompts';
+import { getApiUsageStats } from '@/lib/api-usage-tracker';
 
 const CRON_SECRET = process.env.CRON_SECRET;
 
@@ -56,8 +57,25 @@ export async function POST(request: NextRequest) {
       );
     }
     
+    // 检查 Gemini API 使用情况
+    const apiStats = getApiUsageStats();
+    const remainingCalls = apiStats.gemini.remaining;
+    
     // 限制每次只处理20篇文章，避免超时和API限制
-    const articles = (articlesToTranslate || []).slice(0, 20);
+    const BATCH_SIZE = Math.min(20, remainingCalls);
+    
+    if (BATCH_SIZE <= 0) {
+      return NextResponse.json(
+        {
+          error: 'Daily Gemini API limit exceeded',
+          message: `Daily Gemini API limit (${apiStats.gemini.limit}) exceeded. Resets at ${new Date(apiStats.gemini.resetTime).toISOString()}`,
+          retryAfter: Math.ceil((apiStats.gemini.resetTime - Date.now()) / 1000)
+        },
+        { status: 429 }
+      );
+    }
+    
+    const articles = (articlesToTranslate || []).slice(0, BATCH_SIZE);
     
     if (!articles || articles.length === 0) {
       return NextResponse.json(
@@ -185,13 +203,19 @@ export async function POST(request: NextRequest) {
       }
     }
     
+    const finalApiStats = getApiUsageStats();
     return NextResponse.json({
       message: `Processed ${results.length} articles successfully`,
       results,
       errors,
       totalProcessed: results.length,
       totalErrors: errors.length,
-      totalArticlesChecked: articles.length
+      totalArticlesChecked: articles.length,
+      geminiUsage: {
+        used: finalApiStats.gemini.count - apiStats.gemini.count,
+        remaining: finalApiStats.gemini.remaining,
+        percentage: finalApiStats.gemini.percentage
+      }
     });
     
   } catch (error) {

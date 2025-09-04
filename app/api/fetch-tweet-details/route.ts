@@ -1,9 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { generateSlugFromTitle, generateShortId } from '@/lib/url-utils';
+import { checkRateLimit, getClientId, RATE_LIMIT_CONFIGS } from '@/lib/rate-limit';
+import { logApiRequest, logApiResponse } from '@/lib/api-logger';
+import { checkApiLimit, recordApiCall } from '@/lib/api-usage-tracker';
 
 const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY || '';
 const RAPIDAPI_HOST = 'twitter241.p.rapidapi.com';
+const CRON_SECRET = process.env.CRON_SECRET;
+
+function isAuthorized(request: NextRequest): boolean {
+  const authHeader = request.headers.get('authorization');
+  const querySecret = request.nextUrl.searchParams.get('secret');
+  
+  return (authHeader && authHeader.startsWith('Bearer ') && authHeader.slice(7) === CRON_SECRET) ||
+         querySecret === CRON_SECRET;
+}
 
 interface TwitterTweetResponse {
   data?: {
@@ -236,6 +248,12 @@ function extractArticleInfo(tweetData: any) {
 
 async function fetchTweetDetails(tweetId: string) {
   try {
+    // Record API call
+    const apiCallResult = recordApiCall('rapidapi');
+    if (!apiCallResult.success) {
+      throw new Error('Daily RapidAPI limit exceeded during call recording');
+    }
+
     const response = await fetch(
       `https://${RAPIDAPI_HOST}/tweet?pid=${tweetId}`,
       {
@@ -348,14 +366,57 @@ async function saveArticleToDatabase(articleData: any, tweetId: string) {
 }
 
 export async function POST(request: NextRequest) {
+  const startTime = Date.now();
+  const requestId = logApiRequest(request);
+  
+  // Check authorization
+  if (!isAuthorized(request)) {
+    console.error('Unauthorized access attempt to fetch-tweet-details API');
+    const response = NextResponse.json(
+      { error: 'Unauthorized' },
+      { status: 401 }
+    );
+    logApiResponse(requestId, 401, startTime, 'Unauthorized access');
+    return response;
+  }
+
+  // Check rate limit
+  const clientId = getClientId(request);
+  
+  if (!checkRateLimit(clientId, RATE_LIMIT_CONFIGS.authenticated)) {
+    const response = NextResponse.json(
+      { error: 'Rate limit exceeded. Please try again later.' },
+      { status: 429 }
+    );
+    logApiResponse(requestId, 429, startTime, 'Rate limit exceeded');
+    return response;
+  }
+
+  // Check RapidAPI daily call limit
+  const apiLimitCheck = checkApiLimit('rapidapi');
+  if (!apiLimitCheck.allowed) {
+    const response = NextResponse.json(
+      { 
+        error: 'Daily API limit exceeded',
+        message: apiLimitCheck.message,
+        retryAfter: Math.ceil((apiLimitCheck.resetTime - Date.now()) / 1000)
+      },
+      { status: 429 }
+    );
+    logApiResponse(requestId, 429, startTime, 'Daily API limit exceeded');
+    return response;
+  }
+
   try {
     const { tweetId } = await request.json();
     
     if (!tweetId) {
-      return NextResponse.json(
+      const response = NextResponse.json(
         { error: 'Tweet ID is required' },
         { status: 400 }
       );
+      logApiResponse(requestId, 400, startTime, 'Missing tweet ID');
+      return response;
     }
 
     console.log(`Fetching details for tweet ${tweetId}...`);
@@ -363,7 +424,7 @@ export async function POST(request: NextRequest) {
     const articleData = await fetchTweetDetails(tweetId);
     await saveArticleToDatabase(articleData, tweetId);
     
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       message: `Successfully processed tweet ${tweetId}`,
       article: {
@@ -372,29 +433,75 @@ export async function POST(request: NextRequest) {
         commentsCount: articleData.comments.length
       }
     });
+    logApiResponse(requestId, 200, startTime);
+    return response;
   } catch (error) {
     console.error('Error in fetch-tweet-details API:', error);
-    return NextResponse.json(
+    const response = NextResponse.json(
       { 
         success: false, 
-        error: 'Failed to fetch tweet details',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        error: 'Failed to fetch tweet details'
       },
       { status: 500 }
     );
+    logApiResponse(requestId, 500, startTime, 'Internal server error');
+    return response;
   }
 }
 
 // GET method for manual testing
 export async function GET(request: NextRequest) {
+  const startTime = Date.now();
+  const requestId = logApiRequest(request);
+  
+  // Check authorization
+  if (!isAuthorized(request)) {
+    console.error('Unauthorized access attempt to fetch-tweet-details API');
+    const response = NextResponse.json(
+      { error: 'Unauthorized' },
+      { status: 401 }
+    );
+    logApiResponse(requestId, 401, startTime, 'Unauthorized access');
+    return response;
+  }
+
+  // Check rate limit
+  const clientId = getClientId(request);
+  
+  if (!checkRateLimit(clientId, RATE_LIMIT_CONFIGS.authenticated)) {
+    const response = NextResponse.json(
+      { error: 'Rate limit exceeded. Please try again later.' },
+      { status: 429 }
+    );
+    logApiResponse(requestId, 429, startTime, 'Rate limit exceeded');
+    return response;
+  }
+
+  // Check RapidAPI daily call limit
+  const apiLimitCheck = checkApiLimit('rapidapi');
+  if (!apiLimitCheck.allowed) {
+    const response = NextResponse.json(
+      { 
+        error: 'Daily API limit exceeded',
+        message: apiLimitCheck.message,
+        retryAfter: Math.ceil((apiLimitCheck.resetTime - Date.now()) / 1000)
+      },
+      { status: 429 }
+    );
+    logApiResponse(requestId, 429, startTime, 'Daily API limit exceeded');
+    return response;
+  }
+
   const { searchParams } = new URL(request.url);
   const tweetId = searchParams.get('tweetId');
   
   if (!tweetId) {
-    return NextResponse.json(
+    const response = NextResponse.json(
       { error: 'Tweet ID is required as query parameter' },
       { status: 400 }
     );
+    logApiResponse(requestId, 400, startTime, 'Missing tweet ID');
+    return response;
   }
 
   try {
@@ -403,7 +510,7 @@ export async function GET(request: NextRequest) {
     const articleData = await fetchTweetDetails(tweetId);
     await saveArticleToDatabase(articleData, tweetId);
     
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       message: `Successfully processed tweet ${tweetId}`,
       article: {
@@ -412,15 +519,18 @@ export async function GET(request: NextRequest) {
         commentsCount: articleData.comments.length
       }
     });
+    logApiResponse(requestId, 200, startTime);
+    return response;
   } catch (error) {
     console.error('Error in fetch-tweet-details API:', error);
-    return NextResponse.json(
+    const response = NextResponse.json(
       { 
         success: false, 
-        error: 'Failed to fetch tweet details',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        error: 'Failed to fetch tweet details'
       },
       { status: 500 }
     );
+    logApiResponse(requestId, 500, startTime, 'Internal server error');
+    return response;
   }
 }

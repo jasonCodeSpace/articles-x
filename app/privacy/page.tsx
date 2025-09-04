@@ -56,27 +56,36 @@ export default async function Privacy() {
           
           <div className="mb-4">
             <h1 className="text-3xl font-bold tracking-tight">Privacy Policy</h1>
-            <p className="text-muted-foreground">Last updated: {new Date().toLocaleDateString()}</p>
+            <p className="text-muted-foreground mt-2">
+              Learn how we protect and handle your personal information
+            </p>
+          </div>
+          
+          <div className="text-sm text-muted-foreground mb-8">
+            Last updated: September 4, 2025
           </div>
         </div>
 
-        <div className="space-y-8">
-          {/* Introduction */}
+        {/* Privacy Policy Content */}
+        <div className="space-y-6">
+          {/* Who We Are */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Eye className="w-5 h-5" />
-                Introduction
+                <Shield className="w-5 h-5" />
+                Who We Are
               </CardTitle>
             </CardHeader>
             <CardContent className="prose dark:prose-invert max-w-none">
               <p>
-                At Xarticle (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;), we respect your privacy and are committed to protecting your personal 
-                information. This Privacy Policy explains how we collect, use, disclose, and safeguard your information 
-                when you use our website and services.
+                Xarticle ("Xarticle", "we", "our", "us") is a website that curates links to long-form articles shared on X and across the web, and provides AI-generated summaries and organization. Xarticle is operated by an individual (the "Operator"). You can contact us at hi@xarticle.news.
               </p>
               <p>
-                Please read this Privacy Policy carefully. By using Xarticle, you consent to the practices described in this policy.
+                This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use <Link href="/" className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">https://www.xarticle.news/</Link> (the "Service"). By using the Service, you agree to the practices described here.
+              </p>
+              <h4>Scope</h4>
+              <p>
+                This Policy applies to the Service and related web features. It does not apply to third-party websites that we link to or embed.
               </p>
             </CardContent>
           </Card>
@@ -90,94 +99,46 @@ export default async function Privacy() {
               </CardTitle>
             </CardHeader>
             <CardContent className="prose dark:prose-invert max-w-none">
-              <h4>Personal Information</h4>
-              <p>We may collect the following personal information:</p>
-              <ul>
-                <li><strong>Account Information:</strong> Email address, username, and authentication data</li>
-                <li><strong>Profile Information:</strong> Display name, preferences, and settings</li>
-                <li><strong>Usage Data:</strong> Articles you bookmark, categories you browse, and reading history</li>
-              </ul>
+              <h4>1) Information You Provide</h4>
+              <p><strong>Account Information:</strong> email address, authentication data.</p>
+              <p><strong>Profile/Preferences:</strong> display name, reading settings.</p>
+              <p><strong>Bookmarks/Lists:</strong> articles you save or organize.</p>
 
-              <h4>Automatically Collected Information</h4>
-              <ul>
-                <li><strong>Technical Data:</strong> IP address, browser type, device information, and operating system</li>
-                <li><strong>Analytics Data:</strong> Page views, session duration, and user interactions</li>
-                <li><strong>Cookies and Tracking:</strong> Session cookies, preference cookies, and analytics cookies</li>
-              </ul>
+              <h4>2) Information Collected Automatically</h4>
+              <p><strong>Technical Data:</strong> IP address, browser type, device/OS, referring URL, pages viewed, time spent, and similar diagnostics.</p>
+              <p><strong>Cookies and Similar Technologies:</strong> essential cookies (authentication, security), preference cookies (e.g., language), and analytics/performance cookies.</p>
 
-              <h4>Third-Party Content</h4>
-              <p>
-                We collect publicly available information from X (Twitter) and external websites to curate articles. 
-                This includes article titles, content, author information, and publication dates.
-              </p>
+              <h4>3) Public/Third-Party Sources</h4>
+              <p><strong>Public Content:</strong> We collect and curate publicly available information from X and other sites (e.g., titles, snippets, author, publication date, article URLs and metadata) strictly for curation, summarization, and navigation purposes.</p>
             </CardContent>
           </Card>
 
-          {/* How We Use Your Information */}
+          {/* How We Use Information */}
           <Card>
             <CardHeader>
-              <CardTitle>How We Use Your Information</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <Eye className="w-5 h-5" />
+                How We Use Information
+              </CardTitle>
             </CardHeader>
             <CardContent className="prose dark:prose-invert max-w-none">
-              <p>We use your information for the following purposes:</p>
-              
-              <h4>Service Provision</h4>
-              <ul>
-                <li>Provide and maintain our article curation service</li>
-                <li>Personalize your experience and content recommendations</li>
-                <li>Save your bookmarks and reading preferences</li>
-                <li>Enable account authentication and security</li>
-              </ul>
-
-              <h4>Communication</h4>
-              <ul>
-                <li>Send service-related notifications and updates</li>
-                <li>Respond to your inquiries and support requests</li>
-                <li>Provide information about new features (with your consent)</li>
-              </ul>
-
-              <h4>Analytics and Improvement</h4>
-              <ul>
-                <li>Analyze usage patterns to improve our service</li>
-                <li>Monitor and analyze trends and user behavior</li>
-                <li>Conduct research and development for new features</li>
-              </ul>
+              <p><strong>Provide the Service:</strong> operate, maintain, and secure core features (authentication, bookmarks, preferences).</p>
+              <p><strong>Personalize & Improve:</strong> remember your settings; measure usage to improve performance, relevance, and reliability.</p>
+              <p><strong>Communications:</strong> send service notices (e.g., policy updates, account alerts) and respond to inquiries.</p>
+              <p><strong>Safety & Compliance:</strong> detect and prevent abuse, fraud, and security incidents; comply with legal obligations.</p>
             </CardContent>
           </Card>
 
-          {/* Information Sharing */}
+          {/* Legal Bases */}
           <Card>
             <CardHeader>
-              <CardTitle>Information Sharing and Disclosure</CardTitle>
+              <CardTitle>Our Legal Bases (EEA/UK where applicable)</CardTitle>
             </CardHeader>
             <CardContent className="prose dark:prose-invert max-w-none">
-              <p>We do not sell, trade, or rent your personal information. We may share information in the following circumstances:</p>
-
-              <h4>Service Providers</h4>
-              <p>
-                We work with trusted third-party service providers who assist us in operating our service, including:
-              </p>
-              <ul>
-                <li>Cloud hosting and infrastructure providers</li>
-                <li>Analytics and monitoring services</li>
-                <li>Email delivery services</li>
-                <li>AI and machine learning services for content processing</li>
-              </ul>
-
-              <h4>Legal Requirements</h4>
-              <p>We may disclose information when required by law or to:</p>
-              <ul>
-                <li>Comply with legal obligations or court orders</li>
-                <li>Protect our rights, property, or safety</li>
-                <li>Investigate potential violations of our Terms of Service</li>
-                <li>Protect against fraud or security threats</li>
-              </ul>
-
-              <h4>Business Transfers</h4>
-              <p>
-                In the event of a merger, acquisition, or sale of assets, your information may be transferred as part 
-                of the business transaction.
-              </p>
+              <p><strong>Contractual Necessity:</strong> to create and maintain your account and provide core features.</p>
+              <p><strong>Legitimate Interests:</strong> to secure and improve the Service; to curate publicly available content from X; to measure performance. We balance these interests against your rights and expectations.</p>
+              <p><strong>Consent:</strong> for non-essential cookies/analytics and optional communications. You can withdraw consent at any time via cookie settings or unsubscribe links.</p>
+              <p><strong>Legal Obligation:</strong> to comply with applicable laws and enforce our terms.</p>
             </CardContent>
           </Card>
 
@@ -186,29 +147,63 @@ export default async function Privacy() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Cookie className="w-5 h-5" />
-                Cookies and Tracking Technologies
+                Cookies and Similar Technologies
               </CardTitle>
             </CardHeader>
             <CardContent className="prose dark:prose-invert max-w-none">
-              <h4>Types of Cookies We Use</h4>
+              <p>We use:</p>
               <ul>
-                <li><strong>Essential Cookies:</strong> Required for basic site functionality and authentication</li>
-                <li><strong>Preference Cookies:</strong> Remember your settings and preferences</li>
-                <li><strong>Analytics Cookies:</strong> Help us understand how you use our service</li>
-                <li><strong>Performance Cookies:</strong> Monitor and improve site performance</li>
+                <li><strong>Essential Cookies</strong> (required for authentication and core functionality),</li>
+                <li><strong>Preference Cookies</strong> (remember your settings), and</li>
+                <li><strong>Analytics/Performance Cookies</strong> (under your consent where required).</li>
               </ul>
+              <p><strong>Managing Cookies:</strong> You can control cookies in your browser. If we provide a Cookie Settings link in the footer, you can change non-essential cookie preferences or withdraw consent at any time. Disabling certain cookies may affect functionality.</p>
+            </CardContent>
+          </Card>
 
-              <h4>Managing Cookies</h4>
+          {/* Analytics */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Analytics</CardTitle>
+            </CardHeader>
+            <CardContent className="prose dark:prose-invert max-w-none">
               <p>
-                You can control cookies through your browser settings. However, disabling certain cookies may affect 
-                the functionality of our service.
+                We use analytics (e.g., Google Analytics) to understand usage and improve the Service. Where available, we enable IP anonymization and disable data sharing with advertising products. You can opt out via browser controls and the Google Analytics Opt-Out Add-On. See your browser's help pages for managing tracking technologies.
               </p>
+            </CardContent>
+          </Card>
 
-              <h4>Third-Party Analytics</h4>
+          {/* AI and Profiling */}
+          <Card>
+            <CardHeader>
+              <CardTitle>AI, Summaries, and Profiling</CardTitle>
+            </CardHeader>
+            <CardContent className="prose dark:prose-invert max-w-none">
               <p>
-                We use analytics services like Google Analytics to understand user behavior. These services may 
-                collect information about your use of our site and other websites.
+                We use machine learning to summarize, classify, and organize content. We do not make decisions that produce legal or similarly significant effects solely based on automated processing. Where applicable, you may object to profiling used for analytics or personalization.
               </p>
+            </CardContent>
+          </Card>
+
+          {/* Information Sharing */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Globe className="w-5 h-5" />
+                Information Sharing and Disclosure
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="prose dark:prose-invert max-w-none">
+              <p><strong>We do not sell your personal information.</strong></p>
+              
+              <h4>Service Providers</h4>
+              <p>We work with trusted third-party providers (hosting, analytics, email delivery, AI/ML services) under strict data processing agreements.</p>
+
+              <h4>Legal Requirements</h4>
+              <p>We may disclose information when required by law, to protect rights/safety, investigate violations, or prevent fraud.</p>
+
+              <h4>Business Transfers</h4>
+              <p>In the event of a merger, acquisition, or sale, your information may be transferred with advance notice.</p>
             </CardContent>
           </Card>
 
@@ -221,19 +216,14 @@ export default async function Privacy() {
               </CardTitle>
             </CardHeader>
             <CardContent className="prose dark:prose-invert max-w-none">
-              <p>We implement appropriate security measures to protect your information:</p>
+              <p>We implement appropriate security measures:</p>
               <ul>
-                <li>Encryption of data in transit and at rest</li>
+                <li>Encryption in transit and at rest</li>
                 <li>Secure authentication and access controls</li>
-                <li>Regular security audits and monitoring</li>
-                <li>Limited access to personal information on a need-to-know basis</li>
-                <li>Secure cloud infrastructure with reputable providers</li>
+                <li>Regular security monitoring</li>
+                <li>Limited access on a need-to-know basis</li>
               </ul>
-              
-              <p>
-                While we strive to protect your information, no method of transmission over the internet is 100% secure. 
-                We cannot guarantee absolute security but are committed to protecting your data.
-              </p>
+              <p>While we strive to protect your information, no internet transmission is 100% secure. We cannot guarantee absolute security but are committed to protecting your data.</p>
             </CardContent>
           </Card>
 
@@ -243,53 +233,28 @@ export default async function Privacy() {
               <CardTitle>Data Retention</CardTitle>
             </CardHeader>
             <CardContent className="prose dark:prose-invert max-w-none">
-              <p>We retain your information for as long as necessary to:</p>
-              <ul>
-                <li>Provide our services to you</li>
-                <li>Comply with legal obligations</li>
-                <li>Resolve disputes and enforce agreements</li>
-                <li>Improve our services through analytics</li>
-              </ul>
-              
-              <p>
-                When you delete your account, we will delete or anonymize your personal information, except where 
-                we are required to retain it for legal purposes.
-              </p>
+              <p>We retain information as long as necessary to provide the Service, comply with legal obligations, resolve disputes, and improve our services. When you delete your account, we delete or anonymize your personal information (except where legally required to retain it).</p>
             </CardContent>
           </Card>
 
-          {/* Your Rights and Choices */}
+          {/* Your Rights */}
           <Card>
             <CardHeader>
               <CardTitle>Your Rights and Choices</CardTitle>
             </CardHeader>
             <CardContent className="prose dark:prose-invert max-w-none">
-              <p>You have the following rights regarding your personal information:</p>
-              
-              <h4>Access and Correction</h4>
+              <p>Depending on your location, you may have rights to:</p>
               <ul>
-                <li>Access your personal information we hold</li>
-                <li>Correct inaccurate or incomplete information</li>
-                <li>Update your account settings and preferences</li>
+                <li><strong>Access, Correct, Delete:</strong> your personal information</li>
+                <li><strong>Data Portability:</strong> receive a copy in a structured format</li>
+                <li><strong>Object/Restrict:</strong> certain processing activities</li>
+                <li><strong>Withdraw Consent:</strong> where processing is based on consent</li>
               </ul>
-
-              <h4>Data Portability and Deletion</h4>
-              <ul>
-                <li>Request a copy of your data in a portable format</li>
-                <li>Delete your account and associated data</li>
-                <li>Opt out of certain data processing activities</li>
-              </ul>
-
-              <h4>Communication Preferences</h4>
-              <ul>
-                <li>Unsubscribe from marketing communications</li>
-                <li>Manage notification settings</li>
-                <li>Control cookie preferences</li>
-              </ul>
+              <p>To exercise these rights, contact us at hi@xarticle.news. We'll respond within a reasonable timeframe per applicable law.</p>
             </CardContent>
           </Card>
 
-          {/* International Data Transfers */}
+          {/* International Transfers */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -298,25 +263,17 @@ export default async function Privacy() {
               </CardTitle>
             </CardHeader>
             <CardContent className="prose dark:prose-invert max-w-none">
-              <p>
-                Your information may be transferred to and processed in countries other than your country of residence. 
-                We ensure that such transfers comply with applicable data protection laws and implement appropriate 
-                safeguards to protect your information.
-              </p>
+              <p>Your information may be processed in countries other than your residence. We ensure appropriate safeguards are in place to protect your information per applicable data protection laws.</p>
             </CardContent>
           </Card>
 
-          {/* Children&apos;s Privacy */}
+          {/* Children's Privacy */}
           <Card>
             <CardHeader>
               <CardTitle>Children&apos;s Privacy</CardTitle>
             </CardHeader>
             <CardContent className="prose dark:prose-invert max-w-none">
-              <p>
-                Our service is not intended for children under 13 years of age. We do not knowingly collect personal 
-                information from children under 13. If we become aware that we have collected information from a child 
-                under 13, we will take steps to delete such information.
-              </p>
+              <p>Our Service is not intended for children under 13. We do not knowingly collect information from children under 13. If we discover such collection, we will delete the information promptly.</p>
             </CardContent>
           </Card>
 
@@ -326,18 +283,7 @@ export default async function Privacy() {
               <CardTitle>Changes to This Privacy Policy</CardTitle>
             </CardHeader>
             <CardContent className="prose dark:prose-invert max-w-none">
-              <p>
-                We may update this Privacy Policy from time to time. We will notify you of any material changes by:
-              </p>
-              <ul>
-                <li>Posting the updated policy on our website</li>
-                <li>Sending you an email notification</li>
-                <li>Displaying a prominent notice on our service</li>
-              </ul>
-              <p>
-                Your continued use of our service after the effective date of the revised Privacy Policy constitutes 
-                acceptance of the changes.
-              </p>
+              <p>We may update this Policy from time to time. We'll notify you of material changes by posting the updated policy, sending email notifications, or displaying prominent notices. Continued use after changes constitutes acceptance.</p>
             </CardContent>
           </Card>
 
@@ -350,17 +296,12 @@ export default async function Privacy() {
               </CardTitle>
             </CardHeader>
             <CardContent className="prose dark:prose-invert max-w-none">
-              <p>
-                If you have any questions about this Privacy Policy or our privacy practices, please contact us:
-              </p>
+              <p>If you have questions about this Privacy Policy, please contact us:</p>
               <p>
                 <strong>Email:</strong> hi@xarticle.news<br />
-                <strong>Website:</strong> <Link href="/" className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">www.xarticle.news</Link><br />
-                <strong>Subject Line:</strong> Privacy Policy Inquiry
+                <strong>Website:</strong> <Link href="/" className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">https://www.xarticle.news/</Link>
               </p>
-              <p>
-                We will respond to your inquiry within 2 days of receipt.
-              </p>
+              <p>We'll respond within 2 business days.</p>
             </CardContent>
           </Card>
         </div>
@@ -369,7 +310,7 @@ export default async function Privacy() {
         <div className="mt-12 pt-8 border-t border-border">
           <div className="flex flex-col sm:flex-row gap-4 justify-between items-center">
             <div className="text-sm text-muted-foreground">
-              This policy is effective as of {new Date().toLocaleDateString()}
+              This policy is effective as of September 4, 2025
             </div>
             <div className="flex gap-3">
               <Button variant="outline" asChild>

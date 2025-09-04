@@ -1,6 +1,6 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
-import { ArrowLeft, Shield, FileText, Users, Globe } from 'lucide-react'
+import { ArrowLeft, Shield, FileText, Users, Globe, User, Copyright, Lock, AlertTriangle, Mail, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { createClient } from '@/lib/supabase/server'
@@ -56,27 +56,32 @@ export default async function Terms() {
           
           <div className="mb-4">
             <h1 className="text-3xl font-bold tracking-tight">Terms of Service</h1>
-            <p className="text-muted-foreground">Last updated: {new Date().toLocaleDateString()}</p>
+            <p className="text-muted-foreground mt-2">
+              Please read these terms carefully before using our service
+            </p>
+          </div>
+          
+          <div className="text-sm text-muted-foreground mb-8">
+            Last updated: September 4, 2025
           </div>
         </div>
 
-        <div className="space-y-8">
+        {/* Terms Content */}
+        <div className="space-y-6">
           {/* Introduction */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Globe className="w-5 h-5" />
+                <FileText className="w-5 h-5" />
                 Introduction
               </CardTitle>
             </CardHeader>
             <CardContent className="prose dark:prose-invert max-w-none">
               <p>
-                Welcome to Xarticle (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;). These Terms of Service (&quot;Terms&quot;) govern your use of our website 
-                and services that curate and summarize articles shared on X (formerly Twitter).
+                Welcome to Xarticle ("Xarticle", "we", "our", "us"). These Terms of Service ("Terms") govern your use of <Link href="/" className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">https://www.xarticle.news/</Link> (the "Service").
               </p>
               <p>
-                By accessing or using Xarticle, you agree to be bound by these Terms. If you disagree with any part of these 
-                terms, then you may not access our service.
+                By accessing or using the Service, you agree to be bound by these Terms. If you do not agree, please do not use the Service.
               </p>
             </CardContent>
           </Card>
@@ -84,17 +89,25 @@ export default async function Terms() {
           {/* Service Description */}
           <Card>
             <CardHeader>
-              <CardTitle>Service Description</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <Globe className="w-5 h-5" />
+                Service Description
+              </CardTitle>
             </CardHeader>
             <CardContent className="prose dark:prose-invert max-w-none">
-              <p>Xarticle provides the following services:</p>
-              <ul>
-                <li>Curation of long-form articles shared on X</li>
-                <li>AI-powered article summaries and translations</li>
-                <li>Categorization and organization of articles</li>
-                <li>Personal bookmarking and reading lists</li>
-                <li>Author and topic-based browsing</li>
-              </ul>
+              <p>Xarticle curates links to long-form articles shared on X and across the web, and provides AI-generated summaries and organization. Our Service includes:</p>
+              
+              <h4>Article Curation</h4>
+              <p>We collect and organize links to publicly available articles from X and other sources.</p>
+
+              <h4>AI Summaries and Translation</h4>
+              <p>We provide AI-generated summaries and translations to help you understand content quickly.</p>
+
+              <h4>Categorization and Organization</h4>
+              <p>Articles are automatically categorized by topics for easier discovery.</p>
+
+              <h4>User Features</h4>
+              <p>Registered users can bookmark articles, create reading lists, and customize preferences.</p>
             </CardContent>
           </Card>
 
@@ -108,20 +121,10 @@ export default async function Terms() {
             </CardHeader>
             <CardContent className="prose dark:prose-invert max-w-none">
               <h4>Account Creation</h4>
-              <p>
-                To access certain features, you may need to create an account. You are responsible for:
-              </p>
-              <ul>
-                <li>Providing accurate and complete information</li>
-                <li>Maintaining the security of your account credentials</li>
-                <li>All activities that occur under your account</li>
-                <li>Notifying us of any unauthorized use</li>
-              </ul>
+              <p>To access certain features, you may create an account. You must provide accurate information and are responsible for maintaining account security.</p>
 
               <h4>Account Termination</h4>
-              <p>
-                We reserve the right to suspend or terminate accounts that violate these Terms or engage in harmful activities.
-              </p>
+              <p>You may delete your account at any time. We may suspend or terminate accounts for violations of these Terms or harmful conduct.</p>
             </CardContent>
           </Card>
 
@@ -133,20 +136,17 @@ export default async function Terms() {
             <CardContent className="prose dark:prose-invert max-w-none">
               <h4>Third-Party Content</h4>
               <p>
-                Articles and content on Xarticle are sourced from publicly available posts on X and external websites. 
-                We respect intellectual property rights and provide proper attribution to original sources.
+                We curate links to third-party articles and content. We do not claim ownership of this content and provide proper attribution and links to original sources.
               </p>
 
               <h4>AI-Generated Content</h4>
               <p>
-                Summaries and translations are generated using AI technology. While we strive for accuracy, these may not 
-                perfectly represent the original content. Users should refer to original sources for complete information.
+                Our AI-generated summaries, translations, and categorizations are provided for informational purposes. We strive for accuracy but do not guarantee completeness or accuracy.
               </p>
 
-              <h4>User-Generated Content</h4>
+              <h4>User Content</h4>
               <p>
-                By using our service, you grant us a non-exclusive license to use, display, and distribute any content 
-                you submit (such as bookmarks or comments) for the operation of our service.
+                Content you submit (bookmarks, preferences) remains your property. By submitting content, you grant us a license to use it in connection with the Service.
               </p>
             </CardContent>
           </Card>
@@ -160,71 +160,58 @@ export default async function Terms() {
               </CardTitle>
             </CardHeader>
             <CardContent className="prose dark:prose-invert max-w-none">
-              <p>You agree not to use Xarticle to:</p>
+              <p>You agree not to:</p>
               <ul>
-                <li>Violate any applicable laws or regulations</li>
+                <li>Use the Service for illegal purposes or to violate any laws</li>
                 <li>Infringe on intellectual property rights</li>
-                <li>Distribute harmful, offensive, or illegal content</li>
-                <li>Attempt to gain unauthorized access to our systems</li>
-                <li>Use automated tools to scrape or harvest data</li>
-                <li>Interfere with the proper functioning of our service</li>
+                <li>Distribute harmful, offensive, or inappropriate content</li>
+                <li>Attempt unauthorized access to our systems</li>
+                <li>Interfere with the Service's operation</li>
+                <li>Use automated tools to scrape or download content</li>
+                <li>Impersonate others or provide false information</li>
               </ul>
             </CardContent>
           </Card>
 
-          {/* Privacy and Data */}
+          {/* Third-Party Services and Links */}
           <Card>
             <CardHeader>
-              <CardTitle>Privacy and Data</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <Globe className="w-5 h-5" />
+                Third-Party Services and Links
+              </CardTitle>
             </CardHeader>
             <CardContent className="prose dark:prose-invert max-w-none">
+              <p>Our Service contains links to third-party websites and services. We are not responsible for their content, privacy practices, or availability.</p>
+            </CardContent>
+          </Card>
+
+          {/* Privacy */}
+           <Card>
+             <CardHeader>
+               <CardTitle className="flex items-center gap-2">
+                 <Lock className="w-5 h-5" />
+                 Privacy
+               </CardTitle>
+             </CardHeader>
+            <CardContent className="prose dark:prose-invert max-w-none">
               <p>
-                Your privacy is important to us. Please review our{' '}
-                <Link href="/privacy" className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">
-                  Privacy Policy
-                </Link>{' '}
-                to understand how we collect, use, and protect your information.
+                Your privacy is governed by our <Link href="/privacy" className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">Privacy Policy</Link>, which is incorporated into these Terms.
               </p>
             </CardContent>
           </Card>
 
-          {/* Disclaimers */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Disclaimers</CardTitle>
-            </CardHeader>
+          {/* Disclaimers and Limitation of Liability */}
+           <Card>
+             <CardHeader>
+               <CardTitle className="flex items-center gap-2">
+                 <AlertTriangle className="w-5 h-5" />
+                 Disclaimers and Limitation of Liability
+               </CardTitle>
+             </CardHeader>
             <CardContent className="prose dark:prose-invert max-w-none">
-              <h4>Service Availability</h4>
-              <p>
-                We strive to maintain service availability but cannot guarantee uninterrupted access. We may suspend 
-                or modify our service for maintenance or improvements.
-              </p>
-
-              <h4>Content Accuracy</h4>
-              <p>
-                While we make efforts to provide accurate summaries and information, we do not warrant the completeness 
-                or accuracy of content. Users should verify important information from original sources.
-              </p>
-
-              <h4>Third-Party Links</h4>
-              <p>
-                Our service contains links to external websites. We are not responsible for the content or practices 
-                of these third-party sites.
-              </p>
-            </CardContent>
-          </Card>
-
-          {/* Limitation of Liability */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Limitation of Liability</CardTitle>
-            </CardHeader>
-            <CardContent className="prose dark:prose-invert max-w-none">
-              <p>
-                To the fullest extent permitted by law, Xarticle shall not be liable for any indirect, incidental, 
-                special, consequential, or punitive damages, or any loss of profits or revenues, whether incurred 
-                directly or indirectly, or any loss of data, use, goodwill, or other intangible losses.
-              </p>
+              <p>THE SERVICE IS PROVIDED "AS IS" WITHOUT WARRANTIES OF ANY KIND. WE DISCLAIM ALL WARRANTIES, EXPRESS OR IMPLIED.</p>
+              <p>TO THE FULLEST EXTENT PERMITTED BY LAW, WE SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES.</p>
             </CardContent>
           </Card>
 
@@ -235,25 +222,22 @@ export default async function Terms() {
             </CardHeader>
             <CardContent className="prose dark:prose-invert max-w-none">
               <p>
-                We reserve the right to modify these Terms at any time. We will notify users of significant changes 
-                via email or prominent notice on our website. Continued use of our service after changes constitutes 
-                acceptance of the new Terms.
+                We may modify these Terms at any time. Changes will be posted on this page with an updated date. Continued use constitutes acceptance of new Terms.
               </p>
             </CardContent>
           </Card>
 
           {/* Contact Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Contact Information</CardTitle>
-            </CardHeader>
+           <Card>
+             <CardHeader>
+               <CardTitle className="flex items-center gap-2">
+                 <Mail className="w-5 h-5" />
+                 Contact Us
+               </CardTitle>
+             </CardHeader>
             <CardContent className="prose dark:prose-invert max-w-none">
               <p>
-                If you have any questions about these Terms of Service, please contact us at:
-              </p>
-              <p>
-                Email: hi@xarticle.news<br />
-                Website: <Link href="/" className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">www.xarticle.news</Link>
+                Questions about these Terms? Contact us at <Link href="mailto:support@xarticle.news" className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">support@xarticle.news</Link>
               </p>
             </CardContent>
           </Card>

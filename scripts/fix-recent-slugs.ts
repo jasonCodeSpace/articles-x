@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { generateSlugFromTitle } from '../lib/url-utils';
+import { generateSlugFromTitle, generateShortId } from '../lib/url-utils';
 import * as dotenv from 'dotenv';
 
 // Load environment variables
@@ -22,7 +22,7 @@ async function fixRecentSlugs() {
     // 获取最近20个文章
     const { data: articles, error } = await supabase
       .from('articles')
-      .select('id, title, slug')
+      .select('id, title, slug, tweet_id')
       .order('article_published_at', { ascending: false })
       .limit(20);
 
@@ -46,8 +46,10 @@ async function fixRecentSlugs() {
         continue;
       }
 
-      // 从title生成新的slug
-      const newSlug = generateSlugFromTitle(article.title);
+      // 从title和tweet_id生成新的slug
+      const titleSlug = generateSlugFromTitle(article.title);
+      const shortId = generateShortId(article.tweet_id);
+      const newSlug = `${titleSlug}--${shortId}`;
       
       // 检查是否需要更新
       if (newSlug !== article.slug) {

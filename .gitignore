@@ -39,3 +39,45 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files and scripts
+*.tmp
+*.temp
+*.log
+analyze_api.py
+export_articles.js
+filter_articles.js
+test-category.js
+article_preview_data.json
+*.csv
+
+# Performance and testing reports
+lighthouse-reports/
+performance-reports/
+coverage/
+
+# Backup files
+*.bak
+*.backup
+*.orig
+
+# Cache directories
+.cache/
+.parcel-cache/
+.eslintcache

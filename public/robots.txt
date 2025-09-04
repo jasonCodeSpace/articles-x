@@ -1,32 +1,67 @@
-# Robots.txt for www.xarticle.news
-# This file controls crawling of URLs under https://www.xarticle.news
+# Robots.txt for Articles X (www.xarticle.news)
+# Modern article curation platform
+# Last updated: $(date +%Y-%m-%d)
 
 User-agent: *
-# Allow all content by default
+
+# Allow main content areas
 Allow: /
+Allow: /article/
+Allow: /articles/
+Allow: /category/
+Allow: /author/
+Allow: /search
+Allow: /about
+Allow: /privacy
+Allow: /terms
 
-# Block search result pages and query parameters
-Disallow: /*?s=
-Disallow: /*?search=
-Disallow: /*?filter=
-Disallow: /*?sort=
-Disallow: /*?language=
-Disallow: /*?category=
+# Block dynamic search and filter URLs
+Disallow: /*?*
+Disallow: /search?*
+Disallow: /*&*
 
-# Block admin and private areas
-Disallow: /admin/
-Disallow: /private/
-Disallow: /api/
+# Block authentication and user areas
+Disallow: /login
 Disallow: /auth/
-Disallow: /test/
-Disallow: /dev/
-Disallow: /debug-auth/
-Disallow: /test-auth/
-Disallow: /test-articles/
-Disallow: /login/
-Disallow: /register/
-Disallow: /reset-password/
 Disallow: /profile/
+Disallow: /dashboard/
+Disallow: /settings/
 
-# XML Sitemap location
+# Block API endpoints
+Disallow: /api/
+
+# Block admin and development areas
+Disallow: /admin/
+Disallow: /dev/
+Disallow: /test/
+Disallow: /debug/
+Disallow: /_next/
+Disallow: /static/
+
+# Block temporary and backup files
+Disallow: /*.tmp
+Disallow: /*.temp
+Disallow: /*.bak
+Disallow: /*.backup
+Disallow: /*.log
+
+# Crawl delay for respectful crawling
+Crawl-delay: 1
+
+# Sitemaps
 Sitemap: https://www.xarticle.news/sitemap.xml
+Sitemap: https://www.xarticle.news/sitemap-articles.xml
+Sitemap: https://www.xarticle.news/sitemap-categories.xml
+
+# Special rules for major search engines
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 2
+
+User-agent: Slurp
+Allow: /
+Crawl-delay: 3

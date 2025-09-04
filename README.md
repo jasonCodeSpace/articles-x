@@ -1,114 +1,223 @@
-# Articles X - Twitter Article Processing System
+# Articles X - Modern Article Curation Platform
 
 ## Overview
 
-This system automatically fetches tweets from specified Twitter lists, identifies article tweets, and extracts detailed article information for storage and analysis.
+Articles X is a modern, production-ready article platform that curates and displays high-quality content from Twitter with beautiful UI, secure authentication, and intelligent categorization.
 
-## Workflow
+## ✨ Key Features
 
-### 1. Timeline Fetching (Every 15 minutes)
-- Fetches tweets from three Twitter list timelines
-- Saves tweet ID, author handle, and article status to `tweets` table
-- API endpoint: `/api/fetch-timeline`
+- 🔐 **Secure Authentication** - Email magic link/OTP via Supabase
+- 🐦 **Smart Content Curation** - Automated article discovery and processing
+- 🎨 **Modern UI** - Professional design with shadcn/ui and Tailwind CSS
+- 📱 **Responsive Design** - Mobile-first, accessible interface
+- 🔍 **Advanced Search** - Real-time filtering and sorting
+- 🤖 **AI-Powered** - Intelligent summaries and categorization
+- 🌐 **Multi-language** - Support for multiple languages
+- 🛡️ **Row Level Security** - Fine-grained database access control
+- ⚡ **TypeScript** - Full type safety throughout
+- 🚀 **Production Ready** - Comprehensive error handling and monitoring
 
-### 2. Article Processing (Every 30 minutes)
-- Processes tweets marked as articles
-- Extracts detailed information including:
-  - Author details (username, handle, profile image)
-  - Tweet metadata (publication time, interactions)
-  - Article content (title, preview, full content)
-  - Comments and interactions
-- Saves to `articles` table
+## 🛠️ Tech Stack
 
+- **Framework**: Next.js 14 with App Router
+- **Language**: TypeScript
+- **Database**: Supabase (PostgreSQL)
+- **Authentication**: Supabase Auth
+- **Styling**: Tailwind CSS + shadcn/ui
+- **AI**: OpenAI GPT for content processing
+- **Deployment**: Vercel
+- **Performance**: Lighthouse CI monitoring
 
-### 3. Cleanup (Every 48 hours)
-- Removes non-article tweets older than 48 hours
-- API endpoint: `/api/cleanup-tweets`
+## 🚀 Quick Start
 
-## Setup
+### Prerequisites
+- Node.js 18+
+- Supabase account
+- Twitter API access (Bearer Token)
+- OpenAI API key
 
-### 1. Environment Variables
-Copy `.env.example` to `.env.local` and fill in the required values:
+### Installation
 
 ```bash
+# Clone the repository
+git clone <repository-url>
+cd articles-x
+
+# Install dependencies
+npm install
+
+# Set up environment variables
 cp .env.example .env.local
+# Edit .env.local with your credentials
+
+# Run database migrations
+npm run db:migrate
+
+# Start development server
+npm run dev
 ```
 
-Required variables:
-- `RAPIDAPI_KEY`: Your RapidAPI key for Twitter241 API
-- `NEXT_PUBLIC_SUPABASE_URL`: Your Supabase project URL
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Your Supabase anon key
-- `SUPABASE_SERVICE_ROLE_KEY`: Your Supabase service role key
-- `CRON_SECRET`: Secret for securing cron endpoints
+### Environment Variables
+
+```env
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+
+# Twitter API
+TWITTER_BEARER_TOKEN=your_twitter_bearer_token
+
+# OpenAI
+OPENAI_API_KEY=your_openai_api_key
+
+# Application
+NEXTAUTH_SECRET=your_nextauth_secret
+NEXTAUTH_URL=http://localhost:3000
+```
 
 ### 2. Database Setup
 
-1. Link your Supabase project:
-```bash
-npx supabase link --project-ref YOUR_PROJECT_REF
+Run these SQL migrations in your Supabase SQL Editor:
+
+```sql
+-- 1. Copy and run: supabase/migrations/001_create_articles_table.sql
+-- 2. Copy and run: supabase/migrations/002_add_author_fields.sql
+-- 3. Copy and run: supabase/migrations/003_enable_rls.sql
 ```
 
-2. Apply database migrations:
+Or use the Supabase CLI:
+
 ```bash
+# Link your Supabase project
+npx supabase link --project-ref YOUR_PROJECT_REF
+
+# Apply database migrations
 npx supabase db push
 ```
 
-### 3. Deployment
+### 3. Add Sample Data (Optional)
 
-1. Deploy to Vercel
-2. Set environment variables in Vercel dashboard
-3. Configure GitHub secrets:
-   - `VERCEL_URL`: Your Vercel deployment URL
-   - `CRON_SECRET`: Same as in environment variables
+```bash
+npm run add-sample-data
+```
 
-### 4. GitHub Actions
-
-The following workflows are automatically configured:
-- `fetch-timeline.yml`: Runs every 15 minutes
-- `process-articles.yml`: Runs every 30 minutes
-- `cleanup-tweets.yml`: Runs every 48 hours
-
-## API Endpoints
-
-### POST /api/fetch-timeline
-Fetches tweets from Twitter list timelines.
-
-
-
-### GET /api/cleanup-tweets
-Cleans up old non-article tweets.
-
-## Database Schema
-
-### tweets table
-- `id`: Primary key
-- `tweet_id`: Twitter tweet ID
-- `author_handle`: Tweet author handle
-- `has_article`: Boolean indicating if tweet contains article
-- `list_id`: Source Twitter list ID
-- `created_at`: Timestamp
-- `updated_at`: Timestamp
-
-### articles table
-Extended with Twitter-specific fields:
-- `tweet_id`: Associated tweet ID
-- `tweet_text`: Original tweet text
-- `tweet_published_at`: Tweet publication time
-- `tweet_views`, `tweet_replies`, `tweet_retweets`, `tweet_likes`, `tweet_bookmarks`: Engagement metrics
-- `article_preview_title`: Article preview title
-- `article_preview_text`: Article preview text
-- `full_article_content`: Complete article content
-- `comments_data`: JSON array of comments
-- `raw_tweet_data`: Raw API response
-- `list_id`: Source Twitter list ID
-
-## Development
+### 4. Development
 
 ```bash
 npm run dev
 ```
 
-The application will be available at `http://localhost:3000`.
+Visit `http://localhost:3000` to see the application.
+
+## 📁 Project Structure
+
+```
+articles-x/
+├── app/                    # Next.js App Router
+│   ├── (auth)/            # Authentication pages
+│   ├── api/               # API routes
+│   ├── article/           # Article pages
+│   └── globals.css        # Global styles
+├── components/            # Reusable UI components
+│   ├── ui/               # shadcn/ui components
+│   └── ...               # Custom components
+├── lib/                  # Utility functions
+│   ├── supabase/         # Database utilities
+│   ├── utils.ts          # Helper functions
+│   └── validations.ts    # Form validations
+├── types/                # TypeScript type definitions
+├── supabase/            # Database migrations
+└── public/              # Static assets
+```
+
+## 🔄 API Endpoints
+
+### Authentication
+- `GET /login` - Login page with magic link form
+- `GET /auth/callback` - Handle magic link authentication
+- `GET /auth/auth-code-error` - Authentication error page
+
+### Data Ingestion
+- `POST /api/fetch-timeline` - Fetch tweets from Twitter lists
+- `POST /api/process-articles` - Process article tweets with AI
+- `GET /api/cleanup-tweets` - Clean up old non-article tweets
+
+### Manual Operations
+- `GET /api/regenerate-summaries` - Regenerate article summaries
+- `GET /api/fix-missing-slugs` - Fix articles with missing slugs
+
+## 🗄️ Database Schema
+
+### Core Tables
+
+#### `articles`
+```sql
+CREATE TABLE public.articles (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  
+  -- Content
+  title TEXT NOT NULL,
+  slug TEXT NOT NULL UNIQUE,
+  content TEXT NOT NULL,
+  excerpt TEXT,
+  
+  -- Author Information
+  author_name TEXT NOT NULL,
+  author_handle TEXT,
+  author_profile_image TEXT,
+  
+  -- Twitter Integration
+  tweet_id BIGINT,
+  tweet_text TEXT,
+  tweet_published_at TIMESTAMPTZ,
+  
+  -- Metadata
+  article_url TEXT,
+  featured_image_url TEXT,
+  status TEXT DEFAULT 'published',
+  published_at TIMESTAMPTZ,
+  
+  -- Engagement
+  likes_count INTEGER DEFAULT 0,
+  views_count INTEGER DEFAULT 0,
+  comments_count INTEGER DEFAULT 0,
+  
+  -- Organization
+  tags TEXT[] DEFAULT '{}',
+  category TEXT,
+  language TEXT DEFAULT 'en',
+  
+  -- SEO
+  meta_title TEXT,
+  meta_description TEXT,
+  
+  -- Timestamps
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+#### `tweets`
+```sql
+CREATE TABLE public.tweets (
+  id BIGSERIAL PRIMARY KEY,
+  tweet_id BIGINT UNIQUE NOT NULL,
+  author_handle TEXT NOT NULL,
+  has_article BOOLEAN DEFAULT FALSE,
+  list_id TEXT,
+  processed BOOLEAN DEFAULT FALSE,
+  raw_data JSONB,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+### Row Level Security
+
+- **Read Access**: Anyone can read published articles
+- **Write Access**: Blocked for all users (service role only)
+- **Admin Access**: Service role has full access
 
 ---
 

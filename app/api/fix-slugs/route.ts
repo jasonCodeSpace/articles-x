@@ -2,6 +2,71 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { generateSlugFromTitle } from '@/lib/url-utils'
 
+/**
+ * Fix slugs that have words concatenated without hyphens
+ * e.g., "intuitionrevolutionizingweb" -> "intuition-revolutionizing-web"
+ */
+function fixConcatenatedWords(slug: string): string {
+  // Split slug into base part and ID suffix (if exists)
+  const parts = slug.split('--')
+  const baseSlug = parts[0]
+  const idSuffix = parts[1] ? `--${parts[1]}` : ''
+  
+  // If already has hyphens, return as is
+  if (baseSlug.includes('-')) {
+    return slug
+  }
+  
+  // Only process if the base slug is long enough to likely contain concatenated words
+  if (baseSlug.length > 15) {
+    // Common English words that might appear in tech/AI contexts
+    const commonWords = [
+      'intuition', 'revolution', 'revolutionizing', 'web', 'infrastructure', 
+      'for', 'the', 'age', 'of', 'ai', 'agents', 'artificial', 'intelligence',
+      'machine', 'learning', 'deep', 'neural', 'network', 'data', 'science',
+      'technology', 'innovation', 'digital', 'future', 'automation',
+      'algorithm', 'computing', 'software', 'development', 'programming',
+      'application', 'platform', 'system', 'framework', 'solution',
+      'service', 'cloud', 'database', 'security', 'privacy', 'blockchain',
+      'crypto', 'quantum', 'virtual', 'reality', 'augmented', 'mobile',
+      'internet', 'online', 'digital', 'smart', 'connected', 'iot',
+      'big', 'analytics', 'business', 'enterprise', 'startup', 'tech',
+      'innovation', 'disruption', 'transformation', 'evolution'
+    ]
+    
+    let result = ''
+    let remaining = baseSlug.toLowerCase()
+    
+    while (remaining.length > 0) {
+      let matched = false
+      
+      // Try to match common words from longest to shortest
+      const sortedWords = commonWords.sort((a, b) => b.length - a.length)
+      
+      for (const word of sortedWords) {
+        if (remaining.startsWith(word)) {
+          result += (result ? '-' : '') + word
+          remaining = remaining.substring(word.length)
+          matched = true
+          break
+        }
+      }
+      
+      // If no word matched, take a reasonable chunk
+      if (!matched) {
+        const chunkSize = Math.min(6, remaining.length)
+        const chunk = remaining.substring(0, chunkSize)
+        result += (result ? '-' : '') + chunk
+        remaining = remaining.substring(chunkSize)
+      }
+    }
+    
+    return result + idSuffix
+  }
+  
+  return slug
+}
+
 const CRON_SECRET = process.env.CRON_SECRET
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -37,37 +102,43 @@ export async function GET(request: NextRequest) {
 
     const supabase = createClient(supabaseUrl, supabaseKey)
     
-    console.log('🔧 Starting slug fix process...')
+    console.log('🔧 Starting slug fix process for concatenated words...')
     
-    // Find articles with overly long slugs (more than 80 characters)
-    const { data: longSlugArticles, error: fetchError } = await supabase
+    // Find articles with potentially concatenated words in slugs
+    const { data: articles, error: fetchError } = await supabase
       .from('articles')
       .select('id, title, slug')
       .filter('slug', 'like', '%')
-      .limit(200) // Get more articles to filter client-side
+      .limit(200) // Get articles to check for concatenated words
     
     if (fetchError) {
-      console.error('Error fetching articles with long slugs:', fetchError)
+      console.error('Error fetching articles:', fetchError)
       return NextResponse.json(
         { error: 'Failed to fetch articles' },
         { status: 500 }
       )
     }
 
-    // Filter articles with slugs longer than 80 characters
-    const filteredArticles = longSlugArticles?.filter(article => 
-      article.slug && article.slug.length > 80
-    ) || []
+    // Filter articles with concatenated words (long words without hyphens)
+    const filteredArticles = articles?.filter((article: any) => {
+      if (!article.slug) return false
+      
+      // Remove ID suffix to check base slug
+      const baseSlug = article.slug.split('--')[0]
+      
+      // Check if slug has long segments without hyphens (indicating concatenated words)
+      return baseSlug.length > 15 && !baseSlug.includes('-')
+    }) || []
 
     if (filteredArticles.length === 0) {
-      console.log('✅ No long slugs found')
+      console.log('✅ No concatenated word slugs found')
       return NextResponse.json({
-        message: 'No long slugs found',
+        message: 'No concatenated word slugs found',
         processed: 0
       })
     }
 
-    console.log(`📋 Found ${filteredArticles.length} articles with long slugs`)
+    console.log(`📋 Found ${filteredArticles.length} articles with concatenated words`)
     
     let successCount = 0
     let errorCount = 0
@@ -76,48 +147,30 @@ export async function GET(request: NextRequest) {
     const articlesToProcess = filteredArticles.slice(0, 50)
     for (const article of articlesToProcess) {
       try {
-        if (!article.title || article.title.trim() === '') {
-          console.log(`⚠️ Skipping article ${article.id} - no title`)
+        if (!article.slug) {
+          console.log(`⚠️ Skipping article ${article.id} - no slug`)
           continue
         }
 
-        // Generate new slug from title (max 50 chars) + short ID
-        const baseSlug = generateSlugFromTitle(article.title)
-        const shortId = article.id.slice(-6) // Use last 6 chars of UUID
-        const newSlug = `${baseSlug}--${shortId}`
+        // Fix concatenated words in the existing slug
+        const fixedSlug = fixConcatenatedWords(article.slug)
         
-        // Ensure the new slug is not too long
-        if (newSlug.length > 80) {
-          // If still too long, truncate the base slug
-          const maxBaseLength = 80 - 8 // 8 chars for '--' + shortId
-          const truncatedBase = baseSlug.substring(0, maxBaseLength)
-          const finalSlug = `${truncatedBase}--${shortId}`
-          
+        // Only update if the slug actually changed
+        if (fixedSlug !== article.slug) {
           const { error: updateError } = await supabase
             .from('articles')
-            .update({ slug: finalSlug })
+            .update({ slug: fixedSlug })
             .eq('id', article.id)
             
           if (updateError) {
             console.error(`❌ Error updating article ${article.id}:`, updateError)
             errorCount++
           } else {
-            console.log(`✅ Fixed long slug: ${article.slug} -> ${finalSlug}`)
+            console.log(`✅ Fixed concatenated words: ${article.slug} -> ${fixedSlug}`)
             successCount++
           }
         } else {
-          const { error: updateError } = await supabase
-            .from('articles')
-            .update({ slug: newSlug })
-            .eq('id', article.id)
-            
-          if (updateError) {
-            console.error(`❌ Error updating article ${article.id}:`, updateError)
-            errorCount++
-          } else {
-            console.log(`✅ Fixed long slug: ${article.slug} -> ${newSlug}`)
-            successCount++
-          }
+          console.log(`ℹ️ No changes needed for article ${article.id}: ${article.slug}`)
         }
       } catch (err) {
         console.error(`❌ Error processing article ${article.id}:`, err)
@@ -126,14 +179,14 @@ export async function GET(request: NextRequest) {
     }
     
     const result = {
-      message: 'Slug fix process completed',
+      message: 'Concatenated words fix process completed',
       processed: successCount + errorCount,
       successful: successCount,
       errors: errorCount,
       timestamp: new Date().toISOString()
     }
     
-    console.log('🎉 Slug fix process completed:', result)
+    console.log('🎉 Concatenated words fix process completed:', result)
     
     return NextResponse.json(result)
     

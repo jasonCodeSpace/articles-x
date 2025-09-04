@@ -7,7 +7,7 @@
  * 
  * The only place where article slugs should be generated:
  * - lib/ingest.ts (when creating articles from harvested data)
- * - app/api/fetch-tweet-details/route.ts (when creating articles from tweet details)
+ * - app/api/process-articles/route.ts (when creating articles from tweet processing)
  * - app/api/process-articles/route.ts (when creating articles from processed tweets)
  */
 
@@ -58,8 +58,13 @@ export function generateSlugFromTitle(title: string): string {
   
   // For non-CJK text, use improved logic with better word separation
   let slug = title
-    .toLowerCase()
     .trim()
+    // Add spaces before capital letters to separate camelCase words (before toLowerCase)
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    // Add spaces between letters and numbers
+    .replace(/([a-z])([0-9])/g, '$1 $2')
+    .replace(/([0-9])([a-zA-Z])/g, '$1 $2')
+    .toLowerCase()
     // First, normalize common punctuation to spaces to preserve word boundaries
     .replace(/['"''""]/g, '') // Remove quotes
     .replace(/[.,!?;:()\[\]{}]/g, ' ') // Replace punctuation with spaces

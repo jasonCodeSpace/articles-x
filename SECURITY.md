@@ -7,7 +7,7 @@
 ### 1. 身份验证
 
 #### CRON_SECRET 认证
-- **适用端点**: `/api/fetch-tweet-details`, `/api/health` (详细信息), `/api/admin/logs`
+- **适用端点**: `/api/health` (详细信息), `/api/admin/logs`
 - **配置**: 在环境变量中设置 `CRON_SECRET`
 - **使用方法**:
   - Authorization Header: `Authorization: Bearer YOUR_CRON_SECRET`
@@ -22,7 +22,6 @@
 
 #### 受保护的端点
 - `/api/categories` - 公共限制
-- `/api/fetch-tweet-details` - 认证限制
 - `/api/health` - 公共限制
 - `/api/admin/logs` - 公共限制
 
@@ -96,10 +95,10 @@ SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 ```bash
 # 使用Authorization Header
 curl -H "Authorization: Bearer YOUR_CRON_SECRET" \
-     https://your-domain.com/api/fetch-tweet-details?tweetId=123
+     https://your-domain.com/api/admin/logs
 
 # 使用Query Parameter
-curl "https://your-domain.com/api/fetch-tweet-details?tweetId=123&secret=YOUR_CRON_SECRET"
+curl "https://your-domain.com/api/admin/logs?secret=YOUR_CRON_SECRET"
 ```
 
 ### 监控API使用示例

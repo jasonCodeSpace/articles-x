@@ -19,7 +19,7 @@ This system automatically fetches tweets from specified Twitter lists, identifie
   - Article content (title, preview, full content)
   - Comments and interactions
 - Saves to `articles` table
-- API endpoint: `/api/fetch-tweet-details`
+
 
 ### 3. Cleanup (Every 48 hours)
 - Removes non-article tweets older than 48 hours
@@ -73,8 +73,7 @@ The following workflows are automatically configured:
 ### POST /api/fetch-timeline
 Fetches tweets from Twitter list timelines.
 
-### GET/POST /api/fetch-tweet-details
-Processes article tweets and extracts detailed information.
+
 
 ### GET /api/cleanup-tweets
 Cleans up old non-article tweets.
@@ -262,10 +261,7 @@ CREATE TABLE public.articles (
 - `GET /auth/auth-code-error` - Authentication error page
 
 ### Data Ingestion
-- `POST /api/ingest` - Automated article harvesting from Twitter lists
-  - Requires `x-cron-secret` header
-  - Supports `?dryRun=1` for testing
-  - Processes all 26 configured Twitter lists
+- Automated article harvesting from Twitter lists via scheduled processes
 
 ### Article Display
 - `GET /` - Protected main feed with search/filter capabilities
@@ -282,7 +278,7 @@ npm run start           # Start production server
 npm run test            # Run Jest tests
 npm run seed:dry-run    # Test database connection
 npm run add-sample-data # Add sample articles for testing
-npm run test:ingest     # Test ingestion API endpoint
+
 
 # Code Quality
 npm run lint            # ESLint
@@ -306,23 +302,9 @@ npm run type-check      # TypeScript validation
    - Run migrations in Supabase SQL Editor
    - Configure authentication URLs in Supabase Auth settings
 
-### Cron Job Setup
+### Automated Processing
 
-Set up automated ingestion (every 20 minutes):
-
-```bash
-# Vercel Cron (vercel.json)
-{
-  "crons": [{
-    "path": "/api/ingest",
-    "schedule": "*/20 * * * *"
-  }]
-}
-
-# Or use external service (cron-job.org, GitHub Actions, etc.)
-curl -X POST https://your-domain.com/api/ingest \
-  -H "x-cron-secret: your-secret"
-```
+Automated ingestion runs every 20 minutes via scheduled processes.
 
 ## 🔐 Security Features
 
@@ -357,7 +339,7 @@ curl -X POST https://your-domain.com/api/ingest \
 npm test
 
 # Test specific functionality
-npm run test:ingest      # Test API ingestion
+
 npm run seed:dry-run     # Test database connection
 ```
 

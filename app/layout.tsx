@@ -18,6 +18,21 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://www.xarticle.news'),
   title: "Articles X",
   description: "A modern article platform",
+  icons: {
+    icon: [
+      {
+        url: '/logo.svg',
+        type: 'image/svg+xml',
+      },
+    ],
+    apple: [
+      {
+        url: '/logo.svg',
+        type: 'image/svg+xml',
+      },
+    ],
+    shortcut: '/logo.svg',
+  },
 };
 
 export default function RootLayout({

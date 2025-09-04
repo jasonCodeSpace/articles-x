@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-import { generateSlugFromTitle } from '@/lib/url-utils'
+import { createClient } from '@/lib/supabase/server'
 
 /**
  * Fix slugs that have words concatenated without hyphens
@@ -100,7 +99,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const supabase = createClient(supabaseUrl, supabaseKey)
+    const supabase = await createClient()
     
     console.log('🔧 Starting slug fix process for concatenated words...')
     
@@ -119,8 +118,8 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Filter articles with concatenated words (long words without hyphens)
-    const filteredArticles = articles?.filter((article: any) => {
+    // Filter articles that have concatenated words (long words without hyphens)
+    const filteredArticles = articles.filter((article: { id: string; slug: string; title?: string }) => {
       if (!article.slug) return false
       
       // Remove ID suffix to check base slug

@@ -1,13 +1,13 @@
 'use client'
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { ExternalLink, Eye, MessageCircle, Repeat2, Heart, Bookmark, Share2, Check } from 'lucide-react'
+import { ExternalLink, Eye, Repeat2, Heart, Bookmark } from 'lucide-react'
 import { BookmarkButton } from '@/components/bookmark-button'
 import { formatDistanceToNow } from '@/lib/date-utils'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
-import { generateArticleUrl, generateShareableUrl } from '@/lib/url-utils'
+import { generateArticleUrl } from '@/lib/url-utils'
 import { useLanguage } from '@/contexts/language-context'
 
 export interface Article {
@@ -67,7 +67,6 @@ interface ArticleCardProps {
 
 
 export function ArticleCard({ article, className, priority = false }: ArticleCardProps) {
-  const [isShared, setIsShared] = useState(false)
   const { language } = useLanguage()
   
   // 只使用数据库中的语言字段，如果没有数据则不显示语言标签
@@ -86,16 +85,6 @@ export function ArticleCard({ article, className, priority = false }: ArticleCar
 
 
 
-  const handleShare = async () => {
-    try {
-      const shareUrl = generateShareableUrl(article.title, article.id)
-      await navigator.clipboard.writeText(shareUrl)
-      setIsShared(true)
-      setTimeout(() => setIsShared(false), 2000)
-    } catch (error) {
-      console.error('Failed to copy to clipboard:', error)
-    }
-  }
 
 
 

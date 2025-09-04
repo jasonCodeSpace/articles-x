@@ -175,7 +175,7 @@ function loadAuthorCategoryMappings(): Map<string, string> {
  * Get category for author handle
  * Note: Disabled automatic category assignment to prevent unwanted updates
  */
-function getCategoryForAuthor(_authorHandle: string): string | undefined {
+function getCategoryForAuthor(): string | undefined {
   // Return undefined to prevent automatic category assignment
   return undefined
 }
@@ -202,7 +202,7 @@ export function harvestedToDatabase(harvested: HarvestedArticle): DatabaseArticl
   const tweetUrl = `https://twitter.com/${harvested.author_handle}/status/${harvested.tweet_id}`
 
   // Get category based on author handle (disabled to prevent automatic assignment)
-  const category = getCategoryForAuthor(harvested.author_handle)
+  const category = getCategoryForAuthor()
 
   const result: DatabaseArticle = {
     title: harvested.title,

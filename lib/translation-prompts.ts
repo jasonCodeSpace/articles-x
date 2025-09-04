@@ -96,7 +96,7 @@ const isEnglishText = (text: string): boolean => {
 };
 
 // 解析翻译结果的函数
-export const parseTranslationResponse = (response: string, originalTitle: string, originalContent: string): ArticleTranslation => {
+export const parseTranslationResponse = (response: string): ArticleTranslation => {
   const titleMatch = response.match(/TITLE:\s*([^\n]+)/i);
   const tweetMatch = response.match(/TWEET_TEXT:\s*([^\n]+)/i);
   const previewMatch = response.match(/PREVIEW_TEXT:\s*([^\n]+)/i);

@@ -18,8 +18,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/service';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { ArticleTranslation, TRANSLATION_PROMPT, parseTranslationResponse } from '@/lib/translation-prompts';
-import { generateSlugFromTitle, extractArticleIdFromSlug } from '@/lib/url-utils';
+import { TRANSLATION_PROMPT, parseTranslationResponse } from '@/lib/translation-prompts';
 
 const CRON_SECRET = process.env.CRON_SECRET;
 
@@ -96,7 +95,7 @@ export async function POST(request: NextRequest) {
         const response = await result.response.text();
         
         // 使用专门的解析函数
-        const translation = parseTranslationResponse(response, article.title, article.full_article_content);
+        const translation = parseTranslationResponse(response);
         
         // 清理无效翻译值的函数
         const cleanTranslation = (translatedText: string, fallbackText: string): string => {

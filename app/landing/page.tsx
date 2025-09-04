@@ -1,11 +1,10 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
-import { ArrowRight, BookOpen, Clock, Globe, Sparkles, Users, Zap, Shield, TrendingUp, Star, CheckCircle, ChevronDown, ChevronUp, Eye, Heart, Bookmark, ExternalLink } from 'lucide-react'
+import { ArrowRight, BookOpen, Globe, Sparkles, Users, Shield, TrendingUp, Star, CheckCircle, Eye, Heart, Bookmark } from 'lucide-react'
 import { ClientNavWrapper } from '@/components/client-nav-wrapper'
 import { createClient } from '@/lib/supabase/server'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { XLink } from '@/components/x-link'
 import { generateCategorySlug } from '@/lib/url-utils'
 
 export const metadata: Metadata = {
@@ -142,7 +141,7 @@ export default async function LandingPage() {
             {/* Right Column - Article Preview Cards */}
             <div className="space-y-4">
               <div className="space-y-4">
-                {trendingArticles?.slice(0, 3).map((article, index) => (
+                {trendingArticles?.slice(0, 3).map((article) => (
                   <Card key={article.id} className="group card-enhanced hover-lift cursor-pointer relative overflow-hidden">
                     {/* Background Image */}
                     {article.image && (

@@ -1,69 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { generateSlugFromTitle, generateShortId } from '@/lib/url-utils'
 
 /**
- * Fix slugs that have words concatenated without hyphens
- * e.g., "intuitionrevolutionizingweb" -> "intuition-revolutionizing-web"
+ * Regenerate slug from title using the same logic as generateSlugFromTitle
  */
-function fixConcatenatedWords(slug: string): string {
-  // Split slug into base part and ID suffix (if exists)
-  const parts = slug.split('--')
-  const baseSlug = parts[0]
-  const idSuffix = parts[1] ? `--${parts[1]}` : ''
-  
-  // If already has hyphens, return as is
-  if (baseSlug.includes('-')) {
-    return slug
+function regenerateSlugFromTitle(title: string, articleId: string): string {
+  if (!title || title.trim().length === 0) {
+    return `article--${generateShortId(articleId)}`
   }
   
-  // Only process if the base slug is long enough to likely contain concatenated words
-  if (baseSlug.length > 15) {
-    // Common English words that might appear in tech/AI contexts
-    const commonWords = [
-      'intuition', 'revolution', 'revolutionizing', 'web', 'infrastructure', 
-      'for', 'the', 'age', 'of', 'ai', 'agents', 'artificial', 'intelligence',
-      'machine', 'learning', 'deep', 'neural', 'network', 'data', 'science',
-      'technology', 'innovation', 'digital', 'future', 'automation',
-      'algorithm', 'computing', 'software', 'development', 'programming',
-      'application', 'platform', 'system', 'framework', 'solution',
-      'service', 'cloud', 'database', 'security', 'privacy', 'blockchain',
-      'crypto', 'quantum', 'virtual', 'reality', 'augmented', 'mobile',
-      'internet', 'online', 'digital', 'smart', 'connected', 'iot',
-      'big', 'analytics', 'business', 'enterprise', 'startup', 'tech',
-      'innovation', 'disruption', 'transformation', 'evolution'
-    ]
-    
-    let result = ''
-    let remaining = baseSlug.toLowerCase()
-    
-    while (remaining.length > 0) {
-      let matched = false
-      
-      // Try to match common words from longest to shortest
-      const sortedWords = commonWords.sort((a, b) => b.length - a.length)
-      
-      for (const word of sortedWords) {
-        if (remaining.startsWith(word)) {
-          result += (result ? '-' : '') + word
-          remaining = remaining.substring(word.length)
-          matched = true
-          break
-        }
-      }
-      
-      // If no word matched, take a reasonable chunk
-      if (!matched) {
-        const chunkSize = Math.min(6, remaining.length)
-        const chunk = remaining.substring(0, chunkSize)
-        result += (result ? '-' : '') + chunk
-        remaining = remaining.substring(chunkSize)
-      }
-    }
-    
-    return result + idSuffix
-  }
+  const titleSlug = generateSlugFromTitle(title)
+  const shortId = generateShortId(articleId)
   
-  return slug
+  return `${titleSlug}--${shortId}`
 }
 
 const CRON_SECRET = process.env.CRON_SECRET
@@ -101,14 +51,14 @@ export async function GET(request: NextRequest) {
 
     const supabase = await createClient()
     
-    console.log('🔧 Starting slug fix process for concatenated words...')
+    console.log('🔧 Starting slug regeneration process...')
     
-    // Find articles with potentially concatenated words in slugs
+    // Find articles with potentially problematic slugs
     const { data: articles, error: fetchError } = await supabase
       .from('articles')
       .select('id, title, slug')
-      .filter('slug', 'like', '%')
-      .limit(200) // Get articles to check for concatenated words
+      .not('title', 'is', null)
+      .limit(200)
     
     if (fetchError) {
       console.error('Error fetching articles:', fetchError)
@@ -118,26 +68,27 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Filter articles that have concatenated words (long words without hyphens)
+    // Filter articles that need slug regeneration
     const filteredArticles = articles.filter((article: { id: string; slug: string; title?: string }) => {
-      if (!article.slug) return false
+      if (!article.slug || !article.title) return false
       
       // Remove ID suffix to check base slug
       const baseSlug = article.slug.split('--')[0]
       
-      // Check if slug has long segments without hyphens (indicating concatenated words)
-      return baseSlug.length > 15 && !baseSlug.includes('-')
+      // Check if slug has issues: no hyphens and long, or very long segments
+      return (baseSlug.length > 15 && !baseSlug.includes('-')) || 
+             baseSlug.split('-').some(segment => segment.length > 20)
     }) || []
 
     if (filteredArticles.length === 0) {
-      console.log('✅ No concatenated word slugs found')
+      console.log('✅ No problematic slugs found')
       return NextResponse.json({
-        message: 'No concatenated word slugs found',
+        message: 'No problematic slugs found',
         processed: 0
       })
     }
 
-    console.log(`📋 Found ${filteredArticles.length} articles with concatenated words`)
+    console.log(`📋 Found ${filteredArticles.length} articles with problematic slugs`)
     
     let successCount = 0
     let errorCount = 0
@@ -146,26 +97,26 @@ export async function GET(request: NextRequest) {
     const articlesToProcess = filteredArticles.slice(0, 50)
     for (const article of articlesToProcess) {
       try {
-        if (!article.slug) {
-          console.log(`⚠️ Skipping article ${article.id} - no slug`)
+        if (!article.title || article.title.trim().length === 0) {
+          console.log(`⚠️ Skipping article ${article.id} - no title`)
           continue
         }
 
-        // Fix concatenated words in the existing slug
-        const fixedSlug = fixConcatenatedWords(article.slug)
+        // Regenerate slug from title
+        const newSlug = regenerateSlugFromTitle(article.title, article.id)
         
         // Only update if the slug actually changed
-        if (fixedSlug !== article.slug) {
+        if (newSlug !== article.slug) {
           const { error: updateError } = await supabase
             .from('articles')
-            .update({ slug: fixedSlug })
+            .update({ slug: newSlug })
             .eq('id', article.id)
             
           if (updateError) {
             console.error(`❌ Error updating article ${article.id}:`, updateError)
             errorCount++
           } else {
-            console.log(`✅ Fixed concatenated words: ${article.slug} -> ${fixedSlug}`)
+            console.log(`✅ Regenerated slug: ${article.slug} -> ${newSlug}`)
             successCount++
           }
         } else {
@@ -178,14 +129,14 @@ export async function GET(request: NextRequest) {
     }
     
     const result = {
-      message: 'Concatenated words fix process completed',
+      message: 'Slug regeneration process completed',
       processed: successCount + errorCount,
       successful: successCount,
       errors: errorCount,
       timestamp: new Date().toISOString()
     }
     
-    console.log('🎉 Concatenated words fix process completed:', result)
+    console.log('🎉 Slug regeneration process completed:', result)
     
     return NextResponse.json(result)
     
@@ -203,5 +154,91 @@ export async function GET(request: NextRequest) {
 
 // Also support POST for manual triggers
 export async function POST(request: NextRequest) {
-  return GET(request)
+  try {
+    // Verify authorization
+    if (!isAuthorized(request)) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    const supabase = await createClient()
+    
+    // Get articles with potentially problematic slugs
+    const { data: articles, error } = await supabase
+      .from('articles')
+      .select('id, slug, title')
+      .not('title', 'is', null)
+      .limit(100)
+    
+    if (error) {
+      console.error('Error fetching articles:', error)
+      return NextResponse.json({ error: 'Failed to fetch articles' }, { status: 500 })
+    }
+    
+    // Filter articles that need slug regeneration
+    const filteredArticles = articles?.filter((article: { id: string; slug: string; title?: string }) => {
+      if (!article.slug || !article.title) return false
+      
+      // Remove ID suffix to check base slug
+      const baseSlug = article.slug.split('--')[0]
+      
+      // Check if slug has issues: no hyphens and long, or very long segments
+      return (baseSlug.length > 15 && !baseSlug.includes('-')) || 
+             baseSlug.split('-').some(segment => segment.length > 20)
+    }) || []
+    
+    if (filteredArticles.length === 0) {
+      return NextResponse.json({ message: 'No articles need slug fixing', fixed: 0 })
+    }
+    
+    let fixedCount = 0
+    const updates = []
+    
+    for (const article of filteredArticles) {
+      if (!article.title || article.title.trim().length === 0) {
+        continue // Skip articles without titles
+      }
+      
+      const originalSlug = article.slug
+      const newSlug = regenerateSlugFromTitle(article.title, article.id)
+      
+      if (newSlug !== originalSlug) {
+        updates.push({
+          id: article.id,
+          slug: newSlug,
+          originalSlug: originalSlug
+        })
+        fixedCount++
+      }
+    }
+    
+    // Batch update the slugs
+    if (updates.length > 0) {
+      for (const update of updates) {
+        const { error: updateError } = await supabase
+          .from('articles')
+          .update({ slug: update.slug })
+          .eq('id', update.id)
+        
+        if (updateError) {
+          console.error(`Error updating article ${update.id}:`, updateError)
+        } else {
+          console.log(`Updated slug for article ${update.id}: ${update.originalSlug} -> ${update.slug}`)
+        }
+      }
+    }
+    
+    return NextResponse.json({
+      message: `Fixed ${fixedCount} slugs`,
+      fixed: fixedCount,
+      total: filteredArticles.length,
+      checked: articles?.length || 0
+    })
+    
+  } catch (error) {
+    console.error('Error in fix-slugs:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
 }

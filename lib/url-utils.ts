@@ -59,6 +59,27 @@ export function generateSlugFromTitle(title: string): string {
   // For non-CJK text, use improved logic with better word separation
   let slug = title
     .trim()
+    // Normalize Latin characters with diacritics (French, German, Spanish, etc.)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // Remove diacritical marks
+    // Additional manual replacements for common characters
+    .replace(/[àáâãäåæ]/g, 'a')
+    .replace(/[èéêë]/g, 'e')
+    .replace(/[ìíîï]/g, 'i')
+    .replace(/[òóôõöø]/g, 'o')
+    .replace(/[ùúûü]/g, 'u')
+    .replace(/[ýÿ]/g, 'y')
+    .replace(/[ñ]/g, 'n')
+    .replace(/[ç]/g, 'c')
+    .replace(/[ß]/g, 'ss')
+    .replace(/[ÀÁÂÃÄÅÆ]/g, 'A')
+    .replace(/[ÈÉÊË]/g, 'E')
+    .replace(/[ÌÍÎÏ]/g, 'I')
+    .replace(/[ÒÓÔÕÖØ]/g, 'O')
+    .replace(/[ÙÚÛÜ]/g, 'U')
+    .replace(/[ÝŸ]/g, 'Y')
+    .replace(/[Ñ]/g, 'N')
+    .replace(/[Ç]/g, 'C')
     // Add spaces before capital letters to separate camelCase words (before toLowerCase)
     .replace(/([a-z])([A-Z])/g, '$1 $2')
     // Add spaces between letters and numbers
@@ -66,6 +87,8 @@ export function generateSlugFromTitle(title: string): string {
     .replace(/([0-9])([a-zA-Z])/g, '$1 $2')
     .toLowerCase()
     // First, normalize common punctuation to spaces to preserve word boundaries
+    // Handle French contractions (l', d', etc.) by adding space after apostrophe
+    .replace(/\b([a-z]+)'([a-z]+)/gi, '$1 $2')
     .replace(/['"''""]/g, '') // Remove quotes
     .replace(/[.,!?;:()\[\]{}]/g, ' ') // Replace punctuation with spaces
     .replace(/[&+]/g, ' and ') // Replace & and + with 'and'
@@ -95,12 +118,12 @@ export function generateSlugFromTitle(title: string): string {
     return 'article';
   }
 
-  // Limit length to 40 characters to account for '--' + 6-char ID (total ~50 chars)
-  if (slug.length > 40) {
-    // Find the last complete word within 40 characters
-    const truncated = slug.substring(0, 40);
+  // Limit length to 60 characters to account for '--' + 6-char ID (total ~70 chars)
+  if (slug.length > 60) {
+    // Find the last complete word within 60 characters
+    const truncated = slug.substring(0, 60);
     const lastHyphenIndex = truncated.lastIndexOf('-');
-    if (lastHyphenIndex > 15) { // Only truncate at word boundary if it's not too short
+    if (lastHyphenIndex > 20) { // Only truncate at word boundary if it's not too short
       slug = truncated.substring(0, lastHyphenIndex);
     } else {
       slug = truncated;

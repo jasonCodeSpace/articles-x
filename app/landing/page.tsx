@@ -1,5 +1,6 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
+import Image from 'next/image'
 import { ArrowRight, BookOpen, Globe, Sparkles, Users, Shield, TrendingUp, Star, CheckCircle, Eye, Heart, Bookmark } from 'lucide-react'
 import { ClientNavWrapper } from '@/components/client-nav-wrapper'
 import { createClient } from '@/lib/supabase/server'
@@ -94,7 +95,7 @@ export default async function LandingPage() {
               <div className="flex justify-center lg:justify-start mb-8">
                 <div className="flex items-center gap-4 group">
                   <div className="w-16 h-16 flex items-center justify-center hover:opacity-80 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 shadow-xl">
-                    <img src="/logo.svg" alt="Xarticle Logo" className="w-16 h-16" />
+                    <Image src="/logo.svg" alt="Xarticle Logo" width={64} height={64} className="w-16 h-16" />
                   </div>
                   <div className="text-left">
                     <div className="text-4xl font-bold text-foreground">
@@ -146,10 +147,11 @@ export default async function LandingPage() {
                     {/* Background Image */}
                     {article.image && (
                       <div className="absolute inset-0 opacity-10">
-                        <img 
+                        <Image 
                           src={article.image} 
                           alt="" 
-                          className="w-full h-full object-cover"
+                          fill
+                          className="object-cover"
                         />
                       </div>
                     )}
@@ -559,12 +561,17 @@ export default async function LandingPage() {
             {/* Brand */}
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <img src="/logo.svg" alt="Xarticle Logo" className="w-8 h-8" />
+                <Image src="/logo.svg" alt="Xarticle Logo" width={32} height={32} className="w-8 h-8" />
                 <span className="text-lg font-bold text-foreground">Xarticle</span>
               </div>
               <p className="text-muted-foreground text-sm leading-relaxed">
                 Xarticle turns X into a curated, article-first reading experience.
               </p>
+              <div className="space-y-2 text-sm">
+                <a href="mailto:hi@xarticle.news" className="block text-muted-foreground hover:text-foreground transition-colors">
+                  hi@xarticle.news
+                </a>
+              </div>
             </div>
             
             {/* Product */}
@@ -593,6 +600,22 @@ export default async function LandingPage() {
                 <Link href="/privacy" className="block text-muted-foreground hover:text-foreground transition-colors">
                   Privacy
                 </Link>
+              </div>
+            </div>
+            
+            {/* Social */}
+            <div className="space-y-4">
+              <h4 className="font-semibold text-foreground">Follow Us</h4>
+              <div className="space-y-2 text-sm">
+                <a 
+                  href="https://x.com/0xJason65066" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <Image src="/x-icon.svg" alt="X" width={16} height={16} className="w-4 h-4" />
+                  Follow on X
+                </a>
               </div>
             </div>
           </div>

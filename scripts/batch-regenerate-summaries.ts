@@ -17,23 +17,6 @@ if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 
-// 清理无效翻译值的函数
-function cleanTranslation(translatedText: string, fallbackText: string): string {
-  const invalidValues = [
-    'not provided', 'not available', 'not applicable', 'not stated', 
-    'not translated', 'not given', 'not found', 'unavailable', 'missing',
-    'empty', 'blank', 'no content', 'no translation', 'original text',
-    'same as original', 'n/a', 'na', 'none', 'null', 'undefined'
-  ];
-  
-  if (!translatedText || 
-      translatedText.trim().length === 0 ||
-      invalidValues.some(invalid => translatedText.toLowerCase().includes(invalid))) {
-    return fallbackText || '';
-  }
-  
-  return translatedText;
-}
 
 async function batchRegenerateSummaries() {
   try {
@@ -69,7 +52,7 @@ async function batchRegenerateSummaries() {
     ]
     
     // 直接查询缺少指定字段或分类不标准的文章，按tweet_published_at排序
-    const { data: articles, error: fetchError } = await supabase
+    const { data: articles, error } = await supabase
       .from('articles')
       .select('id, title, full_article_content, article_preview_text, tweet_published_at, full_article_content_english, article_preview_text_english, title_english, summary_generated_at, summary_english, summary_chinese, category, language')
       .not('full_article_content', 'is', null)
@@ -77,6 +60,11 @@ async function batchRegenerateSummaries() {
       .or(`full_article_content_english.is.null,article_preview_text_english.is.null,title_english.is.null,summary_generated_at.is.null,summary_english.is.null,summary_chinese.is.null,category.is.null,language.is.null,category.not.in.(${standardCategories.map(c => `"${c}"`).join(',')})`)
       .order('tweet_published_at', { ascending: false })
       .limit(100) // 获取100篇需要处理的文章
+    
+    if (error) {
+      console.error('❌ Error fetching articles:', error)
+      return
+    }
     
     if (!articles || articles.length === 0) {
       console.log('ℹ️  No articles found that need processing')

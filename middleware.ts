@@ -43,6 +43,8 @@ export async function middleware(request: NextRequest) {
                         pathname === '/trending' ||
                         pathname.startsWith('/trending') ||
                         pathname.startsWith('/category/') ||
+                        pathname === '/terms' ||
+                        pathname === '/privacy' ||
                         isSharedArticleLink
   const isProtectedRoute = pathname.startsWith('/profile')
   

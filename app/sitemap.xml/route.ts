@@ -40,15 +40,34 @@ function normalizeCategory(category: string): string {
 
 // Function to validate and clean article slugs
 function isValidSlug(slug: string): boolean {
-  return Boolean(slug && 
-    slug.length > 10 && 
-    slug.length < 200 && // Prevent extremely long URLs
-    !slug.startsWith('--') && 
-    !slug.startsWith('-') && 
-    !slug.match(/^-+$/) &&
-    !slug.includes('..') && // Prevent path traversal patterns
-    !slug.match(/[<>&"']/) && // Prevent XML breaking characters
-    slug.match(/^[a-zA-Z0-9\-_]+$/)) // Only allow safe URL characters
+  // Check if slug follows the correct format: title-with-hyphens--shortId
+  const parts = slug.split('--')
+  if (parts.length !== 2) {
+    return false
+  }
+  
+  const titlePart = parts[0]
+  const idPart = parts[1]
+  
+  // Title part should be properly formatted with hyphens separating words
+  // Reject slugs that are too long without proper word separation
+  if (titlePart.length > 50) {
+    return false
+  }
+  
+  // Title part should not contain very long sequences without hyphens (indicating poor formatting)
+  const words = titlePart.split('-')
+  const hasLongWord = words.some(word => word.length > 15)
+  if (hasLongWord) {
+    return false
+  }
+  
+  // ID part should be exactly 6 characters (hex)
+  if (idPart.length !== 6 || !/^[a-f0-9]{6}$/i.test(idPart)) {
+    return false
+  }
+  
+  return true
 }
 
 export async function GET() {
@@ -69,26 +88,59 @@ export async function GET() {
       return new NextResponse('Error generating sitemap', { status: 500 })
     }
     
-    // Filter articles with valid slugs and normalize categories
+    // Filter articles with valid slugs
     const validArticles = (articles || [])
       .filter(article => article.slug && isValidSlug(article.slug))
-      .map(article => ({
-        ...article,
-        category: article.category ? normalizeCategory(article.category) : null
-      }))
     
-    // Get unique normalized categories and their latest update times
+    // Define standard categories (same as in category layout)
+    const standardCategories = [
+      'Hardware',
+      'Gaming', 
+      'Health',
+      'Environment',
+      'Personal Story',
+      'Culture',
+      'Philosophy',
+      'History',
+      'Education',
+      'Design',
+      'Marketing',
+      'AI',
+      'Crypto',
+      'Tech',
+      'Data',
+      'Startups',
+      'Business',
+      'Markets',
+      'Product',
+      'Security',
+      'Policy',
+      'Science',
+      'Media'
+    ]
+    
+    // Create category map with latest update times for standard categories only
     const categoryMap = new Map<string, string>()
     
-    validArticles.forEach(article => {
-      if (article.category && article.category.trim() !== '') {
-        const currentLastMod = categoryMap.get(article.category)
-        const articleLastMod = normalizeTimestamp(article.updated_at || article.article_published_at)
-        
-        if (!currentLastMod || new Date(articleLastMod) > new Date(currentLastMod)) {
-          categoryMap.set(article.category, articleLastMod)
+    // For each standard category, find the latest article update time
+    standardCategories.forEach(category => {
+      const normalizedCategory = normalizeCategory(category)
+      let latestUpdate = currentDate
+      
+      validArticles.forEach(article => {
+        if (article.category) {
+          // Check if article's category contains this standard category
+           const articleCategories = article.category.split(',').map((cat: string) => normalizeCategory(cat.trim()))
+          if (articleCategories.includes(normalizedCategory)) {
+            const articleLastMod = normalizeTimestamp(article.updated_at || article.article_published_at)
+            if (new Date(articleLastMod) > new Date(latestUpdate)) {
+              latestUpdate = articleLastMod
+            }
+          }
         }
-      }
+      })
+      
+      categoryMap.set(normalizedCategory, latestUpdate)
     })
     
     const baseUrl = 'https://www.xarticle.news'

@@ -14,9 +14,46 @@ interface ArticlePageProps {
   }>
 }
 
+// Function to validate article slug format
+function isValidArticleSlug(slug: string): boolean {
+  // Check if slug follows the correct format: title-with-hyphens--shortId
+  const parts = slug.split('--')
+  if (parts.length !== 2) {
+    return false
+  }
+  
+  const titlePart = parts[0]
+  const idPart = parts[1]
+  
+  // Title part should be properly formatted with hyphens separating words
+  // Reject slugs that are too long without proper word separation
+  if (titlePart.length > 50) {
+    return false
+  }
+  
+  // Title part should not contain very long sequences without hyphens (indicating poor formatting)
+  const words = titlePart.split('-')
+  const hasLongWord = words.some(word => word.length > 15)
+  if (hasLongWord) {
+    return false
+  }
+  
+  // ID part should be exactly 6 characters (hex)
+  if (idPart.length !== 6 || !/^[a-f0-9]{6}$/i.test(idPart)) {
+    return false
+  }
+  
+  return true
+}
+
 export default async function ArticlePage({ params }: ArticlePageProps) {
   const resolvedParams = await params
   const supabase = await createClient()
+  
+  // Validate slug format first
+  if (!isValidArticleSlug(resolvedParams.slug)) {
+    notFound()
+  }
   
   // Get user session
   const { data: { user } } = await supabase.auth.getUser()

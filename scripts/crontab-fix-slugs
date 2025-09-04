@@ -1,0 +1,3 @@
+# 每 5 分钟运行一次 fix-all-broken-slugs.ts 脚本
+# 格式: 分钟 小时 日 月 星期 命令
+*/5 * * * * /Users/haochengwang/Desktop/claude/xarticle/articles-x/scripts/cron-fix-slugs.sh

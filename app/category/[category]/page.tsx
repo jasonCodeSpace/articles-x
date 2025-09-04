@@ -81,8 +81,36 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
   const slug = category.toLowerCase()
   const decodedCategory = categorySlugToDisplayName(slug)
   
-  // Check if category contains comma - if so, return 404
-  if (decodedCategory.includes(',')) {
+  // Define standard categories that are allowed
+  const standardCategories = [
+    'Hardware',
+    'Gaming', 
+    'Health',
+    'Environment',
+    'Personal Story',
+    'Culture',
+    'Philosophy',
+    'History',
+    'Education',
+    'Design',
+    'Marketing',
+    'AI',
+    'Crypto',
+    'Tech',
+    'Data',
+    'Startups',
+    'Business',
+    'Markets',
+    'Product',
+    'Security',
+    'Policy',
+    'Science',
+    'Media'
+  ]
+  
+  // Check if category contains comma or is not a standard category - if so, return 404
+  if (decodedCategory.includes(',') || 
+      (slug !== 'all' && !standardCategories.some(cat => cat.toLowerCase() === decodedCategory.toLowerCase()))) {
     notFound()
   }
   

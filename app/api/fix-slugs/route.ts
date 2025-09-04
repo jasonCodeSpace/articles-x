@@ -63,12 +63,12 @@ export async function GET(request: NextRequest) {
     
     console.log('🔧 Starting slug regeneration process...')
     
-    // Find articles with potentially problematic slugs, ordered by publication date
+    // Find articles with potentially problematic slugs, ordered by tweet publication date
     const { data: articles, error: fetchError } = await supabase
       .from('articles')
-      .select('id, title, slug, article_published_at')
+      .select('id, title, slug, tweet_published_at')
       .not('title', 'is', null)
-      .order('article_published_at', { ascending: false })
+      .order('tweet_published_at', { ascending: false })
       .limit(200)
     
     if (fetchError) {
@@ -82,6 +82,11 @@ export async function GET(request: NextRequest) {
     // Filter articles that need slug regeneration
     const filteredArticles = articles.filter((article: { id: string; slug: string; title?: string }) => {
       if (!article.slug || !article.title) return false
+      
+      // Check if slug starts with -- (missing title part)
+      if (article.slug.startsWith('--')) {
+        return true
+      }
       
       // Remove ID suffix to check base slug
       const baseSlug = article.slug.split('--')[0]
@@ -186,12 +191,12 @@ export async function POST(request: NextRequest) {
       }
     )
     
-    // Get articles with potentially problematic slugs, ordered by publication date
+    // Get articles with potentially problematic slugs, ordered by tweet publication date
     const { data: articles, error } = await supabase
       .from('articles')
-      .select('id, slug, title, article_published_at')
+      .select('id, slug, title, tweet_published_at')
       .not('title', 'is', null)
-      .order('article_published_at', { ascending: false })
+      .order('tweet_published_at', { ascending: false })
       .limit(200)
     
     if (error) {
@@ -202,6 +207,11 @@ export async function POST(request: NextRequest) {
     // Filter articles that need slug regeneration
     const filteredArticles = articles?.filter((article: { id: string; slug: string; title?: string }) => {
       if (!article.slug || !article.title) return false
+      
+      // Check if slug starts with -- (missing title part)
+      if (article.slug.startsWith('--')) {
+        return true
+      }
       
       // Remove ID suffix to check base slug
       const baseSlug = article.slug.split('--')[0]

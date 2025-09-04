@@ -69,11 +69,10 @@ export default async function LandingPage() {
     'Media'
   ]
 
-  // Get real stats from database (English articles only)
+  // Get real stats from database (all articles)
   const { count: totalArticles } = await supabase
     .from('articles')
     .select('*', { count: 'exact', head: true })
-    .eq('language', 'en')
 
   // Get top 3 trending articles for hero section (English only)
   const { data: trendingArticles } = await supabase
@@ -448,14 +447,10 @@ export default async function LandingPage() {
                       Thousands of readers trust Xarticle to stay informed with quality content.
                     </p>
                     
-                    <div className="grid grid-cols-2 gap-6 mt-8">
+                    <div className="flex justify-center mt-8">
                       <div className="text-center">
                         <div className="text-3xl font-bold text-primary">{totalArticles?.toLocaleString() || '2,500+'}</div>
                         <div className="text-muted-foreground text-sm">Articles Curated</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-3xl font-bold text-accent">15min</div>
-                        <div className="text-muted-foreground text-sm">Update Frequency</div>
                       </div>
                     </div>
                   </div>

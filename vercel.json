@@ -67,7 +67,7 @@
     },
     {
       "path": "/api/fix-slugs",
-      "schedule": "*/3 * * * *"
+      "schedule": "*/5 * * * *"
     }
   ]
 }

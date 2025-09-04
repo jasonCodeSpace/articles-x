@@ -26,7 +26,7 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
-  const [captchaToken, setCaptchaToken] = useState<string>()
+  const [captchaToken, setCaptchaToken] = useState<string>('dummy-token') // Temporarily bypass captcha
 
   const router = useRouter()
   const supabase = createClient()
@@ -44,7 +44,7 @@ export default function Login() {
         email: validatedData.email,
         options: {
           shouldCreateUser: true, // Allow new user creation during login
-          captchaToken,
+          // captchaToken, // Temporarily disabled
         },
       })
 
@@ -197,6 +197,7 @@ export default function Login() {
                 </div>
               </div>
               
+              {/* Temporarily disabled captcha verification
               <div className="flex justify-center">
                 <Turnstile
                   siteKey="your-sitekey"
@@ -205,11 +206,12 @@ export default function Login() {
                   }}
                 />
               </div>
+              */}
               
               <Button 
                 type="submit" 
                 className="w-full h-14 bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-2xl transition-all duration-300 text-base shadow-lg hover:shadow-primary/25 transform hover:scale-[1.02] active:scale-[0.98]" 
-                disabled={isLoading || !captchaToken}
+                disabled={isLoading}
               >
                 {isLoading ? (
                   <div className="flex items-center">

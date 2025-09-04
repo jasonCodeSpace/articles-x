@@ -237,7 +237,7 @@ export default async function Terms() {
              </CardHeader>
             <CardContent className="prose dark:prose-invert max-w-none">
               <p>
-                Questions about these Terms? Contact us at <Link href="mailto:support@xarticle.news" className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">support@xarticle.news</Link>
+                Questions about these Terms? Contact us at <Link href="mailto:hi@xarticle.news" className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">hi@xarticle.news</Link>
               </p>
             </CardContent>
           </Card>

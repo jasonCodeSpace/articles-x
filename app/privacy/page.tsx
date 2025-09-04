@@ -78,10 +78,10 @@ export default async function Privacy() {
             </CardHeader>
             <CardContent className="prose dark:prose-invert max-w-none">
               <p>
-                Xarticle ("Xarticle", "we", "our", "us") is a website that curates links to long-form articles shared on X and across the web, and provides AI-generated summaries and organization. Xarticle is operated by an individual (the "Operator"). You can contact us at hi@xarticle.news.
+                Xarticle (&quot;Xarticle&quot;, &quot;we&quot;, &quot;our&quot;, &quot;us&quot;) is a website that curates links to long-form articles shared on X and across the web, and provides AI-generated summaries and organization. Xarticle is operated by an individual (the &quot;Operator&quot;). You can contact us at hi@xarticle.news.
               </p>
               <p>
-                This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use <Link href="/" className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">https://www.xarticle.news/</Link> (the "Service"). By using the Service, you agree to the practices described here.
+                This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use <Link href="/" className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">https://www.xarticle.news/</Link> (the &quot;Service&quot;). By using the Service, you agree to the practices described here.
               </p>
               <h4>Scope</h4>
               <p>
@@ -168,7 +168,7 @@ export default async function Privacy() {
             </CardHeader>
             <CardContent className="prose dark:prose-invert max-w-none">
               <p>
-                We use analytics (e.g., Google Analytics) to understand usage and improve the Service. Where available, we enable IP anonymization and disable data sharing with advertising products. You can opt out via browser controls and the Google Analytics Opt-Out Add-On. See your browser's help pages for managing tracking technologies.
+                We use analytics (e.g., Google Analytics) to understand usage and improve the Service. Where available, we enable IP anonymization and disable data sharing with advertising products. You can opt out via browser controls and the Google Analytics Opt-Out Add-On. See your browser&apos;s help pages for managing tracking technologies.
               </p>
             </CardContent>
           </Card>
@@ -250,7 +250,7 @@ export default async function Privacy() {
                 <li><strong>Object/Restrict:</strong> certain processing activities</li>
                 <li><strong>Withdraw Consent:</strong> where processing is based on consent</li>
               </ul>
-              <p>To exercise these rights, contact us at hi@xarticle.news. We'll respond within a reasonable timeframe per applicable law.</p>
+              <p>To exercise these rights, contact us at hi@xarticle.news. We&apos;ll respond within a reasonable timeframe per applicable law.</p>
             </CardContent>
           </Card>
 
@@ -283,7 +283,7 @@ export default async function Privacy() {
               <CardTitle>Changes to This Privacy Policy</CardTitle>
             </CardHeader>
             <CardContent className="prose dark:prose-invert max-w-none">
-              <p>We may update this Policy from time to time. We'll notify you of material changes by posting the updated policy, sending email notifications, or displaying prominent notices. Continued use after changes constitutes acceptance.</p>
+              <p>We may update this Policy from time to time. We&apos;ll notify you of material changes by posting the updated policy, sending email notifications, or displaying prominent notices. Continued use after changes constitutes acceptance.</p>
             </CardContent>
           </Card>
 
@@ -301,7 +301,7 @@ export default async function Privacy() {
                 <strong>Email:</strong> hi@xarticle.news<br />
                 <strong>Website:</strong> <Link href="/" className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">https://www.xarticle.news/</Link>
               </p>
-              <p>We'll respond within 2 business days.</p>
+              <p>We&apos;ll respond within 2 business days.</p>
             </CardContent>
           </Card>
         </div>

@@ -1,6 +1,6 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
-import { ArrowLeft, Shield, FileText, Users, Globe, User, Copyright, Lock, AlertTriangle, Mail, RefreshCw } from 'lucide-react'
+import { ArrowLeft, Shield, FileText, Users, Globe, Lock, AlertTriangle, Mail } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { createClient } from '@/lib/supabase/server'
@@ -78,7 +78,7 @@ export default async function Terms() {
             </CardHeader>
             <CardContent className="prose dark:prose-invert max-w-none">
               <p>
-                Welcome to Xarticle ("Xarticle", "we", "our", "us"). These Terms of Service ("Terms") govern your use of <Link href="/" className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">https://www.xarticle.news/</Link> (the "Service").
+                Welcome to Xarticle (&quot;Xarticle&quot;, &quot;we&quot;, &quot;our&quot;, &quot;us&quot;). These Terms of Service (&quot;Terms&quot;) govern your use of <Link href="/" className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">https://www.xarticle.news/</Link> (the &quot;Service&quot;).
               </p>
               <p>
                 By accessing or using the Service, you agree to be bound by these Terms. If you do not agree, please do not use the Service.
@@ -166,7 +166,7 @@ export default async function Terms() {
                 <li>Infringe on intellectual property rights</li>
                 <li>Distribute harmful, offensive, or inappropriate content</li>
                 <li>Attempt unauthorized access to our systems</li>
-                <li>Interfere with the Service's operation</li>
+                <li>Interfere with the Service&apos;s operation</li>
                 <li>Use automated tools to scrape or download content</li>
                 <li>Impersonate others or provide false information</li>
               </ul>
@@ -210,7 +210,7 @@ export default async function Terms() {
                </CardTitle>
              </CardHeader>
             <CardContent className="prose dark:prose-invert max-w-none">
-              <p>THE SERVICE IS PROVIDED "AS IS" WITHOUT WARRANTIES OF ANY KIND. WE DISCLAIM ALL WARRANTIES, EXPRESS OR IMPLIED.</p>
+              <p>THE SERVICE IS PROVIDED &quot;AS IS&quot; WITHOUT WARRANTIES OF ANY KIND. WE DISCLAIM ALL WARRANTIES, EXPRESS OR IMPLIED.</p>
               <p>TO THE FULLEST EXTENT PERMITTED BY LAW, WE SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES.</p>
             </CardContent>
           </Card>

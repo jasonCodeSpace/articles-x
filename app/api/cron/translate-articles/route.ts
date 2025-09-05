@@ -40,13 +40,13 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = createServiceClient();
     
-    // 获取最新50篇文章
+    // 获取最新30篇文章（减少处理量以避免超时）
     const { data: articles, error: fetchError } = await supabase
       .from('articles')
       .select('id, title, article_preview_text, full_article_content, title_english, article_preview_text_english, full_article_content_english, language')
       .not('full_article_content', 'is', null)
       .order('article_published_at', { ascending: false })
-      .limit(50);
+      .limit(30);
     
     if (fetchError) {
       console.error('Error fetching articles:', fetchError);
@@ -115,6 +115,23 @@ export async function POST(request: NextRequest) {
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
     const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
     
+    // 简单英文检测函数
+    const isLikelyEnglish = (text: string): boolean => {
+      // 检查是否包含明显的非英文字符
+      const nonEnglishChars = /[\u4e00-\u9fff\u3040-\u309f\u30a0-\u30ff\u0400-\u04ff\u0590-\u05ff\u0600-\u06ff]/;
+      if (nonEnglishChars.test(text)) {
+        return false;
+      }
+      
+      // 检查常见英文单词
+      const commonEnglishWords = ['the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'is', 'are', 'was', 'were', 'be', 'been', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might', 'can', 'this', 'that', 'these', 'those', 'a', 'an'];
+      const words = text.toLowerCase().split(/\s+/);
+      const englishWordCount = words.filter(word => commonEnglishWords.includes(word.replace(/[^a-z]/g, ''))).length;
+      
+      // 如果英文常用词占比超过20%，认为是英文
+      return englishWordCount / words.length > 0.2;
+    };
+    
     for (const article of articles) {
       const errors = [];
       
@@ -129,59 +146,62 @@ export async function POST(request: NextRequest) {
         errors.push('full_article_content_english_empty');
       }
       
-      // 检查是否为英文（使用Gemini API）- 特别注意日语、中文、意大利语、西班牙语等
+      // 检查是否为英文（先用简单检测，英文直接跳过）
       if (article.title_english && article.title_english.trim() !== '') {
-        try {
-          const languageCheckPrompt = `Please identify the language of this text. Pay special attention to Japanese, Chinese, Italian, Spanish and other non-English languages. Respond with only the language code (e.g., 'en' for English, 'zh' for Chinese, 'ja' for Japanese, 'it' for Italian, 'es' for Spanish, etc.):\n\n"${article.title_english}"`;
-          const result = await model.generateContent(languageCheckPrompt);
-          const detectedLanguage = (await result.response.text()).trim().toLowerCase();
-          
-          if (detectedLanguage !== 'en' && detectedLanguage !== 'english') {
-            errors.push('title_english_not_english');
+        if (!isLikelyEnglish(article.title_english)) {
+          // 只对明显不是英文的内容使用 API 检测
+          try {
+            const languageCheckPrompt = `Please identify the language of this text. Pay special attention to Japanese, Chinese, Italian, Spanish and other non-English languages. Respond with only the language code (e.g., 'en' for English, 'zh' for Chinese, 'ja' for Japanese, 'it' for Italian, 'es' for Spanish, etc.):\n\n"${article.title_english}"`;
+            const result = await model.generateContent(languageCheckPrompt);
+            const detectedLanguage = (await result.response.text()).trim().toLowerCase();
+            
+            if (detectedLanguage !== 'en' && detectedLanguage !== 'english') {
+              errors.push('title_english_not_english');
+            }
+            
+            await new Promise(resolve => setTimeout(resolve, 200));
+          } catch (error) {
+            console.error(`Error checking language for title_english of article ${article.id}:`, error);
           }
-          
-          // 添加延迟避免API限制
-          await new Promise(resolve => setTimeout(resolve, 500));
-        } catch (error) {
-          console.error(`Error checking language for title_english of article ${article.id}:`, error);
         }
+        // 如果是英文，直接跳过，不添加错误
       }
       
       if (article.article_preview_text_english && article.article_preview_text_english.trim() !== '') {
-        try {
-          // 检查前200个字符以节省API调用
-          const previewSample = article.article_preview_text_english.substring(0, 200);
-          const languageCheckPrompt = `Please identify the language of this text. Pay special attention to Japanese, Chinese, Italian, Spanish and other non-English languages. Respond with only the language code (e.g., 'en' for English, 'zh' for Chinese, 'ja' for Japanese, 'it' for Italian, 'es' for Spanish, etc.):\n\n"${previewSample}"`;
-          const result = await model.generateContent(languageCheckPrompt);
-          const detectedLanguage = (await result.response.text()).trim().toLowerCase();
-          
-          if (detectedLanguage !== 'en' && detectedLanguage !== 'english') {
-            errors.push('article_preview_text_english_not_english');
+        const previewSample = article.article_preview_text_english.substring(0, 200);
+        if (!isLikelyEnglish(previewSample)) {
+          try {
+            const languageCheckPrompt = `Please identify the language of this text. Pay special attention to Japanese, Chinese, Italian, Spanish and other non-English languages. Respond with only the language code (e.g., 'en' for English, 'zh' for Chinese, 'ja' for Japanese, 'it' for Italian, 'es' for Spanish, etc.):\n\n"${previewSample}"`;
+            const result = await model.generateContent(languageCheckPrompt);
+            const detectedLanguage = (await result.response.text()).trim().toLowerCase();
+            
+            if (detectedLanguage !== 'en' && detectedLanguage !== 'english') {
+              errors.push('article_preview_text_english_not_english');
+            }
+            
+            await new Promise(resolve => setTimeout(resolve, 200));
+          } catch (error) {
+            console.error(`Error checking language for article_preview_text_english of article ${article.id}:`, error);
           }
-          
-          // 添加延迟避免API限制
-          await new Promise(resolve => setTimeout(resolve, 500));
-        } catch (error) {
-          console.error(`Error checking language for article_preview_text_english of article ${article.id}:`, error);
         }
       }
       
       if (article.full_article_content_english && article.full_article_content_english.trim() !== '') {
-        try {
-          // 只检查前200个字符以节省API调用
-          const contentSample = article.full_article_content_english.substring(0, 200);
-          const languageCheckPrompt = `Please identify the language of this text. Pay special attention to Japanese, Chinese, Italian, Spanish and other non-English languages. Respond with only the language code (e.g., 'en' for English, 'zh' for Chinese, 'ja' for Japanese, 'it' for Italian, 'es' for Spanish, etc.):\n\n"${contentSample}"`;
-          const result = await model.generateContent(languageCheckPrompt);
-          const detectedLanguage = (await result.response.text()).trim().toLowerCase();
-          
-          if (detectedLanguage !== 'en' && detectedLanguage !== 'english') {
-            errors.push('full_article_content_english_not_english');
+        const contentSample = article.full_article_content_english.substring(0, 200);
+        if (!isLikelyEnglish(contentSample)) {
+          try {
+            const languageCheckPrompt = `Please identify the language of this text. Pay special attention to Japanese, Chinese, Italian, Spanish and other non-English languages. Respond with only the language code (e.g., 'en' for English, 'zh' for Chinese, 'ja' for Japanese, 'it' for Italian, 'es' for Spanish, etc.):\n\n"${contentSample}"`;
+            const result = await model.generateContent(languageCheckPrompt);
+            const detectedLanguage = (await result.response.text()).trim().toLowerCase();
+            
+            if (detectedLanguage !== 'en' && detectedLanguage !== 'english') {
+              errors.push('full_article_content_english_not_english');
+            }
+            
+            await new Promise(resolve => setTimeout(resolve, 200));
+          } catch (error) {
+            console.error(`Error checking language for full_article_content_english of article ${article.id}:`, error);
           }
-          
-          // 添加延迟避免API限制
-          await new Promise(resolve => setTimeout(resolve, 500));
-        } catch (error) {
-          console.error(`Error checking language for full_article_content_english of article ${article.id}:`, error);
         }
       }
       
@@ -203,12 +223,25 @@ export async function POST(request: NextRequest) {
     const articlesToTranslate = articlesWithErrors.slice(0, TRANSLATION_BATCH_SIZE);
     const translationResults = [];
     const translationErrors = [];
+    const batchUpdates = []; // 存储批量更新的数据
+    const BATCH_SIZE = 5; // 每5篇文章批量更新一次
     
     // 逐个翻译有错误的文章
-    for (const article of articlesToTranslate) {
+    for (let i = 0; i < articlesToTranslate.length; i++) {
+      const article = articlesToTranslate[i];
       try {
         if (!article.full_article_content) {
           console.warn(`Article ${article.id} has no content, skipping`);
+          continue;
+        }
+        
+        // 检查三个英文字段是否都是英文，如果都是英文则跳过翻译
+        const titleIsEnglish = article.title_english && isLikelyEnglish(article.title_english);
+        const previewIsEnglish = article.article_preview_text_english && isLikelyEnglish(article.article_preview_text_english);
+        const contentIsEnglish = article.full_article_content_english && isLikelyEnglish(article.full_article_content_english.substring(0, 200));
+        
+        if (titleIsEnglish && previewIsEnglish && contentIsEnglish) {
+          console.log(`Skipping translation for article ${article.id}: All English fields are already in English`);
           continue;
         }
         
@@ -276,35 +309,63 @@ export async function POST(request: NextRequest) {
           updateData.full_article_content_english = cleanTranslation(translation.full_article_content, article.full_article_content);
         }
 
-        // 只有当有字段需要更新时才执行数据库更新
+        // 只有当有字段需要更新时才添加到批量更新队列
         if (Object.keys(updateData).length > 0) {
-          const { error: updateError } = await supabase
-            .from('articles')
-            .update(updateData)
-            .eq('id', article.id);
-          
-          if (updateError) {
-            console.error(`Error updating article ${article.id}:`, updateError);
-            translationErrors.push({
-              articleId: article.id,
-              error: updateError.message
-            });
-          } else {
-            translationResults.push({
-              articleId: article.id,
+          batchUpdates.push({
+            id: article.id,
+            updateData,
+            article: {
+              id: article.id,
               title: article.title,
-              fieldsUpdated: Object.keys(updateData),
-              errorsFixed: article.translationErrors,
-              translationGenerated: true
-            });
-            console.log(`Successfully translated article: ${article.title}`);
-          }
+              translationErrors: article.translationErrors
+            }
+          });
+          console.log(`Prepared translation for article: ${article.title}`);
         } else {
           console.log(`No translation needed for article: ${article.title}`);
         }
         
-        // 添加延迟避免API限制
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        // 每处理5篇文章或到达最后一篇时，执行批量更新
+        if (batchUpdates.length >= BATCH_SIZE || i === articlesToTranslate.length - 1) {
+          if (batchUpdates.length > 0) {
+            console.log(`Executing batch update for ${batchUpdates.length} articles...`);
+            
+            // 执行批量更新
+            for (const batch of batchUpdates) {
+              try {
+                const { error: updateError } = await supabase
+                  .from('articles')
+                  .update(batch.updateData)
+                  .eq('id', batch.id);
+                
+                if (updateError) {
+                  console.error(`Error updating article ${batch.id}:`, updateError);
+                  translationErrors.push({
+                    articleId: batch.id,
+                    error: updateError.message
+                  });
+                } else {
+                  translationResults.push({
+                    articleId: batch.id,
+                    title: batch.article.title,
+                    fieldsUpdated: Object.keys(batch.updateData),
+                    errorsFixed: batch.article.translationErrors,
+                    translationGenerated: true
+                  });
+                }
+              } catch (batchError) {
+                console.error(`Batch update error for article ${batch.id}:`, batchError);
+                translationErrors.push({
+                  articleId: batch.id,
+                  error: batchError instanceof Error ? batchError.message : 'Batch update failed'
+                });
+              }
+            }
+            
+            console.log(`Batch update completed for ${batchUpdates.length} articles`);
+            batchUpdates.length = 0; // 清空批量更新队列
+          }
+        }
         
       } catch (error) {
         console.error(`Error processing article ${article.id}:`, error);
@@ -312,6 +373,41 @@ export async function POST(request: NextRequest) {
           articleId: article.id,
           error: error instanceof Error ? error.message : 'Unknown error'
         });
+      }
+    }
+    
+    // 处理剩余的批量更新（如果有的话）
+    if (batchUpdates.length > 0) {
+      console.log(`Processing final batch of ${batchUpdates.length} articles...`);
+      for (const batch of batchUpdates) {
+        try {
+          const { error: updateError } = await supabase
+            .from('articles')
+            .update(batch.updateData)
+            .eq('id', batch.id);
+          
+          if (updateError) {
+            console.error(`Error updating article ${batch.id}:`, updateError);
+            translationErrors.push({
+              articleId: batch.id,
+              error: updateError.message
+            });
+          } else {
+            translationResults.push({
+              articleId: batch.id,
+              title: batch.article.title,
+              fieldsUpdated: Object.keys(batch.updateData),
+              errorsFixed: batch.article.translationErrors,
+              translationGenerated: true
+            });
+          }
+        } catch (batchError) {
+          console.error(`Final batch update error for article ${batch.id}:`, batchError);
+          translationErrors.push({
+            articleId: batch.id,
+            error: batchError instanceof Error ? batchError.message : 'Final batch update failed'
+          });
+        }
       }
     }
     

@@ -12,7 +12,7 @@ function initialize(): GenerativeModel | null {
   
   if (!genAI) {
     genAI = new GoogleGenerativeAI(apiKey);
-    model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' });
   }
   
   return model;

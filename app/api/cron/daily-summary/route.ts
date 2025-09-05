@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { sendDailyEmail, validateEmailConfig, getDefaultRecipients } from '@/lib/email';
+// Email functionality removed
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -16,7 +16,7 @@ interface Article {
   author_name: string;
   category: string;
   summary_english: string;
-  view_count: number;
+  tweet_views: number;
 }
 
 interface CategorySummary {
@@ -65,10 +65,10 @@ export async function POST(request: NextRequest) {
     // Get articles from the past 24 hours
     const { data: articles, error: articlesError } = await supabase
       .from('articles')
-      .select('id, title, author_name, category, summary_english, view_count')
+      .select('id, title, author_name, category, summary_english, tweet_views')
       .gte('article_published_at', yesterday.toISOString())
       .lt('article_published_at', now.toISOString())
-      .order('view_count', { ascending: false });
+      .order('tweet_views', { ascending: false });
 
     if (articlesError) {
       console.error('Error fetching articles:', articlesError);
@@ -105,13 +105,13 @@ export async function POST(request: NextRequest) {
     });
 
     // Generate AI summary using Gemini
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' });
     
     const prompt = `
 请为以下文章数据生成一个专业的每日总结报告。这些是过去24小时内发布的文章：
 
 总文章数：${articles.length}
-最受欢迎文章：${topArticle.title} (观看量：${topArticle.view_count})
+最受欢迎文章：${topArticle.title} (观看量：${topArticle.tweet_views})
 
 按分类统计：
 ${Object.entries(categorySummaries).map(([category, data]) => 
@@ -155,39 +155,11 @@ ${Object.entries(categorySummaries).map(([category, data]) =>
 
     console.log('Daily summary saved successfully');
 
-    // Send daily email
-    try {
-      validateEmailConfig();
-      const recipients = getDefaultRecipients();
-      
-      // Get top 5 articles for email
-      const topArticlesForEmail = articles.slice(0, 5).map(article => ({
-        id: article.id,
-        title: article.title,
-        author_name: article.author_name,
-        view_count: article.view_count,
-        category: article.category
-      }));
-
-      await sendDailyEmail({
-        to: recipients,
-        dailySummary: {
-          date: todayDate,
-          summary_content: summaryContent,
-          top_article_title: topArticle.title
-        },
-        topArticles: topArticlesForEmail
-      });
-
-      console.log('Daily email sent successfully');
-    } catch (emailError) {
-      console.error('Error sending daily email:', emailError);
-      // Don't fail the entire operation if email fails
-    }
+    // Email functionality removed
 
     return NextResponse.json({
       success: true,
-      message: 'Daily summary generated and email sent successfully',
+      message: 'Daily summary generated successfully',
       data: {
         id: insertedSummary.id,
         date: todayDate,

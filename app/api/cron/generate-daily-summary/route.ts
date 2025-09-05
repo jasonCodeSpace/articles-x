@@ -77,7 +77,7 @@ export async function GET(request: NextRequest) {
     })
 
     // Generate summary using Gemini
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' })
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
     
     const articlesText = articles.map(a => 
       `Title: ${a.title}\nSummary: ${a.summary_english || a.summary_chinese}\nCategory: ${a.category}`

@@ -31,7 +31,7 @@ export async function GET() {
       contextInfo = `Today's articles cover: ${categories.join(', ')}. Sample titles: ${titles}`
     }
 
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' })
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
     
     const prompt = `Generate a compelling, concise description (maximum 120 characters) for today's daily summary card that showcases curated articles from X (Twitter). 
 

@@ -268,80 +268,80 @@ export default async function LandingPage() {
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {/* Signal over noise */}
-          <Card className="group hover:shadow-xl transition-all duration-300 hover:scale-105 border-2 hover:border-primary/20">
-            <CardContent className="p-8 text-center">
-              <div className="w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
-                <Shield className="text-primary-foreground" size={32} />
-              </div>
-              <h4 className="text-2xl font-bold text-foreground mb-4">Signal over noise</h4>
-              <p className="text-muted-foreground leading-relaxed">
-                Only substantial long-form articles make it through our curation process.
-              </p>
-            </CardContent>
-          </Card>
-
-          {/* Quick understanding */}
-          <Card className="group hover:shadow-xl transition-all duration-300 hover:scale-105 border-2 hover:border-primary/20">
-            <CardContent className="p-8 text-center">
-              <div className="w-16 h-16 bg-gradient-to-br from-accent to-primary rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
-                <Sparkles className="text-primary-foreground" size={32} />
-              </div>
-              <h4 className="text-2xl font-bold text-foreground mb-4">Quick understanding</h4>
-              <p className="text-muted-foreground leading-relaxed">
-                Crisp summaries help you triage content fast and decide what to read now.
-              </p>
-            </CardContent>
-          </Card>
-
-          {/* Power discovery */}
+          {/* Real-time Updates */}
           <Card className="group hover:shadow-xl transition-all duration-300 hover:scale-105 border-2 hover:border-primary/20">
             <CardContent className="p-8 text-center">
               <div className="w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
                 <TrendingUp className="text-primary-foreground" size={32} />
               </div>
-              <h4 className="text-2xl font-bold text-foreground mb-4">Power discovery</h4>
+              <h4 className="text-2xl font-bold text-foreground mb-4">Real-time Updates</h4>
               <p className="text-muted-foreground leading-relaxed">
-                Browse by category, account, or trending themes to find exactly what you need.
+                Track the latest high-quality articles published on X platform in real-time, getting cutting-edge insights and perspectives first.
               </p>
             </CardContent>
           </Card>
 
-          {/* Source context */}
+          {/* Smart Aggregation */}
           <Card className="group hover:shadow-xl transition-all duration-300 hover:scale-105 border-2 hover:border-primary/20">
             <CardContent className="p-8 text-center">
               <div className="w-16 h-16 bg-gradient-to-br from-accent to-primary rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
-                <Users className="text-primary-foreground" size={32} />
+                <Shield className="text-primary-foreground" size={32} />
               </div>
-              <h4 className="text-2xl font-bold text-foreground mb-4">Source context</h4>
+              <h4 className="text-2xl font-bold text-foreground mb-4">Smart Aggregation</h4>
               <p className="text-muted-foreground leading-relaxed">
-                See who shared each article and basic engagement metrics for better context.
+                Daily aggregation of most quality articles published on X platform, curating valuable long-form content while filtering out noise.
               </p>
             </CardContent>
           </Card>
 
-          {/* Personal library */}
+          {/* AI Smart Summarization */}
           <Card className="group hover:shadow-xl transition-all duration-300 hover:scale-105 border-2 hover:border-primary/20">
             <CardContent className="p-8 text-center">
               <div className="w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
-                <BookOpen className="text-primary-foreground" size={32} />
+                <Sparkles className="text-primary-foreground" size={32} />
               </div>
-              <h4 className="text-2xl font-bold text-foreground mb-4">Personal library</h4>
+              <h4 className="text-2xl font-bold text-foreground mb-4">AI Smart Summarization</h4>
               <p className="text-muted-foreground leading-relaxed">
-                Save, tag, and revisit your must-reads with a simple personal library system.
+                When articles are too long, AI automatically generates precise summaries to help you quickly understand core content and efficiently filter reading.
               </p>
             </CardContent>
           </Card>
 
-          {/* Global view */}
+          {/* Daily Summary Reports */}
+          <Card className="group hover:shadow-xl transition-all duration-300 hover:scale-105 border-2 hover:border-primary/20">
+            <CardContent className="p-8 text-center">
+              <div className="w-16 h-16 bg-gradient-to-br from-accent to-primary rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                <BookOpen className="text-primary-foreground" size={32} />
+              </div>
+              <h4 className="text-2xl font-bold text-foreground mb-4">Daily Summary Reports</h4>
+              <p className="text-muted-foreground leading-relaxed">
+                Generate comprehensive daily summary reports, aggregating the day's most important articles and trends for a complete overview.
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Category Browsing */}
+          <Card className="group hover:shadow-xl transition-all duration-300 hover:scale-105 border-2 hover:border-primary/20">
+            <CardContent className="p-8 text-center">
+              <div className="w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                <Users className="text-primary-foreground" size={32} />
+              </div>
+              <h4 className="text-2xl font-bold text-foreground mb-4">Category Browsing</h4>
+              <p className="text-muted-foreground leading-relaxed">
+                Browse by topic categories, account sources, or trending themes to precisely find content areas that interest you.
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Personal Library */}
           <Card className="group hover:shadow-xl transition-all duration-300 hover:scale-105 border-2 hover:border-primary/20">
             <CardContent className="p-8 text-center">
               <div className="w-16 h-16 bg-gradient-to-br from-accent to-primary rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
                 <Globe className="text-primary-foreground" size={32} />
               </div>
-              <h4 className="text-2xl font-bold text-foreground mb-4">Global view</h4>
+              <h4 className="text-2xl font-bold text-foreground mb-4">Personal Library</h4>
               <p className="text-muted-foreground leading-relaxed">
-                Summaries available in multiple languages to break down language barriers.
+                Save, tag, and revisit your must-read articles, building a personal knowledge base to review important content anytime.
               </p>
             </CardContent>
           </Card>

@@ -1,71 +1,70 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
   <title>Xarticle - Open Graph Image</title>
   <defs>
-    <!-- Modern gradient background -->
     <linearGradient id="modernBg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#f8fafc;stop-opacity:1" />
-      <stop offset="50%" style="stop-color:#f1f5f9;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#e2e8f0;stop-opacity:1" />
+      <stop offset="0" style="stop-color:#0f172a;stop-opacity:1"/>
+      <stop offset="0.5" style="stop-color:#1e293b;stop-opacity:1"/>
+      <stop offset="1" style="stop-color:#334155;stop-opacity:1"/>
     </linearGradient>
-    
-    <!-- Subtle grid pattern -->
-    <pattern id="subtleGrid" width="60" height="60" patternUnits="userSpaceOnUse">
-      <path d="M 60 0 L 0 0 0 60" fill="none" stroke="#e2e8f0" stroke-width="0.5" opacity="0.4"/>
+    <linearGradient id="accentGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0" style="stop-color:#2F6F50;stop-opacity:1"/>
+      <stop offset="1" style="stop-color:#4ade80;stop-opacity:1"/>
+    </linearGradient>
+    <pattern id="subtleGrid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#475569" stroke-width="0.5" opacity="0.3"/>
     </pattern>
-    
-    <!-- Logo clipping path -->
-    <clipPath id="clipTop"><rect x="0" y="0" width="400" height="200"/></clipPath>
-    
-    <!-- Soft shadow filter -->
+    <clipPath id="clipTop">
+      <rect x="0" y="0" width="120" height="60"/>
+    </clipPath>
     <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#000000" flood-opacity="0.1"/>
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#000000" flood-opacity="0.3"/>
+    </filter>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
     </filter>
   </defs>
-  
-  <!-- Background -->
   <rect width="1200" height="630" fill="url(#modernBg)"/>
-  
-  <!-- Subtle grid overlay -->
   <rect width="1200" height="630" fill="url(#subtleGrid)"/>
-  
-  <!-- Logo with correct two-tone design -->
-  <g transform="translate(400, 140) scale(0.285)" filter="url(#softShadow)">
-    <!-- Bottom layer: all arms in cream -->
-    <rect x="190.00" y="620.00" width="1020.00" height="160.00" rx="35.00" ry="35.00" transform="rotate(0 700.0 700.0)" fill="#F2ECE1" />
-    <rect x="210.00" y="620.00" width="980.00" height="160.00" rx="35.00" ry="35.00" transform="rotate(45 700.0 700.0)" fill="#F2ECE1" />
-    <rect x="230.00" y="620.00" width="940.00" height="160.00" rx="35.00" ry="35.00" transform="rotate(90 700.0 700.0)" fill="#F2ECE1" />
-    <rect x="210.00" y="620.00" width="980.00" height="160.00" rx="35.00" ry="35.00" transform="rotate(135 700.0 700.0)" fill="#F2ECE1" />
-    <rect x="190.00" y="620.00" width="1020.00" height="160.00" rx="35.00" ry="35.00" transform="rotate(180 700.0 700.0)" fill="#F2ECE1" />
-    <rect x="210.00" y="620.00" width="980.00" height="160.00" rx="35.00" ry="35.00" transform="rotate(225 700.0 700.0)" fill="#F2ECE1" />
-    <rect x="230.00" y="620.00" width="940.00" height="160.00" rx="35.00" ry="35.00" transform="rotate(270 700.0 700.0)" fill="#F2ECE1" />
-    <rect x="210.00" y="620.00" width="980.00" height="160.00" rx="35.00" ry="35.00" transform="rotate(315 700.0 700.0)" fill="#F2ECE1" />
-
-    <!-- Top overlay: all arms in green, clipped to top half -->
+  <circle cx="1100" cy="530" r="3" fill="#2F6F50" opacity="0.4"/>
+  <circle cx="200" cy="500" r="1.5" fill="#4ade80" opacity="0.8"/>
+  <g transform="matrix(0.08, 0, 0, 0.08, 20.97093, 10.172447)" filter="url(#softShadow)">
+    <rect x="190.00" y="620.00" width="1020.00" height="160.00" rx="35.00" ry="35.00" transform="rotate(0 700.0 700.0)" fill="#F2ECE1"/>
+    <rect x="210.00" y="620.00" width="980.00" height="160.00" rx="35.00" ry="35.00" transform="rotate(45 700.0 700.0)" fill="#F2ECE1"/>
+    <rect x="230.00" y="620.00" width="940.00" height="160.00" rx="35.00" ry="35.00" transform="rotate(90 700.0 700.0)" fill="#F2ECE1"/>
+    <rect x="210.00" y="620.00" width="980.00" height="160.00" rx="35.00" ry="35.00" transform="rotate(135 700.0 700.0)" fill="#F2ECE1"/>
+    <rect x="190.00" y="620.00" width="1020.00" height="160.00" rx="35.00" ry="35.00" transform="rotate(180 700.0 700.0)" fill="#F2ECE1"/>
+    <rect x="210.00" y="620.00" width="980.00" height="160.00" rx="35.00" ry="35.00" transform="rotate(225 700.0 700.0)" fill="#F2ECE1"/>
+    <rect x="230.00" y="620.00" width="940.00" height="160.00" transform="rotate(270 700.0 700.0)" fill="#F2ECE1" ry="35.00" rx="35.00"/>
+    <rect x="210.00" y="620.00" width="980.00" height="160.00" rx="35.00" ry="35.00" transform="rotate(315 700.0 700.0)" fill="#F2ECE1"/>
     <g clip-path="url(#clipTop)">
-      <rect x="190.00" y="620.00" width="1020.00" height="160.00" rx="35.00" ry="35.00" transform="rotate(0 700.0 700.0)" fill="#2F6F50" />
-      <rect x="210.00" y="620.00" width="980.00" height="160.00" rx="35.00" ry="35.00" transform="rotate(45 700.0 700.0)" fill="#2F6F50" />
-      <rect x="230.00" y="620.00" width="940.00" height="160.00" rx="35.00" ry="35.00" transform="rotate(90 700.0 700.0)" fill="#2F6F50" />
-      <rect x="210.00" y="620.00" width="980.00" height="160.00" rx="35.00" ry="35.00" transform="rotate(135 700.0 700.0)" fill="#2F6F50" />
-      <rect x="190.00" y="620.00" width="1020.00" height="160.00" rx="35.00" ry="35.00" transform="rotate(180 700.0 700.0)" fill="#2F6F50" />
-      <rect x="210.00" y="620.00" width="980.00" height="160.00" rx="35.00" ry="35.00" transform="rotate(225 700.0 700.0)" fill="#2F6F50" />
-      <rect x="230.00" y="620.00" width="940.00" height="160.00" rx="35.00" ry="35.00" transform="rotate(270 700.0 700.0)" fill="#2F6F50" />
-      <rect x="210.00" y="620.00" width="980.00" height="160.00" rx="35.00" ry="35.00" transform="rotate(315 700.0 700.0)" fill="#2F6F50" />
+      <rect x="190.00" y="620.00" width="1020.00" height="160.00" rx="35.00" ry="35.00" transform="rotate(0 700.0 700.0)" fill="#2F6F50"/>
+      <rect x="210.00" y="620.00" width="980.00" height="160.00" rx="35.00" ry="35.00" transform="rotate(45 700.0 700.0)" fill="#2F6F50"/>
+      <rect x="230.00" y="620.00" width="940.00" height="160.00" rx="35.00" ry="35.00" transform="rotate(90 700.0 700.0)" fill="#2F6F50"/>
+      <rect x="210.00" y="620.00" width="980.00" height="160.00" rx="35.00" ry="35.00" transform="rotate(135 700.0 700.0)" fill="#2F6F50"/>
+      <rect x="190.00" y="620.00" width="1020.00" height="160.00" rx="35.00" ry="35.00" transform="rotate(180 700.0 700.0)" fill="#2F6F50"/>
+      <rect x="210.00" y="620.00" width="980.00" height="160.00" rx="35.00" ry="35.00" transform="rotate(225 700.0 700.0)" fill="#2F6F50"/>
+      <rect x="230.00" y="620.00" width="940.00" height="160.00" rx="35.00" ry="35.00" transform="rotate(270 700.0 700.0)" fill="#2F6F50"/>
+      <rect x="210.00" y="620.00" width="980.00" height="160.00" rx="35.00" ry="35.00" transform="rotate(315 700.0 700.0)" fill="#2F6F50"/>
     </g>
-
-    <!-- Final pass: center horizontal arms fully green -->
-    <rect x="190.00" y="620.00" width="1020.00" height="160.00" rx="35.00" ry="35.00" transform="rotate(0 700.0 700.0)" fill="#2F6F50" />
-    <rect x="190.00" y="620.00" width="1020.00" height="160.00" rx="35.00" ry="35.00" transform="rotate(180 700.0 700.0)" fill="#2F6F50" />
+    <rect x="190.00" y="620.00" width="1020.00" height="160.00" rx="35.00" ry="35.00" transform="rotate(0 700.0 700.0)" fill="#2F6F50"/>
+    <rect x="190.00" y="620.00" width="1020.00" height="160.00" rx="35.00" ry="35.00" transform="rotate(180 700.0 700.0)" fill="#2F6F50"/>
+    <rect x="-685.61" y="-562.41" width="532.53" height="160" rx="35" ry="35" transform="matrix(0, -1, 1, 0, 1119.54657, 976.829102)" fill="#2F6F50" style="stroke-width: 1; transform-box: fill-box; transform-origin: 50% 50%;"/>
+    <rect x="-1681.4" y="-490.44" width="532.53" height="161.839" rx="35" ry="35" transform="matrix(-0.713322, -0.700836, 0.700836, -0.713322, 1956.63313, 949.439659)" fill="#2F6F50" style="stroke-width: 1; transform-origin: -1415.18px -409.512px;"/>
+    <rect x="-1681.4" y="-504.97" width="532.53" height="166.634" rx="35" ry="35" transform="matrix(0.718894, -0.69512, 0.69512, 0.718894, 2273.724144, 961.374749)" fill="#2F6F50" style="stroke-width: 1; transform-origin: -1415.18px -421.645px;"/>
   </g>
-  
-  <!-- Site name -->
-  <text x="600" y="420" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="64" font-weight="800" fill="#2F6F50" text-anchor="middle">Xarticle</text>
-  
-  <!-- Tagline with different font and position -->
-  <text x="600" y="520" font-family="Georgia, 'Times New Roman', serif" font-size="24" font-weight="400" fill="#64748b" text-anchor="middle" font-style="italic">Discover Amazing Articles</text>
-  
-  <!-- Decorative elements -->
-  <circle cx="300" cy="500" r="3" fill="#2F6F50" opacity="0.3"/>
-  <circle cx="900" cy="500" r="3" fill="#2F6F50" opacity="0.3"/>
-  <line x1="320" y1="500" x2="880" y2="500" stroke="#2F6F50" stroke-width="1" opacity="0.2"/>
+  <g transform="translate(280, 0)">
+    <text x="0.247" y="279.89" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="72" font-weight="800" fill="url(#accentGradient)" filter="url(#glow)" style="white-space: pre; font-size: 72px;">Xarticle</text>
+    <text x="0" y="330" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="28" font-weight="400" fill="#e2e8f0" style="white-space: pre;">Curated Articles from X</text>
+    <text x="0" y="380" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="20" font-weight="300" fill="#94a3b8" style="white-space: pre;">Discover trending discussions, insights, and</text>
+    <text x="0" y="410" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="20" font-weight="300" fill="#94a3b8" style="white-space: pre;">curated content from top voices</text>
+    <rect x="0" y="450" width="200" height="50" rx="25" fill="url(#accentGradient)" filter="url(#softShadow)"/>
+    <text x="100" y="480" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="18" font-weight="600" fill="white" text-anchor="middle" style="white-space: pre;">Read Daily Summary</text>
+  </g>
+  <rect x="0" y="620" width="1200" height="4" fill="url(#accentGradient)"/>
+  <text x="1187.58" y="610" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="16" font-weight="400" fill="#64748b" text-anchor="end" style="white-space: pre; font-size: 16px;">xarticle.news</text>
 </svg>

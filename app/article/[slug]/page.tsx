@@ -188,24 +188,34 @@ export async function generateMetadata({ params }: ArticlePageProps) {
       title: article.title_english || article.title,
       description: article.article_preview_text_english || article.article_preview_text || 'Read this article',
       type: 'article',
-      url: articleUrl,
-      siteName: 'Articles X',
+      url: article.article_url || articleUrl,
+      siteName: 'Xarticle',
       images: article.image ? [{ 
         url: article.image,
         width: 1200,
         height: 630,
         alt: article.title_english || article.title
-      }] : [],
+      }] : [{
+        url: '/og-image.svg',
+        width: 1200,
+        height: 630,
+        alt: 'Xarticle - Curated Articles from X (Twitter)',
+        type: 'image/svg+xml',
+      }],
     },
     twitter: {
       card: 'summary_large_image',
       site: '@xarticle_news',
+      creator: '@xarticle_news',
       title: article.title_english || article.title,
       description: article.article_preview_text_english || article.article_preview_text || 'Read this article',
-      images: article.image ? [{
+      images: article.image ? {
         url: article.image,
         alt: article.title_english || article.title
-      }] : [],
+      } : {
+        url: '/og-image.svg',
+        alt: 'Xarticle - Curated Articles from X (Twitter)',
+      },
     },
   }
 }

@@ -165,6 +165,28 @@ export const metadata = {
   openGraph: {
     title: 'Daily Summary - Curated Articles and Insights | Xarticle',
     description: 'Discover today\'s most important articles and insights from X (Twitter). Get comprehensive daily summaries with key topics, trending discussions, and curated content from top voices.',
-    type: 'website'
-  }
+    type: 'website',
+    url: 'https://www.xarticle.news/summary',
+    siteName: 'Xarticle',
+    images: [
+      {
+        url: '/og-image.svg',
+        width: 1200,
+        height: 630,
+        alt: 'Daily Summary - Curated Articles and Insights | Xarticle',
+        type: 'image/svg+xml',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    site: '@xarticle_news',
+    creator: '@xarticle_news',
+    title: 'Daily Summary - Curated Articles and Insights | Xarticle',
+    description: 'Discover today\'s most important articles and insights from X (Twitter). Get comprehensive daily summaries with key topics, trending discussions, and curated content from top voices.',
+    images: {
+      url: '/og-image.svg',
+      alt: 'Daily Summary - Curated Articles and Insights | Xarticle',
+    },
+  },
 }

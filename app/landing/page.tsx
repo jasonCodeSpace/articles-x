@@ -22,10 +22,11 @@ export const metadata: Metadata = {
     type: 'website',
     images: [
       {
-        url: '/logo.svg',
+        url: '/og-image.svg',
         width: 1200,
         height: 630,
-        alt: 'Xarticle - Curated Articles from X'
+        alt: 'Xarticle - Curated Articles from X',
+        type: 'image/svg+xml'
       }
     ]
   },
@@ -33,7 +34,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Xarticle — The Best Articles from X, Curated and Summarized',
     description: 'Discover the most valuable long-form articles shared on X. Read crisp summaries, browse by topic or account, and save your personal must-read list.',
-    images: ['/logo.svg']
+    images: ['/og-image.svg']
   }
 }
 

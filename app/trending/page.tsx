@@ -16,10 +16,11 @@ export const metadata: Metadata = {
     type: 'website',
     images: [
       {
-        url: 'https://www.xarticle.news/og/home.jpg',
+        url: '/og-image.svg',
         width: 1200,
         height: 630,
         alt: 'Xarticle — Trending Articles From X',
+        type: 'image/svg+xml'
       },
     ],
     locale: 'en_US',
@@ -28,7 +29,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Trending Articles From X | Xarticle',
     description: 'Curated, up-to-date reads from leading voices on X.',
-    images: ['https://www.xarticle.news/og/home.jpg'],
+    images: ['/og-image.svg'],
   },
   alternates: { canonical: 'https://www.xarticle.news/' },
   robots: { index: true, follow: true },

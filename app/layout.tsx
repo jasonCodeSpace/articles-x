@@ -16,12 +16,12 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.xarticle.news'),
-  title: "Articles X",
-  description: "A modern article platform for discovering and reading curated content from X (Twitter)",
-  keywords: ['articles', 'news', 'twitter', 'x', 'social media', 'content'],
-  authors: [{ name: 'Articles X' }],
-  creator: 'Articles X',
-  publisher: 'Articles X',
+  title: "Xarticle - Curated Articles from X (Twitter)",
+  description: "Discover trending discussions, insights, and curated content from top voices on X (Twitter). Read daily summaries of the most engaging articles.",
+  keywords: ['articles', 'news', 'twitter', 'x', 'social media', 'content', 'curated', 'trending', 'discussions'],
+  authors: [{ name: 'Xarticle' }],
+  creator: 'Xarticle',
+  publisher: 'Xarticle',
   icons: {
     icon: [
       {
@@ -41,15 +41,16 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_US',
     url: 'https://www.xarticle.news',
-    siteName: 'Articles X',
-    title: 'Articles X - Modern Article Platform',
-    description: 'A modern article platform for discovering and reading curated content from X (Twitter)',
+    siteName: 'Xarticle',
+    title: 'Xarticle - Curated Articles from X (Twitter)',
+    description: 'Discover trending discussions, insights, and curated content from top voices on X (Twitter). Read daily summaries of the most engaging articles.',
     images: [
        {
          url: '/og-image.svg',
          width: 1200,
          height: 630,
-         alt: 'Articles X - Modern Article Platform',
+         alt: 'Xarticle - Curated Articles from X (Twitter)',
+         type: 'image/svg+xml',
        },
      ],
   },
@@ -57,9 +58,12 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     site: '@xarticle_news',
     creator: '@xarticle_news',
-    title: 'Articles X - Modern Article Platform',
-    description: 'A modern article platform for discovering and reading curated content from X (Twitter)',
-    images: ['/og-image.svg'],
+    title: 'Xarticle - Curated Articles from X (Twitter)',
+    description: 'Discover trending discussions, insights, and curated content from top voices on X (Twitter). Read daily summaries of the most engaging articles.',
+    images: {
+      url: '/og-image.svg',
+      alt: 'Xarticle - Curated Articles from X (Twitter)',
+    },
   },
   robots: {
     index: true,

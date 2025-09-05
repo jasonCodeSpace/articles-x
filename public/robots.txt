@@ -1,33 +1,82 @@
 # Robots.txt for Articles X (www.xarticle.news)
-# Modern article curation platform
+# Modern article curation platform - RESTRICTED ACCESS
 # Last updated: 2025-01-10
 
-User-agent: *
-
-# Allow main content areas
+# Only allow major search engines
+User-agent: Googlebot
+Allow: /
+Allow: /og-image.svg
+Allow: /logo.svg
+Allow: /*.svg
+Allow: /*.png
+Allow: /*.jpg
+Allow: /*.jpeg
+Allow: /*.webp
 Allow: /article/
-Allow: /articles/
 Allow: /category/
 Allow: /author/
-Allow: /search
 Allow: /about
 Allow: /privacy
 Allow: /terms
-
-# DO NOT block rendering assets - critical for Google indexing
 Allow: /_next/
 Allow: /static/
 Allow: /favicon.ico
 Allow: /*.css
 Allow: /*.js
+Allow: /*.woff
+Allow: /*.woff2
+
+User-agent: Bingbot
+Allow: /
+Allow: /og-image.svg
+Allow: /logo.svg
+Allow: /*.svg
 Allow: /*.png
 Allow: /*.jpg
 Allow: /*.jpeg
-Allow: /*.gif
-Allow: /*.svg
 Allow: /*.webp
+Allow: /article/
+Allow: /category/
+Allow: /author/
+Allow: /about
+Allow: /privacy
+Allow: /terms
+Allow: /_next/
+Allow: /static/
+Allow: /favicon.ico
+Allow: /*.css
+Allow: /*.js
 Allow: /*.woff
 Allow: /*.woff2
+
+# Limited access for social media crawlers (only for Open Graph)
+User-agent: Twitterbot
+Allow: /og-image.svg
+Allow: /logo.svg
+Allow: /*.svg
+Allow: /*.png
+Allow: /*.jpg
+Allow: /*.jpeg
+Allow: /*.webp
+Allow: /article/
+Allow: /about
+Disallow: /
+
+User-agent: facebookexternalhit
+Allow: /og-image.svg
+Allow: /logo.svg
+Allow: /*.svg
+Allow: /*.png
+Allow: /*.jpg
+Allow: /*.jpeg
+Allow: /*.webp
+Allow: /article/
+Allow: /about
+Disallow: /
+
+# Block all other bots and crawlers
+User-agent: *
+Disallow: /
 
 # Block dynamic search and filter URLs (all query strings)
 Disallow: /*?*

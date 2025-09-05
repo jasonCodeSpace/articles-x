@@ -315,7 +315,7 @@ export default async function LandingPage() {
               </div>
               <h4 className="text-2xl font-bold text-foreground mb-4">Daily Summary Reports</h4>
               <p className="text-muted-foreground leading-relaxed">
-                Generate comprehensive daily summary reports, aggregating the day's most important articles and trends for a complete overview.
+                Generate comprehensive daily summary reports, aggregating the day&apos;s most important articles and trends for a complete overview.
               </p>
             </CardContent>
           </Card>

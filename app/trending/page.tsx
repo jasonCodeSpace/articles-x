@@ -59,24 +59,7 @@ interface DailySummary {
   created_at: string
 }
 
-// Fetch the latest daily summary
-async function fetchLatestDailySummary(): Promise<DailySummary | null> {
-  const supabase = await createClient()
-  
-  const { data, error } = await supabase
-    .from('daily_summary')
-    .select('*')
-    .order('date', { ascending: false })
-    .limit(1)
-    .single()
-  
-  if (error) {
-    console.error('Error fetching daily summary:', error)
-    return null
-  }
-  
-  return data
-}
+
 
 // Custom fetch function for Trending articles (Day or Week tags)
 async function fetchTrendingArticles(options: {

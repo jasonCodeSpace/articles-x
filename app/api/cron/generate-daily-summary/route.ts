@@ -32,28 +32,12 @@ export async function GET(request: NextRequest) {
 
     const supabase = createServiceClient()
     const today = new Date().toISOString().split('T')[0]
-    
-    // Check if today's summary already exists
-    const { data: existingSummary } = await supabase
-      .from('daily_summary')
-      .select('id')
-      .eq('date', today)
-      .single()
-    
-    if (existingSummary) {
-      return NextResponse.json({
-        success: true,
-        message: 'Daily summary already exists for today',
-        date: today
-      })
-    }
 
-    // Get articles from the past 24 hours
-    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+    // Get articles with tag 'Day'
     const { data: articles, error: articlesError } = await supabase
       .from('articles')
       .select('id, title, summary_english, summary_chinese, category, tweet_views, author_name, article_url, article_published_at')
-      .gte('article_published_at', twentyFourHoursAgo)
+      .eq('tag', 'Day')
       .not('summary_english', 'is', null)
       .order('tweet_views', { ascending: false })
     
@@ -196,10 +180,10 @@ ${articlesText}`
       console.warn('Failed to parse JSON objects from response, using raw text:', parseError)
     }
     
-    // Insert daily summary
-    const { error: insertError } = await supabase
+    // Upsert daily summary (insert or update if exists)
+    const { error: upsertError } = await supabase
       .from('daily_summary')
-      .insert({
+      .upsert({
         date: today,
         summary_content: summaryContent,
         summary_json_en: summaryJsonEn,
@@ -208,14 +192,16 @@ ${articlesText}`
         top_article_id: topArticle.id,
         total_articles_count: articles.length,
         categories_summary: categoriesCount
+      }, {
+        onConflict: 'date'
       })
       .select()
       .single()
     
-    if (insertError) {
-      console.error('Error inserting daily summary:', insertError)
+    if (upsertError) {
+      console.error('Error upserting daily summary:', upsertError)
       return NextResponse.json(
-        { error: 'Failed to insert daily summary', details: insertError.message },
+        { error: 'Failed to upsert daily summary', details: upsertError.message },
         { status: 500 }
       )
     }

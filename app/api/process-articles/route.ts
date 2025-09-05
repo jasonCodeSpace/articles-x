@@ -182,44 +182,16 @@ function extractUrlsFromTweet(legacy: TweetLegacy): string[] {
 
 
 // Function to validate if content is a legitimate article
-function isValidArticleContent(title: string, content: string, tweetText: string): boolean {
-  // Check minimum content length (articles should be substantial)
-  if (content.length < 500) {
-    console.log('Content too short to be a valid article');
+function isValidArticle(articleUrl: string): boolean {
+  // Only check if the article URL contains x.com
+  const isValidUrl = articleUrl.includes('x.com');
+  
+  if (!isValidUrl) {
+    console.log(`Article URL validation failed: ${articleUrl} does not contain x.com`);
     return false;
   }
   
-  // Check if title is meaningful (not just tweet text)
-  if (title.length < 10) {
-    console.log('Title too short to be a valid article');
-    return false;
-  }
-  
-  // Check if content is significantly different from tweet text
-  const tweetWords = tweetText.toLowerCase().split(/\s+/);
-  const contentWords = content.toLowerCase().split(/\s+/);
-  
-  // If content is mostly the same as tweet, it's not a real article
-  if (contentWords.length < tweetWords.length * 3) {
-    console.log('Content not substantially longer than tweet');
-    return false;
-  }
-  
-  // Check for common article indicators
-  const articleIndicators = [
-    'paragraph', 'section', 'article', 'published', 'author', 'read more',
-    'continue reading', 'full story', 'news', 'report', 'analysis'
-  ];
-  
-  const hasArticleIndicators = articleIndicators.some(indicator => 
-    content.toLowerCase().includes(indicator)
-  );
-  
-  if (!hasArticleIndicators) {
-    console.log('Content lacks typical article structure indicators');
-    return false;
-  }
-  
+  console.log(`Article URL validation passed: ${articleUrl}`);
   return true;
 }
 
@@ -589,8 +561,8 @@ async function processTweetForArticle(tweetId: string, authorHandle: string): Pr
       const content = extractedArticle.content || '';
       
       // Check if this is a legitimate article
-      if (!isValidArticleContent(title, content, tweetText)) {
-        console.log(`Content validation failed for ${firstUrl}, marking as non-article...`);
+      if (!isValidArticle(firstUrl)) {
+        console.log(`Article URL validation failed for ${firstUrl}, marking as non-article...`);
         
         // Update the tweet in database to mark it as not having an article
         try {
@@ -671,9 +643,14 @@ async function processTweetForArticle(tweetId: string, authorHandle: string): Pr
       preview: fullArticleContent.substring(0, 100) + '...'
     });
     
-    // Validate article content quality
-    if (!isValidArticleContent(title, fullArticleContent, tweetText)) {
-      console.log(`Content validation failed for tweet ${tweetId}, marking as non-article...`);
+    // Category will be assigned by AI cron job
+    const category = '';
+    
+    const articleUrl = `https://x.com/${authorHandle}/status/${tweetId}`;
+    
+    // Validate article URL
+    if (!isValidArticle(articleUrl)) {
+      console.log(`Article URL validation failed for tweet ${tweetId}, marking as non-article...`);
       
       // Update the tweet in database to mark it as not having an article
       try {
@@ -689,11 +666,6 @@ async function processTweetForArticle(tweetId: string, authorHandle: string): Pr
       
       return null;
     }
-    
-    // Category will be assigned by AI cron job
-    const category = '';
-    
-    const articleUrl = `https://x.com/${authorHandle}/status/${tweetId}`;
     
     const articleData: ArticleData = {
       title: title,

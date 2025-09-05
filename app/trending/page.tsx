@@ -192,7 +192,6 @@ export default async function TrendingPage({ searchParams }: PageProps) {
             <ArticleFeed 
             initialArticles={articles} 
             initialSearchQuery={search || ''}
-            dailySummary={dailySummary}
           />
           </Suspense>
         </section>

@@ -1,19 +1,38 @@
 import { Suspense } from 'react'
 import { createClient } from '@/lib/supabase/server'
-import { notFound } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
+
+interface SummarySection {
+  watchlist?: string[]
+  key_data_points?: string[]
+  other_quick_reads?: string[]
+  policy_media_security?: string[]
+}
+
+interface SummaryJson {
+  date: string
+  lang: string
+  meta: {
+    notes: string
+    domains_covered: string[]
+  }
+  counts: {
+    articles_total: number
+  }
+  sections: SummarySection
+}
 
 interface DailySummary {
   id: string
   date: string
   summary_content: string
-  summary_json_en: any
-  summary_json_zh: any
+  summary_json_en: SummaryJson | null
+  summary_json_zh: SummaryJson | null
   top_article_title: string
   top_article_id: string | null
   total_articles_count: number
-  categories_summary: any
+  categories_summary: Record<string, unknown> | null
   created_at: string
   updated_at: string
 }
@@ -52,7 +71,7 @@ function SummaryContent({ summary }: { summary: DailySummary }) {
           Daily Summary - {formattedDate}
         </h1>
         <p className="text-muted-foreground">
-          Today's curated articles and insights from X
+          Today&apos;s curated articles and insights from X
         </p>
       </div>
       
@@ -173,7 +192,7 @@ function SummaryContent({ summary }: { summary: DailySummary }) {
           // Fallback to original layout
           <Card>
             <CardHeader>
-              <CardTitle>Today's Highlights</CardTitle>
+              <CardTitle>Today&apos;s Highlights</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="prose prose-gray dark:prose-invert max-w-none">
@@ -253,7 +272,7 @@ export default async function SummaryPage() {
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">No Summary Available</h1>
           <p className="text-muted-foreground">
-            Today's summary hasn't been generated yet. Please check back later.
+            Today&apos;s summary hasn&apos;t been generated yet. Please check back later.
           </p>
         </div>
       </div>
@@ -269,5 +288,5 @@ export default async function SummaryPage() {
 
 export const metadata = {
   title: 'Daily Summary | Xarticle',
-  description: 'Today\'s curated articles and insights from X',
+  description: 'Today&apos;s curated articles and insights from X',
 }

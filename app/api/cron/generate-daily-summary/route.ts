@@ -171,7 +171,7 @@ ${articlesText}`
     }
     
     // Insert daily summary
-    const { data: newSummary, error: insertError } = await supabase
+    const { error: insertError } = await supabase
       .from('daily_summary')
       .insert({
         date: today,

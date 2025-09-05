@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import { createClient } from '@/lib/supabase/server'
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || process.env.GOOGLE_AI_API_KEY || '')
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     if (!process.env.GEMINI_API_KEY && !process.env.GOOGLE_AI_API_KEY) {
       return NextResponse.json(
@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient()
     const today = new Date().toISOString().split('T')[0]
     
-    const { data: articles, error } = await supabase
+    const { data: articles } = await supabase
       .from('articles')
       .select('title, category, summary')
       .gte('published_at', today)

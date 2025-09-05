@@ -558,7 +558,6 @@ async function processTweetForArticle(tweetId: string, authorHandle: string): Pr
       // Validate article content quality
       const tweetText = legacy.full_text || legacy.text || 'No content available';
       const title = extractedArticle.title || tweetText.substring(0, 100) || 'Untitled Article';
-      const content = extractedArticle.content || '';
       
       // Check if this is a legitimate article
       if (!isValidArticle(firstUrl)) {

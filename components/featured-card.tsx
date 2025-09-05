@@ -13,8 +13,6 @@ export function FeaturedCard() {
   
   // Use useEffect to calculate relative time and generate title on client side
   useEffect(() => {
-    const now = new Date()
-    const publishedDate = new Date(now.getTime() - 2 * 60 * 60 * 1000) // 2 hours ago
     setRelativeTime('2h')
     
     // Generate current date title in format "Sept. 5 Summary"

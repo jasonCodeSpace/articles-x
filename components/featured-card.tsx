@@ -13,7 +13,39 @@ export function FeaturedCard() {
   
   // Use useEffect to calculate relative time and generate title on client side
   useEffect(() => {
-    setRelativeTime('2h')
+    // Fetch the latest daily summary to get the actual creation time
+    const fetchSummaryTime = async () => {
+      try {
+        const response = await fetch('/api/daily-summary')
+        if (response.ok) {
+          const data = await response.json()
+          if (data.summary && data.summary.created_at) {
+            const createdAt = new Date(data.summary.created_at)
+            const now = new Date()
+            const diffInHours = Math.floor((now.getTime() - createdAt.getTime()) / (1000 * 60 * 60))
+            
+            if (diffInHours < 1) {
+              const diffInMinutes = Math.floor((now.getTime() - createdAt.getTime()) / (1000 * 60))
+              setRelativeTime(`${diffInMinutes}m`)
+            } else if (diffInHours < 24) {
+              setRelativeTime(`${diffInHours}h`)
+            } else {
+              const diffInDays = Math.floor(diffInHours / 24)
+              setRelativeTime(`${diffInDays}d`)
+            }
+          } else {
+            setRelativeTime('2h') // fallback
+          }
+        } else {
+          setRelativeTime('2h') // fallback
+        }
+      } catch (error) {
+        console.error('Failed to fetch summary time:', error)
+        setRelativeTime('2h') // fallback
+      }
+    }
+    
+    fetchSummaryTime()
     
     // Generate current date title in format "Sept. 5 Summary"
     const today = new Date()

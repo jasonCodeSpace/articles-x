@@ -40,13 +40,13 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = createServiceClient();
     
-    // 获取最新100篇文章
+    // 获取最新50篇文章
     const { data: articles, error: fetchError } = await supabase
       .from('articles')
       .select('id, title, article_preview_text, full_article_content, title_english, article_preview_text_english, full_article_content_english, language')
       .not('full_article_content', 'is', null)
       .order('article_published_at', { ascending: false })
-      .limit(100);
+      .limit(50);
     
     if (fetchError) {
       console.error('Error fetching articles:', fetchError);

@@ -40,68 +40,179 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = createServiceClient();
     
-    // 直接查询所有需要翻译的文章（英文字段为空的）
-    const { data: articlesToTranslate, error: fetchError } = await supabase
+    // 获取最新300篇文章
+    const { data: articles, error: fetchError } = await supabase
       .from('articles')
-      .select('id, title, slug, article_preview_text, full_article_content, title_english, article_preview_text_english, full_article_content_english, tweet_published_at')
+      .select('id, title, article_preview_text, full_article_content, title_english, article_preview_text_english, full_article_content_english, language')
       .not('full_article_content', 'is', null)
-      .or('title_english.is.null,title_english.eq.,article_preview_text_english.is.null,article_preview_text_english.eq.,full_article_content_english.is.null,full_article_content_english.eq.')
-      .order('updated_at', { ascending: false })
-      .limit(50);
+      .order('article_published_at', { ascending: false })
+      .limit(300);
     
     if (fetchError) {
-      console.error('Error fetching articles to translate:', fetchError);
+      console.error('Error fetching articles:', fetchError);
       return NextResponse.json(
-        { error: 'Failed to fetch articles to translate' },
+        { error: 'Failed to fetch articles' },
         { status: 500 }
       );
     }
     
-    // 检查 Gemini API 使用情况
-    const apiStats = getApiUsageStats();
-    const remainingCalls = apiStats.gemini.remaining;
-    
-    // 限制每次只处理20篇文章，避免超时和API限制
-    const BATCH_SIZE = Math.min(20, remainingCalls);
-    
-    if (BATCH_SIZE <= 0) {
-      return NextResponse.json(
-        {
-          error: 'Daily Gemini API limit exceeded',
-          message: `Daily Gemini API limit (${apiStats.gemini.limit}) exceeded. Resets at ${new Date(apiStats.gemini.resetTime).toISOString()}`,
-          retryAfter: Math.ceil((apiStats.gemini.resetTime - Date.now()) / 1000)
-        },
-        { status: 429 }
-      );
-    }
-    
-    const articles = (articlesToTranslate || []).slice(0, BATCH_SIZE);
-    
     if (!articles || articles.length === 0) {
       return NextResponse.json(
-        { message: 'No articles found that need translation' },
+        { message: 'No articles found' },
         { status: 200 }
       );
     }
     
     console.log(`Processing ${articles.length} articles for translation`);
     
-    const results = [];
-    const errors = [];
+    // 第一步：对英文文章直接复制内容到英文字段
+    const englishArticles = articles.filter(article => article.language === 'en');
+    const copyResults = [];
     
-    // 逐个处理文章以避免API限制
+    for (const article of englishArticles) {
+      try {
+        const updateData: {
+          title_english?: string;
+          article_preview_text_english?: string;
+          full_article_content_english?: string;
+        } = {};
+        
+        // 直接复制英文内容
+        if (!article.title_english || article.title_english.trim() === '') {
+          updateData.title_english = article.title;
+        }
+        if (!article.article_preview_text_english || article.article_preview_text_english.trim() === '') {
+          updateData.article_preview_text_english = article.article_preview_text || '';
+        }
+        if (!article.full_article_content_english || article.full_article_content_english.trim() === '') {
+          updateData.full_article_content_english = article.full_article_content;
+        }
+        
+        if (Object.keys(updateData).length > 0) {
+          const { error: updateError } = await supabase
+            .from('articles')
+            .update(updateData)
+            .eq('id', article.id);
+          
+          if (updateError) {
+            console.error(`Error copying English content for article ${article.id}:`, updateError);
+          } else {
+            copyResults.push({
+              articleId: article.id,
+              title: article.title,
+              action: 'copied_english_content'
+            });
+            console.log(`Copied English content for article: ${article.title}`);
+          }
+        }
+      } catch (error) {
+        console.error(`Error processing English article ${article.id}:`, error);
+      }
+    }
+    
+    // 第二步：检查翻译错误
+    const articlesWithErrors = [];
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    
     for (const article of articles) {
+      const errors = [];
+      
+      // 检查空值
+      if (!article.title_english || article.title_english.trim() === '') {
+        errors.push('title_english_empty');
+      }
+      if (!article.article_preview_text_english || article.article_preview_text_english.trim() === '') {
+        errors.push('article_preview_text_english_empty');
+      }
+      if (!article.full_article_content_english || article.full_article_content_english.trim() === '') {
+        errors.push('full_article_content_english_empty');
+      }
+      
+      // 检查是否为英文（使用Gemini API）- 特别注意日语、中文、意大利语、西班牙语等
+      if (article.title_english && article.title_english.trim() !== '') {
+        try {
+          const languageCheckPrompt = `Please identify the language of this text. Pay special attention to Japanese, Chinese, Italian, Spanish and other non-English languages. Respond with only the language code (e.g., 'en' for English, 'zh' for Chinese, 'ja' for Japanese, 'it' for Italian, 'es' for Spanish, etc.):\n\n"${article.title_english}"`;
+          const result = await model.generateContent(languageCheckPrompt);
+          const detectedLanguage = (await result.response.text()).trim().toLowerCase();
+          
+          if (detectedLanguage !== 'en' && detectedLanguage !== 'english') {
+            errors.push('title_english_not_english');
+          }
+          
+          // 添加延迟避免API限制
+          await new Promise(resolve => setTimeout(resolve, 500));
+        } catch (error) {
+          console.error(`Error checking language for title_english of article ${article.id}:`, error);
+        }
+      }
+      
+      if (article.article_preview_text_english && article.article_preview_text_english.trim() !== '') {
+        try {
+          // 检查前200个字符以节省API调用
+          const previewSample = article.article_preview_text_english.substring(0, 200);
+          const languageCheckPrompt = `Please identify the language of this text. Pay special attention to Japanese, Chinese, Italian, Spanish and other non-English languages. Respond with only the language code (e.g., 'en' for English, 'zh' for Chinese, 'ja' for Japanese, 'it' for Italian, 'es' for Spanish, etc.):\n\n"${previewSample}"`;
+          const result = await model.generateContent(languageCheckPrompt);
+          const detectedLanguage = (await result.response.text()).trim().toLowerCase();
+          
+          if (detectedLanguage !== 'en' && detectedLanguage !== 'english') {
+            errors.push('article_preview_text_english_not_english');
+          }
+          
+          // 添加延迟避免API限制
+          await new Promise(resolve => setTimeout(resolve, 500));
+        } catch (error) {
+          console.error(`Error checking language for article_preview_text_english of article ${article.id}:`, error);
+        }
+      }
+      
+      if (article.full_article_content_english && article.full_article_content_english.trim() !== '') {
+        try {
+          // 只检查前200个字符以节省API调用
+          const contentSample = article.full_article_content_english.substring(0, 200);
+          const languageCheckPrompt = `Please identify the language of this text. Pay special attention to Japanese, Chinese, Italian, Spanish and other non-English languages. Respond with only the language code (e.g., 'en' for English, 'zh' for Chinese, 'ja' for Japanese, 'it' for Italian, 'es' for Spanish, etc.):\n\n"${contentSample}"`;
+          const result = await model.generateContent(languageCheckPrompt);
+          const detectedLanguage = (await result.response.text()).trim().toLowerCase();
+          
+          if (detectedLanguage !== 'en' && detectedLanguage !== 'english') {
+            errors.push('full_article_content_english_not_english');
+          }
+          
+          // 添加延迟避免API限制
+          await new Promise(resolve => setTimeout(resolve, 500));
+        } catch (error) {
+          console.error(`Error checking language for full_article_content_english of article ${article.id}:`, error);
+        }
+      }
+      
+      if (errors.length > 0) {
+        articlesWithErrors.push({
+          ...article,
+          translationErrors: errors
+        });
+      }
+    }
+    
+    // 第三步：翻译有错误的文章
+    const apiStats = getApiUsageStats();
+    const remainingCalls = apiStats.gemini.remaining;
+    
+    // 限制翻译文章数量以避免API限制
+    const TRANSLATION_BATCH_SIZE = Math.min(20, remainingCalls - (articles.length * 2)); // 减去语言检测使用的API调用
+    
+    const articlesToTranslate = articlesWithErrors.slice(0, TRANSLATION_BATCH_SIZE);
+    const translationResults = [];
+    const translationErrors = [];
+    
+    // 逐个翻译有错误的文章
+    for (const article of articlesToTranslate) {
       try {
         if (!article.full_article_content) {
           console.warn(`Article ${article.id} has no content, skipping`);
           continue;
         }
         
-        console.log(`Translating article: ${article.title}`);
-        
-        // 使用专门的翻译功能而不是 generateArticleAnalysis
-        const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
-        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+        console.log(`Translating article: ${article.title} (Errors: ${article.translationErrors.join(', ')})`);
         
         // 使用专门的翻译提示词
         const prompt = TRANSLATION_PROMPT
@@ -149,21 +260,21 @@ export async function POST(request: NextRequest) {
           title_english?: string;
           article_preview_text_english?: string;
           full_article_content_english?: string;
-          slug?: string;
         } = {};
 
-        // 只更新空白的英文字段
-        if (!article.title_english || article.title_english.trim() === '') {
+        // 根据错误类型更新相应字段
+        if (article.translationErrors.includes('title_english_empty') || 
+            article.translationErrors.includes('title_english_not_english')) {
           updateData.title_english = cleanTranslation(translation.title, article.title);
         }
-        if (!article.article_preview_text_english || article.article_preview_text_english.trim() === '') {
+        if (article.translationErrors.includes('article_preview_text_english_empty') || 
+            article.translationErrors.includes('article_preview_text_english_not_english')) {
           updateData.article_preview_text_english = cleanTranslation(translation.article_preview_text, article.article_preview_text || '');
         }
-        if (!article.full_article_content_english || article.full_article_content_english.trim() === '') {
+        if (article.translationErrors.includes('full_article_content_english_empty') || 
+            article.translationErrors.includes('full_article_content_english_not_english')) {
           updateData.full_article_content_english = cleanTranslation(translation.full_article_content, article.full_article_content);
         }
-
-        // 注意：slug 一旦生成就不应该再被修改，即使翻译了标题也保持原有的 slug
 
         // 只有当有字段需要更新时才执行数据库更新
         if (Object.keys(updateData).length > 0) {
@@ -174,15 +285,16 @@ export async function POST(request: NextRequest) {
           
           if (updateError) {
             console.error(`Error updating article ${article.id}:`, updateError);
-            errors.push({
+            translationErrors.push({
               articleId: article.id,
               error: updateError.message
             });
           } else {
-            results.push({
+            translationResults.push({
               articleId: article.id,
               title: article.title,
               fieldsUpdated: Object.keys(updateData),
+              errorsFixed: article.translationErrors,
               translationGenerated: true
             });
             console.log(`Successfully translated article: ${article.title}`);
@@ -196,7 +308,7 @@ export async function POST(request: NextRequest) {
         
       } catch (error) {
         console.error(`Error processing article ${article.id}:`, error);
-        errors.push({
+        translationErrors.push({
           articleId: article.id,
           error: error instanceof Error ? error.message : 'Unknown error'
         });
@@ -205,12 +317,22 @@ export async function POST(request: NextRequest) {
     
     const finalApiStats = getApiUsageStats();
     return NextResponse.json({
-      message: `Processed ${results.length} articles successfully`,
-      results,
-      errors,
-      totalProcessed: results.length,
-      totalErrors: errors.length,
-      totalArticlesChecked: articles.length,
+      message: `Translation process completed`,
+      summary: {
+        totalArticlesChecked: articles.length,
+        englishArticlesCopied: copyResults.length,
+        articlesWithErrors: articlesWithErrors.length,
+        articlesTranslated: translationResults.length,
+        translationErrors: translationErrors.length
+      },
+      copyResults,
+      articlesWithErrors: articlesWithErrors.map(a => ({
+        id: a.id,
+        title: a.title,
+        errors: a.translationErrors
+      })),
+      translationResults,
+      translationErrors,
       geminiUsage: {
         used: finalApiStats.gemini.count - apiStats.gemini.count,
         remaining: finalApiStats.gemini.remaining,

@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
       .select('id, article_published_at, tag')
       .not('article_published_at', 'is', null)
       .order('article_published_at', { ascending: false })
-      .limit(300) // Process recent articles
+      .limit(400) // Process recent articles
 
     if (fetchError) {
       console.error('Error fetching articles:', fetchError)

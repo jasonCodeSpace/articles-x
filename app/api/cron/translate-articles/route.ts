@@ -339,11 +339,24 @@ export async function POST(request: NextRequest) {
                   .eq('id', batch.id);
                 
                 if (updateError) {
-                  console.error(`Error updating article ${batch.id}:`, updateError);
-                  translationErrors.push({
-                    articleId: batch.id,
-                    error: updateError.message
-                  });
+                  // 检查是否是重复键约束错误（文章已存在）
+                  if (updateError.code === '23505') {
+                    console.log(`Article ${batch.id} already has translation data, skipping`);
+                    translationResults.push({
+                      articleId: batch.id,
+                      title: batch.article.title,
+                      fieldsUpdated: Object.keys(batch.updateData),
+                      errorsFixed: batch.article.translationErrors,
+                      translationGenerated: false,
+                      skipped: 'duplicate_data'
+                    });
+                  } else {
+                    console.error(`Error updating article ${batch.id}:`, updateError);
+                    translationErrors.push({
+                      articleId: batch.id,
+                      error: updateError.message
+                    });
+                  }
                 } else {
                   translationResults.push({
                     articleId: batch.id,
@@ -387,11 +400,24 @@ export async function POST(request: NextRequest) {
             .eq('id', batch.id);
           
           if (updateError) {
-            console.error(`Error updating article ${batch.id}:`, updateError);
-            translationErrors.push({
-              articleId: batch.id,
-              error: updateError.message
-            });
+            // 检查是否是重复键约束错误（文章已存在）
+            if (updateError.code === '23505') {
+              console.log(`Article ${batch.id} already has translation data, skipping`);
+              translationResults.push({
+                articleId: batch.id,
+                title: batch.article.title,
+                fieldsUpdated: Object.keys(batch.updateData),
+                errorsFixed: batch.article.translationErrors,
+                translationGenerated: false,
+                skipped: 'duplicate_data'
+              });
+            } else {
+              console.error(`Error updating article ${batch.id}:`, updateError);
+              translationErrors.push({
+                articleId: batch.id,
+                error: updateError.message
+              });
+            }
           } else {
             translationResults.push({
               articleId: batch.id,

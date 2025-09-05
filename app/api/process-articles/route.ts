@@ -769,6 +769,13 @@ async function insertArticle(article: ArticleData, retryCount = 0): Promise<bool
     if (error) {
       console.error('Error saving article:', error);
       
+      // If it's a duplicate key error, treat it as success since the article already exists
+      if (error.code === '23505') {
+        console.log(`Article already exists (duplicate key), treating as success: ${article.title}`);
+        return true;
+      }
+      
+      // For other errors, retry if we haven't exceeded max retries
       if (retryCount < maxRetries) {
         console.log(`Retrying insertion (attempt ${retryCount + 1}/${maxRetries})...`);
         await new Promise(resolve => setTimeout(resolve, 2000));
@@ -780,9 +787,16 @@ async function insertArticle(article: ArticleData, retryCount = 0): Promise<bool
     
     console.log(`✓ Successfully saved article: ${article.title}`);
     return true;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to save article:', error);
     
+    // If it's a duplicate key error, treat it as success since the article already exists
+    if (error?.code === '23505') {
+      console.log(`Article already exists (duplicate key), treating as success: ${article.title}`);
+      return true;
+    }
+    
+    // For other errors, retry if we haven't exceeded max retries
     if (retryCount < maxRetries) {
       console.log(`Retrying insertion (attempt ${retryCount + 1}/${maxRetries})...`);
       await new Promise(resolve => setTimeout(resolve, 2000));

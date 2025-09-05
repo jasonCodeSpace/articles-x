@@ -23,12 +23,13 @@ export async function GET(request: NextRequest) {
 
     const supabase = createServiceClient()
 
-    // Get articles that need tag updates (articles without tags or with outdated tags)
+    // Get articles with their published dates to categorize by time
     const { data: articles, error: fetchError } = await supabase
       .from('articles')
-      .select('id, title, full_article_content, category, tag')
-      .or('tag.is.null,tag.eq.""')
-      .limit(50) // Process in batches
+      .select('id, article_published_at, tag')
+      .not('article_published_at', 'is', null)
+      .order('article_published_at', { ascending: false })
+      .limit(300) // Process recent articles
 
     if (fetchError) {
       console.error('Error fetching articles:', fetchError)
@@ -52,13 +53,13 @@ export async function GET(request: NextRequest) {
     // Process each article
     for (const article of articles) {
       try {
-        // Generate tags based on title, content, and category
-        const tags = generateTagsFromContent(article.title, article.full_article_content, article.category)
+        // Generate time-based tags
+        const timeTag = generateTimeBasedTag(article.article_published_at)
         
-        if (tags.length > 0) {
+        if (timeTag) {
           const { error: updateError } = await supabase
             .from('articles')
-            .update({ tag: tags.join(', ') }) // Store as comma-separated string
+            .update({ tag: timeTag })
             .eq('id', article.id)
 
           if (updateError) {
@@ -93,40 +94,22 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// Helper function to generate tags from content
-function generateTagsFromContent(title: string, content: string, category: string): string[] {
-  const tags: Set<string> = new Set()
+// Helper function to generate time-based tags
+function generateTimeBasedTag(articlePublishedAt: string): string | null {
+  if (!articlePublishedAt) return null
   
-  // Add category as a tag if it exists
-  if (category && category.trim()) {
-    tags.add(category.toLowerCase())
+  const publishedDate = new Date(articlePublishedAt)
+  const now = new Date()
+  const diffInMs = now.getTime() - publishedDate.getTime()
+  const diffInDays = diffInMs / (1000 * 60 * 60 * 24)
+  
+  if (diffInDays <= 1) {
+    return 'Day'
+  } else if (diffInDays <= 7) {
+    return 'Week'
+  } else {
+    return 'History'
   }
-  
-  // Common tech keywords to look for
-  const techKeywords = [
-    'javascript', 'typescript', 'react', 'vue', 'angular', 'node', 'nodejs',
-    'python', 'java', 'golang', 'rust', 'php', 'ruby', 'swift', 'kotlin',
-    'docker', 'kubernetes', 'aws', 'azure', 'gcp', 'cloud',
-    'api', 'rest', 'graphql', 'database', 'sql', 'nosql', 'mongodb', 'postgresql',
-    'frontend', 'backend', 'fullstack', 'devops', 'ci/cd', 'testing',
-    'machine learning', 'ai', 'artificial intelligence', 'data science',
-    'blockchain', 'web3', 'crypto', 'nft',
-    'mobile', 'ios', 'android', 'flutter', 'react native',
-    'security', 'cybersecurity', 'privacy',
-    'startup', 'business', 'product', 'design', 'ux', 'ui'
-  ]
-  
-  const text = `${title} ${content}`.toLowerCase()
-  
-  // Find matching keywords
-  for (const keyword of techKeywords) {
-    if (text.includes(keyword.toLowerCase())) {
-      tags.add(keyword)
-    }
-  }
-  
-  // Limit to 10 tags maximum
-  return Array.from(tags).slice(0, 10)
 }
 
 // POST method for manual triggering

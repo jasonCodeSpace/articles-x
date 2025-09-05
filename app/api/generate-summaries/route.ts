@@ -38,8 +38,8 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // 从最近200条文章中筛选出需要重新生成总结的文章，但限制处理数量
-    const problematicArticles = recentArticles?.filter(article => 
+    // 从最近200条文章中筛选出需要重新生成总结的文章
+    const articles = recentArticles?.filter(article => 
       !article.summary_generated_at || // 没有生成过总结
       !article.summary_english || 
       !article.summary_chinese ||
@@ -52,9 +52,6 @@ export async function POST(request: NextRequest) {
       !article.category || 
       !article.language
     ) || [];
-    
-    // 限制每次只处理10篇文章，避免超时
-    const articles = problematicArticles.slice(0, 10);
     
     if (!articles || articles.length === 0) {
       return NextResponse.json(

@@ -1,7 +1,7 @@
 import { Suspense } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { ClientNavWrapper } from '@/components/client-nav-wrapper'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -20,12 +20,21 @@ export const metadata = {
   }
 }
 
+interface SummaryData {
+  title: string
+  content: string
+  lang?: string
+  overview?: string
+  key_topics?: string[]
+  [key: string]: unknown
+}
+
 interface DailySummary {
   id: string
   date: string
   total_articles_count: number
-  summary_json_en: any
-  summary_json_zh: any
+  summary_json_en: SummaryData | null
+  summary_json_zh: SummaryData | null
   created_at: string
 }
 

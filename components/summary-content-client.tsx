@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
+import Image from 'next/image'
 import { formatDistanceToNow } from 'date-fns'
 import { zhCN } from 'date-fns/locale'
 
@@ -76,11 +77,11 @@ export function SummaryContentClient({ summary }: { summary: DailySummary }) {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <span className="relative flex shrink-0 overflow-hidden rounded-full h-6 w-6 ring-1 ring-border">
-              <img 
+              <Image 
                 className="aspect-square h-full w-full" 
                 alt="xarticle profile picture" 
-                loading="lazy" 
-                referrerPolicy="no-referrer" 
+                width={24}
+                height={24}
                 src="/logo.svg"
               />
             </span>
@@ -245,7 +246,7 @@ export function SummaryContentClient({ summary }: { summary: DailySummary }) {
           // Fallback to original layout
           <Card>
             <CardHeader>
-              <CardTitle>Today's Highlights</CardTitle>
+              <CardTitle>Today&apos;s Highlights</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="prose prose-gray dark:prose-invert max-w-none">

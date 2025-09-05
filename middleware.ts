@@ -45,8 +45,6 @@ export async function middleware(request: NextRequest) {
                         pathname.startsWith('/category/') ||
                         pathname === '/terms' ||
                         pathname === '/privacy' ||
-                        pathname === '/summary' ||
-                        pathname === '/summaries' ||
                         isSharedArticleLink
   const isProtectedRoute = pathname.startsWith('/profile')
   

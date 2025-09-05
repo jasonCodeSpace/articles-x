@@ -125,11 +125,8 @@ async function fetchTrendingArticles(options: {
 export default async function TrendingPage({ searchParams }: PageProps) {
   const { category, search, filter } = await searchParams
   
-  // Fetch daily summary and trending articles
-  const [dailySummary, articles] = await Promise.all([
-    fetchLatestDailySummary(),
-    fetchTrendingArticles({ category, search, filter })
-  ])
+  // Fetch trending articles
+  const articles = await fetchTrendingArticles({ category, search, filter })
 
   // Generate JSON-LD structured data for articles
   const structuredData = {

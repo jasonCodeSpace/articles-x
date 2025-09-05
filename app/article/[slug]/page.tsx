@@ -200,7 +200,7 @@ export async function generateMetadata({ params }: ArticlePageProps) {
         width: 1200,
         height: 630,
         alt: 'Xarticle - Curated Articles from X (Twitter)',
-        type: 'image/svg+xml',
+        type: 'image/png',
       }],
     },
     twitter: {

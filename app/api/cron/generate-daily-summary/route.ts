@@ -48,15 +48,14 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    // Get today's articles
+    // Get articles from the past 24 hours
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
     const { data: articles, error: articlesError } = await supabase
       .from('articles')
       .select('id, title, summary_english, summary_chinese, category, tweet_views, author_name, article_url, article_published_at')
-      .gte('article_published_at', today)
-      .lt('article_published_at', new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0])
+      .gte('article_published_at', twentyFourHoursAgo)
       .not('summary_english', 'is', null)
       .order('tweet_views', { ascending: false })
-      .limit(50)
     
     if (articlesError || !articles || articles.length === 0) {
       return NextResponse.json({
@@ -80,7 +79,7 @@ export async function GET(request: NextRequest) {
     // Generate summary using Gemini
     const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' })
     
-    const articlesText = articles.slice(0, 10).map(a => 
+    const articlesText = articles.map(a => 
       `Title: ${a.title}\nSummary: ${a.summary_english || a.summary_chinese}\nCategory: ${a.category}`
     ).join('\n\n')
     
@@ -148,7 +147,7 @@ ${articlesText}`
     const result = await model.generateContent(prompt)
     const responseText = result.response.text().trim()
     
-    // Parse the two JSON objects from the response
+    // Parse the JSON objects from the response
     let summaryJsonEn = null
     let summaryJsonZh = null
     let summaryContent = responseText // fallback to original text
@@ -156,15 +155,42 @@ ${articlesText}`
     try {
       // Extract JSON objects from code fences
       const jsonMatches = responseText.match(/```json\s*([\s\S]*?)\s*```/g)
-      if (jsonMatches && jsonMatches.length >= 2) {
-        const enJsonText = jsonMatches[0].replace(/```json\s*|\s*```/g, '').trim()
-        const zhJsonText = jsonMatches[1].replace(/```json\s*|\s*```/g, '').trim()
+      if (jsonMatches && jsonMatches.length >= 1) {
+        const firstJsonText = jsonMatches[0].replace(/```json\s*|\s*```/g, '').trim()
+        const firstJson = JSON.parse(firstJsonText)
         
-        summaryJsonEn = JSON.parse(enJsonText)
-        summaryJsonZh = JSON.parse(zhJsonText)
+        if (jsonMatches.length >= 2) {
+          // Two JSON objects found
+          const secondJsonText = jsonMatches[1].replace(/```json\s*|\s*```/g, '').trim()
+          const secondJson = JSON.parse(secondJsonText)
+          
+          if (firstJson.lang === 'en') {
+            summaryJsonEn = firstJson
+            summaryJsonZh = secondJson
+          } else {
+            summaryJsonEn = secondJson
+            summaryJsonZh = firstJson
+          }
+        } else {
+          // Only one JSON object found, determine language
+          if (firstJson.lang === 'en') {
+            summaryJsonEn = firstJson
+          } else if (firstJson.lang === 'zh') {
+            summaryJsonZh = firstJson
+          } else {
+            // Default to English if lang is not specified
+            summaryJsonEn = firstJson
+          }
+        }
         
-        // Use English summary as the main content for backward compatibility
-        summaryContent = `English Summary:\n${JSON.stringify(summaryJsonEn, null, 2)}\n\nChinese Summary:\n${JSON.stringify(summaryJsonZh, null, 2)}`
+        // Generate a clean summary content
+        if (summaryJsonEn && summaryJsonZh) {
+          summaryContent = `English Summary:\n${JSON.stringify(summaryJsonEn, null, 2)}\n\nChinese Summary:\n${JSON.stringify(summaryJsonZh, null, 2)}`
+        } else if (summaryJsonEn) {
+          summaryContent = `English Summary:\n${JSON.stringify(summaryJsonEn, null, 2)}`
+        } else if (summaryJsonZh) {
+          summaryContent = `Chinese Summary:\n${JSON.stringify(summaryJsonZh, null, 2)}`
+        }
       }
     } catch (parseError) {
       console.warn('Failed to parse JSON objects from response, using raw text:', parseError)
@@ -189,7 +215,7 @@ ${articlesText}`
     if (insertError) {
       console.error('Error inserting daily summary:', insertError)
       return NextResponse.json(
-        { error: 'Failed to create daily summary', details: insertError.message },
+        { error: 'Failed to insert daily summary', details: insertError.message },
         { status: 500 }
       )
     }

@@ -149,6 +149,8 @@ export async function GET() {
     const staticPages = [
       { url: '', priority: '1.0', changefreq: 'daily' },
       { url: '/trending', priority: '0.9', changefreq: 'hourly' },
+      { url: '/summary', priority: '0.9', changefreq: 'daily' },
+      { url: '/summaries', priority: '0.8', changefreq: 'daily' },
       { url: '/landing' }
     ]
     

@@ -787,11 +787,11 @@ async function insertArticle(article: ArticleData, retryCount = 0): Promise<bool
     
     console.log(`✓ Successfully saved article: ${article.title}`);
     return true;
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Failed to save article:', error);
     
     // If it's a duplicate key error, treat it as success since the article already exists
-    if (error?.code === '23505') {
+    if (error && typeof error === 'object' && 'code' in error && error.code === '23505') {
       console.log(`Article already exists (duplicate key), treating as success: ${article.title}`);
       return true;
     }

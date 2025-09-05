@@ -39,6 +39,7 @@ export async function GET(request: NextRequest) {
       .select('id, title, summary_english, summary_chinese, category, tweet_views, author_name, article_url, article_published_at')
       .eq('tag', 'Day')
       .not('summary_english', 'is', null)
+      .order('tweet_published_at', { ascending: false })
       .order('tweet_views', { ascending: false })
     
     if (articlesError || !articles || articles.length === 0) {

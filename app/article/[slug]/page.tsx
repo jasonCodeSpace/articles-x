@@ -196,7 +196,7 @@ export async function generateMetadata({ params }: ArticlePageProps) {
         height: 630,
         alt: article.title_english || article.title
       }] : [{
-        url: '/og-image.svg',
+        url: '/og-image.png',
         width: 1200,
         height: 630,
         alt: 'Xarticle - Curated Articles from X (Twitter)',
@@ -213,7 +213,7 @@ export async function generateMetadata({ params }: ArticlePageProps) {
         url: article.image,
         alt: article.title_english || article.title
       } : {
-        url: '/og-image.svg',
+        url: '/og-image.png',
         alt: 'Xarticle - Curated Articles from X (Twitter)',
       },
     },

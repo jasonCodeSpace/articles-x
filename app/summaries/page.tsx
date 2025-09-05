@@ -21,7 +21,7 @@ export const metadata = {
     siteName: 'Xarticle',
     images: [
       {
-        url: '/og-image.svg',
+        url: '/og-image.png',
         width: 1200,
         height: 630,
         alt: 'Historical Daily Summaries Archive | Xarticle',
@@ -36,7 +36,7 @@ export const metadata = {
     title: 'Historical Daily Summaries Archive | Xarticle',
     description: 'Browse our complete archive of daily summaries featuring curated articles and insights from X (Twitter). Explore past trends, key topics, and important discussions from the social media landscape.',
     images: {
-      url: '/og-image.svg',
+      url: '/og-image.png',
       alt: 'Historical Daily Summaries Archive | Xarticle',
     },
   },

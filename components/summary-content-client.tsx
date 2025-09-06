@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
 import Image from 'next/image'
 import { formatDistanceToNow } from 'date-fns'
-import { zhCN } from 'date-fns/locale'
+import { enUS } from 'date-fns/locale'
 
 interface SummarySection {
   watchlist?: string[]
@@ -62,7 +62,7 @@ export function SummaryContentClient({ summary }: { summary: DailySummary }) {
 
   const timeAgo = formatDistanceToNow(new Date(summary.created_at), {
     addSuffix: true,
-    locale: zhCN
+    locale: enUS
   })
 
   return (

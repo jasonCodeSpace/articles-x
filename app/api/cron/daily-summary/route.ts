@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Generate AI summary using Gemini
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
     
     const prompt = `
 请为以下文章数据生成一个专业的每日总结报告。这些是过去24小时内发布的文章：

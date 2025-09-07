@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
     // 第二步：检查翻译错误
     const articlesWithErrors = [];
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
     
     // 简单英文检测函数
     const isLikelyEnglish = (text: string): boolean => {

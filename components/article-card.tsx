@@ -53,8 +53,7 @@ export interface Article {
   language?: string
   // English translation fields
   title_english?: string
-  article_preview_text_english?: string
-  full_article_content_english?: string
+  // 移除了 article_preview_text_english 和 full_article_content_english 字段
 }
 
 interface ArticleCardProps {
@@ -114,7 +113,7 @@ export function ArticleCard({ article, className, priority = false }: ArticleCar
 
   // Field fallbacks for content based on language preference
   const displayTitle = language === 'original' ? article.title : (article.title_english || article.title)
-  const displayPreview = language === 'original' ? article.article_preview_text : (article.article_preview_text_english || article.article_preview_text)
+  const displayPreview = article.article_preview_text
   // Always prioritize article_preview_text over summaries for trending/category pages
   const descriptionText = displayPreview || article.description || article.excerpt || article.content
 

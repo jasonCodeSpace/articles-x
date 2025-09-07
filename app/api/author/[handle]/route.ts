@@ -57,7 +57,7 @@ export async function GET(
     const { data: articlesData, error: articlesError } = await supabase
       .from('articles')
       .select(
-        'id, title, title_english, article_preview_text, article_preview_text_english, image, author_name, author_handle, author_avatar, article_published_at, tweet_id, language, category, slug, tweet_likes, tweet_retweets, tweet_replies'
+        'id, title, article_preview_text, image, author_name, author_handle, author_avatar, article_published_at, tweet_id, language, category, slug, tweet_likes, tweet_retweets, tweet_replies'
       )
       .eq('author_handle', handle)
       .order('article_published_at', { ascending: false })
@@ -92,7 +92,6 @@ export async function GET(
     const transformedArticles = articlesData.map((article) => ({
       id: article.id,
       title: article.title,
-      title_english: article.title_english,
       slug: article.slug,
       author_name: article.author_name,
       author_handle: article.author_handle,
@@ -109,7 +108,6 @@ export async function GET(
       tweet_likes: article.tweet_likes || 0,
       tweet_bookmarks: 0, // Default value
       article_preview_text: article.article_preview_text,
-      article_preview_text_english: article.article_preview_text_english,
       language: article.language
     }))
 

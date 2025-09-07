@@ -1,24 +1,24 @@
 /**
- * CRITICAL: This is the ONLY file that should generate English translations for articles.
+ * CRITICAL: Translation Cron Job for Articles
  * 
- * This file is responsible for translating the following fields ONLY:
- * - title -> title_english
- * - article_preview_text -> article_preview_text_english  
- * - full_article_content -> full_article_content_english
+ * This cron job is responsible for translating article titles into English only.
+ * It processes the latest 30 articles and ensures title_english field is properly populated.
  * 
- * RULES:
- * 1. These English fields should ONLY be generated through Gemini API translation
- * 2. These fields should ONLY contain English text
- * 3. NO other code should modify these English translation fields
- * 4. This translation should happen ONLY after the original article is created
+ * IMPORTANT RULES:
+ * 1. Only translates titles that are missing or not in English
+ * 2. Uses Gemini API for high-quality translations
+ * 3. Validates translation quality and language detection
+ * 4. Updates articles.title_english only
+ * 5. Processes articles in batches for efficiency
+ * 6. Includes comprehensive error handling and logging
  * 
- * If you need to modify translation logic, do it HERE and ONLY here.
+ * This endpoint should ONLY be called by Vercel Cron or authorized systems.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/service';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { TRANSLATION_PROMPT, parseTranslationResponse } from '@/lib/translation-prompts';
+// 移除了对复杂翻译提示词的依赖，现在只进行简单的标题翻译
 import { getApiUsageStats } from '@/lib/api-usage-tracker';
 
 const CRON_SECRET = process.env.CRON_SECRET;
@@ -43,8 +43,8 @@ export async function POST(request: NextRequest) {
     // 获取最新30篇文章（减少处理量以避免超时）
     const { data: articles, error: fetchError } = await supabase
       .from('articles')
-      .select('id, title, article_preview_text, full_article_content, title_english, article_preview_text_english, full_article_content_english, language')
-      .not('full_article_content', 'is', null)
+      .select('id, title, title_english, language')
+      .not('title', 'is', null)
       .order('article_published_at', { ascending: false })
       .limit(30);
     
@@ -72,20 +72,12 @@ export async function POST(request: NextRequest) {
     for (const article of englishArticles) {
       try {
         const updateData: {
-          title_english?: string;
-          article_preview_text_english?: string;
-          full_article_content_english?: string;
-        } = {};
+           title_english?: string;
+         } = {};
         
         // 直接复制英文内容
         if (!article.title_english || article.title_english.trim() === '') {
           updateData.title_english = article.title;
-        }
-        if (!article.article_preview_text_english || article.article_preview_text_english.trim() === '') {
-          updateData.article_preview_text_english = article.article_preview_text || '';
-        }
-        if (!article.full_article_content_english || article.full_article_content_english.trim() === '') {
-          updateData.full_article_content_english = article.full_article_content;
         }
         
         if (Object.keys(updateData).length > 0) {
@@ -139,12 +131,6 @@ export async function POST(request: NextRequest) {
       if (!article.title_english || article.title_english.trim() === '') {
         errors.push('title_english_empty');
       }
-      if (!article.article_preview_text_english || article.article_preview_text_english.trim() === '') {
-        errors.push('article_preview_text_english_empty');
-      }
-      if (!article.full_article_content_english || article.full_article_content_english.trim() === '') {
-        errors.push('full_article_content_english_empty');
-      }
       
       // 检查是否为英文（先用简单检测，英文直接跳过）
       if (article.title_english && article.title_english.trim() !== '') {
@@ -167,43 +153,7 @@ export async function POST(request: NextRequest) {
         // 如果是英文，直接跳过，不添加错误
       }
       
-      if (article.article_preview_text_english && article.article_preview_text_english.trim() !== '') {
-        const previewSample = article.article_preview_text_english.substring(0, 200);
-        if (!isLikelyEnglish(previewSample)) {
-          try {
-            const languageCheckPrompt = `Please identify the language of this text. Pay special attention to Japanese, Chinese, Italian, Spanish and other non-English languages. Respond with only the language code (e.g., 'en' for English, 'zh' for Chinese, 'ja' for Japanese, 'it' for Italian, 'es' for Spanish, etc.):\n\n"${previewSample}"`;
-            const result = await model.generateContent(languageCheckPrompt);
-            const detectedLanguage = (await result.response.text()).trim().toLowerCase();
-            
-            if (detectedLanguage !== 'en' && detectedLanguage !== 'english') {
-              errors.push('article_preview_text_english_not_english');
-            }
-            
-            await new Promise(resolve => setTimeout(resolve, 200));
-          } catch (error) {
-            console.error(`Error checking language for article_preview_text_english of article ${article.id}:`, error);
-          }
-        }
-      }
-      
-      if (article.full_article_content_english && article.full_article_content_english.trim() !== '') {
-        const contentSample = article.full_article_content_english.substring(0, 200);
-        if (!isLikelyEnglish(contentSample)) {
-          try {
-            const languageCheckPrompt = `Please identify the language of this text. Pay special attention to Japanese, Chinese, Italian, Spanish and other non-English languages. Respond with only the language code (e.g., 'en' for English, 'zh' for Chinese, 'ja' for Japanese, 'it' for Italian, 'es' for Spanish, etc.):\n\n"${contentSample}"`;
-            const result = await model.generateContent(languageCheckPrompt);
-            const detectedLanguage = (await result.response.text()).trim().toLowerCase();
-            
-            if (detectedLanguage !== 'en' && detectedLanguage !== 'english') {
-              errors.push('full_article_content_english_not_english');
-            }
-            
-            await new Promise(resolve => setTimeout(resolve, 200));
-          } catch (error) {
-            console.error(`Error checking language for full_article_content_english of article ${article.id}:`, error);
-          }
-        }
-      }
+
       
       if (errors.length > 0) {
         articlesWithErrors.push({
@@ -230,34 +180,29 @@ export async function POST(request: NextRequest) {
     for (let i = 0; i < articlesToTranslate.length; i++) {
       const article = articlesToTranslate[i];
       try {
-        if (!article.full_article_content) {
-          console.warn(`Article ${article.id} has no content, skipping`);
+        if (!article.title) {
+          console.warn(`Article ${article.id} has no title, skipping`);
           continue;
         }
         
-        // 检查三个英文字段是否都是英文，如果都是英文则跳过翻译
+        // 检查标题是否已经是英文，如果是英文则跳过翻译
         const titleIsEnglish = article.title_english && isLikelyEnglish(article.title_english);
-        const previewIsEnglish = article.article_preview_text_english && isLikelyEnglish(article.article_preview_text_english);
-        const contentIsEnglish = article.full_article_content_english && isLikelyEnglish(article.full_article_content_english.substring(0, 200));
         
-        if (titleIsEnglish && previewIsEnglish && contentIsEnglish) {
-          console.log(`Skipping translation for article ${article.id}: All English fields are already in English`);
+        if (titleIsEnglish) {
+          console.log(`Skipping translation for article ${article.id}: Title is already in English`);
           continue;
         }
         
         console.log(`Translating article: ${article.title} (Errors: ${article.translationErrors.join(', ')})`);
         
-        // 使用专门的翻译提示词
-        const prompt = TRANSLATION_PROMPT
-          .replace('{title}', article.title)
-          .replace('{preview}', article.article_preview_text || 'No preview available')
-          .replace('{content}', article.full_article_content);
+        // 使用简化的翻译提示词，只翻译标题
+        const prompt = `Please translate the following title to English. Only return the translated title, nothing else:\n\n"${article.title}"`;
         
         const result = await model.generateContent(prompt);
         const response = await result.response.text();
         
-        // 使用专门的解析函数
-        const translation = parseTranslationResponse(response);
+        // 直接使用响应作为翻译结果
+        const translatedTitle = response.trim();
         
         // 清理无效翻译值的函数
         const cleanTranslation = (translatedText: string, fallbackText: string): string => {
@@ -291,22 +236,12 @@ export async function POST(request: NextRequest) {
         // 准备翻译更新数据
         const updateData: {
           title_english?: string;
-          article_preview_text_english?: string;
-          full_article_content_english?: string;
         } = {};
 
         // 根据错误类型更新相应字段
         if (article.translationErrors.includes('title_english_empty') || 
             article.translationErrors.includes('title_english_not_english')) {
-          updateData.title_english = cleanTranslation(translation.title, article.title);
-        }
-        if (article.translationErrors.includes('article_preview_text_english_empty') || 
-            article.translationErrors.includes('article_preview_text_english_not_english')) {
-          updateData.article_preview_text_english = cleanTranslation(translation.article_preview_text, article.article_preview_text || '');
-        }
-        if (article.translationErrors.includes('full_article_content_english_empty') || 
-            article.translationErrors.includes('full_article_content_english_not_english')) {
-          updateData.full_article_content_english = cleanTranslation(translation.full_article_content, article.full_article_content);
+          updateData.title_english = cleanTranslation(translatedTitle, article.title);
         }
 
         // 只有当有字段需要更新时才添加到批量更新队列

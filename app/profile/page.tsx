@@ -81,8 +81,6 @@ export default async function ProfilePage({
         summary_generated_at,
         language,
         title_english,
-        article_preview_text_english,
-        full_article_content_english,
         tag
       )
     `)
@@ -131,9 +129,7 @@ export default async function ProfilePage({
       summary_english: article.summary_english,
       summary_generated_at: article.summary_generated_at,
       language: article.language,
-      title_english: article.title_english,
-      article_preview_text_english: article.article_preview_text_english,
-      full_article_content_english: article.full_article_content_english
+      title_english: article.title_english
     } as Article
   }).filter(Boolean) || []) as Article[]
 

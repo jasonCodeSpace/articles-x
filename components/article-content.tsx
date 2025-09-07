@@ -29,7 +29,7 @@ interface ArticleContentProps {
     category?: string
     article_url?: string
     full_article_content?: string
-    full_article_content_english?: string
+    // 移除了 full_article_content_english 字段
     summary_english?: string
     summary_chinese?: string
     summary_generated_at?: string
@@ -60,7 +60,7 @@ export function ArticleContent({
 
   // Get content based on language preference
   const displayTitle = language === 'original' ? article.title : (article.title_english || article.title)
-  const displayContent = language === 'original' ? article.full_article_content : (article.full_article_content_english || article.full_article_content)
+  const displayContent = article.full_article_content
 
   return (
     <>

@@ -3,28 +3,22 @@
 /**
  * CRITICAL: Translation interface for English article fields.
  * 
- * This interface defines the ONLY English translation fields that should be generated:
+ * This interface defines the ONLY English translation field that should be generated:
  * - title: English translation of the original title
- * - tweet_text: English translation for social media sharing
- * - article_preview_text: English translation of the original preview text
- * - full_article_content: English translation of the original full content
  * 
  * RULES:
- * 1. These fields should ONLY be populated through Gemini API translation
- * 2. These fields should ONLY contain English text
+ * 1. This field should ONLY be populated through Gemini API translation
+ * 2. This field should ONLY contain English text
  * 3. Translation should be done ONLY in app/api/cron/translate-articles/route.ts
  */
 export interface ArticleTranslation {
   title: string;
-  tweet_text: string;
-  article_preview_text: string;
-  full_article_content: string;
 }
 
 // 专门用于翻译的提示词
 export const TRANSLATION_PROMPT = `CRITICAL INSTRUCTIONS: You are a professional translator. You MUST follow this EXACT output format. Any deviation will cause system failure.
 
-TASK: Translate the provided article content from any language into HIGH-QUALITY ENGLISH ONLY. 
+TASK: Translate the provided article title from any language into HIGH-QUALITY ENGLISH ONLY. 
 
 STRICT REQUIREMENTS:
 1. ALL output must be in ENGLISH ONLY - absolutely no Chinese, Spanish, French, German, Japanese, Korean, Arabic, or any other language
@@ -35,9 +29,6 @@ STRICT REQUIREMENTS:
 
 OUTPUT FORMAT (FOLLOW EXACTLY - NO DEVIATIONS):
 TITLE: [Professional English title - engaging and clear]
-TWEET_TEXT: [Engaging English tweet under 280 characters with relevant hashtags]
-PREVIEW_TEXT: [Clear, concise English summary in 1-2 sentences]
-FULL_CONTENT: [Complete English translation maintaining paragraph structure]
 
 QUALITY STANDARDS:
 - Use sophisticated vocabulary and sentence structure
@@ -45,9 +36,6 @@ QUALITY STANDARDS:
 - Make content engaging and readable
 - Preserve the author's voice and style
 - Include relevant context for international readers
-- For tweet: make it shareable and informative
-- For preview: capture the essence in 1-2 compelling sentences
-- For content: maintain journalistic quality and flow
 
 FORBIDDEN:
 - Do NOT use phrases like "not provided", "not available", "not applicable"
@@ -58,8 +46,6 @@ FORBIDDEN:
 
 SOURCE CONTENT:
 Title: {title}
-Preview: {preview}
-Full Content: {content}
 
 Translate now using the exact format above:`;
 
@@ -98,20 +84,11 @@ const isEnglishText = (text: string): boolean => {
 // 解析翻译结果的函数
 export const parseTranslationResponse = (response: string): ArticleTranslation => {
   const titleMatch = response.match(/TITLE:\s*([^\n]+)/i);
-  const tweetMatch = response.match(/TWEET_TEXT:\s*([^\n]+)/i);
-  const previewMatch = response.match(/PREVIEW_TEXT:\s*([^\n]+)/i);
-  const contentMatch = response.match(/FULL_CONTENT:\s*([\s\S]*?)(?=\n[A-Z_]+:|$)/i);
   
   const titleText = titleMatch ? titleMatch[1].trim() : '';
-  const tweetText = tweetMatch ? tweetMatch[1].trim() : '';
-  const previewText = previewMatch ? previewMatch[1].trim() : '';
-  const contentText = contentMatch ? contentMatch[1].trim() : '';
   
   // 只有当翻译有效且为英文时才使用，否则返回空字符串
   return {
-    title: (isValidTranslation(titleText) && isEnglishText(titleText)) ? titleText : '',
-    tweet_text: (isValidTranslation(tweetText) && isEnglishText(tweetText)) ? tweetText : '',
-    article_preview_text: (isValidTranslation(previewText) && isEnglishText(previewText)) ? previewText : '',
-    full_article_content: (isValidTranslation(contentText) && isEnglishText(contentText)) ? contentText : ''
+    title: (isValidTranslation(titleText) && isEnglishText(titleText)) ? titleText : ''
   };
 };

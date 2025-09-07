@@ -179,14 +179,14 @@ export async function generateMetadata({ params }: ArticlePageProps) {
   const articleUrl = `https://www.xarticle.news/article/${resolvedParams.slug}`
   
   return {
-    title: article.title_english || article.title,
-    description: article.article_preview_text_english || article.article_preview_text || 'Read this article',
+    title: article.title,
+    description: article.article_preview_text || 'Read this article',
     alternates: {
       canonical: articleUrl,
     },
     openGraph: {
-      title: article.title_english || article.title,
-      description: article.article_preview_text_english || article.article_preview_text || 'Read this article',
+      title: article.title,
+      description: article.article_preview_text || 'Read this article',
       type: 'article',
       url: article.article_url || articleUrl,
       siteName: 'Xarticle',
@@ -194,7 +194,7 @@ export async function generateMetadata({ params }: ArticlePageProps) {
         url: article.image,
         width: 1200,
         height: 630,
-        alt: article.title_english || article.title
+        alt: article.title
       }] : [{
         url: '/og-image.png',
         width: 1200,
@@ -207,11 +207,11 @@ export async function generateMetadata({ params }: ArticlePageProps) {
       card: 'summary_large_image',
       site: '@xarticle_news',
       creator: '@xarticle_news',
-      title: article.title_english || article.title,
-      description: article.article_preview_text_english || article.article_preview_text || 'Read this article',
+      title: article.title,
+      description: article.article_preview_text || 'Read this article',
       images: article.image ? {
         url: article.image,
-        alt: article.title_english || article.title
+        alt: article.title
       } : {
         url: '/og-image.png',
         alt: 'Xarticle - Curated Articles from X (Twitter)',

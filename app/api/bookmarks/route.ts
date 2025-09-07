@@ -53,8 +53,7 @@ export async function GET() {
           summary_generated_at,
           language,
           title_english,
-          article_preview_text_english,
-          full_article_content_english,
+          
           tag
         )
       `)

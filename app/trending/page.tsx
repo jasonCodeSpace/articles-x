@@ -51,14 +51,6 @@ interface PageProps {
   searchParams: Promise<{ category?: string; search?: string; page?: string; filter?: string }>
 }
 
-interface DailySummary {
-  id: string
-  date: string
-  summary_content: string
-  top_article_title: string
-  created_at: string
-}
-
 
 
 // Custom fetch function for Trending articles (Day or Week tags)

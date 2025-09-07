@@ -54,10 +54,10 @@ async function batchRegenerateSummaries() {
     // 直接查询缺少指定字段或分类不标准的文章，按tweet_published_at排序
     const { data: articles, error } = await supabase
       .from('articles')
-      .select('id, title, full_article_content, article_preview_text, tweet_published_at, full_article_content_english, article_preview_text_english, title_english, summary_generated_at, summary_english, summary_chinese, category, language')
+      .select('id, title, full_article_content, article_preview_text, tweet_published_at, summary_generated_at, summary_english, summary_chinese, category, language')
       .not('full_article_content', 'is', null)
       .not('tweet_published_at', 'is', null)
-      .or(`full_article_content_english.is.null,article_preview_text_english.is.null,title_english.is.null,summary_generated_at.is.null,summary_english.is.null,summary_chinese.is.null,category.is.null,language.is.null,category.not.in.(${standardCategories.map(c => `"${c}"`).join(',')})`)
+      .or(`summary_generated_at.is.null,summary_english.is.null,summary_chinese.is.null,category.is.null,language.is.null,category.not.in.(${standardCategories.map(c => `"${c}"`).join(',')})`)
       .order('tweet_published_at', { ascending: false })
       .limit(100) // 获取100篇需要处理的文章
     

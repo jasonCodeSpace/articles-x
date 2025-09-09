@@ -59,7 +59,6 @@ export function SummaryContentClient({ summary }: { summary: DailySummary }) {
       setLanguage(param)
       try { setGlobalLanguage(param === 'en' ? 'en' : 'original') } catch {}
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams])
 
   const toggleLanguage = () => {
@@ -105,8 +104,8 @@ export function SummaryContentClient({ summary }: { summary: DailySummary }) {
 
     // Assign by language flag when possible
     for (const b of blocks) {
-      if ((b as any).lang === 'en' && !result.en) result.en = b
-      if ((b as any).lang === 'zh' && !result.zh) result.zh = b
+      if (b.lang === 'en' && !result.en) result.en = b
+      if (b.lang === 'zh' && !result.zh) result.zh = b
     }
 
     // If no lang keys, assume first is English and second is Chinese
@@ -114,7 +113,6 @@ export function SummaryContentClient({ summary }: { summary: DailySummary }) {
     if (blocks.length > 1 && !result.zh) result.zh = blocks[1]
 
     return result
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [summary.summary_content])
   
   const formatDate = (dateString: string) => {

@@ -1,5 +1,7 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
+import { useLanguage } from '@/contexts/language-context'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -41,7 +43,79 @@ interface DailySummary {
 }
 
 export function SummaryContentClient({ summary }: { summary: DailySummary }) {
-  const [language, setLanguage] = useState<'original' | 'english'>('english')
+  // Sync with global language preference (en | original)
+  const { language: globalLang, setLanguage: setGlobalLanguage } = useLanguage()
+  const [language, setLanguage] = useState<'en' | 'zh'>(globalLang === 'en' ? 'en' : 'zh')
+  const searchParams = useSearchParams()
+
+  useEffect(() => {
+    setLanguage(globalLang === 'en' ? 'en' : 'zh')
+  }, [globalLang])
+
+  // Initialize from URL param ?lang=en|zh if provided
+  useEffect(() => {
+    const param = (searchParams?.get('lang') || '').toLowerCase()
+    if (param === 'en' || param === 'zh') {
+      setLanguage(param)
+      try { setGlobalLanguage(param === 'en' ? 'en' : 'original') } catch {}
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams])
+
+  const toggleLanguage = () => {
+    setLanguage(prev => {
+      const next = prev === 'en' ? 'zh' : 'en'
+      // Write back to global provider if present
+      try { setGlobalLanguage(next === 'en' ? 'en' : 'original') } catch {}
+      return next
+    })
+  }
+
+  // Best-effort parser to extract JSON summaries from raw text
+  const extractedFromContent = useMemo(() => {
+    const text = summary.summary_content || ''
+    const result: { en: SummaryJson | null; zh: SummaryJson | null } = { en: null, zh: null }
+
+    const tryParse = (s: string): SummaryJson | null => {
+      try {
+        return JSON.parse(s) as SummaryJson
+      } catch {
+        return null
+      }
+    }
+
+    // 1) Prefer code-fenced blocks (```json ... ``` or ``` ... ```)
+    const fenceRegex = /```(?:json|JSON)?\s*([\s\S]*?)\s*```/g
+    const blocks: SummaryJson[] = []
+    let m: RegExpExecArray | null
+    while ((m = fenceRegex.exec(text)) !== null) {
+      const candidate = tryParse(m[1])
+      if (candidate) blocks.push(candidate)
+    }
+
+    // 2) If nothing matched, try to find the first JSON-looking region in plain text
+    if (blocks.length === 0) {
+      const start = text.indexOf('{')
+      const end = text.lastIndexOf('}')
+      if (start !== -1 && end !== -1 && end > start) {
+        const candidate = tryParse(text.slice(start, end + 1))
+        if (candidate) blocks.push(candidate)
+      }
+    }
+
+    // Assign by language flag when possible
+    for (const b of blocks) {
+      if ((b as any).lang === 'en' && !result.en) result.en = b
+      if ((b as any).lang === 'zh' && !result.zh) result.zh = b
+    }
+
+    // If no lang keys, assume first is English and second is Chinese
+    if (blocks.length > 0 && !result.en) result.en = blocks[0]
+    if (blocks.length > 1 && !result.zh) result.zh = blocks[1]
+
+    return result
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [summary.summary_content])
   
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
@@ -53,12 +127,24 @@ export function SummaryContentClient({ summary }: { summary: DailySummary }) {
     })
   }
 
-  const currentSummaryJson = language === 'english' ? summary.summary_json_en : summary.summary_json_zh
-  const hasJsonData = currentSummaryJson && Object.keys(currentSummaryJson).length > 0
-
-  const handleLanguageChange = (newLanguage: 'original' | 'english') => {
-    setLanguage(newLanguage)
-  }
+  // Prefer server-provided JSON; fallback to parsed-from-text
+  // Primary: only use JSON from Supabase columns. If both missing, fallback to
+  // best-effort extraction from summary_content.
+  const summaryEn = summary.summary_json_en || null
+  const summaryZh = summary.summary_json_zh || null
+  const selectedSummaryJsonDirect = language === 'en' ? summaryEn : summaryZh
+  const alternateSummaryJsonDirect = language === 'en' ? summaryZh : summaryEn
+  const bothMissing = !summaryEn && !summaryZh
+  const fallbackEn = extractedFromContent.en
+  const fallbackZh = extractedFromContent.zh
+  const selectedSummaryJsonFallback = language === 'en' ? fallbackEn : fallbackZh
+  const shouldUseAlternate = !selectedSummaryJsonDirect && !!alternateSummaryJsonDirect
+  const currentSummaryJson =
+    selectedSummaryJsonDirect ||
+    (shouldUseAlternate ? alternateSummaryJsonDirect : null) ||
+    (bothMissing ? selectedSummaryJsonFallback : null)
+  const hasJsonData = !!(currentSummaryJson && Object.keys(currentSummaryJson).length > 0)
+  const showSwitchNotice = !selectedSummaryJsonDirect && !!alternateSummaryJsonDirect
 
   const timeAgo = formatDistanceToNow(new Date(summary.created_at), {
     addSuffix: true,
@@ -97,21 +183,16 @@ export function SummaryContentClient({ summary }: { summary: DailySummary }) {
             </div>
           </div>
           
-          {/* Language Toggle */}
+          {/* Single toggle button: EN <-> 中文 */}
           <button
-            onClick={() => handleLanguageChange(language === 'original' ? 'english' : 'original')}
-            className="flex items-center gap-2 px-4 py-2 rounded-full border border-border bg-background hover:bg-accent transition-colors"
+            onClick={toggleLanguage}
+            type="button"
+            className="flex items-center gap-2 px-4 py-2 rounded-full border border-border bg-background hover:bg-accent transition-colors cursor-pointer select-none"
+            aria-label={language === 'en' ? 'Switch to Chinese' : '切换到英文'}
+            title={language === 'en' ? 'Switch to Chinese' : '切换到英文'}
+            data-testid="summary-language-toggle"
           >
-            {language === 'original' ? (
-              <>
-                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <circle cx="12" cy="12" r="10"/>
-                  <path d="M2 12h20"/>
-                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-                </svg>
-                中文
-              </>
-            ) : (
+            {language === 'en' ? (
               <>
                 <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path d="M5 8l6 6"/>
@@ -123,6 +204,15 @@ export function SummaryContentClient({ summary }: { summary: DailySummary }) {
                 </svg>
                 English
               </>
+            ) : (
+              <>
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10"/>
+                  <path d="M2 12h20"/>
+                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                </svg>
+                中文
+              </>
             )}
           </button>
         </div>
@@ -132,6 +222,14 @@ export function SummaryContentClient({ summary }: { summary: DailySummary }) {
         {hasJsonData ? (
           <>
             <h2 className="sr-only">Daily Summary Overview</h2>
+            {/* If selected language JSON is missing but the other exists, we render the alternate and show a notice */}
+            {showSwitchNotice && (
+              <Card>
+                <CardContent className="pt-6 text-sm text-muted-foreground">
+                  {language === 'zh' ? '中文版本暂不可用，已临时显示英文内容。' : 'English version unavailable; temporarily showing Chinese.'}
+                </CardContent>
+              </Card>
+            )}
             {/* Article Count */}
             <Card>
               <CardHeader>
@@ -152,10 +250,9 @@ export function SummaryContentClient({ summary }: { summary: DailySummary }) {
                   <CardTitle>Key Data Points</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <ul className="space-y-2">
+                  <ul className="list-disc pl-5 space-y-2">
                     {currentSummaryJson.sections.key_data_points.map((point, index) => (
-                      <li key={index} className="flex items-start gap-2">
-                        <span className="text-primary mt-1">•</span>
+                      <li key={index}>
                         <span>{point}</span>
                       </li>
                     ))}
@@ -171,10 +268,9 @@ export function SummaryContentClient({ summary }: { summary: DailySummary }) {
                   <CardTitle>Watchlist</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <ul className="space-y-2">
+                  <ul className="list-disc pl-5 space-y-2">
                     {currentSummaryJson.sections.watchlist.map((item, index) => (
-                      <li key={index} className="flex items-start gap-2">
-                        <span className="text-primary mt-1">•</span>
+                      <li key={index}>
                         <span>{item}</span>
                       </li>
                     ))}
@@ -190,10 +286,9 @@ export function SummaryContentClient({ summary }: { summary: DailySummary }) {
                   <CardTitle>Policy, Media & Security</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <ul className="space-y-2">
+                  <ul className="list-disc pl-5 space-y-2">
                     {currentSummaryJson.sections.policy_media_security.map((item, index) => (
-                      <li key={index} className="flex items-start gap-2">
-                        <span className="text-primary mt-1">•</span>
+                      <li key={index}>
                         <span>{item}</span>
                       </li>
                     ))}
@@ -209,10 +304,9 @@ export function SummaryContentClient({ summary }: { summary: DailySummary }) {
                   <CardTitle>Other Quick Reads</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <ul className="space-y-2">
+                  <ul className="list-disc pl-5 space-y-2">
                     {currentSummaryJson.sections.other_quick_reads.map((item, index) => (
-                      <li key={index} className="flex items-start gap-2">
-                        <span className="text-primary mt-1">•</span>
+                      <li key={index}>
                         <span>{item}</span>
                       </li>
                     ))}

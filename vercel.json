@@ -3,6 +3,19 @@
   "outputDirectory": ".next",
   "framework": "nextjs",
   "installCommand": "npm install",
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "(?!www\\.xarticle\\.news).*"
+        }
+      ],
+      "destination": "https://www.xarticle.news/$1",
+      "permanent": true
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",

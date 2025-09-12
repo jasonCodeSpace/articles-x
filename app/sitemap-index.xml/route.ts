@@ -44,30 +44,27 @@ export async function GET() {
       }
     }
 
+    const sitemaps = [
+      {
+        url: `${baseUrl}/sitemap-static.xml`,
+        lastmod: currentDate
+      },
+      {
+        url: `${baseUrl}/sitemap-categories.xml`,
+        lastmod: currentDate
+      },
+      {
+        url: `${baseUrl}/sitemap-authors.xml`,
+        lastmod: currentDate
+      },
+      ...monthlySitemaps.map(url => ({ url, lastmod: currentDate }))
+    ]
+
     const sitemapIndex = `<?xml version="1.0" encoding="UTF-8"?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <!-- Static pages sitemap -->
-  <sitemap>
-    <loc>${baseUrl}/sitemap-static.xml</loc>
-    <lastmod>${currentDate}</lastmod>
-  </sitemap>
-  
-  <!-- Categories sitemap -->
-  <sitemap>
-    <loc>${baseUrl}/sitemap-categories.xml</loc>
-    <lastmod>${currentDate}</lastmod>
-  </sitemap>
-  
-  <!-- Authors sitemap -->
-  <sitemap>
-    <loc>${baseUrl}/sitemap-authors.xml</loc>
-    <lastmod>${currentDate}</lastmod>
-  </sitemap>
-  
-  <!-- Monthly article sitemaps -->
-${monthlySitemaps.map(url => `  <sitemap>
-    <loc>${url}</loc>
-    <lastmod>${currentDate}</lastmod>
+${sitemaps.map(sitemap => `  <sitemap>
+    <loc>${sitemap.url}</loc>
+    <lastmod>${sitemap.lastmod}</lastmod>
   </sitemap>`).join('\n')}
 </sitemapindex>`
 

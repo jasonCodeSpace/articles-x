@@ -26,7 +26,7 @@ export async function GET(request: Request, { params }: { params: Promise<Params
     // Get articles for this month
     const { data: articles } = await supabase
       .from('articles')
-      .select('slug, article_published_at, updated_at, language')
+      .select('slug, article_published_at, updated_at, language, title, image_url')
       .not('slug', 'is', null)
       .not('article_published_at', 'is', null)
       .not('language', 'is', null)
@@ -39,39 +39,39 @@ export async function GET(request: Request, { params }: { params: Promise<Params
     }
 
     const baseUrl = 'https://www.xarticle.news'
-    
-    const articleUrls: Array<{url: string, lastmod: string, changefreq: string, priority: string}> = []
-    
-    articles.forEach(article => {
+
+    const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+${articles.map(article => {
       const publishedDate = new Date(article.article_published_at)
       const lastmod = article.updated_at 
         ? new Date(article.updated_at).toISOString()
         : new Date(article.article_published_at).toISOString()
       
-      // Use the correct URL structure with year/month/day format
       const year = publishedDate.getFullYear()
       const month = String(publishedDate.getMonth() + 1).padStart(2, '0')
       const day = String(publishedDate.getDate()).padStart(2, '0')
       
-      // Only add URL for the article's actual language
-      if (article.language) {
-        articleUrls.push({
-          url: `/${article.language}/article/${year}/${month}/${day}/${article.slug}`,
-          lastmod,
-          changefreq: 'monthly',
-          priority: '0.8'
-        })
+      const articleUrl = `${baseUrl}/${article.language}/article/${year}/${month}/${day}/${article.slug}`
+      
+      let imageSection = ''
+      if (article.image_url) {
+        imageSection = `
+    <image:image>
+      <image:loc>${article.image_url}</image:loc>
+      <image:caption>${article.title || 'Article image'}</image:caption>
+    </image:image>`
       }
-    })
-
-    const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${articleUrls.map(page => `  <url>
-    <loc>${baseUrl}${page.url}</loc>
-    <lastmod>${page.lastmod}</lastmod>
-    <changefreq>${page.changefreq}</changefreq>
-    <priority>${page.priority}</priority>
-  </url>`).join('\n')}
+      
+      return `  <url>
+    <loc>${articleUrl}</loc>
+    <lastmod>${lastmod}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>${imageSection}
+  </url>`
+    }).join('\n')}
 </urlset>`
 
     return new NextResponse(sitemap, {

@@ -56,12 +56,32 @@ export async function GET() {
     })
 
     const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
 ${categoryUrls.map(page => `  <url>
     <loc>${baseUrl}${page.url}</loc>
     <lastmod>${currentDate}</lastmod>
     <changefreq>${page.changefreq}</changefreq>
     <priority>${page.priority}</priority>
+    <!-- Multi-language support for categories -->
+    <xhtml:link rel="alternate" hreflang="en" href="${baseUrl}/en${page.url}" />
+    <xhtml:link rel="alternate" hreflang="zh" href="${baseUrl}/zh${page.url}" />
+    <xhtml:link rel="alternate" hreflang="ja" href="${baseUrl}/ja${page.url}" />
+    <xhtml:link rel="alternate" hreflang="ko" href="${baseUrl}/ko${page.url}" />
+    <xhtml:link rel="alternate" hreflang="es" href="${baseUrl}/es${page.url}" />
+    <xhtml:link rel="alternate" hreflang="fr" href="${baseUrl}/fr${page.url}" />
+    <xhtml:link rel="alternate" hreflang="de" href="${baseUrl}/de${page.url}" />
+    <xhtml:link rel="alternate" hreflang="it" href="${baseUrl}/it${page.url}" />
+    <xhtml:link rel="alternate" hreflang="pt" href="${baseUrl}/pt${page.url}" />
+    <xhtml:link rel="alternate" hreflang="ru" href="${baseUrl}/ru${page.url}" />
+    <xhtml:link rel="alternate" hreflang="ar" href="${baseUrl}/ar${page.url}" />
+    <xhtml:link rel="alternate" hreflang="hi" href="${baseUrl}/hi${page.url}" />
+    <xhtml:link rel="alternate" hreflang="th" href="${baseUrl}/th${page.url}" />
+    <xhtml:link rel="alternate" hreflang="vi" href="${baseUrl}/vi${page.url}" />
+    <xhtml:link rel="alternate" hreflang="tr" href="${baseUrl}/tr${page.url}" />
+    <xhtml:link rel="alternate" hreflang="pl" href="${baseUrl}/pl${page.url}" />
+    <xhtml:link rel="alternate" hreflang="nl" href="${baseUrl}/nl${page.url}" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="${baseUrl}${page.url}" />
   </url>`).join('\n')}
 </urlset>`
 

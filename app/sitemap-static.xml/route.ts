@@ -35,13 +35,116 @@ export async function GET() {
   ]
 
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${staticPages.map(page => `  <url>
-    <loc>${baseUrl}${page.url}</loc>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <!-- Homepage with multilingual support -->
+  <url>
+    <loc>${baseUrl}/</loc>
     <lastmod>${currentDate}</lastmod>
-    <changefreq>${page.changefreq}</changefreq>
-    <priority>${page.priority}</priority>
-  </url>`).join('\n')}
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="${baseUrl}/en/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="${baseUrl}/zh/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="${baseUrl}/ja/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="${baseUrl}/ko/" />
+    <xhtml:link rel="alternate" hreflang="es" href="${baseUrl}/es/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="${baseUrl}/fr/" />
+    <xhtml:link rel="alternate" hreflang="de" href="${baseUrl}/de/" />
+    <xhtml:link rel="alternate" hreflang="it" href="${baseUrl}/it/" />
+    <xhtml:link rel="alternate" hreflang="pt" href="${baseUrl}/pt/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="${baseUrl}/ru/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="${baseUrl}/ar/" />
+    <xhtml:link rel="alternate" hreflang="hi" href="${baseUrl}/hi/" />
+    <xhtml:link rel="alternate" hreflang="th" href="${baseUrl}/th/" />
+    <xhtml:link rel="alternate" hreflang="vi" href="${baseUrl}/vi/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="${baseUrl}/tr/" />
+    <xhtml:link rel="alternate" hreflang="pl" href="${baseUrl}/pl/" />
+    <xhtml:link rel="alternate" hreflang="nl" href="${baseUrl}/nl/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="${baseUrl}/" />
+  </url>
+  
+  <!-- English homepage -->
+  <url>
+    <loc>${baseUrl}/en/</loc>
+    <lastmod>${currentDate}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="${baseUrl}/en/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="${baseUrl}/zh/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="${baseUrl}/ja/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="${baseUrl}/ko/" />
+    <xhtml:link rel="alternate" hreflang="es" href="${baseUrl}/es/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="${baseUrl}/fr/" />
+    <xhtml:link rel="alternate" hreflang="de" href="${baseUrl}/de/" />
+    <xhtml:link rel="alternate" hreflang="it" href="${baseUrl}/it/" />
+    <xhtml:link rel="alternate" hreflang="pt" href="${baseUrl}/pt/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="${baseUrl}/ru/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="${baseUrl}/ar/" />
+    <xhtml:link rel="alternate" hreflang="hi" href="${baseUrl}/hi/" />
+    <xhtml:link rel="alternate" hreflang="th" href="${baseUrl}/th/" />
+    <xhtml:link rel="alternate" hreflang="vi" href="${baseUrl}/vi/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="${baseUrl}/tr/" />
+    <xhtml:link rel="alternate" hreflang="pl" href="${baseUrl}/pl/" />
+    <xhtml:link rel="alternate" hreflang="nl" href="${baseUrl}/nl/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="${baseUrl}/" />
+  </url>
+  
+  <!-- Chinese homepage -->
+  <url>
+    <loc>${baseUrl}/zh/</loc>
+    <lastmod>${currentDate}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="${baseUrl}/en/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="${baseUrl}/zh/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="${baseUrl}/ja/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="${baseUrl}/ko/" />
+    <xhtml:link rel="alternate" hreflang="es" href="${baseUrl}/es/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="${baseUrl}/fr/" />
+    <xhtml:link rel="alternate" hreflang="de" href="${baseUrl}/de/" />
+    <xhtml:link rel="alternate" hreflang="it" href="${baseUrl}/it/" />
+    <xhtml:link rel="alternate" hreflang="pt" href="${baseUrl}/pt/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="${baseUrl}/ru/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="${baseUrl}/ar/" />
+    <xhtml:link rel="alternate" hreflang="hi" href="${baseUrl}/hi/" />
+    <xhtml:link rel="alternate" hreflang="th" href="${baseUrl}/th/" />
+    <xhtml:link rel="alternate" hreflang="vi" href="${baseUrl}/vi/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="${baseUrl}/tr/" />
+    <xhtml:link rel="alternate" hreflang="pl" href="${baseUrl}/pl/" />
+    <xhtml:link rel="alternate" hreflang="nl" href="${baseUrl}/nl/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="${baseUrl}/" />
+  </url>
+  
+  <!-- Trending pages -->
+  <url>
+    <loc>${baseUrl}/trending</loc>
+    <lastmod>${currentDate}</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <!-- Category pages -->
+  <url>
+    <loc>${baseUrl}/category</loc>
+    <lastmod>${currentDate}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <!-- Legal pages -->
+  <url>
+    <loc>${baseUrl}/privacy</loc>
+    <lastmod>2025-08-30T12:00:00Z</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  
+  <url>
+    <loc>${baseUrl}/terms</loc>
+    <lastmod>2025-08-30T12:00:00Z</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
 </urlset>`
 
   return new NextResponse(sitemap, {

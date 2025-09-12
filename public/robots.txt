@@ -1,12 +1,9 @@
-import { NextResponse } from 'next/server'
-
-export async function GET() {
-  const robotsTxt = `# Xarticle.news robots.txt
+# Xarticle.news robots.txt
 
 # 默认允许一切有价值页面被抓取
 User-agent: *
 Allow: /
-# 屏蔽无SEO价值或敏感路径
+# 屏蔽无SEO价值或敏感路径（按需增减）
 Disallow: /login
 Disallow: /auth/
 Disallow: /profile/
@@ -17,7 +14,7 @@ Disallow: /api/
 Disallow: /dev/
 Disallow: /test/
 Disallow: /debug/
-# 避免参数页收录（筛选/分页参数）
+# 如需避免参数页收录（筛选/分页参数），保留下面两行
 Disallow: /*?*
 Disallow: /*&*
 
@@ -42,14 +39,3 @@ Allow: /*.svg
 
 # 站点地图
 Sitemap: https://www.xarticle.news/sitemap-index.xml
-
-# Host
-Host: https://www.xarticle.news`
-
-  return new NextResponse(robotsTxt, {
-    headers: {
-      'Content-Type': 'text/plain',
-      'Cache-Control': 'public, max-age=86400, s-maxage=86400',
-    },
-  })
-}

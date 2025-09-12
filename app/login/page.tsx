@@ -9,7 +9,7 @@ import { Mail, ArrowRight, CheckCircle, XCircle, ArrowLeft, Shield } from 'lucid
 import { z } from 'zod'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Turnstile } from '@marsidev/react-turnstile'
+
 
 const emailSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -26,7 +26,7 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
-  const [captchaToken, setCaptchaToken] = useState<string>()
+
 
   const router = useRouter()
   const supabase = createClient()
@@ -44,7 +44,7 @@ export default function Login() {
         email: validatedData.email,
         options: {
           shouldCreateUser: true, // Allow new user creation during login
-          captchaToken,
+
         },
       })
 
@@ -191,26 +191,13 @@ export default function Login() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    disabled={isLoading || !captchaToken}
+                    disabled={isLoading}
                     className="pl-12 h-14 bg-input border-border focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-2xl text-foreground placeholder-muted-foreground text-base backdrop-blur-sm transition-all duration-300 hover:bg-muted/50"
                   />
                 </div>
               </div>
               
-              <div className="flex justify-center">
-                <Turnstile
-                  siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '0x4AAAAAABy2u7ldvQFymnwO'}
-                  onSuccess={(token) => {
-                    setCaptchaToken(token)
-                  }}
-                  onError={() => {
-                    setCaptchaToken(undefined)
-                  }}
-                  onExpire={() => {
-                    setCaptchaToken(undefined)
-                  }}
-                />
-              </div>
+
               
               <Button 
                 type="submit" 

@@ -43,16 +43,19 @@ export async function middleware(request: NextRequest) {
                         pathname === '/trending' ||
                         pathname.startsWith('/trending') ||
                         pathname.startsWith('/category/') ||
+                        pathname.startsWith('/author/') ||
+                        pathname.startsWith('/article/') ||
+                        pathname === '/summary' ||
+                        pathname.startsWith('/summary/') ||
+                        pathname === '/summaries' ||
+                        pathname.startsWith('/summaries/') ||
                         pathname === '/terms' ||
-                        pathname === '/privacy' ||
-                        isSharedArticleLink
+                        pathname === '/privacy'
   const isProtectedRoute = pathname.startsWith('/profile')
   
   // Routes that require authentication (redirect to register page)
   const isRestrictedRoute = pathname === '/history' ||
-                           pathname.startsWith('/history') ||
-                           pathname.startsWith('/author/') ||
-                           (pathname.startsWith('/article/') && !isSharedArticleLink)
+                           pathname.startsWith('/history')
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY

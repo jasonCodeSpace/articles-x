@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import { generateCategorySlug } from '@/lib/url-utils'
 
 export async function GET() {
   try {
@@ -68,8 +69,8 @@ export async function GET() {
     
     Array.from(categoryMap.entries()).forEach(([category, count]) => {
       const priority = count > 50 ? '0.8' : count > 20 ? '0.7' : '0.6'
-      // Use the category slug from url-utils
-      const categorySlug = category.toLowerCase()
+      // Use the category slug generator to handle multi-word categories with hyphens
+      const categorySlug = generateCategorySlug(category)
       
       // Add only the main category URL without language prefixes
       categoryUrls.push({

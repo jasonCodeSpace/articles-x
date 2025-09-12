@@ -64,8 +64,8 @@ ${authorUrls.map(page => `  <url>
     return new NextResponse(sitemap, {
       headers: {
         'Content-Type': 'application/xml',
-        // Cache for 12 hours to allow twice-daily regeneration
-        'Cache-Control': 'public, max-age=43200, s-maxage=43200',
+        // Cache for 24 hours to allow daily regeneration
+        'Cache-Control': 'public, max-age=86400, s-maxage=86400',
       },
     })
   } catch (error) {

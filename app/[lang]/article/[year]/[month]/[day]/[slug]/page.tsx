@@ -285,7 +285,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       "@type": "WebPage",
       "@id": currentUrl
     },
-    "image": undefined,
+    "image": article.image || undefined,
     "keywords": article.category,
     "articleSection": article.category,
     "inLanguage": lang === 'zh' ? 'zh-CN' : lang === 'it' ? 'it-IT' : 'en-US',
@@ -323,15 +323,12 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           <ArticleContent 
             article={{
               ...article,
-              updated_at: article.article_published_at,
-              author_handle: 'xarticle',
-              author_avatar: undefined,
-              image: undefined
+              updated_at: article.article_published_at
             }}
             authorInitials={authorInitials}
-            authorHandle={'xarticle'}
-            avatarUrl={''}
-            coverUrl={''}
+            authorHandle={article.author_handle || 'xarticle'}
+            avatarUrl={article.author_avatar || ''}
+            coverUrl={article.image || ''}
             publishedDate={publishedAt.toLocaleDateString(lang === 'zh' ? 'zh-CN' : 'en-US', {
               year: 'numeric',
               month: 'long',

@@ -26,9 +26,10 @@ export async function GET(request: Request, { params }: { params: Promise<Params
     // Get articles for this month
     const { data: articles } = await supabase
       .from('articles')
-      .select('slug, article_published_at, updated_at')
+      .select('slug, article_published_at, updated_at, language')
       .not('slug', 'is', null)
       .not('article_published_at', 'is', null)
+      .not('language', 'is', null)
       .gte('article_published_at', startDate.toISOString())
       .lte('article_published_at', endDate.toISOString())
       .order('article_published_at', { ascending: false })
@@ -52,18 +53,15 @@ export async function GET(request: Request, { params }: { params: Promise<Params
       const month = String(publishedDate.getMonth() + 1).padStart(2, '0')
       const day = String(publishedDate.getDate()).padStart(2, '0')
       
-      // Add all supported language versions
-      const supportedLanguages = ['en', 'zh', 'ja', 'ko', 'es', 'fr', 'de', 'it', 'pt', 'ru', 'ar', 'hi', 'th', 'vi', 'tr', 'pl', 'nl']
-      
-      // Add language-specific URLs (matching the actual route structure)
-      supportedLanguages.forEach(lang => {
+      // Only add URL for the article's actual language
+      if (article.language) {
         articleUrls.push({
-          url: `/${lang}/article/${year}/${month}/${day}/${article.slug}`,
+          url: `/${article.language}/article/${year}/${month}/${day}/${article.slug}`,
           lastmod,
           changefreq: 'monthly',
           priority: '0.8'
         })
-      })
+      }
     })
 
     const sitemap = `<?xml version="1.0" encoding="UTF-8"?>

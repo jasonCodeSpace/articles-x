@@ -80,7 +80,7 @@ export function FeaturedCard() {
 
   // Fixed data for the featured card
   const featuredData = {
-    id: 'featured-card',
+    id: '53e5f67d-5152-4b16-91d0-883b2faac84b', // Use real article ID from database
     title: currentTitle,
     author_name: 'xarticle',
     author_handle: 'xarticle',

@@ -5,8 +5,10 @@ import { BookmarkButton } from '@/components/bookmark-button'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 
 export function FeaturedCard() {
+  const router = useRouter()
   const [relativeTime, setRelativeTime] = useState<string>('Loading...')
   const [currentTitle, setCurrentTitle] = useState<string>('Loading...')
   const [description, setDescription] = useState<string>('Loading daily summary...')
@@ -123,7 +125,23 @@ export function FeaturedCard() {
           
           {/* Author info and bookmark button */}
           <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
+            <div
+              className="flex items-center gap-2 cursor-pointer"
+              role="link"
+              tabIndex={0}
+              onClick={(e) => {
+                e.stopPropagation()
+                router.push('/summaries')
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  router.push('/summaries')
+                }
+              }}
+              aria-label={`View summaries by @${featuredData.author_handle}`}
+            >
               <Avatar className="h-6 w-6 ring-1 ring-border">
                 <AvatarImage 
                   src={featuredData.author_avatar} 

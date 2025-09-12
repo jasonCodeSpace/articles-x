@@ -104,6 +104,8 @@ export default function RootLayout({
         <link rel="preconnect" href="https://pbs.twimg.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://www.googletagmanager.com" />
         <link rel="preconnect" href="https://www.google-analytics.com" />
+        {/* Ahrefs Analytics */}
+        <script src="https://analytics.ahrefs.com/analytics.js" data-key="fA52qRl/rTDKGQN1OAFM8w" async></script>
         
         {/* DNS prefetch for additional domains */}
         <link rel="dns-prefetch" href="//pbs.twimg.com" />

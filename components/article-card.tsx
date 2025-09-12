@@ -122,7 +122,12 @@ export function ArticleCard({ article, className, priority = false }: ArticleCar
   const coverUrl = article.featured_image_url || article.image
 
   // Generate article URL with meaningful title and permanent ID
-  const articleUrl = generateArticleUrl(article.title, article.id)
+  const articleUrl = generateArticleUrl(
+    article.title, 
+    article.id, 
+    article.article_published_at || article.created_at,
+    language === 'en' ? 'en' : 'zh'
+  )
 
   return (
     <div className={`bg-card border border-border rounded-xl overflow-hidden hover:bg-card/90 hover:border-border/80 transition-all duration-300 group cursor-pointer shadow-xl hover:shadow-2xl hover:scale-[1.02] flex flex-col h-[480px] ${className}`}>
@@ -132,12 +137,14 @@ export function ArticleCard({ article, className, priority = false }: ArticleCar
           <Image
             src={coverUrl}
             alt={`Cover for ${article.title}`}
-            fill
+            width={400}
+            height={192}
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            className="object-cover transition-transform duration-300 group-hover:scale-105"
+            className="object-cover transition-transform duration-300 group-hover:scale-105 w-full h-full"
             priority={priority}
             loading={priority ? "eager" : "lazy"}
-            unoptimized
+            placeholder="blur"
+            blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
             referrerPolicy="no-referrer"
           />
           {/* Language badge - only show if language data exists in Supabase */}
@@ -239,7 +246,12 @@ export function ArticleCard({ article, className, priority = false }: ArticleCar
         
         {/* Action buttons */}
         <div className="flex items-center justify-between pt-2">
-          <Link href={article.article_url || generateArticleUrl(article.title, article.id)}>
+          <Link href={article.article_url || generateArticleUrl(
+            article.title, 
+            article.id, 
+            article.article_published_at || article.created_at,
+            language === 'en' ? 'en' : 'zh'
+          )}>
             <button className="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 border border-input bg-background hover:bg-accent hover:text-accent-foreground rounded-md text-xs px-3 py-1 h-7">
               <ExternalLink className="h-3 w-3" />
               Read on X

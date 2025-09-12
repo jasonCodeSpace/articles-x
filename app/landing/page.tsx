@@ -9,17 +9,24 @@ import { Card, CardContent } from '@/components/ui/card'
 import { generateCategorySlug } from '@/lib/url-utils'
 
 export const metadata: Metadata = {
-  title: 'Xarticle — The Best Articles from X, Curated and Summarized',
-  description: 'Discover the most valuable long-form articles shared on X. Read crisp summaries, browse by topic or account, and save your personal must-read list.',
+  title: 'Xarticle: Skip the Noise, Read What Matters from X',
+  description: 'Transform your X reading experience. Get AI-curated summaries of the best long-form articles shared by top voices. Save hours, stay informed.',
   alternates: {
-    canonical: '/landing'
+    canonical: 'https://www.xarticle.news/landing',
+    languages: {
+      'en': 'https://www.xarticle.news/en/landing',
+      'zh': 'https://www.xarticle.news/zh/landing',
+      'x-default': 'https://www.xarticle.news/en/landing'
+    }
   },
   openGraph: {
     title: 'Xarticle — The Best Articles from X, Curated and Summarized',
     description: 'Discover the most valuable long-form articles shared on X. Read crisp summaries, browse by topic or account, and save your personal must-read list.',
-    url: '/landing',
+    url: 'https://www.xarticle.news/landing',
     siteName: 'Xarticle',
     type: 'website',
+    locale: 'en_US',
+    alternateLocale: 'zh_CN',
     images: [
       {
         url: '/og-image.png',

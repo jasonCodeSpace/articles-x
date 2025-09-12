@@ -8,6 +8,34 @@ import { Calendar, Bookmark, ChevronLeft, ChevronRight } from 'lucide-react'
 import { redirect } from 'next/navigation'
 import { formatDistanceToNow } from '@/lib/date-utils'
 import Link from 'next/link'
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'My Profile & Bookmarks | Xarticle',
+  description: 'Manage your reading preferences and access your saved articles. View your bookmarked content and personalize your Xarticle experience.',
+  alternates: {
+    canonical: 'https://www.xarticle.news/profile',
+    languages: {
+      'en': 'https://www.xarticle.news/en/profile',
+      'zh': 'https://www.xarticle.news/zh/profile',
+      'x-default': 'https://www.xarticle.news/en/profile'
+    }
+  },
+  robots: { index: false, follow: true },
+  openGraph: {
+    type: 'website',
+    url: 'https://www.xarticle.news/profile',
+    title: 'My Profile & Bookmarks | Xarticle',
+    description: 'Manage your reading preferences and access your saved articles.',
+    locale: 'en_US',
+    alternateLocale: 'zh_CN'
+  },
+  twitter: {
+    card: 'summary',
+    title: 'My Profile | Xarticle',
+    description: 'Manage your reading preferences and bookmarks.',
+  },
+}
 
 export default async function ProfilePage({
   searchParams,
@@ -315,7 +343,7 @@ export default async function ProfilePage({
                     Start bookmarking articles you want to read later or revisit.
                   </p>
                   <Button asChild>
-                    <a href="/trending">Browse Articles</a>
+                    <Link href="/trending">Browse Articles</Link>
                   </Button>
                 </div>
               )}

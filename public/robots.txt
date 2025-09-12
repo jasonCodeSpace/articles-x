@@ -1,112 +1,41 @@
-# Robots.txt for Articles X (www.xarticle.news)
-# Modern article curation platform - RESTRICTED ACCESS
-# Last updated: 2025-01-10
+# Xarticle.news robots.txt
 
-# Only allow major search engines
-User-agent: Googlebot
-Allow: /
-Allow: /og-image.svg
-Allow: /logo.svg
-Allow: /*.svg
-Allow: /*.png
-Allow: /*.jpg
-Allow: /*.jpeg
-Allow: /*.webp
-Allow: /article/
-Allow: /category/
-Allow: /author/
-Allow: /about
-Allow: /privacy
-Allow: /terms
-Allow: /_next/
-Allow: /static/
-Allow: /favicon.ico
-Allow: /*.css
-Allow: /*.js
-Allow: /*.woff
-Allow: /*.woff2
-
-User-agent: Bingbot
-Allow: /
-Allow: /og-image.svg
-Allow: /logo.svg
-Allow: /*.svg
-Allow: /*.png
-Allow: /*.jpg
-Allow: /*.jpeg
-Allow: /*.webp
-Allow: /article/
-Allow: /category/
-Allow: /author/
-Allow: /about
-Allow: /privacy
-Allow: /terms
-Allow: /_next/
-Allow: /static/
-Allow: /favicon.ico
-Allow: /*.css
-Allow: /*.js
-Allow: /*.woff
-Allow: /*.woff2
-
-# Limited access for social media crawlers (only for Open Graph)
-User-agent: Twitterbot
-Allow: /og-image.svg
-Allow: /logo.svg
-Allow: /*.svg
-Allow: /*.png
-Allow: /*.jpg
-Allow: /*.jpeg
-Allow: /*.webp
-Allow: /article/
-Allow: /about
-Disallow: /
-
-User-agent: facebookexternalhit
-Allow: /og-image.svg
-Allow: /logo.svg
-Allow: /*.svg
-Allow: /*.png
-Allow: /*.jpg
-Allow: /*.jpeg
-Allow: /*.webp
-Allow: /article/
-Allow: /about
-Disallow: /
-
-# Block all other bots and crawlers
+# 默认允许一切有价值页面被抓取
 User-agent: *
-Disallow: /
-
-# Block dynamic search and filter URLs (all query strings)
-Disallow: /*?*
-Disallow: /*&*
-
-# Block authentication and user areas
+Allow: /
+# 屏蔽无SEO价值或敏感路径（按需增减）
 Disallow: /login
 Disallow: /auth/
 Disallow: /profile/
 Disallow: /dashboard/
 Disallow: /settings/
-
-# Block API endpoints
-Disallow: /api/
-# Allow public feeds if needed:
-# Allow: /api/rss
-# Allow: /api/sitemap
-
-# Block admin and development areas
 Disallow: /admin/
+Disallow: /api/
 Disallow: /dev/
 Disallow: /test/
 Disallow: /debug/
+# 如需避免参数页收录（筛选/分页参数），保留下面两行
+Disallow: /*?*
+Disallow: /*&*
 
-# Block temporary and backup files
-Disallow: /*.tmp$
-Disallow: /*.temp$
-Disallow: /*.bak$
-Disallow: /*.backup$
-Disallow: /*.log$
+# 社交爬虫，确保卡片/OG正常拉取图文
+User-agent: Twitterbot
+Allow: /article/
+Allow: /_next/
+Allow: /*.png
+Allow: /*.jpg
+Allow: /*.jpeg
+Allow: /*.webp
+Allow: /*.svg
 
-# Sitemap
-Sitemap: https://www.xarticle.news/sitemap.xml
+User-agent: facebookexternalhit
+Allow: /article/
+Allow: /_next/
+Allow: /*.png
+Allow: /*.jpg
+Allow: /*.jpeg
+Allow: /*.webp
+Allow: /*.svg
+
+# 站点地图
+Sitemap: https://www.xarticle.news/sitemap-index.xml

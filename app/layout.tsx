@@ -111,6 +111,11 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="//pbs.twimg.com" />
         <link rel="dns-prefetch" href="//fonts.googleapis.com" />
         <link rel="dns-prefetch" href="//www.googletagmanager.com" />
+        
+        {/* Resource hints for better performance */}
+        <link rel="preload" href="/favicon.ico" as="image" type="image/x-icon" />
+        <link rel="modulepreload" href="/_next/static/chunks/main.js" />
+        <link rel="modulepreload" href="/_next/static/chunks/webpack.js" />
       </head>
       <body className={`${inter.variable} font-sans antialiased bg-background text-foreground`}>
         <script

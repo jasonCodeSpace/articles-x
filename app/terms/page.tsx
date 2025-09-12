@@ -9,7 +9,23 @@ import { ClientNavWrapper } from '@/components/client-nav-wrapper'
 export const metadata: Metadata = {
   title: 'Terms of Service | Xarticle',
   description: 'Terms of Service for Xarticle - The best articles from X, curated and summarized.',
-  robots: 'index, follow'
+  robots: 'index, follow',
+  alternates: {
+    canonical: 'https://www.xarticle.news/terms',
+    languages: {
+      'en': 'https://www.xarticle.news/en/terms',
+      'zh': 'https://www.xarticle.news/zh/terms',
+      'x-default': 'https://www.xarticle.news/en/terms'
+    }
+  },
+  openGraph: {
+    title: 'Terms of Service | Xarticle',
+    description: 'Terms of Service for Xarticle - The best articles from X, curated and summarized.',
+    url: 'https://www.xarticle.news/terms',
+    type: 'website',
+    locale: 'en_US',
+    alternateLocale: 'zh_CN'
+  }
 }
 
 export default async function Terms() {

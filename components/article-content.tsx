@@ -14,6 +14,7 @@ const AiSummary = dynamic(() => import('@/components/ai-summary'), {
 })
 import { useLanguage } from '@/contexts/language-context'
 import { useRouter } from 'next/navigation'
+import { RelatedArticles } from './related-articles'
 
 interface ArticleContentProps {
   article: {
@@ -158,6 +159,14 @@ export function ArticleContent({
           </div>
         )}
       </article>
+
+      {/* Related Articles */}
+      <RelatedArticles 
+        currentArticleId={article.id}
+        category={article.category}
+        language={language}
+        className="mt-12"
+      />
 
       {/* Footer */}
       <footer className="mt-12 pt-8 border-t border-border">

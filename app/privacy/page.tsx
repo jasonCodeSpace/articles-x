@@ -9,7 +9,23 @@ import { ClientNavWrapper } from '@/components/client-nav-wrapper'
 export const metadata: Metadata = {
   title: 'Privacy Policy | Xarticle',
   description: 'Privacy Policy for Xarticle - Learn how we protect and handle your personal information.',
-  robots: 'index, follow'
+  robots: 'index, follow',
+  alternates: {
+    canonical: 'https://www.xarticle.news/privacy',
+    languages: {
+      'en': 'https://www.xarticle.news/en/privacy',
+      'zh': 'https://www.xarticle.news/zh/privacy',
+      'x-default': 'https://www.xarticle.news/en/privacy'
+    }
+  },
+  openGraph: {
+    title: 'Privacy Policy | Xarticle',
+    description: 'Privacy Policy for Xarticle - Learn how we protect and handle your personal information.',
+    url: 'https://www.xarticle.news/privacy',
+    type: 'website',
+    locale: 'en_US',
+    alternateLocale: 'zh_CN'
+  }
 }
 
 export default async function Privacy() {

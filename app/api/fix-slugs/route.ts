@@ -91,8 +91,12 @@ export async function GET(request: NextRequest) {
       // Remove ID suffix to check base slug
       const baseSlug = article.slug.split('--')[0]
       
-      // Check if slug has issues: no hyphens and long, or very long segments
-      return (baseSlug.length > 15 && !baseSlug.includes('-')) || 
+      // Check if slug has issues:
+      // 1) too short/meaningless base (e.g., "de")
+      // 2) no hyphens and long
+      // 3) any segment is excessively long
+      return baseSlug.replace(/-/g, '').length < 3 ||
+             (baseSlug.length > 15 && !baseSlug.includes('-')) || 
              baseSlug.split('-').some(segment => segment.length > 20)
     }) || []
 
@@ -216,8 +220,12 @@ export async function POST(request: NextRequest) {
       // Remove ID suffix to check base slug
       const baseSlug = article.slug.split('--')[0]
       
-      // Check if slug has issues: no hyphens and long, or very long segments
-      return (baseSlug.length > 15 && !baseSlug.includes('-')) || 
+      // Check if slug has issues:
+      // 1) too short/meaningless base
+      // 2) no hyphens and long
+      // 3) any segment is excessively long
+      return baseSlug.replace(/-/g, '').length < 3 ||
+             (baseSlug.length > 15 && !baseSlug.includes('-')) || 
              baseSlug.split('-').some(segment => segment.length > 20)
     }) || []
     

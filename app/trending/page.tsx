@@ -6,12 +6,12 @@ import { Article } from '@/components/article-card'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Trending Articles From X | Xarticle',
-  description: 'Discover the latest curated reads from leading voices on X. Explore tech, business, crypto, and culture with fast search and clean, noise-free reading.',
+  title: 'Trending Now: Most Popular Articles from X | Xarticle',
+  description: 'Discover what\'s trending on X today. Read the most shared and discussed long-form articles, curated with AI-powered summaries. Updated hourly.',
   openGraph: {
     title: 'Trending Articles From X | Xarticle',
     description: 'Curated, up-to-date reads from leading voices on X across tech, business, crypto, and more.',
-    url: 'https://www.xarticle.news/',
+    url: 'https://www.xarticle.news/trending',
     siteName: 'Xarticle',
     type: 'website',
     images: [
@@ -24,6 +24,7 @@ export const metadata: Metadata = {
       },
     ],
     locale: 'en_US',
+    alternateLocale: 'zh_CN'
   },
   twitter: {
     card: 'summary_large_image',
@@ -31,7 +32,14 @@ export const metadata: Metadata = {
     description: 'Curated, up-to-date reads from leading voices on X.',
     images: ['/og-image.png'],
   },
-  alternates: { canonical: 'https://www.xarticle.news/' },
+  alternates: { 
+    canonical: 'https://www.xarticle.news/trending',
+    languages: {
+      'en': 'https://www.xarticle.news/trending',
+      'zh': 'https://www.xarticle.news/zh/trending',
+      'x-default': 'https://www.xarticle.news/trending'
+    }
+  },
   robots: { index: true, follow: true },
 }
 

@@ -59,7 +59,7 @@ export function SummaryContentClient({ summary }: { summary: DailySummary }) {
       setLanguage(param)
       try { setGlobalLanguage(param === 'en' ? 'en' : 'original') } catch {}
     }
-  }, [searchParams])
+  }, [searchParams, setGlobalLanguage])
 
   const toggleLanguage = () => {
     setLanguage(prev => {

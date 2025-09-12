@@ -2,6 +2,22 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
+  // Domain and protocol unification - force redirect to https://www.xarticle.news
+  const host = request.headers.get('host')
+  const protocol = request.headers.get('x-forwarded-proto') || 'http'
+  const preferredDomain = 'www.xarticle.news'
+  
+  // Skip domain redirect for local development
+  const isLocalDevelopment = host?.includes('localhost') || host?.includes('127.0.0.1')
+  
+  // Force HTTPS and canonical domain (except for local development)
+  if (!isLocalDevelopment && (protocol !== 'https' || (host && host !== preferredDomain))) {
+    const url = new URL(request.url)
+    url.protocol = 'https:'
+    url.host = preferredDomain
+    return NextResponse.redirect(url, 301)
+  }
+
   let supabaseResponse = NextResponse.next({
     request,
   })
@@ -43,16 +59,15 @@ export async function middleware(request: NextRequest) {
                         pathname === '/trending' ||
                         pathname.startsWith('/trending') ||
                         pathname.startsWith('/category/') ||
+                        pathname.startsWith('/article/') ||
                         pathname === '/terms' ||
-                        pathname === '/privacy' ||
-                        isSharedArticleLink
+                        pathname === '/privacy'
   const isProtectedRoute = pathname.startsWith('/profile')
   
   // Routes that require authentication (redirect to register page)
   const isRestrictedRoute = pathname === '/history' ||
                            pathname.startsWith('/history') ||
-                           pathname.startsWith('/author/') ||
-                           (pathname.startsWith('/article/') && !isSharedArticleLink)
+                           pathname.startsWith('/author/')
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY

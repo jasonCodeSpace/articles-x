@@ -20,20 +20,29 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const slug = category.toLowerCase()
   
   return {
-    title: `${decodedCategory} Articles on X | Xarticle.news`,
-    description: `Discover daily curated ${decodedCategory.toLowerCase()} articles shared on X—expert insights and must-read posts, cleaned from social noise.`,
-    alternates: { canonical: `/category/${slug}` },
+    title: `${decodedCategory} Articles: Expert Insights from X | Xarticle`,
+    description: `Explore ${decodedCategory.toLowerCase()} articles curated from top X voices. Get AI-powered summaries of the most valuable insights and discussions in ${decodedCategory.toLowerCase()}.`,
+    alternates: { 
+      canonical: `https://www.xarticle.news/category/${slug}`,
+      languages: {
+        'en': `https://www.xarticle.news/en/category/${slug}`,
+        'zh': `https://www.xarticle.news/zh/category/${slug}`,
+        'x-default': `https://www.xarticle.news/en/category/${slug}`
+      }
+    },
     robots: { index: true, follow: true },
     openGraph: {
       type: 'website',
-      url: `/category/${slug}`,
-      title: `${decodedCategory} Articles on X | Xarticle.news`,
-      description: `Daily curated ${decodedCategory.toLowerCase()} articles from X—expert insights and must-read posts.`,
+      url: `https://www.xarticle.news/category/${slug}`,
+      title: `${decodedCategory} Articles: Expert Insights from X | Xarticle`,
+      description: `Explore ${decodedCategory.toLowerCase()} articles curated from top X voices. Get AI-powered summaries of the most valuable insights.`,
+      locale: 'en_US',
+      alternateLocale: 'zh_CN'
     },
     twitter: {
       card: 'summary',
-      title: `${decodedCategory} Articles on X`,
-      description: `Daily curated ${decodedCategory.toLowerCase()} articles from X.`,
+      title: `${decodedCategory} Articles from X`,
+      description: `Curated ${decodedCategory.toLowerCase()} insights from top X voices.`,
     },
   }
 }

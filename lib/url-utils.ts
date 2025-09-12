@@ -13,142 +13,120 @@
 
 /**
  * Generate a URL-friendly slug from article title
+ * Implements multi-level fallback to avoid empty/meaningless title parts (e.g., "de--xxxxxx").
  */
 export function generateSlugFromTitle(title: string): string {
+  const nowFallback = () => {
+    const d = new Date()
+    const y = d.getUTCFullYear()
+    const m = String(d.getUTCMonth() + 1).padStart(2, '0')
+    const day = String(d.getUTCDate()).padStart(2, '0')
+    return `post-${y}${m}${day}`
+  }
+
   if (!title || title.trim().length === 0) {
-    return 'article';
+    return nowFallback()
   }
 
-  // Check if title contains CJK characters
-  const cjkRegex = /[\u4e00-\u9fff\u3400-\u4dbf\u3040-\u309f\u30a0-\u30ff]/;
-  const hasCJK = cjkRegex.test(title);
-  
-  if (hasCJK) {
-    // For CJK text, transliterate to ASCII if possible, otherwise use romanization
-    const processedTitle = title
-      .replace(/[\u4e00-\u9fff]/g, (char) => {
-        // Simple mapping for common Chinese characters to pinyin
-        const pinyinMap: { [key: string]: string } = {
-          '人': 'ren', '工': 'gong', '智': 'zhi', '能': 'neng', '的': 'de',
-          '未': 'wei', '来': 'lai', '发': 'fa', '展': 'zhan', '趋': 'qu', '势': 'shi'
-        };
-        return pinyinMap[char] ? pinyinMap[char] + '-' : char;
-      })
-      .replace(/[\u3040-\u309f\u30a0-\u30ff]/g, (char) => {
-        // Simple mapping for common Japanese characters to romaji
-        const romajiMap: { [key: string]: string } = {
-          'あ': 'a', 'い': 'i', 'う': 'u', 'え': 'e', 'お': 'o',
-          'か': 'ka', 'き': 'ki', 'く': 'ku', 'け': 'ke', 'こ': 'ko',
-          'に': 'ni', 'つ': 'tsu', 'て': 'te'
-        };
-        return romajiMap[char] ? romajiMap[char] + '-' : char;
-      })
-      .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, '') // Remove remaining non-ASCII characters
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
-      .replace(/^-+|-+$/g, '');
-    
-    if (!processedTitle || processedTitle.length < 1) {
-      return 'article';
-    }
-    
-    return processedTitle.substring(0, 50).replace(/-+$/, '');
-  }
-  
-  // For non-CJK text, use improved logic with better word separation
-  let slug = title
+  // Base cleaning: strip HTML tags, emoji, control chars
+  let raw = title
+    .replace(/<[^>]*>/g, ' ') // strip HTML
+    .replace(/[\u0000-\u001F\u007F]+/g, ' ') // control chars
+    // rough emoji and symbols range
+    .replace(/[\u{1F000}-\u{1FAFF}\u{1F300}-\u{1F9FF}\u{2600}-\u{27BF}]/gu, ' ')
+    .replace(/\s+/g, ' ')
     .trim()
-    // Normalize Latin characters with diacritics (French, German, Spanish, etc.)
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '') // Remove diacritical marks
-    // Additional manual replacements for common characters
-    .replace(/[àáâãäåæ]/g, 'a')
-    .replace(/[èéêë]/g, 'e')
-    .replace(/[ìíîï]/g, 'i')
-    .replace(/[òóôõöø]/g, 'o')
-    .replace(/[ùúûü]/g, 'u')
-    .replace(/[ýÿ]/g, 'y')
-    .replace(/[ñ]/g, 'n')
-    .replace(/[ç]/g, 'c')
-    .replace(/[ß]/g, 'ss')
-    .replace(/[ÀÁÂÃÄÅÆ]/g, 'A')
-    .replace(/[ÈÉÊË]/g, 'E')
-    .replace(/[ÌÍÎÏ]/g, 'I')
-    .replace(/[ÒÓÔÕÖØ]/g, 'O')
-    .replace(/[ÙÚÛÜ]/g, 'U')
-    .replace(/[ÝŸ]/g, 'Y')
-    .replace(/[Ñ]/g, 'N')
-    .replace(/[Ç]/g, 'C')
-    // Add spaces before capital letters to separate camelCase words (before toLowerCase)
-    .replace(/([a-z])([A-Z])/g, '$1 $2')
-    // Add spaces between letters and numbers
-    .replace(/([a-z])([0-9])/g, '$1 $2')
-    .replace(/([0-9])([a-zA-Z])/g, '$1 $2')
+
+  // Detect scripts
+  const hasCJK = /[\u4e00-\u9fff\u3400-\u4dbf\u3040-\u309f\u30a0-\u30ff\uAC00-\uD7AF]/.test(raw)
+
+  // English stopwords to drop during slug creation
+  const stopwords = new Set([
+    'a','an','the','of','and','or','for','to','in','on','at','by','with','from','as','is','are','was','were','be','been','being','that','this','these','those','it','its','into','over','about'
+  ])
+
+  // Tech whitelist to preserve
+  const whitelist = new Set(['ai','gpt','openai','llm','ml','nlp','cv','web3','solana','ethereum','eth','token','api','sdk','ios','android','node','nextjs','react','vite','rust','go','python'])
+
+  // Helper: normalize Latin letters (remove accents), tokenize to words, drop stopwords unless whitelisted
+  const normalizeLatin = (text: string) => {
+    const lowered = text
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/([a-z])([A-Z])/g, '$1 $2')
+      .toLowerCase()
+    const tokens = (lowered.match(/[a-z0-9]+/g) || [])
+    const kept = tokens.filter(t => whitelist.has(t) || !stopwords.has(t))
+    return kept
+  }
+
+  // Step 1: If the title already has enough Latin tokens, use them
+  let tokens = normalizeLatin(raw)
+
+  // Step 2: CJK handling — remove frequent Chinese particles, harvest embedded ASCII tokens
+  if (hasCJK) {
+    const chineseStop = /[的了在是和与即及或而把被上下午上午中对用于以为了给从]/g
+    const stripped = raw.replace(chineseStop, ' ')
+    const asciiTokens = normalizeLatin(stripped)
+    if (asciiTokens.length >= 2) {
+      tokens = asciiTokens
+    } else if (asciiTokens.length === 1 && tokens.length === 0) {
+      tokens = asciiTokens
+    }
+  }
+
+  // If still empty, fall back to best-effort initials from any Latin present
+  if (tokens.length === 0) {
+    const asciiWords = (raw.match(/[A-Za-z0-9]{2,}/g) || []).map(w => w.toLowerCase())
+    if (asciiWords.length > 0) tokens = asciiWords
+  }
+
+  // Build slug candidate
+  let slug = tokens.join('-')
+
+  // As a final non-Latin fallback, derive simple consonant-like initials from words split by whitespace
+  if (!slug) {
+    const rough = raw.split(/\s+/).map(w => w.replace(/[^A-Za-z0-9]/g, '').toLowerCase()).filter(Boolean)
+    if (rough.length > 0) slug = rough.slice(0, 3).join('-')
+  }
+
+  // If still too short, use date-based fallback
+  if (!slug || slug.replace(/-/g, '').length < 3) {
+    slug = nowFallback()
+  }
+
+  // Cleanup: collapse hyphens, trim, enforce length and per-segment constraints
+  slug = slug
     .toLowerCase()
-    // First, normalize common punctuation to spaces to preserve word boundaries
-    // Handle French contractions (l', d', etc.) by adding space after apostrophe
-    .replace(/\b([a-z]+)'([a-z]+)/gi, '$1 $2')
-    .replace(/['"''""]/g, '') // Remove quotes
-    .replace(/[.,!?;:()\[\]{}]/g, ' ') // Replace punctuation with spaces
-    .replace(/[&+]/g, ' and ') // Replace & and + with 'and'
-    .replace(/[@#$%^*=|\\/<>]/g, ' ') // Replace other special chars with spaces
-    // Handle common contractions and abbreviations
-    .replace(/\b(can't|won't|don't|isn't|aren't|wasn't|weren't|hasn't|haven't|hadn't|wouldn't|shouldn't|couldn't)\b/g, (match) => {
-      const contractions: { [key: string]: string } = {
-        "can't": "cannot", "won't": "will-not", "don't": "do-not", 
-        "isn't": "is-not", "aren't": "are-not", "wasn't": "was-not", 
-        "weren't": "were-not", "hasn't": "has-not", "haven't": "have-not", 
-        "hadn't": "had-not", "wouldn't": "would-not", "shouldn't": "should-not", 
-        "couldn't": "could-not"
-      };
-      return contractions[match] || match;
-    })
-    // Remove remaining non-alphanumeric characters except spaces and existing hyphens
-    .replace(/[^a-z0-9\s-]/g, '')
-    // Normalize whitespace and convert to hyphens
-    .replace(/\s+/g, '-')
-    // Remove multiple consecutive hyphens
     .replace(/-+/g, '-')
-    // Remove leading/trailing hyphens
-    .replace(/^-+|-+$/g, '');
+    .replace(/^-+|-+$/g, '')
 
-  // If slug is empty or too short, return 'article'
-  if (!slug || slug.length < 1) {
-    return 'article';
+  // Enforce max title-part length 50
+  if (slug.length > 50) {
+    // prefer cutting at word boundary within 50
+    const cut = slug.slice(0, 50)
+    const idx = cut.lastIndexOf('-')
+    slug = idx > 20 ? cut.slice(0, idx) : cut
   }
 
-  // Limit length to 60 characters to account for '--' + 6-char ID (total ~70 chars)
-  if (slug.length > 60) {
-    // Find the last complete word within 60 characters
-    const truncated = slug.substring(0, 60);
-    const lastHyphenIndex = truncated.lastIndexOf('-');
-    if (lastHyphenIndex > 20) { // Only truncate at word boundary if it's not too short
-      slug = truncated.substring(0, lastHyphenIndex);
-    } else {
-      slug = truncated;
+  // Enforce each segment <= 15 by soft splitting long segments
+  const softSplit = (segment: string) => {
+    if (segment.length <= 15) return segment
+    const parts: string[] = []
+    let s = segment
+    while (s.length > 15) {
+      parts.push(s.slice(0, 15))
+      s = s.slice(15)
     }
+    if (s) parts.push(s)
+    return parts.join('-')
   }
-  
-  // Ensure there are hyphens between words if the slug is very long without separators
-  if (slug.length > 20 && !slug.includes('-')) {
-    // Insert hyphens every 10-15 characters at natural break points
-    const words = [];
-    let currentWord = '';
-    for (let i = 0; i < slug.length; i++) {
-      currentWord += slug[i];
-      if (currentWord.length >= 10 && (i === slug.length - 1 || /[aeiou]/.test(slug[i]) && /[bcdfghjklmnpqrstvwxyz]/.test(slug[i + 1]))) {
-        words.push(currentWord);
-        currentWord = '';
-      }
-    }
-    if (currentWord) words.push(currentWord);
-    if (words.length > 1) {
-      slug = words.join('-');
-    }
-  }
-  
-  return slug.replace(/-+$/, ''); // Remove any trailing hyphens
+  slug = slug.split('-').map(softSplit).join('-')
+
+  // Final safety
+  slug = slug.replace(/-+/g, '-').replace(/^-+|-+$/g, '')
+  if (!slug) slug = nowFallback()
+
+  return slug
 }
 
 /**

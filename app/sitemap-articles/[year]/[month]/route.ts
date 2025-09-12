@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js'
+import { createServiceClient } from '@/lib/supabase/service'
 import { NextResponse } from 'next/server'
 
 interface Params {
@@ -9,7 +9,7 @@ interface Params {
 export async function GET(request: Request, { params }: { params: Promise<Params> }) {
   try {
     const { year, month } = await params
-    const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
+    const supabase = createServiceClient()
     
     // Validate year and month
     const yearNum = parseInt(year)

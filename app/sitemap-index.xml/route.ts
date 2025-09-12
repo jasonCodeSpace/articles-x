@@ -8,18 +8,18 @@ export async function GET() {
     // Get the earliest and latest article dates to determine date range
     const { data: dateRange } = await supabase
       .from('articles')
-      .select('published_at')
-      .not('published_at', 'is', null)
+      .select('article_published_at')
+      .not('article_published_at', 'is', null)
       .not('slug', 'is', null)
-      .order('published_at', { ascending: true })
+      .order('article_published_at', { ascending: true })
       .limit(1)
     
     const { data: latestDate } = await supabase
       .from('articles')
-      .select('published_at')
-      .not('published_at', 'is', null)
+      .select('article_published_at')
+      .not('article_published_at', 'is', null)
       .not('slug', 'is', null)
-      .order('published_at', { ascending: false })
+      .order('article_published_at', { ascending: false })
       .limit(1)
 
     const baseUrl = 'https://www.xarticle.news'
@@ -29,8 +29,8 @@ export async function GET() {
     const monthlySitemaps: string[] = []
     
     if (dateRange && dateRange[0] && latestDate && latestDate[0]) {
-      const startDate = new Date(dateRange[0].published_at)
-      const endDate = new Date(latestDate[0].published_at)
+      const startDate = new Date(dateRange[0].article_published_at)
+      const endDate = new Date(latestDate[0].article_published_at)
       
       // Generate monthly sitemaps from start to end
       const current = new Date(startDate.getFullYear(), startDate.getMonth(), 1)

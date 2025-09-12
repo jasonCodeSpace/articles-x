@@ -1,6 +1,6 @@
 import { Metadata } from 'next'
 import { notFound, redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { ArticleContent } from '@/components/article-content'
 import { ClientNavWrapper } from '@/components/client-nav-wrapper'
 import { extractArticleIdFromSlug } from '@/lib/url-utils'
@@ -107,6 +107,8 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   console.log('All validations passed')
   
   const supabase = await createClient()
+  // Create service client for article queries (bypasses RLS)
+  const serviceSupabase = createServiceClient()
   
   // Get user session
   const { data: { user } } = await supabase.auth.getUser()
@@ -124,7 +126,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   )]
   
   // Search for article by slug
-  const { data: articles, error } = await supabase
+  const { data: articles, error } = await serviceSupabase
     .from('articles')
     .select(`
       id,
@@ -137,8 +139,13 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     .eq('slug', slug)
     .limit(1)
   
+
+  
+  if (error) {
+    console.error('Supabase error:', error)
+  }
+  
   if (!articles || articles.length === 0) {
-    console.log('No articles found for slug:', slug)
     notFound()
   }
   

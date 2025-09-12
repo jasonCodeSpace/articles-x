@@ -21,8 +21,8 @@ export async function GET() {
     { url: '/en/category', priority: '0.8', changefreq: 'daily' },
     
     // Summary pages
-    { url: '/summaries', priority: '0.7', changefreq: 'daily' },
-    { url: '/summary', priority: '0.7', changefreq: 'daily' },
+    { url: '/xarticle-daily', priority: '0.7', changefreq: 'daily' },
+    { url: '/author/xarticle', priority: '0.7', changefreq: 'daily' },
     
     // Profile and auth pages
     { url: '/profile', priority: '0.6', changefreq: 'weekly' },

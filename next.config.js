@@ -37,6 +37,16 @@ const nextConfig = {
     return config;
   },
   
+  // Rewrites for sitemap URLs
+  async rewrites() {
+    return [
+      {
+        source: '/sitemap-articles-:year-:month.xml',
+        destination: '/sitemap-articles/:year/:month',
+      },
+    ];
+  },
+
   // Headers for security and caching
   async headers() {
     return [

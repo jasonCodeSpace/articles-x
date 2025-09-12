@@ -120,8 +120,8 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
     // For "all" category, fetch all articles without category filter
     articles = await fetchArticles({ search })
   } else {
-    // Fetch articles for this category
-    const allArticles = await fetchArticles({ category: decodedCategory, search })
+    // Fetch a recent slice and filter locally to avoid heavy DB scans/timeouts
+    const allArticles = await fetchArticles({ search, limit: 300 })
     
     // Client-side filter to ensure exact category match (case-insensitive)
     articles = allArticles.filter((article: Article) => {

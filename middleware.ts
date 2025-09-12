@@ -60,6 +60,7 @@ export async function middleware(request: NextRequest) {
                         pathname.startsWith('/trending') ||
                         pathname.startsWith('/category/') ||
                         pathname.startsWith('/article/') ||
+                        pathname.match(/^\/[a-z]{2}\/article\//) || // Support /[lang]/article/ routes
                         pathname === '/terms' ||
                         pathname === '/privacy'
   const isProtectedRoute = pathname.startsWith('/profile')

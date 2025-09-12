@@ -250,7 +250,7 @@ export function ArticleCard({ article, className, priority = false }: ArticleCar
             article.title, 
             article.id, 
             article.article_published_at || article.created_at,
-            language === 'en' ? 'en' : 'zh'
+            languageFromDB || 'en'
           )}>
             <button className="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 border border-input bg-background hover:bg-accent hover:text-accent-foreground rounded-md text-xs px-3 py-1 h-7">
               <ExternalLink className="h-3 w-3" />

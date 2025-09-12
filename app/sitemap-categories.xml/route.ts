@@ -11,7 +11,7 @@ export async function GET() {
       .select('category')
       .not('category', 'is', null)
       .not('slug', 'is', null)
-      .not('published_at', 'is', null)
+      .not('article_published_at', 'is', null)
     
     if (!categories) {
       throw new Error('Failed to fetch categories')

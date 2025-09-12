@@ -57,23 +57,54 @@ function isValidDate(year: string, month: string, day: string): boolean {
          date.getDate() === dayNum
 }
 
+function getLocaleFromLang(lang: string): string {
+  const localeMap: Record<string, string> = {
+    'en': 'en_US',
+    'zh': 'zh_CN',
+    'ja': 'ja_JP',
+    'ko': 'ko_KR',
+    'es': 'es_ES',
+    'fr': 'fr_FR',
+    'de': 'de_DE',
+    'it': 'it_IT',
+    'pt': 'pt_PT',
+    'ru': 'ru_RU',
+    'ar': 'ar_SA',
+    'hi': 'hi_IN',
+    'th': 'th_TH',
+    'vi': 'vi_VN',
+    'tr': 'tr_TR',
+    'pl': 'pl_PL',
+    'nl': 'nl_NL'
+  }
+  return localeMap[lang] || 'en_US'
+}
+
 export default async function ArticlePage({ params }: ArticlePageProps) {
   const { lang, year, month, day, slug } = await params
   
-  // Validate language
-  if (!['en', 'zh'].includes(lang)) {
+  console.log('Article page params:', { lang, year, month, day, slug })
+  
+  // Validate language - support all languages detected by AI system
+  const supportedLanguages = ['en', 'zh', 'ja', 'ko', 'es', 'fr', 'de', 'it', 'pt', 'ru', 'ar', 'hi', 'th', 'vi', 'tr', 'pl', 'nl']
+  if (!supportedLanguages.includes(lang)) {
+    console.log('Language validation failed:', lang)
     notFound()
   }
   
   // Validate date
   if (!isValidDate(year, month, day)) {
+    console.log('Date validation failed:', { year, month, day })
     notFound()
   }
   
   // Validate slug format
   if (!isValidArticleSlug(slug)) {
+    console.log('Slug validation failed:', slug)
     notFound()
   }
+  
+  console.log('All validations passed')
   
   const supabase = await createClient()
   
@@ -92,51 +123,26 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     ) || []
   )]
   
-  // Extract article ID from slug
-  const articleId = extractArticleIdFromSlug(slug)
-  
-  // Search for article by short ID
-  const { data: articles } = await supabase
+  // Search for article by slug
+  const { data: articles, error } = await supabase
     .from('articles')
     .select(`
       id,
       title,
-      title_english,
-      content,
-      content_english,
-      summary,
-      summary_english,
       slug,
       article_published_at,
-      updated_at,
       author_name,
-      author_handle,
-      author_profile_image_url,
-      category,
-      tags,
-      url,
-      retweet_count,
-      like_count,
-      reply_count,
-      quote_count,
-      bookmark_count,
-      impression_count,
-      author_avatar,
-      image
+      category
     `)
-    .ilike('id', `%${articleId}%`)
-    .limit(5)
+    .eq('slug', slug)
+    .limit(1)
   
   if (!articles || articles.length === 0) {
+    console.log('No articles found for slug:', slug)
     notFound()
   }
   
-  // Find exact match by checking if the full ID starts with our short ID
-  const article = articles.find((a) => a.id.replace(/-/g, '').toLowerCase().startsWith(articleId.toLowerCase()))
-  
-  if (!article) {
-    notFound()
-  }
+  const article = articles[0]
   
   // Verify the article was published on the specified date
   const publishedDate = new Date(article.article_published_at)
@@ -164,9 +170,10 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   const timeAgo = relativeTime.format(-daysDiff, 'day')
   
   // Generate structured data for SEO
-  const title = lang === 'zh' ? article.title : (article.title_english || article.title)
-  const description = lang === 'zh' ? article.summary : (article.summary_english || article.summary)
-  const content = lang === 'zh' ? article.content : (article.content_english || article.content)
+  const title = article.title
+  const description = ''
+  
+  const content = ''
   const baseUrl = 'https://www.xarticle.news'
   const currentUrl = `${baseUrl}/${lang}/article/${year}/${month}/${day}/${slug}`
   
@@ -178,11 +185,11 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     "articleBody": content,
     "url": currentUrl,
     "datePublished": article.article_published_at,
-    "dateModified": article.updated_at || article.article_published_at,
+    "dateModified": article.article_published_at,
     "author": {
       "@type": "Person",
       "name": article.author_name || "Unknown Author",
-      "url": article.author_handle ? `https://x.com/${article.author_handle}` : undefined
+      "url": undefined
     },
     "publisher": {
       "@type": "Organization",
@@ -197,29 +204,26 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       "@type": "WebPage",
       "@id": currentUrl
     },
-    "image": article.image ? {
-      "@type": "ImageObject",
-      "url": article.image
-    } : undefined,
-    "keywords": article.tags || article.category,
+    "image": undefined,
+    "keywords": article.category,
     "articleSection": article.category,
-    "inLanguage": lang === 'zh' ? 'zh-CN' : 'en-US',
+    "inLanguage": lang === 'zh' ? 'zh-CN' : lang === 'it' ? 'it-IT' : 'en-US',
     "isAccessibleForFree": true,
     "interactionStatistic": [
       {
         "@type": "InteractionCounter",
         "interactionType": "https://schema.org/LikeAction",
-        "userInteractionCount": article.like_count || 0
+        "userInteractionCount": 0
       },
       {
         "@type": "InteractionCounter",
         "interactionType": "https://schema.org/ShareAction",
-        "userInteractionCount": article.retweet_count || 0
+        "userInteractionCount": 0
       },
       {
         "@type": "InteractionCounter",
         "interactionType": "https://schema.org/CommentAction",
-        "userInteractionCount": article.reply_count || 0
+        "userInteractionCount": 0
       }
     ]
   }
@@ -236,11 +240,17 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       <div className="pt-20 md:pt-16 pb-20 md:pb-0">
         <div className="max-w-4xl mx-auto px-4 py-8">
           <ArticleContent 
-            article={article}
+            article={{
+              ...article,
+              updated_at: article.article_published_at,
+              author_handle: 'xarticle',
+              author_avatar: undefined,
+              image: undefined
+            }}
             authorInitials={authorInitials}
-            authorHandle={article.author_handle || 'unknown'}
-            avatarUrl={article.author_avatar || ''}
-            coverUrl={article.image || ''}
+            authorHandle={'xarticle'}
+            avatarUrl={''}
+            coverUrl={''}
             publishedDate={publishedAt.toLocaleDateString(lang === 'zh' ? 'zh-CN' : 'en-US', {
               year: 'numeric',
               month: 'long',
@@ -265,41 +275,44 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
   }
   
   const supabase = await createClient()
-  const articleId = extractArticleIdFromSlug(slug)
   
   const { data: articles } = await supabase
     .from('articles')
-    .select('id, title, title_english, summary, summary_english, author_name, article_published_at, article_url')
-    .ilike('id', `%${articleId}%`)
-    .limit(5)
+    .select('id, title, title_english, excerpt, description, author_name, article_published_at, article_url')
+    .eq('slug', slug)
+    .limit(1)
   
-  const article = articles?.find((a) => a.id.replace(/-/g, '').toLowerCase().startsWith(articleId.toLowerCase()))
-  
-  if (!article) {
+  if (!articles || articles.length === 0) {
     return {
       title: 'Article Not Found',
       description: 'The requested article could not be found.'
     }
   }
   
+  const article = articles[0]
   const title = lang === 'zh' ? article.title : (article.title_english || article.title)
-  const description = lang === 'zh' ? article.summary : (article.summary_english || article.summary)
+  const description = lang === 'zh' ? (article.description || article.excerpt) : (article.excerpt || article.description)
   
   // Determine canonical URL - prefer original article URL if available
   const baseUrl = 'https://www.xarticle.news'
   const publishedDate = new Date(article.article_published_at)
-  const year = publishedDate.getUTCFullYear().toString()
-  const month = String(publishedDate.getUTCMonth() + 1).padStart(2, '0')
-  const day = String(publishedDate.getUTCDate()).padStart(2, '0')
-  const currentUrl = `${baseUrl}/${lang}/article/${year}/${month}/${day}/${slug}`
+  const pubYear = publishedDate.getUTCFullYear().toString()
+  const pubMonth = String(publishedDate.getUTCMonth() + 1).padStart(2, '0')
+  const pubDay = String(publishedDate.getUTCDate()).padStart(2, '0')
+  const currentUrl = `${baseUrl}/${lang}/article/${pubYear}/${pubMonth}/${pubDay}/${slug}`
   
   const canonicalUrl = article.article_url && article.article_url.startsWith('http') 
     ? article.article_url 
     : currentUrl
 
-  // Generate hreflang URLs for both languages
-  const enUrl = `${baseUrl}/en/article/${year}/${month}/${day}/${slug}`
-  const zhUrl = `${baseUrl}/zh/article/${year}/${month}/${day}/${slug}`
+  // Generate hreflang URLs for all supported languages
+  const supportedLanguages = ['en', 'zh', 'ja', 'ko', 'es', 'fr', 'de', 'it', 'pt', 'ru', 'ar', 'hi', 'th', 'vi', 'tr', 'pl', 'nl']
+  const languageUrls = Object.fromEntries(
+    supportedLanguages.map(langCode => [
+      langCode,
+      `${baseUrl}/${langCode}/article/${pubYear}/${pubMonth}/${pubDay}/${slug}`
+    ])
+  )
 
   return {
     title: `${title} | XArticle`,
@@ -307,9 +320,8 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
     alternates: {
       canonical: canonicalUrl,
       languages: {
-        'en': enUrl,
-        'zh': zhUrl,
-        'x-default': enUrl
+        ...languageUrls,
+        'x-default': languageUrls.en
       }
     },
     openGraph: {
@@ -319,8 +331,8 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
       publishedTime: article.article_published_at,
       authors: [article.author_name || 'Unknown'],
       url: canonicalUrl,
-      locale: lang === 'zh' ? 'zh_CN' : 'en_US',
-      alternateLocale: lang === 'zh' ? 'en_US' : 'zh_CN'
+      locale: getLocaleFromLang(lang),
+      alternateLocale: supportedLanguages.filter(l => l !== lang).map(getLocaleFromLang)
     },
     twitter: {
       card: 'summary_large_image',

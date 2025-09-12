@@ -50,27 +50,26 @@ export async function GET(request: Request, { params }: { params: Promise<Params
       // Use the new URL structure with date
       const dateStr = publishedDate.toISOString().split('T')[0] // YYYY-MM-DD format
       
-      // Add both Chinese and English versions
-      articleUrls.push(
-        {
-          url: `/article/${dateStr}/${article.slug}`,
+      // Add all supported language versions
+      const supportedLanguages = ['en', 'zh', 'ja', 'ko', 'es', 'fr', 'de', 'it', 'pt', 'ru', 'ar', 'hi', 'th', 'vi', 'tr', 'pl', 'nl']
+      
+      // Add default URL (no language prefix)
+      articleUrls.push({
+        url: `/article/${dateStr}/${article.slug}`,
+        lastmod,
+        changefreq: 'monthly',
+        priority: '0.8'
+      })
+      
+      // Add language-specific URLs
+      supportedLanguages.forEach(lang => {
+        articleUrls.push({
+          url: `/${lang}/article/${dateStr}/${article.slug}`,
           lastmod,
           changefreq: 'monthly',
           priority: '0.8'
-        },
-        {
-          url: `/zh/article/${dateStr}/${article.slug}`,
-          lastmod,
-          changefreq: 'monthly',
-          priority: '0.8'
-        },
-        {
-          url: `/en/article/${dateStr}/${article.slug}`,
-          lastmod,
-          changefreq: 'monthly',
-          priority: '0.8'
-        }
-      )
+        })
+      })
     })
 
     const sitemap = `<?xml version="1.0" encoding="UTF-8"?>

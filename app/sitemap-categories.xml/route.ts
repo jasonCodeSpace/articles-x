@@ -47,7 +47,7 @@ export async function GET() {
     // Count articles for each standard category
      const categoryMap = new Map<string, number>()
      
-     categories.forEach((article: any) => {
+     categories.forEach((article: { category: string }) => {
        if (article.category) {
          const categoryList = article.category.split(',').map((cat: string) => cat.trim())
          categoryList.forEach((category: string) => {

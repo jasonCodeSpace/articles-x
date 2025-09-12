@@ -3,7 +3,6 @@ import { notFound, redirect } from 'next/navigation'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { ArticleContent } from '@/components/article-content'
 import { ClientNavWrapper } from '@/components/client-nav-wrapper'
-import { extractArticleIdFromSlug } from '@/lib/url-utils'
 
 interface ArticlePageProps {
   params: Promise<{
@@ -126,26 +125,94 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   )]
   
   // Search for article by slug
-  const { data: articles, error } = await serviceSupabase
+  let { data: articles, error } = await serviceSupabase
     .from('articles')
     .select(`
       id,
       title,
+      title_english,
       slug,
       article_published_at,
       author_name,
-      category
+      category,
+      article_url,
+      full_article_content,
+      summary_english,
+      summary_chinese,
+      summary_generated_at,
+      language,
+      image,
+      author_handle,
+      author_avatar
     `)
     .eq('slug', slug)
     .limit(1)
-  
-
   
   if (error) {
     console.error('Supabase error:', error)
   }
   
+  // If no exact match found, try to find by ID suffix and date (for truncated slugs)
   if (!articles || articles.length === 0) {
+    console.log('No exact slug match found, trying fallback search...')
+    
+    // Extract the ID part from the slug (last 6 characters after --)
+    const slugParts = slug.split('--')
+    if (slugParts.length === 2 && slugParts[1].length === 6) {
+      const idSuffix = slugParts[1]
+      
+      // Search for articles with matching ID suffix and published on the same date
+      // Use UTC to avoid timezone issues
+      const startOfDay = new Date(Date.UTC(parseInt(year), parseInt(month) - 1, parseInt(day), 0, 0, 0, 0))
+      const endOfDay = new Date(Date.UTC(parseInt(year), parseInt(month) - 1, parseInt(day), 23, 59, 59, 999))
+      
+      const fallbackResult = await serviceSupabase
+        .from('articles')
+        .select(`
+          id,
+          title,
+          title_english,
+          slug,
+          article_published_at,
+          author_name,
+          category,
+          article_url,
+          full_article_content,
+          summary_english,
+          summary_chinese,
+          summary_generated_at,
+          language,
+          image,
+          author_handle,
+          author_avatar
+        `)
+        .like('slug', `%--${idSuffix}`)
+        .gte('article_published_at', startOfDay.toISOString())
+        .lte('article_published_at', endOfDay.toISOString())
+        .limit(1)
+      
+
+      
+      if (fallbackResult.error) {
+        console.error('Fallback search error:', fallbackResult.error)
+      }
+      
+      if (fallbackResult.data && fallbackResult.data.length > 0) {
+        console.log('Found article via fallback search, redirecting to correct URL...')
+        const correctArticle = fallbackResult.data[0]
+        const publishedDate = new Date(correctArticle.article_published_at)
+        const correctYear = publishedDate.getUTCFullYear().toString()
+        const correctMonth = String(publishedDate.getUTCMonth() + 1).padStart(2, '0')
+        const correctDay = String(publishedDate.getUTCDate()).padStart(2, '0')
+        const correctUrl = `/${lang}/article/${correctYear}/${correctMonth}/${correctDay}/${correctArticle.slug}`
+        redirect(correctUrl)
+      } else {
+        // Reassign articles to use fallback result for further processing
+        articles = fallbackResult.data
+        error = fallbackResult.error
+      }
+    }
+    
     notFound()
   }
   
@@ -160,6 +227,13 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   if (year !== expectedYear || month !== expectedMonth || day !== expectedDay) {
     // Redirect to correct date URL
     const correctUrl = `/${lang}/article/${expectedYear}/${expectedMonth}/${expectedDay}/${slug}`
+    redirect(correctUrl)
+  }
+  
+  // Verify the language code matches the article's language
+  if (article.language && article.language !== lang) {
+    console.log(`Language mismatch: URL has '${lang}' but article is '${article.language}', redirecting...`)
+    const correctUrl = `/${article.language}/article/${expectedYear}/${expectedMonth}/${expectedDay}/${slug}`
     redirect(correctUrl)
   }
   

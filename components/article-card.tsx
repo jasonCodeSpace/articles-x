@@ -27,6 +27,8 @@ export interface Article {
   featured_image_url?: string
   // Some deployments may use image instead of featured_image_url
   image?: string
+  // Article image from article_main table
+  article_image?: string
   article_published_at?: string
   created_at: string
   tags: string[]
@@ -53,7 +55,7 @@ export interface Article {
   language?: string
   // English translation fields
   title_english?: string
-  // 移除了 article_preview_text_english 和 full_article_content_english 字段
+  article_preview_text_english?: string
 }
 
 interface ArticleCardProps {
@@ -66,8 +68,6 @@ interface ArticleCardProps {
 
 
 export function ArticleCard({ article, className, priority = false }: ArticleCardProps) {
-  const { language } = useLanguage()
-  
   // 只使用数据库中的语言字段，如果没有数据则不显示语言标签
   const languageFromDB = article.language
   
@@ -112,14 +112,14 @@ export function ArticleCard({ article, className, priority = false }: ArticleCar
   const authorHandle = article.author_handle || 'unknown'
 
   // Field fallbacks for content based on language preference
-  const displayTitle = language === 'original' ? article.title : (article.title_english || article.title)
-  const displayPreview = article.article_preview_text
-  // Always prioritize article_preview_text over summaries for trending/category pages
+  const displayTitle = article.title_english || article.title
+  const displayPreview = article.article_preview_text_english || article.article_preview_text
+  // Always prioritize article_preview_text_english over other fields for trending/category pages
   const descriptionText = displayPreview || article.description || article.excerpt || article.content
 
   // Field fallbacks for images
   const avatarUrl = article.author_profile_image || article.author_avatar
-  const coverUrl = article.featured_image_url || article.image
+  const coverUrl = article.article_image || article.featured_image_url || article.image
 
   // Generate article URL with meaningful title and permanent ID
   const articleUrl = generateArticleUrl(article.title, article.id)

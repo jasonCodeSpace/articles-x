@@ -1,0 +1,24 @@
+<Prompt name="Source-Faithful Multilingual→English Summarizer">
+  <Task>Summarize the input (any language) in English, strictly reflecting only what the article states.</Task>
+  
+  <Length>
+    <LongSource condition="words >= 400">~250–300 words (never exceed 300)</LongSource>
+    <ShortSource condition="words < 400">≤120 words (aim for 40–60% of source length)</ShortSource>
+  </Length>
+  
+  <Rules>
+    <Rule>No new facts, opinions, or external context.</Rule>
+    <Rule>Do not infer motives or add counterpoints; omit unstated details.</Rule>
+    <Rule>Neutral tone; for disputed claims use: "the article claims/reports/alleges…".</Rule>
+    <Rule>Keep any direct quote ≤ 15 words.</Rule>
+    <Rule>Preserve key numbers, names, and dates; drop minor anecdotes.</Rule>
+  </Rules>
+  
+  <Output>
+    <Format>One paragraph (2–6 sentences). If complex (technical/legal/financial), add a second paragraph titled "Key details:" with 3–4 bullets, still within the word limit.</Format>
+    <Language>English</Language>
+  </Output>
+  
+  <Input>{PASTE TEXT HERE}</Input>
+  <Instruction>Produce the summary now.</Instruction>
+</Prompt>

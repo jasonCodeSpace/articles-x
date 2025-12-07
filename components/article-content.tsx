@@ -1,18 +1,8 @@
 'use client'
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Button } from '@/components/ui/button'
-import { ExternalLink, Languages } from 'lucide-react'
+import { ExternalLink } from 'lucide-react'
 import { BookmarkButton } from '@/components/bookmark-button'
-import Image from 'next/image'
-import dynamic from 'next/dynamic'
-
-// Dynamic import for AI Summary component
-const AiSummary = dynamic(() => import('@/components/ai-summary'), {
-  ssr: false,
-  loading: () => <div className="mb-8 p-8 bg-muted/50 rounded-xl border border-border animate-pulse h-32" />
-})
-import { useLanguage } from '@/contexts/language-context'
 import { useRouter } from 'next/navigation'
 
 interface ArticleContentProps {
@@ -37,7 +27,6 @@ interface ArticleContentProps {
   authorInitials: string
   authorHandle: string
   avatarUrl?: string
-  coverUrl?: string
   publishedDate?: string
   relativeTime: string
 }
@@ -47,20 +36,14 @@ export function ArticleContent({
   authorInitials,
   authorHandle,
   avatarUrl,
-  coverUrl,
   publishedDate,
   relativeTime
 }: ArticleContentProps) {
-  const { language, setLanguage } = useLanguage()
   const router = useRouter()
 
-  const toggleLanguage = () => {
-    setLanguage(language === 'en' ? 'original' : 'en')
-  }
-
-  // Get content based on language preference
-  const displayTitle = language === 'original' ? article.title : (article.title_english || article.title)
-  const displayContent = language === 'original' ? article.full_article_content : (article.full_article_content_english || article.full_article_content)
+  // Use English content
+  const displayTitle = article.title_english
+  const displayContent = article.summary_english
 
   return (
     <>
@@ -95,18 +78,7 @@ export function ArticleContent({
             </div>
           </div>
           
-          {/* Action Buttons */}
-          <div className="flex items-center gap-3">
-            {/* Language Toggle */}
-            <Button 
-              variant="outline" 
-              className="gap-2"
-              onClick={toggleLanguage}
-            >
-              <Languages className="h-4 w-4" />
-              <span>{language === 'en' ? 'English' : 'Original'}</span>
-            </Button>
-          </div>
+
         </div>
 
         {/* Publication Date */}
@@ -116,31 +88,9 @@ export function ArticleContent({
           </div>
         )}
 
-        {/* Featured Image */}
-        {coverUrl && (
-          <div className="mb-6">
-            <Image
-              src={coverUrl}
-              alt={`Cover for ${displayTitle}`}
-              width={800}
-              height={400}
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 800px"
-              className="w-full h-64 md:h-96 object-cover rounded-lg border border-border"
-              loading="lazy"
-              unoptimized
-              referrerPolicy="no-referrer"
-            />
-          </div>
-        )}
 
-        {/* AI Summary Section */}
-        {article.summary_english && (
-          <AiSummary
-            summaryEnglish={article.summary_english}
-            summaryChinese={article.summary_chinese}
-            summaryGeneratedAt={article.summary_generated_at}
-          />
-        )}
+
+
       </header>
 
       {/* Article Content */}

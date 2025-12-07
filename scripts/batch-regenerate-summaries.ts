@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 
 import { createClient } from '@supabase/supabase-js'
-import { generateArticleAnalysis } from '../lib/gemini'
+import { generateSummary } from './summarize-latest-article'
 import * as dotenv from 'dotenv'
 
 // Load environment variables
@@ -51,15 +51,14 @@ async function batchRegenerateSummaries() {
       'Media'
     ]
     
-    // 直接查询缺少指定字段或分类不标准的文章，按tweet_published_at排序
+    // 直接查询article_main表中所有需要重新生成摘要的文章
     const { data: articles, error } = await supabase
-      .from('articles')
-      .select('id, title, full_article_content, article_preview_text, tweet_published_at, summary_generated_at, summary_english, summary_chinese, category, language')
+      .from('article_main')
+      .select('id, title, full_article_content, article_preview_text, article_published_at, summary_english, category')
       .not('full_article_content', 'is', null)
-      .not('tweet_published_at', 'is', null)
-      .or(`summary_generated_at.is.null,summary_english.is.null,summary_chinese.is.null,category.is.null,language.is.null,category.not.in.(${standardCategories.map(c => `"${c}"`).join(',')})`)
-      .order('tweet_published_at', { ascending: false })
-      .limit(100) // 获取100篇需要处理的文章
+      .not('article_published_at', 'is', null)
+      .order('article_published_at', { ascending: false })
+      // 移除limit限制，处理所有文章
     
     if (error) {
       console.error('❌ Error fetching articles:', error)
@@ -97,15 +96,12 @@ async function batchRegenerateSummaries() {
             continue
           }
           
-          // 生成新的分析
-          const analysis = await generateArticleAnalysis(article.full_article_content, article.title)
+          // 生成新的英文摘要
+          const summaryEnglish = await generateSummary(article.title, article.full_article_content)
           
           // 准备更新数据
           const updateData = {
-            summary_chinese: analysis.summary.chinese,
-            summary_english: analysis.summary.english,
-            summary_generated_at: new Date().toISOString(),
-            language: analysis.language
+            summary_english: summaryEnglish
           }
 
           batchResults.push({
@@ -113,7 +109,7 @@ async function batchRegenerateSummaries() {
             updateData
           })
           
-          console.log(`✅ Generated summary for: ${article.title} (${analysis.language})`)
+          console.log(`✅ Generated summary for: ${article.title}`)
           
           // 短暂延迟避免API限制
           await new Promise(resolve => setTimeout(resolve, 500))
@@ -131,7 +127,7 @@ async function batchRegenerateSummaries() {
         for (const result of batchResults) {
           try {
             const { error: updateError } = await supabase
-              .from('articles')
+              .from('article_main')
               .update(result.updateData)
               .eq('id', result.id)
             

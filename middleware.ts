@@ -49,6 +49,7 @@ export async function middleware(request: NextRequest) {
                         pathname.startsWith('/summary/') ||
                         pathname === '/summaries' ||
                         pathname.startsWith('/summaries/') ||
+                        pathname === '/article-summary-demo' ||
                         pathname === '/terms' ||
                         pathname === '/privacy'
   const isProtectedRoute = pathname.startsWith('/profile')
@@ -136,6 +137,6 @@ export const config = {
      * - favicon.ico (favicon file)
      * Feel free to modify this pattern to include more paths.
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|json)$).*)',
   ],
 }

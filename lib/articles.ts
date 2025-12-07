@@ -18,7 +18,7 @@ export interface FetchArticlesOptions {
  */
 export async function fetchArticles(options: FetchArticlesOptions = {}): Promise<Article[]> {
   const {
-    limit = 500, // Further reduced limit to prevent timeouts
+    limit = 500, // Limit to 500 articles for categories
     sort = 'newest',
     search,
     category,
@@ -31,10 +31,9 @@ export async function fetchArticles(options: FetchArticlesOptions = {}): Promise
     const supabase = await createClient()
     
     let query = supabase
-      .from('articles')
+      .from('article_main')
       .select(`
         *,
-        summary_chinese,
         summary_english,
         summary_generated_at
       `)
@@ -42,10 +41,10 @@ export async function fetchArticles(options: FetchArticlesOptions = {}): Promise
 
     // Apply search filter
     if (search && search.trim()) {
-      query = query.or(`title.ilike.%${search.trim()}%,author_name.ilike.%${search.trim()}%,author_handle.ilike.%${search.trim()}%`)
+      query = query.or(`title.ilike.%${search.trim()}%,title_english.ilike.%${search.trim()}%`)
     }
 
-    // Apply category filter (server-side) - safe because we ensured this column exists via migration
+    // Apply category filter (server-side)
     // Skip filter if category is "All Category" or "All" to show all articles
     if (category && category.trim() && category.trim() !== 'All Category' && category.trim() !== 'All') {
       // Use ilike to match category within comma-separated values
@@ -57,7 +56,7 @@ export async function fetchArticles(options: FetchArticlesOptions = {}): Promise
       query = query.eq('language', language.trim())
     }
 
-    // Apply tag filter
+    // Apply tag filter (if these fields exist in article_main)
     if (tags && tags.length > 0) {
       // Filter by multiple tags using OR condition
       const tagConditions = tags.map(t => `tag.eq.${t.trim()}`).join(',')
@@ -66,7 +65,7 @@ export async function fetchArticles(options: FetchArticlesOptions = {}): Promise
       query = query.eq('tag', tag.trim())
     }
 
-    // Apply sorting
+    // Apply sorting - use article_published_at for article_main table
     if (sort === 'newest') {
       query = query.order('article_published_at', { ascending: false, nullsFirst: false })
     } else if (sort === 'oldest') {
@@ -137,6 +136,38 @@ export async function getArticleCategories(): Promise<string[]> {
 }
 
 /**
+ * Get a single article by slug
+ */
+export async function getArticleBySlug(slug: string): Promise<Article | null> {
+  try {
+    const supabase = await createClient()
+    
+    // Extract article ID from slug (last part after --)
+    const parts = slug.split('--');
+    if (parts.length < 2) {
+      return null;
+    }
+    
+    const shortId = parts[parts.length - 1];
+    
+    // Find article by matching the short ID within the full UUID using raw SQL
+  const { data, error } = await supabase
+    .rpc('get_article_by_short_id', { short_id: shortId });
+
+    if (error || !data || data.length === 0) {
+      console.error('Error fetching article by slug:', error)
+      return null
+    }
+
+    return data[0]
+    
+  } catch (error) {
+    console.error('Unexpected error fetching article by slug:', error)
+    return null
+  }
+}
+
+/**
  * Get article statistics
  */
 export async function getArticleStats() {
@@ -157,5 +188,51 @@ export async function getArticleStats() {
   } catch (error) {
     console.error('Unexpected error fetching stats:', error)
     return { total: 0 }
+  }
+}
+
+/**
+ * Get previous article
+ */
+export async function getPreviousArticle(currentArticleId: string): Promise<Article | null> {
+  try {
+    const supabase = await createClient()
+    
+    const { data, error } = await supabase
+      .rpc('get_previous_article', { current_article_id: currentArticleId })
+
+    if (error) {
+      console.error('Error fetching previous article:', error)
+      return null
+    }
+
+    return data?.[0] || null
+    
+  } catch (error) {
+    console.error('Unexpected error fetching previous article:', error)
+    return null
+  }
+}
+
+/**
+ * Get next article
+ */
+export async function getNextArticle(currentArticleId: string): Promise<Article | null> {
+  try {
+    const supabase = await createClient()
+    
+    const { data, error } = await supabase
+      .rpc('get_next_article', { current_article_id: currentArticleId })
+
+    if (error) {
+      console.error('Error fetching next article:', error)
+      return null
+    }
+
+    return data?.[0] || null
+    
+  } catch (error) {
+    console.error('Unexpected error fetching next article:', error)
+    return null
   }
 }

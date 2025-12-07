@@ -53,7 +53,7 @@ interface PageProps {
 
 
 
-// Custom fetch function for Trending articles (Day or Week tags)
+// Custom fetch function for Trending articles from article_main table
 async function fetchTrendingArticles(options: {
   search?: string
   category?: string
@@ -64,23 +64,18 @@ async function fetchTrendingArticles(options: {
 }): Promise<Article[]> {
   const supabase = await createClient()
   
-  // Trending page should always show both Day and Week tagged articles
-  const tagsToFilter = ['Day', 'Week']
-  
   let query = supabase
-    .from('articles')
+    .from('article_main')
     .select(`
       *,
-      summary_chinese,
       summary_english,
       summary_generated_at
     `)
-    .in('tag', tagsToFilter)
     .order('article_published_at', { ascending: false })
     .limit(1000)
   
   if (options.search && options.search.trim()) {
-    query = query.or(`title.ilike.%${options.search.trim()}%,author_name.ilike.%${options.search.trim()}%,author_handle.ilike.%${options.search.trim()}%`)
+    query = query.or(`title.ilike.%${options.search.trim()}%,title_english.ilike.%${options.search.trim()}%`)
   }
   
   if (options.category && options.category !== 'all' && options.category.trim()) {

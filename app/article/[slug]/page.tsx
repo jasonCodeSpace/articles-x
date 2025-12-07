@@ -1,12 +1,8 @@
+import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { ModernNav } from '@/components/modern-nav'
+import { getArticleBySlug, getPreviousArticle, getNextArticle } from '@/lib/articles'
 import { ArticleContent } from '@/components/article-content'
-
-import { ArticleBreadcrumb } from '@/components/article-breadcrumb'
-import { LanguageProvider } from '@/contexts/language-context'
-import { createClient } from '@/lib/supabase/server'
-import { extractArticleIdFromSlug } from '@/lib/url-utils'
-import { formatDistanceToNow } from '@/lib/date-utils'
+import { ArticleNavigation } from '@/components/article-navigation'
 
 interface ArticlePageProps {
   params: Promise<{
@@ -14,208 +10,120 @@ interface ArticlePageProps {
   }>
 }
 
-// Function to validate article slug format
-function isValidArticleSlug(slug: string): boolean {
-  // Check if slug follows the correct format: title-with-hyphens--shortId
-  const parts = slug.split('--')
-  if (parts.length !== 2) {
-    return false
-  }
-  
-  const titlePart = parts[0]
-  const idPart = parts[1]
-  
-  // Title part should be properly formatted with hyphens separating words
-  // Reject slugs that are too long without proper word separation
-  if (titlePart.length > 100) {
-    return false
-  }
-  
-  // Title part should not contain very long sequences without hyphens (indicating poor formatting)
-  const words = titlePart.split('-')
-  const hasLongWord = words.some(word => word.length > 15)
-  if (hasLongWord) {
-    return false
-  }
-  
-  // ID part should be exactly 6 characters (hex)
-  if (idPart.length !== 6 || !/^[a-f0-9]{6}$/i.test(idPart)) {
-    return false
-  }
-  
-  return true
-}
-
-export default async function ArticlePage({ params }: ArticlePageProps) {
-  const resolvedParams = await params
-  const supabase = await createClient()
-  
-  // Validate slug format first
-  if (!isValidArticleSlug(resolvedParams.slug)) {
-    notFound()
-  }
-  
-  // Get user session
-  const { data: { user } } = await supabase.auth.getUser()
-  
-  // Fetch categories
-  let categories: string[] = [];
-  try {
-    const { data, error } = await supabase
-      .from('articles')
-      .select('category')
-      .not('category', 'is', null);
-
-    if (error) {
-      console.error('Error fetching categories:', error);
-    } else {
-      const uniqueCategories = new Set<string>();
-      data?.forEach(article => {
-        if (article.category) {
-          // Split comma-separated categories and add all of them
-          article.category.split(',').forEach((cat: string) => {
-            const trimmedCat = cat.trim();
-            if (trimmedCat) {
-              uniqueCategories.add(trimmedCat);
-            }
-          });
-        }
-      });
-      categories = Array.from(uniqueCategories).sort();
-    }
-  } catch (error) {
-    console.error('Error fetching categories:', error);
-  }
-  
-  // Extract short ID from the slug and find the full UUID
-  const shortId = extractArticleIdFromSlug(resolvedParams.slug)
-  // Use SQL to directly find the article by short ID pattern
-  // Convert UUID to text and remove dashes, then check if it starts with shortId
-  const { data: articles, error: searchError } = await supabase
-    .rpc('find_articles_by_short_id', { short_id: shortId })
-  
-  if (searchError) {
-    console.error('Database error:', searchError)
-    notFound()
-  }
-  
-  // The RPC function already filters by short ID, so we just need the first result
-  const article = articles?.[0]
+export async function generateMetadata({ params }: ArticlePageProps): Promise<Metadata> {
+  const { slug } = await params
+  const article = await getArticleBySlug(slug)
   
   if (!article) {
-    notFound()
-  }
-
-  const authorInitials = article.author_name
-    ?.split(' ')
-    .map((name: string) => name[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2) || 'A'
-
-  const publishedDate = article.article_published_at || article.updated_at
-  const relativeTime = publishedDate ? formatDistanceToNow(new Date(publishedDate), { addSuffix: true }) : ''
-
-  const authorHandle = article.author_handle || 
-    article.author_name?.toLowerCase().replace(/\s+/g, '_') || 'unknown'
-
-  const avatarUrl = article.author_avatar
-  const coverUrl = article.image
-
-  return (
-    <LanguageProvider>
-      <div className="min-h-screen bg-background">
-        {/* Modern Navigation */}
-        <ModernNav user={user ?? undefined} categories={categories} />
-        
-        <div className="max-w-4xl mx-auto px-4 py-8 pt-24">
-          {/* Breadcrumbs */}
-          <ArticleBreadcrumb article={article} />
-
-
-
-          {/* Article Content */}
-          <ArticleContent
-            article={article}
-            authorInitials={authorInitials}
-            authorHandle={authorHandle}
-            avatarUrl={avatarUrl}
-            coverUrl={coverUrl}
-            publishedDate={publishedDate}
-            relativeTime={relativeTime}
-          />
-        </div>
-      </div>
-    </LanguageProvider>
-  )
-}
-
-export async function generateMetadata({ params }: ArticlePageProps) {
-  const resolvedParams = await params
-  const supabase = await createClient()
-  
-  // Extract short ID from the slug and find the full UUID
-  const shortId = extractArticleIdFromSlug(resolvedParams.slug)
-  
-  // Use the same RPC function as the main component
-  const { data: articles, error: searchError } = await supabase
-    .rpc('find_articles_by_short_id', { short_id: shortId })
-  
-  if (searchError || !articles) {
     return {
-      title: 'Article Not Found'
-    }
-  }
-  
-  // The RPC function already filters by short ID, so we just need the first result
-  const article = articles?.[0]
-
-  if (!article) {
-    return {
-      title: 'Article Not Found'
+      title: 'Article Not Found',
+      description: 'The requested article could not be found.'
     }
   }
 
-  const articleUrl = `https://www.xarticle.news/article/${resolvedParams.slug}`
+  const title = article.title_english || article.title
+  const description = article.summary_english || article.summary_chinese || 
+    (article.full_article_content ? article.full_article_content.substring(0, 160) + '...' : '')
   
   return {
-    title: article.title,
-    description: article.article_preview_text || 'Read this article',
-    alternates: {
-      canonical: articleUrl,
-    },
+    title: `${title} | XArticle`,
+    description,
     openGraph: {
-      title: article.title,
-      description: article.article_preview_text || 'Read this article',
+      title,
+      description,
       type: 'article',
-      url: article.article_url || articleUrl,
-      siteName: 'Xarticle',
-      images: article.image ? [{ 
+      publishedTime: article.article_published_at || article.updated_at,
+      authors: [article.author_name],
+      images: article.image ? [{
         url: article.image,
         width: 1200,
         height: 630,
-        alt: article.title
-      }] : [{
-        url: '/og-image.png',
-        width: 1200,
-        height: 630,
-        alt: 'Xarticle - Curated Articles from X (Twitter)',
-        type: 'image/png',
-      }],
+        alt: title
+      }] : undefined
     },
     twitter: {
       card: 'summary_large_image',
-      site: '@xarticle_news',
-      creator: '@xarticle_news',
-      title: article.title,
-      description: article.article_preview_text || 'Read this article',
-      images: article.image ? {
-        url: article.image,
-        alt: article.title
-      } : {
-        url: '/og-image.png',
-        alt: 'Xarticle - Curated Articles from X (Twitter)',
-      },
-    },
+      title,
+      description,
+      images: article.image ? [article.image] : undefined
+    }
   }
 }
+
+export default async function ArticlePage({ params }: ArticlePageProps) {
+  const { slug } = await params
+  const article = await getArticleBySlug(slug)
+  
+  if (!article) {
+    notFound()
+  }
+
+  // Get previous and next articles
+  const [previousArticle, nextArticle] = await Promise.all([
+    getPreviousArticle(article.id),
+    getNextArticle(article.id)
+  ])
+
+  // Generate author initials
+  const authorInitials = article.author_name
+    .split(' ')
+    .map(name => name.charAt(0))
+    .join('')
+    .toUpperCase()
+    .substring(0, 2)
+
+  // Generate author handle
+  const authorHandle = article.author_handle || 
+    article.author_name.toLowerCase().replace(/\s+/g, '')
+
+  // Process dates
+  const publishedDate = article.article_published_at || article.updated_at || new Date().toISOString()
+  const publishedTime = new Date(publishedDate)
+  const now = new Date()
+  const diffInHours = Math.floor((now.getTime() - publishedTime.getTime()) / (1000 * 60 * 60))
+  
+  let relativeTime: string
+  if (diffInHours < 1) {
+    relativeTime = 'less than an hour ago'
+  } else if (diffInHours < 24) {
+    relativeTime = `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`
+  } else {
+    const diffInDays = Math.floor(diffInHours / 24)
+    if (diffInDays < 7) {
+      relativeTime = `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`
+    } else if (diffInDays < 30) {
+      const diffInWeeks = Math.floor(diffInDays / 7)
+      relativeTime = `${diffInWeeks} week${diffInWeeks > 1 ? 's' : ''} ago`
+    } else {
+      const diffInMonths = Math.floor(diffInDays / 30)
+      relativeTime = `${diffInMonths} month${diffInMonths > 1 ? 's' : ''} ago`
+    }
+  }
+
+  return (
+    <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <ArticleContent
+        article={{
+          ...article,
+          updated_at: article.updated_at || new Date().toISOString()
+        }}
+        authorInitials={authorInitials}
+        authorHandle={authorHandle}
+        avatarUrl={article.author_avatar}
+        publishedDate={publishedDate}
+        relativeTime={relativeTime}
+      />
+      <ArticleNavigation
+        previousArticle={previousArticle}
+        nextArticle={nextArticle}
+      />
+    </div>
+  )
+}
+
+export async function generateStaticParams() {
+  return []
+}
+
+export const revalidate = 3600
+export const dynamic = 'force-dynamic'

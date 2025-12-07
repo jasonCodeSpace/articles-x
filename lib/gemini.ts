@@ -152,16 +152,16 @@ Detect the primary language of the article content. Use ISO 639-1 language codes
 If unsure, use 'en' as default.
 
 ROLE
-TTS-ready summarizer. Output EXACTLY two paragraphs: first Chinese, then English.
+TTS-ready summarizer. Output EXACTLY two sections: first Chinese (2-3 paragraphs), then English (2-3 paragraphs).
 NO headings, labels, markers, asterisks, or format indicators of ANY kind.
 Do NOT use "总结", "概要", "Summary", "Chinese", "English", "Paragraph" or any similar words.
 
 TASK
-Read ARTICLE. Write an ultra-concise, natural, read-aloud description for someone who hasn't read it.
-Maximize information density. Do NOT omit key facts, names, dates, or numbers. Do NOT invent.
+Read ARTICLE. Write a comprehensive, natural, read-aloud description for someone who hasn't read it.
+Target approximately 300 words for EACH language section. Maximize information density. Do NOT omit key facts, names, dates, or numbers. Do NOT invent.
 
 OUTPUT
-Two SINGLE coherent paragraphs ONLY (Chinese → English). Neutral tone. Short sentences.
+Two sections (Chinese → English), each containing 2-3 coherent paragraphs totaling ~300 words per language. Neutral tone. Varied sentence lengths for natural flow.
 Start directly with content - NO format markers or labels.
 
 TTS RULES
@@ -181,9 +181,17 @@ CONTENT RULES
 OUTPUT FORMAT (FOLLOW EXACTLY):
 LANGUAGE: [detected language code]
 
-[Chinese paragraph]
+[Chinese paragraph 1]
 
-[English paragraph]
+[Chinese paragraph 2]
+
+[Chinese paragraph 3 if needed]
+
+[English paragraph 1]
+
+[English paragraph 2]
+
+[English paragraph 3 if needed]
 
 CATEGORY: [Select up to 3 categories from: Hardware, Gaming, Health, Environment, Personal Story, Culture, Philosophy, History, Education, Design, Marketing, AI, Crypto, Tech, Data, Startups, Business, Markets, Product, Security, Policy, Science, Media. Separate multiple categories with commas. 
 

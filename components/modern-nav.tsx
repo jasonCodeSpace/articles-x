@@ -105,6 +105,8 @@ export function ModernNav({ user, className }: ModernNavProps) {
               </DropdownMenuContent>
             </DropdownMenu>
 
+
+
             {/* User Profile Dropdown or Login Button */}
             {user ? (
               <DropdownMenu>
@@ -241,6 +243,8 @@ export function ModernNav({ user, className }: ModernNavProps) {
           >
             Trending
           </button>
+          
+
           
           {/* Category Dropdown for Mobile */}
           <DropdownMenu>

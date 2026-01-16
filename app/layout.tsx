@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/contexts/theme-context";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
 import { WebVitals } from "@/components/web-vitals";
+import { CookieConsent } from "@/components/cookie-consent";
 
 const inter = Inter({ 
   subsets: ["latin"],
@@ -83,15 +84,30 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const jsonLd = {
+  const websiteSchema = {
     "@context": "https://schema.org",
     "@type": "WebSite",
     "name": "Xarticle",
     "url": "https://www.xarticle.news/",
+    "description": "Curated articles from X (Twitter) with AI-powered summaries",
     "potentialAction": {
       "@type": "SearchAction",
-      "target": "https://www.xarticle.news/search?q={query}",
-      "query-input": "required name=query"
+      "target": "https://www.xarticle.news/search?q={search_term_string}",
+      "query-input": "required name=search_term_string"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Xarticle",
+      "url": "https://www.xarticle.news",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://www.xarticle.news/og-image.png",
+        "width": 1200,
+        "height": 630
+      },
+      "sameAs": [
+        "https://twitter.com/xarticle_news"
+      ]
     }
   };
 
@@ -113,7 +129,7 @@ export default function RootLayout({
       <body className={`${inter.variable} font-sans antialiased bg-background text-foreground`}>
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
         />
         {/* Google Analytics - delayed for performance */}
         <Script
@@ -135,6 +151,7 @@ export default function RootLayout({
           </LanguageProvider>
         </ThemeProvider>
         <WebVitals />
+        <CookieConsent />
         <SpeedInsights />
         <Analytics />
       </body>

@@ -26,7 +26,7 @@ export const metadata: Metadata = {
         width: 1200,
         height: 630,
         alt: 'Xarticle - Curated Articles from X',
-        type: 'image/svg+xml'
+        type: 'image/png'
       }
     ]
   },
@@ -97,8 +97,45 @@ export default async function LandingPage() {
   //   .select('*', { count: 'exact', head: true })
   //   .eq('tag', 'Day')
 
+  // FAQ Schema for SEO
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "How does Xarticle find articles?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "We monitor thousands of X accounts from founders, VCs, researchers, and thought leaders. Our AI identifies when they share long-form articles and automatically curates the best content."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I save articles for later?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes! Create your personal reading list by saving articles. Access your saved articles anytime from your dashboard."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How often is content updated?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Our system runs continuously, updating every 15 minutes to ensure you never miss the latest valuable content shared on X."
+        }
+      }
+    ]
+  }
+
   return (
-    <div className="min-h-screen bg-background">
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+      <div className="min-h-screen bg-background">
       <ClientNavWrapper initialUser={user} categories={categories} />
       
       {/* Hero Section */}
@@ -647,5 +684,6 @@ export default async function LandingPage() {
         </div>
       </footer>
     </div>
+    </>
   )
 }

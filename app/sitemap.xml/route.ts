@@ -151,6 +151,10 @@ export async function GET() {
       { url: '/trending', priority: '0.9', changefreq: 'hourly' },
       { url: '/summary', priority: '0.9', changefreq: 'daily' },
       { url: '/summaries', priority: '0.8', changefreq: 'daily' },
+      { url: '/about', priority: '0.5', changefreq: 'monthly' },
+      { url: '/contact', priority: '0.5', changefreq: 'monthly' },
+      { url: '/privacy', priority: '0.3', changefreq: 'yearly' },
+      { url: '/terms', priority: '0.3', changefreq: 'yearly' },
       { url: '/landing' }
     ]
     
@@ -181,7 +185,7 @@ ${Array.from(categoryMap.entries()).map(([category, lastMod]) => `  <url>
 ${validArticles?.map((article: { slug: string; article_published_at?: string; updated_at?: string }) => `  <url>
     <loc>${escapeXml(baseUrl + '/article/' + encodeURIComponent(article.slug))}</loc>
     <lastmod>${escapeXml(normalizeTimestamp(article.updated_at || article.article_published_at))}</lastmod>
-    <changefreq>yearly</changefreq>
+    <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>`).join('\n') || ''}
 </urlset>`

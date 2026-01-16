@@ -1,147 +1,204 @@
-'use client'
-
-import { useEffect, useState } from 'react'
-import { useParams } from 'next/navigation'
+import { Metadata } from 'next'
+import { notFound } from 'next/navigation'
+import { createServiceClient } from '@/lib/supabase/service'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { ArticleCard, Article } from '@/components/article-card'
-import { FeedLoading } from '@/components/feed-loading'
-import { FeedEmptyState } from '@/components/feed-empty-state'
-import { Pagination } from '@/components/pagination'
-import { AuthorPageToolbar } from '@/components/author-page-toolbar'
-import { LanguageProvider } from '@/contexts/language-context'
 import { ModernNav } from '@/components/modern-nav'
+import { AuthorArticlesClient } from '@/components/author-articles-client'
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 
-interface AuthorInfo {
-  full_name: string
-  username: string
-  avatar_url?: string
-  articleCount: number
+interface AuthorPageProps {
+  params: Promise<{
+    handle: string
+  }>
 }
 
-interface PaginationInfo {
-  currentPage: number
-  totalPages: number
-  totalCount: number
-  hasNextPage: boolean
-  hasPreviousPage: boolean
+async function getAuthorData(handle: string, page: number = 1, limit: number = 9) {
+  const supabase = createServiceClient()
+  const offset = (page - 1) * limit
+
+  // Get total count
+  const { count: totalCount } = await supabase
+    .from('articles')
+    .select('*', { count: 'exact', head: true })
+    .eq('author_handle', handle)
+
+  // Fetch articles
+  const { data: articlesData, error } = await supabase
+    .from('articles')
+    .select(
+      'id, title, article_preview_text, image, author_name, author_handle, author_avatar, article_published_at, tweet_id, language, category, slug, tweet_likes, tweet_retweets, tweet_replies'
+    )
+    .eq('author_handle', handle)
+    .order('article_published_at', { ascending: false })
+    .range(offset, offset + limit - 1)
+
+  if (error || !articlesData || articlesData.length === 0) {
+    return null
+  }
+
+  const firstArticle = articlesData[0]
+  const authorInfo = {
+    username: firstArticle.author_handle,
+    full_name: firstArticle.author_name,
+    avatar_url: firstArticle.author_avatar,
+    articleCount: totalCount || articlesData.length
+  }
+
+  const articles = articlesData.map((article) => ({
+    id: article.id,
+    title: article.title,
+    slug: article.slug,
+    author_name: article.author_name,
+    author_handle: article.author_handle,
+    author_avatar: article.author_avatar,
+    image: article.image,
+    article_published_at: article.article_published_at,
+    created_at: article.article_published_at,
+    tags: [],
+    category: article.category,
+    tweet_id: article.tweet_id,
+    tweet_views: 0,
+    tweet_replies: article.tweet_replies || 0,
+    tweet_retweets: article.tweet_retweets || 0,
+    tweet_likes: article.tweet_likes || 0,
+    tweet_bookmarks: 0,
+    article_preview_text: article.article_preview_text,
+    language: article.language
+  }))
+
+  const totalPages = Math.ceil((totalCount || 0) / limit)
+
+  return {
+    authorInfo,
+    articles,
+    pagination: {
+      currentPage: page,
+      totalPages,
+      totalCount: totalCount || 0,
+      hasNextPage: page < totalPages,
+      hasPreviousPage: page > 1
+    }
+  }
 }
 
-export default function AuthorPage() {
-  const params = useParams()
-  const handle = params.handle as string
-  const [authorInfo, setAuthorInfo] = useState<AuthorInfo | null>(null)
-  const [articles, setArticles] = useState<Article[]>([])
-  const [pagination, setPagination] = useState<PaginationInfo | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [currentPage, setCurrentPage] = useState(1)
-  const [categories, setCategories] = useState<string[]>([])
+async function getCategories() {
+  const supabase = createServiceClient()
+  const { data } = await supabase
+    .from('articles')
+    .select('category')
+    .not('category', 'is', null)
 
-  // Fetch categories
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await fetch('/api/categories')
-        if (response.ok) {
-          const data = await response.json()
-          if (data.categories) {
-            setCategories(data.categories)
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching categories:', error)
-      }
+  if (!data) return []
+
+  const categorySet = new Set<string>()
+  data.forEach((item) => {
+    if (item.category) {
+      item.category.split(',').forEach((cat: string) => {
+        categorySet.add(cat.trim())
+      })
     }
+  })
 
-    fetchCategories()
-  }, [])
+  return Array.from(categorySet).sort()
+}
 
-  useEffect(() => {
-    const fetchAuthorData = async () => {
-      try {
-        setLoading(true)
-        const response = await fetch(`/api/author/${encodeURIComponent(handle)}?page=${currentPage}&limit=9`)
-        
-        if (!response.ok) {
-          throw new Error('Failed to fetch author data')
-        }
-        
-        const data = await response.json()
-        setAuthorInfo(data.author)
-        setArticles(data.articles)
-        setPagination(data.pagination)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred')
-      } finally {
-        setLoading(false)
-      }
+export async function generateMetadata({ params }: AuthorPageProps): Promise<Metadata> {
+  const { handle } = await params
+  const data = await getAuthorData(handle)
+
+  if (!data) {
+    return {
+      title: 'Author Not Found | XArticle',
+      description: 'The requested author could not be found.'
     }
-
-    if (handle) {
-      fetchAuthorData()
-    }
-  }, [handle, currentPage])
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page)
-    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background">
-        <ModernNav categories={categories} />
-        <div className="container mx-auto px-4 py-8 pt-24">
-          <FeedLoading />
-        </div>
-      </div>
-    )
+  const { authorInfo } = data
+  const title = `${authorInfo.full_name} (@${authorInfo.username}) | XArticle`
+  const description = `Read ${authorInfo.articleCount} articles by ${authorInfo.full_name} on XArticle. Discover insights and perspectives from @${authorInfo.username}.`
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: 'profile',
+      images: authorInfo.avatar_url ? [{
+        url: authorInfo.avatar_url,
+        width: 400,
+        height: 400,
+        alt: `${authorInfo.full_name} profile picture`
+      }] : undefined
+    },
+    twitter: {
+      card: 'summary',
+      title,
+      description,
+      images: authorInfo.avatar_url ? [authorInfo.avatar_url] : undefined
+    },
+    alternates: {
+      canonical: `https://www.xarticle.news/author/${handle}`
+    }
+  }
+}
+
+export default async function AuthorPage({ params }: AuthorPageProps) {
+  const { handle } = await params
+  const [data, categories] = await Promise.all([
+    getAuthorData(handle),
+    getCategories()
+  ])
+
+  if (!data) {
+    notFound()
   }
 
-  if (error || !authorInfo) {
-    return (
-      <div className="min-h-screen bg-background">
-        <ModernNav categories={categories} />
-        <div className="container mx-auto px-4 py-8 pt-24">
-          <FeedEmptyState 
-            type="error"
-            onRetry={() => window.location.reload()}
-          />
-        </div>
-      </div>
-    )
-  }
+  const { authorInfo, articles, pagination } = data
 
   const authorInitials = (authorInfo.full_name || '')
     .split(' ')
-    .map(name => name[0])
+    .map((name: string) => name[0])
     .join('')
     .toUpperCase()
     .slice(0, 2)
 
+  // Person Schema for SEO
+  const personSchema = {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": authorInfo.full_name,
+    "url": `https://x.com/${authorInfo.username}`,
+    "image": authorInfo.avatar_url,
+    "sameAs": [
+      `https://x.com/${authorInfo.username}`
+    ]
+  }
+
   return (
-    <LanguageProvider>
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(personSchema) }}
+      />
       <div className="min-h-screen bg-background">
         <ModernNav categories={categories} />
         <div className="container mx-auto px-4 py-8 pt-24">
-          {/* Back button */}
-          <Link 
-            href="/trending" 
+          <Link
+            href="/trending"
             className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-6"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to Home
           </Link>
 
-          {/* Author header */}
           <div className="bg-gray-900/80 border border-gray-700 rounded-xl p-6 mb-8">
             <div className="flex items-center gap-4">
               <Avatar className="h-16 w-16 ring-2 ring-gray-600">
                 {authorInfo.avatar_url ? (
-                  <AvatarImage 
-                    src={authorInfo.avatar_url} 
+                  <AvatarImage
+                    src={authorInfo.avatar_url}
                     alt={`${authorInfo.full_name} profile picture`}
                     loading="lazy"
                     referrerPolicy="no-referrer"
@@ -161,34 +218,15 @@ export default function AuthorPage() {
             </div>
           </div>
 
-          {/* Language Toolbar */}
-           <AuthorPageToolbar />
-
-          {/* Articles grid */}
-          {articles.length > 0 ? (
-            <>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {articles.map((article) => (
-                  <ArticleCard key={article.id} article={article} />
-                ))}
-              </div>
-              
-              {/* Pagination */}
-              {pagination && pagination.totalPages > 1 && (
-                <Pagination
-                  currentPage={pagination.currentPage}
-                  totalPages={pagination.totalPages}
-                  onPageChange={handlePageChange}
-                />
-              )}
-            </>
-          ) : (
-            <FeedEmptyState 
-              type="no-articles"
-            />
-          )}
+          <AuthorArticlesClient
+            handle={handle}
+            initialArticles={articles}
+            initialPagination={pagination}
+          />
         </div>
       </div>
-    </LanguageProvider>
+    </>
   )
 }
+
+export const revalidate = 3600

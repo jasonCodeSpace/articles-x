@@ -13,27 +13,129 @@ interface PageProps {
   searchParams: Promise<{ search?: string; page?: string }>
 }
 
+// SEO-optimized category descriptions
+const categoryDescriptions: Record<string, { title: string; description: string }> = {
+  'ai': {
+    title: 'AI & Machine Learning Articles',
+    description: 'Latest AI breakthroughs, machine learning insights, and artificial intelligence trends from industry experts on X.'
+  },
+  'crypto': {
+    title: 'Crypto & Blockchain Articles',
+    description: 'DeFi protocols, blockchain technology, and cryptocurrency market analysis from top voices on X.'
+  },
+  'tech': {
+    title: 'Technology & Software Articles',
+    description: 'Software engineering, cloud architecture, and tech industry insights from developers on X.'
+  },
+  'startups': {
+    title: 'Startup & Entrepreneurship Articles',
+    description: 'Founder stories, fundraising strategies, and startup growth insights from entrepreneurs on X.'
+  },
+  'business': {
+    title: 'Business Strategy Articles',
+    description: 'Business operations, monetization strategies, and management insights from industry leaders on X.'
+  },
+  'markets': {
+    title: 'Financial Markets Articles',
+    description: 'Stock market analysis, macro economics, and trading insights from financial experts on X.'
+  },
+  'product': {
+    title: 'Product Management Articles',
+    description: 'Product strategy, user research, and roadmap planning insights from product leaders on X.'
+  },
+  'design': {
+    title: 'Design & UX Articles',
+    description: 'UI/UX design, visual design, and design system insights from creative professionals on X.'
+  },
+  'security': {
+    title: 'Cybersecurity Articles',
+    description: 'Security research, privacy engineering, and threat analysis from security experts on X.'
+  },
+  'data': {
+    title: 'Data Engineering Articles',
+    description: 'Data pipelines, analytics, and MLOps insights from data professionals on X.'
+  },
+  'hardware': {
+    title: 'Hardware & Electronics Articles',
+    description: 'Semiconductor innovations, computer hardware, and electronics engineering insights from hardware experts on X.'
+  },
+  'gaming': {
+    title: 'Gaming Industry Articles',
+    description: 'Video game development, esports, and gaming industry trends from game developers and enthusiasts on X.'
+  },
+  'health': {
+    title: 'Health & Wellness Articles',
+    description: 'Medical research, health technology, and wellness insights from healthcare professionals on X.'
+  },
+  'environment': {
+    title: 'Environment & Climate Articles',
+    description: 'Climate science, sustainability initiatives, and environmental policy discussions from experts on X.'
+  },
+  'personal-story': {
+    title: 'Personal Stories & Experiences',
+    description: 'Inspiring personal journeys, career stories, and life lessons shared by thought leaders on X.'
+  },
+  'culture': {
+    title: 'Culture & Society Articles',
+    description: 'Cultural trends, social commentary, and societal observations from diverse voices on X.'
+  },
+  'philosophy': {
+    title: 'Philosophy & Ideas Articles',
+    description: 'Philosophical discussions, intellectual debates, and thought-provoking ideas from thinkers on X.'
+  },
+  'history': {
+    title: 'History & Heritage Articles',
+    description: 'Historical analysis, heritage preservation, and lessons from the past shared by historians on X.'
+  },
+  'education': {
+    title: 'Education & Learning Articles',
+    description: 'EdTech innovations, learning strategies, and educational insights from educators on X.'
+  },
+  'marketing': {
+    title: 'Marketing & Growth Articles',
+    description: 'Digital marketing strategies, growth hacking, and brand building insights from marketers on X.'
+  },
+  'policy': {
+    title: 'Policy & Regulation Articles',
+    description: 'Tech policy, regulatory developments, and governance discussions from policy experts on X.'
+  },
+  'science': {
+    title: 'Science & Research Articles',
+    description: 'Scientific discoveries, research breakthroughs, and academic insights from scientists on X.'
+  },
+  'media': {
+    title: 'Media & Journalism Articles',
+    description: 'Media trends, journalism practices, and content creation insights from media professionals on X.'
+  },
+}
+
 // Generate metadata for category pages
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { category } = await params
   const decodedCategory = categorySlugToDisplayName(category)
   const slug = category.toLowerCase()
-  
+
+  // Use optimized description if available
+  const seoData = categoryDescriptions[slug]
+  const title = seoData?.title || `${decodedCategory} Articles on X`
+  const description = seoData?.description ||
+    `Discover daily curated ${decodedCategory.toLowerCase()} articles shared on X—expert insights and must-read posts.`
+
   return {
-    title: `${decodedCategory} Articles on X | Xarticle.news`,
-    description: `Discover daily curated ${decodedCategory.toLowerCase()} articles shared on X—expert insights and must-read posts, cleaned from social noise.`,
+    title: `${title} | Xarticle.news`,
+    description,
     alternates: { canonical: `/category/${slug}` },
     robots: { index: true, follow: true },
     openGraph: {
       type: 'website',
       url: `/category/${slug}`,
-      title: `${decodedCategory} Articles on X | Xarticle.news`,
-      description: `Daily curated ${decodedCategory.toLowerCase()} articles from X—expert insights and must-read posts.`,
+      title: `${title} | Xarticle.news`,
+      description,
     },
     twitter: {
       card: 'summary',
-      title: `${decodedCategory} Articles on X`,
-      description: `Daily curated ${decodedCategory.toLowerCase()} articles from X.`,
+      title,
+      description,
     },
   }
 }

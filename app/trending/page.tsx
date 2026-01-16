@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Trending Articles From X | Xarticle',
     description: 'Curated, up-to-date reads from leading voices on X across tech, business, crypto, and more.',
-    url: 'https://www.xarticle.news/',
+    url: 'https://www.xarticle.news/trending',
     siteName: 'Xarticle',
     type: 'website',
     images: [
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     description: 'Curated, up-to-date reads from leading voices on X.',
     images: ['/og-image.png'],
   },
-  alternates: { canonical: 'https://www.xarticle.news/' },
+  alternates: { canonical: 'https://www.xarticle.news/trending' },
   robots: { index: true, follow: true },
 }
 
@@ -53,7 +53,7 @@ interface PageProps {
 
 
 
-// Custom fetch function for Trending articles (Day or Week tags)
+// Custom fetch function for Trending articles from article_main table
 async function fetchTrendingArticles(options: {
   search?: string
   category?: string
@@ -64,23 +64,18 @@ async function fetchTrendingArticles(options: {
 }): Promise<Article[]> {
   const supabase = await createClient()
   
-  // Trending page should always show both Day and Week tagged articles
-  const tagsToFilter = ['Day', 'Week']
-  
   let query = supabase
-    .from('articles')
+    .from('article_main')
     .select(`
       *,
-      summary_chinese,
       summary_english,
       summary_generated_at
     `)
-    .in('tag', tagsToFilter)
     .order('article_published_at', { ascending: false })
     .limit(1000)
   
   if (options.search && options.search.trim()) {
-    query = query.or(`title.ilike.%${options.search.trim()}%,author_name.ilike.%${options.search.trim()}%,author_handle.ilike.%${options.search.trim()}%`)
+    query = query.or(`title.ilike.%${options.search.trim()}%,title_english.ilike.%${options.search.trim()}%`)
   }
   
   if (options.category && options.category !== 'all' && options.category.trim()) {

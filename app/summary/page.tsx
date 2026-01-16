@@ -174,7 +174,7 @@ export const metadata = {
         width: 1200,
         height: 630,
         alt: 'Daily Summary - Curated Articles and Insights | Xarticle',
-        type: 'image/svg+xml',
+        type: 'image/png',
       },
     ],
   },

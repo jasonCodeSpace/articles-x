@@ -25,7 +25,7 @@ export const metadata = {
         width: 1200,
         height: 630,
         alt: 'Historical Daily Summaries Archive | Xarticle',
-        type: 'image/svg+xml',
+        type: 'image/png',
       },
     ],
   },

@@ -125,6 +125,30 @@ export default async function LandingPage() {
           "@type": "Answer",
           "text": "Our system runs continuously, updating every 15 minutes to ensure you never miss the latest valuable content shared on X."
         }
+      },
+      {
+        "@type": "Question",
+        "name": "What categories are available on Xarticle?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Xarticle offers over 20 categories including AI, Crypto, Tech, Startups, Business, Markets, Product, Design, Security, Science, and more. Browse by topic to find content that interests you."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is Xarticle free to use?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, Xarticle is free to use. You can browse all articles, read AI-generated summaries, and access daily summary reports without any cost."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does the AI summarization work?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "When articles are lengthy, our AI automatically generates concise summaries highlighting the key points. This helps you quickly understand the core content before deciding to read the full article."
+        }
       }
     ]
   }
@@ -546,7 +570,7 @@ export default async function LandingPage() {
                 We monitor thousands of X accounts from founders, VCs, researchers, and thought leaders. Our AI identifies when they share long-form articles and automatically curates the best content.
               </p>
             </div>
-            
+
             <div className="border border-border rounded-lg p-6">
               <h3 className="text-lg font-semibold text-foreground mb-3">
                 Can I save articles for later?
@@ -555,13 +579,40 @@ export default async function LandingPage() {
                 Yes! Create your personal reading list by saving articles. Access your saved articles anytime from your dashboard.
               </p>
             </div>
-            
+
             <div className="border border-border rounded-lg p-6">
               <h3 className="text-lg font-semibold text-foreground mb-3">
                 How often is content updated?
               </h3>
               <p className="text-muted-foreground">
                 Our system runs continuously, updating every 15 minutes to ensure you never miss the latest valuable content shared on X.
+              </p>
+            </div>
+
+            <div className="border border-border rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-foreground mb-3">
+                What categories are available on Xarticle?
+              </h3>
+              <p className="text-muted-foreground">
+                Xarticle offers over 20 categories including AI, Crypto, Tech, Startups, Business, Markets, Product, Design, Security, Science, and more. Browse by topic to find content that interests you.
+              </p>
+            </div>
+
+            <div className="border border-border rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-foreground mb-3">
+                Is Xarticle free to use?
+              </h3>
+              <p className="text-muted-foreground">
+                Yes, Xarticle is free to use. You can browse all articles, read AI-generated summaries, and access daily summary reports without any cost.
+              </p>
+            </div>
+
+            <div className="border border-border rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-foreground mb-3">
+                How does the AI summarization work?
+              </h3>
+              <p className="text-muted-foreground">
+                When articles are lengthy, our AI automatically generates concise summaries highlighting the key points. This helps you quickly understand the core content before deciding to read the full article.
               </p>
             </div>
           </div>

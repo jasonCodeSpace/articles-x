@@ -31,19 +31,14 @@ export interface TweetData {
 export interface DatabaseArticle {
   title: string
   slug: string
-  content: string
-  excerpt?: string
+  full_article_content: string
+  article_preview_text?: string
   author_name: string
   author_handle?: string
   author_avatar?: string
-  status: 'draft' | 'published'
-  published_at?: string
-  meta_title?: string
-  meta_description?: string
-  featured_image_url?: string
-  tags: string[]
+  image?: string
+  tag?: string[]
   category?: string
-  tweet_url?: string
   tweet_published_at?: string
   tweet_id?: string
   article_published_at?: string
@@ -207,18 +202,13 @@ export function harvestedToDatabase(harvested: HarvestedArticle): DatabaseArticl
   const result: DatabaseArticle = {
     title: harvested.title,
     slug,
-    content,
-    excerpt,
+    full_article_content: content,
+    article_preview_text: excerpt,
     author_name: harvested.author_handle,
     author_handle: harvested.author_handle,
     author_avatar: harvested.author_avatar || undefined,
-    status: 'published' as const,
-    published_at: publishedAt,
-    meta_title: harvested.title,
-    meta_description: excerpt,
-    featured_image_url: harvested.featured_image_url,
-    tags: ['twitter', 'imported'],
-    tweet_url: tweetUrl,
+    image: harvested.featured_image_url,
+    tag: ['twitter', 'imported'],
     tweet_published_at: publishedAt,
     tweet_id: harvested.tweet_id,
     article_published_at: publishedAt, // Assuming article published at same time as tweet
@@ -322,16 +312,13 @@ export async function batchUpsertArticles(
             .from('articles')
             .update({
               title: dbArticle.title,
-              content: dbArticle.content,
-              excerpt: dbArticle.excerpt,
+              full_article_content: dbArticle.full_article_content,
+              article_preview_text: dbArticle.article_preview_text,
               author_name: dbArticle.author_name,
               author_handle: dbArticle.author_handle,
               author_avatar: dbArticle.author_avatar,
-              meta_title: dbArticle.meta_title,
-              meta_description: dbArticle.meta_description,
-              featured_image_url: dbArticle.featured_image_url,
-              tags: dbArticle.tags,
-              tweet_url: dbArticle.tweet_url,
+              image: dbArticle.image,
+              tag: dbArticle.tag,
               tweet_published_at: dbArticle.tweet_published_at,
               tweet_id: dbArticle.tweet_id,
               article_published_at: dbArticle.article_published_at,

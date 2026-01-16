@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react'
 import { ArticleCard, Article } from '@/components/article-card'
 import { FeedEmptyState } from '@/components/feed-empty-state'
 import { useArticleFeed } from '@/hooks/use-article-feed'
-import { useLanguage } from '@/contexts/language-context'
+
 import { FeedLoading } from '@/components/feed-loading'
 import { FeaturedCard } from '@/components/featured-card'
 
@@ -28,7 +28,6 @@ interface ArticleFeedProps {
 
 export function ArticleFeed({ initialArticles, initialSearchQuery = '' }: ArticleFeedProps) {
   const [sortBy, setSortBy] = useState<'latest' | 'hot'>('latest')
-  const { language, setLanguage } = useLanguage()
 
   // Map our sortBy state to useArticleFeed's SortOption
   const sortOption = sortBy === 'hot' ? 'views_high' : 'newest'
@@ -65,8 +64,6 @@ export function ArticleFeed({ initialArticles, initialSearchQuery = '' }: Articl
           isLoading={feedLoading}
           sortBy={sortBy}
           onSortChange={setSortBy}
-          language={language === 'en' ? 'english' : 'original'}
-            onLanguageChange={(lang) => setLanguage(lang === 'english' ? 'en' : 'original')}
         />
 
       {/* X.com style feed - single column */}

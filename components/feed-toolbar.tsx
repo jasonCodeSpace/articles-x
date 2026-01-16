@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Search, TrendingUp, Clock, Globe, Languages } from 'lucide-react'
+import { Search, TrendingUp, Clock } from 'lucide-react'
 
 interface FeedToolbarProps {
   onSearchChange: (search: string) => void
@@ -11,8 +11,6 @@ interface FeedToolbarProps {
   isLoading?: boolean
   sortBy: 'latest' | 'hot'
   onSortChange: (sort: 'latest' | 'hot') => void
-  language: 'original' | 'english'
-  onLanguageChange: (language: 'original' | 'english') => void
 }
 
 export function FeedToolbar({
@@ -20,9 +18,7 @@ export function FeedToolbar({
   searchValue,
   isLoading = false,
   sortBy,
-  onSortChange,
-  language,
-  onLanguageChange
+  onSortChange
 }: FeedToolbarProps) {
   const [searchInput, setSearchInput] = useState(searchValue)
 
@@ -42,9 +38,9 @@ export function FeedToolbar({
   }
 
   return (
-    <div className="flex flex-col gap-3 items-center justify-center p-3 bg-transparent border-b border-gray-700/50">
-      {/* Centered Search */}
-      <form onSubmit={handleSearchSubmit} className="w-full max-w-md sm:max-w-sm">
+    <div className="flex items-center justify-center gap-3 p-3 bg-transparent border-b border-gray-700/50">
+      {/* Search Bar */}
+      <form onSubmit={handleSearchSubmit} className="flex-1 max-w-md">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
@@ -61,48 +57,25 @@ export function FeedToolbar({
         </div>
       </form>
       
-      {/* Button Row - Side by side on all screen sizes */}
-      <div className="flex flex-row gap-3 items-center justify-center">
-        {/* Sort Button */}
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => onSortChange(sortBy === 'latest' ? 'hot' : 'latest')}
-          className="flex items-center gap-2 rounded-full"
-        >
-          {sortBy === 'latest' ? (
-            <>
-              <Clock className="h-4 w-4" />
-              Latest
-            </>
-          ) : (
-            <>
-              <TrendingUp className="h-4 w-4" />
-              Hot
-            </>
-          )}
-        </Button>
-        
-        {/* Language Toggle Button */}
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => onLanguageChange(language === 'original' ? 'english' : 'original')}
-          className="flex items-center gap-2 rounded-full"
-        >
-          {language === 'original' ? (
-            <>
-              <Globe className="h-4 w-4" />
-              Original
-            </>
-          ) : (
-            <>
-              <Languages className="h-4 w-4" />
-              English
-            </>
-          )}
-        </Button>
-      </div>
+      {/* Sort Button */}
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => onSortChange(sortBy === 'latest' ? 'hot' : 'latest')}
+        className="flex items-center gap-2 rounded-full flex-shrink-0"
+      >
+        {sortBy === 'latest' ? (
+          <>
+            <Clock className="h-4 w-4" />
+            Latest
+          </>
+        ) : (
+          <>
+            <TrendingUp className="h-4 w-4" />
+            Hot
+          </>
+        )}
+      </Button>
     </div>
   )
 }

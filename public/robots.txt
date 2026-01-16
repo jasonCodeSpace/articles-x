@@ -1,86 +1,30 @@
-# Robots.txt for Articles X (www.xarticle.news)
-# Modern article curation platform - RESTRICTED ACCESS
-# Last updated: 2025-01-10
+# Robots.txt for Xarticle (www.xarticle.news)
+# Last updated: 2025-01-16
 
-# Only allow major search engines
+# Social media crawlers - full access for Open Graph
+User-agent: Twitterbot
+Allow: /
+
+User-agent: facebookexternalhit
+Allow: /
+
+# Major search engines
 User-agent: Googlebot
 Allow: /
-Allow: /og-image.svg
-Allow: /logo.svg
-Allow: /*.svg
-Allow: /*.png
-Allow: /*.jpg
-Allow: /*.jpeg
-Allow: /*.webp
-Allow: /article/
-Allow: /category/
-Allow: /author/
-Allow: /about
-Allow: /privacy
-Allow: /terms
-Allow: /_next/
-Allow: /static/
-Allow: /favicon.ico
-Allow: /*.css
-Allow: /*.js
-Allow: /*.woff
-Allow: /*.woff2
 
 User-agent: Bingbot
 Allow: /
-Allow: /og-image.svg
-Allow: /logo.svg
-Allow: /*.svg
-Allow: /*.png
-Allow: /*.jpg
-Allow: /*.jpeg
-Allow: /*.webp
+
+# All other bots - allow public content
+User-agent: *
+Allow: /
 Allow: /article/
 Allow: /category/
 Allow: /author/
+Allow: /trending
 Allow: /about
 Allow: /privacy
 Allow: /terms
-Allow: /_next/
-Allow: /static/
-Allow: /favicon.ico
-Allow: /*.css
-Allow: /*.js
-Allow: /*.woff
-Allow: /*.woff2
-
-# Limited access for social media crawlers (only for Open Graph)
-User-agent: Twitterbot
-Allow: /og-image.svg
-Allow: /logo.svg
-Allow: /*.svg
-Allow: /*.png
-Allow: /*.jpg
-Allow: /*.jpeg
-Allow: /*.webp
-Allow: /article/
-Allow: /about
-Disallow: /
-
-User-agent: facebookexternalhit
-Allow: /og-image.svg
-Allow: /logo.svg
-Allow: /*.svg
-Allow: /*.png
-Allow: /*.jpg
-Allow: /*.jpeg
-Allow: /*.webp
-Allow: /article/
-Allow: /about
-Disallow: /
-
-# Block all other bots and crawlers
-User-agent: *
-Disallow: /
-
-# Block dynamic search and filter URLs (all query strings)
-Disallow: /*?*
-Disallow: /*&*
 
 # Block authentication and user areas
 Disallow: /login
@@ -89,11 +33,10 @@ Disallow: /profile/
 Disallow: /dashboard/
 Disallow: /settings/
 
-# Block API endpoints
+# Block API endpoints except public feeds
 Disallow: /api/
-# Allow public feeds if needed:
-# Allow: /api/rss
-# Allow: /api/sitemap
+Allow: /api/rss
+Allow: /api/sitemap
 
 # Block admin and development areas
 Disallow: /admin/
@@ -101,12 +44,9 @@ Disallow: /dev/
 Disallow: /test/
 Disallow: /debug/
 
-# Block temporary and backup files
-Disallow: /*.tmp$
-Disallow: /*.temp$
-Disallow: /*.bak$
-Disallow: /*.backup$
-Disallow: /*.log$
+# Block tracking parameters only
+Disallow: /*?utm_*
+Disallow: /*&utm_*
 
 # Sitemap
 Sitemap: https://www.xarticle.news/sitemap.xml

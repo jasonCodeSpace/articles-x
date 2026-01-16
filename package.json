@@ -21,7 +21,9 @@
     "lighthouse:collect": "lhci collect",
     "lighthouse:assert": "lhci assert",
     "perf:audit": "npm run build && npm run lighthouse",
-    "perf:budget": "node scripts/check-performance-budget.js"
+    "perf:budget": "node scripts/check-performance-budget.js",
+    "workflow:articles": "tsx scripts/run-article-pipeline.ts",
+    "workflow:daily-report": "tsx scripts/run-daily-report.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

@@ -17,14 +17,11 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(url, 301)
     }
   }
-  const isAuthRoute = pathname.startsWith('/login') || 
-                       pathname.startsWith('/auth') || 
-                       pathname.startsWith('/register') || 
+  const isAuthRoute = pathname.startsWith('/login') ||
+                       pathname.startsWith('/auth') ||
+                       pathname.startsWith('/register') ||
                        pathname.startsWith('/verify') ||
-                       pathname.startsWith('/reset-password') ||
-                       pathname.startsWith('/debug-auth') ||
-                       pathname.startsWith('/test-auth') ||
-                       pathname.startsWith('/test-articles')
+                       pathname.startsWith('/reset-password')
   const isPublicFile = pathname.startsWith('/_next') ||
                        pathname.startsWith('/favicon.ico') ||
                        pathname.startsWith('/api') ||
@@ -49,7 +46,6 @@ export async function middleware(request: NextRequest) {
                         pathname.startsWith('/summary/') ||
                         pathname === '/summaries' ||
                         pathname.startsWith('/summaries/') ||
-                        pathname === '/article-summary-demo' ||
                         pathname === '/terms' ||
                         pathname === '/privacy' ||
                         pathname === '/about' ||

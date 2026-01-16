@@ -62,7 +62,7 @@ export default async function Terms() {
           </div>
           
           <div className="text-sm text-muted-foreground mb-8">
-            Last updated: September 4, 2025
+            Last updated: January 16, 2025
           </div>
         </div>
 
@@ -236,8 +236,10 @@ export default async function Terms() {
                </CardTitle>
              </CardHeader>
             <CardContent className="prose dark:prose-invert max-w-none">
+              <p>Questions about these Terms? Contact us:</p>
               <p>
-                Questions about these Terms? Contact us at <Link href="mailto:hi@xarticle.news" className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">hi@xarticle.news</Link>
+                <strong>X (Twitter):</strong> <a href="https://x.com/0xJason65066" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">@0xJason65066</a> (DM)<br />
+                <strong>Email:</strong> <Link href="mailto:hi@xarticle.news" className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">hi@xarticle.news</Link>
               </p>
             </CardContent>
           </Card>

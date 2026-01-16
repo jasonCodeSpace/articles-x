@@ -62,7 +62,7 @@ export default async function Privacy() {
           </div>
           
           <div className="text-sm text-muted-foreground mb-8">
-            Last updated: September 4, 2025
+            Last updated: January 16, 2025
           </div>
         </div>
 
@@ -298,10 +298,11 @@ export default async function Privacy() {
             <CardContent className="prose dark:prose-invert max-w-none">
               <p>If you have questions about this Privacy Policy, please contact us:</p>
               <p>
+                <strong>X (Twitter):</strong> <a href="https://x.com/0xJason65066" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">@0xJason65066</a> (DM)<br />
                 <strong>Email:</strong> hi@xarticle.news<br />
                 <strong>Website:</strong> <Link href="/" className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">https://www.xarticle.news/</Link>
               </p>
-              <p>We&apos;ll respond within 2 business days.</p>
+              <p>We typically respond right away.</p>
             </CardContent>
           </Card>
         </div>
@@ -310,7 +311,7 @@ export default async function Privacy() {
         <div className="mt-12 pt-8 border-t border-border">
           <div className="flex flex-col sm:flex-row gap-4 justify-between items-center">
             <div className="text-sm text-muted-foreground">
-              This policy is effective as of September 4, 2025
+              This policy is effective as of January 16, 2025
             </div>
             <div className="flex gap-3">
               <Button variant="outline" asChild>

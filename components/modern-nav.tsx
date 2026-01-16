@@ -88,7 +88,7 @@ export function ModernNav({ user, className }: ModernNavProps) {
               <DropdownMenuContent align="start" className="w-48 max-h-60 overflow-y-auto">
                 {['All Categories', 'Hardware', 'Gaming', 'Health', 'Environment', 'Personal Story', 'Culture', 'Philosophy', 'History', 'Education', 'Design', 'Marketing', 'AI', 'Crypto', 'Tech', 'Data', 'Startups', 'Business', 'Markets', 'Product', 'Security', 'Policy', 'Science', 'Media'].map((category) => (
                   <DropdownMenuItem key={category} asChild>
-                    <button 
+                    <button
                       onClick={() => {
                         if (category === 'All Categories') {
                           router.push('/category/All')
@@ -104,6 +104,16 @@ export function ModernNav({ user, className }: ModernNavProps) {
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
+
+            {/* About Button */}
+            <button
+              onClick={() => router.push('/about')}
+              className="px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-full transition-colors cursor-pointer"
+            >
+              About
+            </button>
+
+
 
             {/* User Profile Dropdown or Login Button */}
             {user ? (
@@ -242,10 +252,12 @@ export function ModernNav({ user, className }: ModernNavProps) {
             Trending
           </button>
           
+
+          
           {/* Category Dropdown for Mobile */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button 
+              <button
                 className="relative cursor-pointer text-sm font-semibold px-2 py-2 rounded-full transition-colors text-muted-foreground hover:text-foreground"
                 title="Categories"
               >
@@ -255,7 +267,7 @@ export function ModernNav({ user, className }: ModernNavProps) {
             <DropdownMenuContent className="mb-2 w-48 max-h-60 overflow-y-auto">
               {['All Categories', 'Hardware', 'Gaming', 'Health', 'Environment', 'Personal Story', 'Culture', 'Philosophy', 'History', 'Education', 'Design', 'Marketing', 'AI', 'Crypto', 'Tech', 'Data', 'Startups', 'Business', 'Markets', 'Product', 'Security', 'Policy', 'Science', 'Media'].map((category) => (
                 <DropdownMenuItem key={category} asChild>
-                  <button 
+                  <button
                     onClick={() => {
                       if (category === 'All Categories') {
                         router.push('/category/All')
@@ -271,6 +283,15 @@ export function ModernNav({ user, className }: ModernNavProps) {
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
+
+          {/* About Button for Mobile */}
+          <button
+            onClick={() => router.push('/about')}
+            className="relative cursor-pointer text-sm font-semibold px-2 py-2 rounded-full transition-colors text-muted-foreground hover:text-foreground"
+            title="About"
+          >
+            About
+          </button>
           
 
           {navItems.map((item) => {

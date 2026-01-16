@@ -38,8 +38,8 @@ export async function middleware(request: NextRequest) {
   const isSharedArticleLink = pathname.startsWith('/article/') && 
                               (!referrer || !referrer.includes(request.nextUrl.host))
   
-  const isPublicRoute = pathname === '/' || 
-                        pathname === '/landing' || 
+  const isPublicRoute = pathname === '/' ||
+                        pathname === '/landing' ||
                         pathname === '/trending' ||
                         pathname.startsWith('/trending') ||
                         pathname.startsWith('/category/') ||
@@ -49,8 +49,11 @@ export async function middleware(request: NextRequest) {
                         pathname.startsWith('/summary/') ||
                         pathname === '/summaries' ||
                         pathname.startsWith('/summaries/') ||
+                        pathname === '/article-summary-demo' ||
                         pathname === '/terms' ||
-                        pathname === '/privacy'
+                        pathname === '/privacy' ||
+                        pathname === '/about' ||
+                        pathname === '/contact'
   const isProtectedRoute = pathname.startsWith('/profile')
   
   // Routes that require authentication (redirect to register page)
@@ -136,6 +139,6 @@ export const config = {
      * - favicon.ico (favicon file)
      * Feel free to modify this pattern to include more paths.
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|json)$).*)',
   ],
 }

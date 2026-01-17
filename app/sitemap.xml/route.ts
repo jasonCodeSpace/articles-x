@@ -27,31 +27,34 @@ function normalizeTimestamp(timestamp: string | null | undefined): string {
 
 // Function to validate and clean article slugs
 function isValidSlug(slug: string): boolean {
-  // Check if slug follows the correct format: title-with-hyphens--shortId
-  const parts = slug.split('--')
-  if (parts.length !== 2) {
+  // Basic validation: slug should exist and not be empty
+  if (!slug || typeof slug !== 'string') {
     return false
   }
 
-  const titlePart = parts[0]
-  const idPart = parts[1]
-
-  // Title part should be properly formatted with hyphens separating words
-  // Reject slugs that are too long without proper word separation
-  if (titlePart.length > 50) {
+  // Remove any leading/trailing slashes or whitespace
+  const cleanSlug = slug.trim().replace(/^\/+|\/+$/g, '')
+  if (!cleanSlug) {
     return false
   }
 
-  // Title part should not contain very long sequences without hyphens (indicating poor formatting)
-  const words = titlePart.split('-')
-  const hasLongWord = words.some(word => word.length > 15)
-  if (hasLongWord) {
+  // Check for obviously invalid slugs
+  if (cleanSlug.includes('..') || cleanSlug.includes('//')) {
     return false
   }
 
-  // ID part should be exactly 6 characters (hex)
-  if (idPart.length !== 6 || !/^[a-f0-9]{6}$/i.test(idPart)) {
+  // Slug should be reasonable length (1-200 chars)
+  if (cleanSlug.length < 1 || cleanSlug.length > 200) {
     return false
+  }
+
+  // Optional: Check for the title-with-hyphens--shortId format
+  // but don't reject articles that don't match perfectly
+  // This allows more flexibility while still catching truly invalid slugs
+  const parts = cleanSlug.split('--')
+  if (parts.length >= 1) {
+    // Has at least one part, that's good enough
+    return true
   }
 
   return true
@@ -76,8 +79,28 @@ export async function GET() {
     }
 
     // Filter articles with valid slugs
-    const validArticles = (articles || [])
-      .filter(article => article.slug && isValidSlug(article.slug))
+    const allArticles = articles || []
+    console.log(`[Sitemap] Found ${allArticles.length} total articles in database`)
+
+    // Log first few slugs for debugging
+    if (allArticles.length > 0) {
+      const sampleSlugs = allArticles.slice(0, 5).map(a => a.slug)
+      console.log(`[Sitemap] Sample slugs:`, sampleSlugs)
+    }
+
+    const validArticles = allArticles.filter(article => {
+      if (!article.slug) {
+        return false
+      }
+      const isValid = isValidSlug(article.slug)
+      if (!isValid && allArticles.length < 20) {
+        // Only log invalid slugs when there are few articles (for debugging)
+        console.log(`[Sitemap] Invalid slug filtered: "${article.slug}"`)
+      }
+      return isValid
+    })
+
+    console.log(`[Sitemap] ${validArticles.length} articles passed validation`)
 
     const baseUrl = 'https://www.xarticle.news'
 

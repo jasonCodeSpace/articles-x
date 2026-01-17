@@ -31,7 +31,7 @@ export async function fetchArticles(options: FetchArticlesOptions = {}): Promise
     const supabase = await createClient()
     
     let query = supabase
-      .from('article_main')
+      .from('articles')
       .select(`
         *,
         summary_english,

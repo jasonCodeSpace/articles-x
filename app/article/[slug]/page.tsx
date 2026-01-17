@@ -13,7 +13,7 @@ interface ArticlePageProps {
 export async function generateMetadata({ params }: ArticlePageProps): Promise<Metadata> {
   const { slug } = await params
   const article = await getArticleBySlug(slug)
-  
+
   if (!article) {
     return {
       title: 'Article Not Found',
@@ -22,9 +22,9 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
   }
 
   const title = article.title_english || article.title
-  const description = article.summary_english || article.summary_chinese || 
+  const description = article.summary_english || article.summary_chinese ||
     (article.full_article_content ? article.full_article_content.substring(0, 160) + '...' : '')
-  
+
   return {
     title: `${title} | XArticle`,
     description,
@@ -53,7 +53,7 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
 export default async function ArticlePage({ params }: ArticlePageProps) {
   const { slug } = await params
   const article = await getArticleBySlug(slug)
-  
+
   if (!article) {
     notFound()
   }
@@ -73,7 +73,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     .substring(0, 2)
 
   // Generate author handle
-  const authorHandle = article.author_handle || 
+  const authorHandle = article.author_handle ||
     article.author_name.toLowerCase().replace(/\s+/g, '')
 
   // Process dates
@@ -81,7 +81,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   const publishedTime = new Date(publishedDate)
   const now = new Date()
   const diffInHours = Math.floor((now.getTime() - publishedTime.getTime()) / (1000 * 60 * 60))
-  
+
   let relativeTime: string
   if (diffInHours < 1) {
     relativeTime = 'less than an hour ago'
@@ -162,23 +162,33 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        <ArticleContent
-        article={{
-          ...article,
-          updated_at: article.updated_at || new Date().toISOString()
-        }}
-        authorInitials={authorInitials}
-        authorHandle={authorHandle}
-        avatarUrl={article.author_avatar}
-        publishedDate={publishedDate}
-        relativeTime={relativeTime}
-      />
-      <ArticleNavigation
-        previousArticle={previousArticle}
-        nextArticle={nextArticle}
-      />
-    </div>
+      <div className="min-h-screen bg-[#0A0A0A] text-white selection:bg-white/20">
+        {/* Decorative background orbs */}
+        <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+          <div className="absolute top-[10%] -left-[10%] w-[40%] h-[40%] bg-white/[0.02] rounded-full blur-[120px]" />
+          <div className="absolute top-[40%] -right-[10%] w-[30%] h-[30%] bg-white/[0.02] rounded-full blur-[120px]" />
+        </div>
+
+        <div className="relative z-10 max-w-3xl mx-auto px-6 pt-32 pb-20">
+          <ArticleContent
+            article={{
+              ...article,
+              updated_at: article.updated_at || new Date().toISOString()
+            }}
+            authorInitials={authorInitials}
+            authorHandle={authorHandle}
+            avatarUrl={article.author_avatar}
+            publishedDate={publishedDate}
+            relativeTime={relativeTime}
+          />
+          <div className="mt-20 pt-10 border-t border-white/5">
+            <ArticleNavigation
+              previousArticle={previousArticle}
+              nextArticle={nextArticle}
+            />
+          </div>
+        </div>
+      </div>
     </>
   )
 }

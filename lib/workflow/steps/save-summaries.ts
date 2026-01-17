@@ -40,6 +40,7 @@ export const saveSummariesStep = createStep<SaveSummariesInput, SaveSummariesOut
             .update({
               summary_chinese: analysis.summary.chinese,
               summary_english: analysis.summary.english,
+              title_english: analysis.title_english, // Save translated title
               language: analysis.language,
               category: analysis.category,
               summary_generated_at: new Date().toISOString()

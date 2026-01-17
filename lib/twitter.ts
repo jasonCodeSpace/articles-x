@@ -49,6 +49,7 @@ const ArticleResultSchema = z.object({
     preview_text: z.string().optional(),
     description: z.string().optional(),
     url: z.string().optional(),
+    content: z.string().optional(), // Full article content (HTML/Text)
     cover_media: z.object({
       media_info: z.object({
         original_img_url: z.string().optional(),
@@ -143,6 +144,9 @@ const TweetSchema = z.object({
     }).optional(),
   }).optional(),
   legacy: TweetLegacySchema.optional(),
+  views: z.object({
+    count: z.string().optional(),
+  }).optional(),
   // Support both nested article structures
   article: z.object({
     article_results: ArticleResultSchema,

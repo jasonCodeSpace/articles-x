@@ -1,10 +1,10 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
-import { ArrowLeft, Newspaper, Target, Workflow, Shield, Mail } from 'lucide-react'
+import { ArrowLeft, Newspaper, Target, Workflow, Shield, Mail, Globe, Sparkles, Zap, Layout } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { createClient } from '@/lib/supabase/server'
 import { ClientNavWrapper } from '@/components/client-nav-wrapper'
+import { FadeIn, StaggerContainer } from '@/components/motion-wrapper'
 
 export const metadata: Metadata = {
   title: 'About Xarticle | AI-Powered Article Curation',
@@ -19,167 +19,160 @@ export default async function About() {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // Fetch categories for navigation
-  let categories: string[] = [];
-  try {
-    const { data, error } = await supabase
-      .from('articles')
-      .select('category')
-      .not('category', 'is', null);
-
-    if (!error && data) {
-      const uniqueCategories = new Set<string>();
-      data.forEach(article => {
-        if (article.category) {
-          const firstCategory = article.category.split(',')[0].trim();
-          uniqueCategories.add(firstCategory);
-        }
-      });
-      categories = Array.from(uniqueCategories).sort();
-    }
-  } catch (error) {
-    console.error('Error fetching categories:', error);
-  }
+  const categories = [
+    'Hardware', 'Gaming', 'Health', 'Environment', 'Personal Story',
+    'Culture', 'Philosophy', 'History', 'Education', 'Design',
+    'Marketing', 'AI', 'Crypto', 'Tech', 'Data', 'Startups',
+    'Business', 'Markets', 'Product', 'Security', 'Policy',
+    'Science', 'Media'
+  ]
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[#0A0A0A] text-white selection:bg-white/20 font-sans">
       <ClientNavWrapper initialUser={user} categories={categories} />
 
-      <div className="pt-20 md:pt-16 pb-20 md:pb-0">
-        <div className="container mx-auto px-4 py-8 max-w-4xl">
-          {/* Header */}
-          <div className="mb-8">
-            <Link href="/" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-6">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Home
-            </Link>
-
-            <div className="mb-4">
-              <h1 className="text-3xl font-bold tracking-tight">About Xarticle</h1>
-              <p className="text-muted-foreground mt-2">
-                Curating the best long-form content from X, powered by AI
-              </p>
-            </div>
-
-            <div className="text-sm text-muted-foreground mb-8">
-              Last updated: January 2025
-            </div>
-          </div>
-
-          {/* Content Cards - continued in next section */}
-          <div className="space-y-6">
-            {/* Card 1: What is Xarticle */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Newspaper className="w-5 h-5" />
-                  What is Xarticle?
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="prose dark:prose-invert max-w-none">
-                <p>
-                  Xarticle is a content curation platform that discovers, organizes, and summarizes high-quality long-form articles shared on X (formerly Twitter).
-                </p>
-                <p>
-                  Every day, thousands of valuable articles are shared on X but get lost in the noise of social media. We solve this problem by curating quality content and making it easily discoverable.
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* Card 2: Our Mission */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Target className="w-5 h-5" />
-                  Our Mission
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="prose dark:prose-invert max-w-none">
-                <p><strong>We don&apos;t just aggregate links — we add original value.</strong></p>
-                <ul>
-                  <li><strong>AI Summaries:</strong> Every article includes original bilingual summaries in English and Chinese</li>
-                  <li><strong>Smart Curation:</strong> We filter signal from noise, focusing on substance over clickbait</li>
-                  <li><strong>Easy Discovery:</strong> 20+ categories help you find topics you care about</li>
-                </ul>
-              </CardContent>
-            </Card>
-
-            {/* Card 3: How It Works */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Workflow className="w-5 h-5" />
-                  How It Works
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="prose dark:prose-invert max-w-none">
-                <ol>
-                  <li><strong>Discover:</strong> We monitor curated Twitter lists for quality articles</li>
-                  <li><strong>Extract:</strong> Our system identifies articles with substantial long-form content</li>
-                  <li><strong>Summarize:</strong> AI generates concise bilingual summaries</li>
-                  <li><strong>Organize:</strong> Articles are categorized by topic (AI, Crypto, Tech, Business, etc.)</li>
-                  <li><strong>Deliver:</strong> You get a clean reading experience, always linking to the original source</li>
-                </ol>
-              </CardContent>
-            </Card>
-
-            {/* Card 4: Our Commitment */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Shield className="w-5 h-5" />
-                  Our Commitment
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="prose dark:prose-invert max-w-none">
-                <ul>
-                  <li><strong>Respect Creators:</strong> We always link to original sources and authors</li>
-                  <li><strong>Transparency:</strong> AI-generated summaries are clearly labeled</li>
-                  <li><strong>Privacy First:</strong> We don&apos;t sell your data (see our <Link href="/privacy" className="text-blue-600 hover:text-blue-700 dark:text-blue-400">Privacy Policy</Link>)</li>
-                  <li><strong>Quality Focus:</strong> Substance over clickbait</li>
-                </ul>
-              </CardContent>
-            </Card>
-
-            {/* Card 5: Contact */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Mail className="w-5 h-5" />
-                  Contact Us
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="prose dark:prose-invert max-w-none">
-                <p>Questions, feedback, or partnership inquiries?</p>
-                <p>
-                  <strong>Email:</strong> hi@xarticle.news<br />
-                  <strong>Twitter:</strong> <a href="https://twitter.com/xarticle_news" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700 dark:text-blue-400">@xarticle_news</a>
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Footer Actions */}
-          <div className="mt-12 pt-8 border-t border-border">
-            <div className="flex flex-col sm:flex-row gap-4 justify-between items-center">
-              <div className="text-sm text-muted-foreground">
-                Thank you for using Xarticle
-              </div>
-              <div className="flex gap-3">
-                <Button variant="outline" asChild>
-                  <Link href="/privacy">Privacy Policy</Link>
-                </Button>
-                <Button variant="outline" asChild>
-                  <Link href="/terms">Terms of Service</Link>
-                </Button>
-                <Button asChild>
-                  <Link href="/">Return to Xarticle</Link>
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
+      {/* Decorative background orbs */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <div className="absolute top-[10%] -left-[10%] w-[40%] h-[40%] bg-white/[0.02] rounded-full blur-[120px]" />
+        <div className="absolute bottom-[20%] -right-[10%] w-[30%] h-[30%] bg-white/[0.02] rounded-full blur-[120px]" />
       </div>
+
+      <main className="relative z-10 mx-auto max-w-7xl px-6 pt-40 pb-20">
+        {/* Hero Section */}
+        <section className="mb-24">
+          <FadeIn direction="none" delay={0.1}>
+            <Link href="/" className="inline-flex items-center text-[10px] uppercase tracking-[0.2em] font-bold text-white/30 hover:text-white transition-colors mb-12 group">
+              <ArrowLeft className="w-3 h-3 mr-2 transition-transform group-hover:-translate-x-1" />
+              Back to Collection
+            </Link>
+          </FadeIn>
+
+          <header className="max-w-3xl">
+            <FadeIn delay={0.2} distance={30}>
+              <h1 className="text-5xl md:text-8xl font-bold tracking-tighter leading-[0.9] mb-8">
+                Curating the <br />
+                <span className="text-white/40">excellence of X.</span>
+              </h1>
+            </FadeIn>
+            <FadeIn delay={0.3} distance={20}>
+              <p className="text-xl text-white/50 font-light leading-relaxed">
+                Xarticle is an AI-driven lens focusing on the absolute 1% of long-form content shared on X. We don't just aggregate; we refine, summarize, and organize for the serious reader.
+              </p>
+            </FadeIn>
+          </header>
+        </section>
+
+        {/* Bento Grid Content */}
+        <StaggerContainer staggerChildren={0.1} delayChildren={0.4}>
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 auto-rows-[250px] md:auto-rows-[300px]">
+            {/* Mission Card */}
+            <FadeIn className="md:col-span-8 md:row-span-2 group relative p-10 rounded-[2.5rem] bg-white/[0.03] border border-white/5 overflow-hidden hover:bg-white/[0.06] hover:border-white/10 transition-all duration-500 shadow-2xl">
+              <div className="absolute top-0 right-0 p-10">
+                <Target size={40} className="text-white/10 group-hover:text-white/20 transition-colors" />
+              </div>
+              <div className="h-full flex flex-col justify-end">
+                <h2 className="text-3xl font-bold mb-6">Our Mission</h2>
+                <p className="text-white/40 text-lg leading-relaxed font-light max-w-xl">
+                  Insight is scarce. In an age of algorithmic noise, we believe in curated excellence. Every article on Xarticle is selected for depth, original thought, and long-term value.
+                </p>
+                <div className="mt-8 flex gap-4">
+                  <div className="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-[10px] uppercase tracking-widest font-bold text-white/40 group-hover:text-white/60 transition-colors">
+                    Precision AI
+                  </div>
+                  <div className="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-[10px] uppercase tracking-widest font-bold text-white/40 group-hover:text-white/60 transition-colors">
+                    Smart Discovery
+                  </div>
+                </div>
+              </div>
+            </FadeIn>
+
+            {/* AI Summary Card */}
+            <FadeIn className="md:col-span-4 md:row-span-1 group p-8 rounded-[2rem] bg-white/[0.03] border border-white/5 hover:bg-white/[0.08] transition-all duration-500">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="p-3 rounded-2xl bg-white/5">
+                  <Sparkles size={20} className="text-white" />
+                </div>
+                <h3 className="text-lg font-bold">AI Summaries</h3>
+              </div>
+              <p className="text-sm text-white/40 leading-relaxed font-light">
+                Original bilingual summaries in English and Chinese, capturing the essence of every thread and article instantly.
+              </p>
+            </FadeIn>
+
+            {/* Extraction Card */}
+            <FadeIn className="md:col-span-4 md:row-span-1 group p-8 rounded-[2rem] bg-white/[0.03] border border-white/5 hover:bg-white/[0.08] transition-all duration-500">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="p-3 rounded-2xl bg-white/5">
+                  <Zap size={20} className="text-white" />
+                </div>
+                <h3 className="text-lg font-bold">Extraction</h3>
+              </div>
+              <p className="text-sm text-white/40 leading-relaxed font-light">
+                Our systems monitor thousands of leading voices to identify content with substantial long-form depth.
+              </p>
+            </FadeIn>
+
+            {/* How it Works - Full Width */}
+            <FadeIn className="md:col-span-12 md:row-span-1 group p-10 rounded-[2.5rem] bg-gradient-to-br from-white/[0.05] to-transparent border border-white/10 transition-all duration-500">
+              <h3 className="text-[10px] uppercase tracking-[0.2em] font-bold text-white/30 mb-8">System Architecture</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+                {[
+                  { label: 'Discover', icon: Globe, desc: 'Monitor X lists' },
+                  { label: 'Analyze', icon: Newspaper, desc: 'Pattern matching' },
+                  { label: 'Summarize', icon: Sparkles, desc: 'Bilingual AI' },
+                  { label: 'Deliver', icon: Layout, desc: 'Clean UI' }
+                ].map((step, i) => (
+                  <div key={i} className="space-y-3">
+                    <div className="text-white flex items-center gap-3">
+                      <step.icon size={16} className="text-white/60" />
+                      <span className="font-bold text-sm">{step.label}</span>
+                    </div>
+                    <div className="text-white/30 text-xs font-light">{step.desc}</div>
+                  </div>
+                ))}
+              </div>
+            </FadeIn>
+
+            {/* Commitment Card */}
+            <FadeIn className="md:col-span-6 md:row-span-1 group p-10 rounded-[2.5rem] bg-white/[0.03] border border-white/5 hover:border-white/10 transition-all duration-500">
+              <h3 className="text-xl font-bold mb-4 flex items-center gap-3">
+                <Shield size={20} className="text-white/40" />
+                Our Commitment
+              </h3>
+              <p className="text-sm text-white/30 font-light leading-relaxed">
+                We respect creators. Every article links directly to the original source. AI summaries are clearly labeled. Excellence over clickbait.
+              </p>
+            </FadeIn>
+
+            {/* Contact Card */}
+            <FadeIn className="md:col-span-6 md:row-span-1 p-10 rounded-[2.5rem] bg-white/[0.03] border border-white/5 hover:bg-white/[0.08] transition-all duration-500 flex items-center justify-between">
+              <div className="space-y-2">
+                <h3 className="text-xl font-bold">Get in Touch</h3>
+                <p className="text-sm text-white/30 font-light">Questions or partnerships?</p>
+              </div>
+              <div className="flex gap-4">
+                <a href="mailto:hi@xarticle.news" className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors group">
+                  <Mail size={18} className="text-white/40 group-hover:text-white transition-colors" />
+                </a>
+                <a href="https://twitter.com/xarticle_news" target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors group">
+                  <svg viewBox="0 0 24 24" className="w-4 h-4 fill-white/40 group-hover:fill-white transition-colors"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
+                </a>
+              </div>
+            </FadeIn>
+          </div>
+        </StaggerContainer>
+
+        {/* Footer Actions */}
+        <section className="mt-32 pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-8">
+          <div className="text-[10px] text-white/20 uppercase tracking-[0.2em] font-medium flex gap-8">
+            <Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
+            <Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
+          </div>
+          <Button size="lg" className="bg-white text-black hover:bg-white/90 text-sm font-medium px-12 py-7 rounded-full shadow-2xl transition-all duration-500 hover:scale-105" asChild>
+            <Link href="/trending">Explore the Collection</Link>
+          </Button>
+        </section>
+      </main>
     </div>
   )
 }

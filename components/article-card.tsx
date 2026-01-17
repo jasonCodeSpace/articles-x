@@ -8,34 +8,28 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { generateArticleUrl } from '@/lib/url-utils'
-import { useLanguage } from '@/contexts/language-context'
+import { cn } from '@/lib/utils'
+import { FadeIn } from './motion-wrapper'
 
 export interface Article {
   id: string
   title: string
   slug: string
-  // content is not guaranteed to exist in all deployments; mark optional to avoid type errors
   content?: string
   excerpt?: string
-  // description may exist in DB; make optional and display when available
   description?: string
   author_name: string
   author_handle?: string
   author_profile_image?: string
-  // Some deployments may use author_avatar instead of author_profile_image
   author_avatar?: string
   featured_image_url?: string
-  // Some deployments may use image instead of featured_image_url
   image?: string
-  // Article image from article_main table
   article_image?: string
   article_published_at?: string
   created_at: string
   tags: string[]
-  // category might be absent in some DBs, keep optional
   category?: string
   article_url?: string
-  // New fields from database
   tweet_id?: string
   tweet_text?: string
   tweet_published_at?: string
@@ -47,13 +41,10 @@ export interface Article {
   article_preview_text?: string
   full_article_content?: string
   updated_at?: string
-  // AI-generated summary fields
   summary_chinese?: string
   summary_english?: string
   summary_generated_at?: string
-  // Language and category fields
   language?: string
-  // English translation fields
   title_english?: string
   article_preview_text_english?: string
 }
@@ -65,254 +56,144 @@ interface ArticleCardProps {
   priority?: boolean
 }
 
-
-
-export function ArticleCard({ article, className, priority = false }: ArticleCardProps) {
-  // 只使用数据库中的语言字段，如果没有数据则不显示语言标签
+export function ArticleCard({ article, className, index = 0, priority = false }: ArticleCardProps) {
   const languageFromDB = article.language
-  
-  // 调试信息 - 查看实际接收到的数据
-  if (process.env.NODE_ENV === 'development') {
-    console.log('Article data:', {
-      id: article.id,
-      title: article.title?.substring(0, 50) + '...',
-      language: article.language,
-      category: article.category,
-      languageFromDB
-    })
-  }
-
-
-
-
-
-
   const authorInitials = article.author_name
     ? article.author_name
-        .split(' ')
-        .map(name => name[0])
-        .join('')
-        .toUpperCase()
-        .slice(0, 2)
+      .split(' ')
+      .map(name => name[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2)
     : 'UN'
 
   const publishedDate = article.article_published_at || article.created_at
-  const [relativeTime, setRelativeTime] = useState<string>('Loading...')
-  
-  // Use useEffect to calculate relative time on client side to avoid hydration mismatch
+  const [relativeTime, setRelativeTime] = useState<string>('...')
+
   useEffect(() => {
     if (publishedDate && !isNaN(new Date(publishedDate).getTime())) {
       setRelativeTime(formatDistanceToNow(new Date(publishedDate), { addSuffix: true }))
-    } else {
-      setRelativeTime('Unknown time')
     }
   }, [publishedDate])
 
-  // Use author_handle directly
   const authorHandle = article.author_handle || 'unknown'
-
-  // Field fallbacks for content based on language preference
   const displayTitle = article.title_english || article.title
   const displayPreview = article.article_preview_text_english || article.article_preview_text
-  // Always prioritize article_preview_text_english over other fields for trending/category pages
   const descriptionText = displayPreview || article.description || article.excerpt || article.content
-
-  // Field fallbacks for images
   const avatarUrl = article.author_profile_image || article.author_avatar
   const coverUrl = article.article_image || article.featured_image_url || article.image
-
-  // Generate article URL with meaningful title and permanent ID
   const articleUrl = generateArticleUrl(article.title, article.id)
 
   return (
-    <div className={`bg-card border border-border rounded-xl overflow-hidden hover:bg-card/90 hover:border-border/80 transition-all duration-300 group cursor-pointer shadow-xl hover:shadow-2xl hover:scale-[1.02] flex flex-col h-[480px] ${className}`}>
-      {/* Featured image at the top */}
-      {coverUrl && (
-        <Link href={articleUrl} className="relative w-full h-48 overflow-hidden block">
-          <Image
-            src={coverUrl}
-            alt={`Cover for ${article.title}`}
-            fill
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            className="object-cover transition-transform duration-300 group-hover:scale-105"
-            priority={priority}
-            loading={priority ? "eager" : "lazy"}
-            unoptimized
-            referrerPolicy="no-referrer"
-          />
-          {/* Language badge - only show if language data exists in Supabase */}
-          {languageFromDB && (
-            <div className="absolute top-3 left-3">
-              <span className="bg-black/70 text-white text-xs px-2 py-1 rounded-md font-medium backdrop-blur-sm">
-                {languageFromDB.toUpperCase()}
-              </span>
-            </div>
-          )}
-          {/* Category badges */}
-          {article.category && (
-            <div className="absolute top-3 right-3 flex flex-nowrap gap-1 max-w-[140px] overflow-hidden">
-              {article.category.split(',').slice(0, 2).map((cat, index) => (
-                <span key={index} className="bg-blue-600 text-white text-xs px-2 py-1 rounded-md font-medium whitespace-nowrap flex-shrink-0">
-                  {cat.trim()}
-                </span>
+    <FadeIn delay={index * 0.05} direction="up" distance={20} className="h-full">
+      <div className={cn(
+        "group relative flex flex-col h-[520px] rounded-[2rem] bg-white/[0.03] border border-white/5 overflow-hidden transition-all duration-500 hover:bg-white/[0.06] hover:border-white/10 hover:shadow-2xl hover:shadow-white/5",
+        className
+      )}>
+        {/* Cover Image */}
+        {coverUrl && (
+          <Link href={articleUrl} className="relative aspect-video overflow-hidden">
+            <Image
+              src={coverUrl}
+              alt={displayTitle}
+              fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              className="object-cover transition-transform duration-700 group-hover:scale-105"
+              priority={priority}
+              unoptimized
+              referrerPolicy="no-referrer"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A]/80 via-transparent to-transparent opacity-60" />
+
+            {languageFromDB && (
+              <div className="absolute top-4 left-4 px-2 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-[10px] uppercase tracking-widest text-white/50">
+                {languageFromDB}
+              </div>
+            )}
+          </Link>
+        )}
+
+        <div className="flex flex-col flex-grow p-6 space-y-4">
+          <div className="flex-grow space-y-3">
+            <div className="flex flex-wrap gap-2">
+              {article.category?.split(',').slice(0, 2).map((cat, i) => (
+                <span key={i} className="text-[10px] uppercase tracking-wider text-white/30 font-medium">/ {cat.trim()}</span>
               ))}
             </div>
-          )}
-        </Link>
-      )}
-      
-      {/* Card content */}
-      <div className="p-4 flex flex-col flex-grow">
-        {/* Article title */}
-        <Link href={articleUrl} className="block">
-          <h3 className="text-foreground text-lg font-semibold leading-tight line-clamp-2 group-hover:text-accent-foreground transition-colors duration-200 mb-3">
-            {displayTitle}
-          </h3>
-        </Link>
-        
-        {/* Article preview text */}
-        <div className="flex-grow">
-          {descriptionText && (
-            <Link href={articleUrl} className="block">
-              <p className="text-muted-foreground/15 text-xs leading-relaxed line-clamp-3 mb-4 hover:text-muted-foreground/25 transition-colors cursor-pointer">
+
+            <Link href={articleUrl} className="block group/title">
+              <h3 className="text-xl font-medium leading-tight text-white/90 group-hover/title:text-white transition-colors line-clamp-2 tracking-tight">
+                {displayTitle}
+              </h3>
+            </Link>
+
+            {descriptionText && (
+              <p className="text-sm text-white/40 leading-relaxed line-clamp-3 font-light">
                 {descriptionText}
               </p>
-            </Link>
-          )}
-        </div>
-        
-        {/* Author info */}
-        <div className="flex items-center gap-2 mb-3">
-          <Link href={`/author/${encodeURIComponent(authorHandle)}`} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-            <Avatar className="h-6 w-6 ring-1 ring-border">
-              {avatarUrl ? (
-                <AvatarImage 
-                  src={avatarUrl} 
-                  alt={`${article.author_name} profile picture`}
-                  loading="lazy"
-                  referrerPolicy="no-referrer"
-                />
-              ) : null}
-              <AvatarFallback className="text-xs font-medium bg-muted text-foreground">
-                {authorInitials}
-              </AvatarFallback>
-            </Avatar>
-            <span className="font-medium text-muted-foreground truncate hover:text-foreground transition-colors">
-              @{authorHandle}
-            </span>
-          </Link>
-          <div className="flex items-center gap-1 text-xs text-muted-foreground min-w-0">
-            <span>·</span>
-            <time dateTime={publishedDate} title={new Date(publishedDate).toLocaleString()}>
-              {relativeTime.replace(' ago', '')}
-            </time>
-          </div>
-        </div>
-        
-        {/* Tweet engagement stats */}
-        <div className="flex items-center justify-between text-xs text-muted-foreground mb-3">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1">
-              <Eye className="h-3 w-3" />
-              <span>{article.tweet_views?.toLocaleString() || '465,948'}</span>
-            </div>
-            {article.tweet_likes !== undefined && (
-              <div className="flex items-center gap-1">
-                <Heart className="h-3 w-3" />
-                <span>{article.tweet_likes.toLocaleString()}</span>
-              </div>
-            )}
-            {article.tweet_retweets !== undefined && (
-              <div className="flex items-center gap-1">
-                <Repeat2 className="h-3 w-3" />
-                <span>{article.tweet_retweets.toLocaleString()}</span>
-              </div>
-            )}
-            {article.tweet_bookmarks !== undefined && (
-              <div className="flex items-center gap-1">
-                <Bookmark className="h-3 w-3" />
-                <span>{article.tweet_bookmarks.toLocaleString()}</span>
-              </div>
             )}
           </div>
-        </div>
-        
-        {/* Action buttons */}
-        <div className="flex items-center justify-between pt-2">
-          <Link href={article.article_url || generateArticleUrl(article.title, article.id)}>
-            <button className="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 border border-input bg-background hover:bg-accent hover:text-accent-foreground rounded-md text-xs px-3 py-1 h-7">
-              <ExternalLink className="h-3 w-3" />
-              Read on X
-            </button>
-          </Link>
-          <BookmarkButton articleId={article.id} variant="card" />
-        </div>
-        
 
-        
-        {/* Tags */}
-        {article.tags && article.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1">
-            {article.tags.slice(0, 3).map((tag) => (
-              <span
-                key={tag}
-                className="text-blue-400 hover:text-blue-300 hover:underline cursor-pointer text-xs"
-              >
-                #{tag}
-              </span>
-            ))}
+          <div className="space-y-4 pt-4 border-t border-white/5">
+            <div className="flex items-center justify-between">
+              <Link href={`/author/${encodeURIComponent(authorHandle)}`} className="flex items-center gap-2 group/author">
+                <Avatar className="h-6 w-6 border border-white/10 transition-transform group-hover/author:scale-110">
+                  {avatarUrl && <AvatarImage src={avatarUrl} referrerPolicy="no-referrer" />}
+                  <AvatarFallback className="text-[10px] bg-white/5 text-white/30">{authorInitials}</AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col">
+                  <span className="text-xs font-medium text-white/60 group-hover/author:text-white transition-colors truncate max-w-[100px]">@{authorHandle}</span>
+                  <span className="text-[10px] text-white/20">{relativeTime.replace(' ago', '')}</span>
+                </div>
+              </Link>
+
+              <div className="flex items-center gap-3 text-white/30">
+                <div className="flex items-center gap-1">
+                  <Eye size={12} className="opacity-50" />
+                  <span className="text-[11px] font-medium">{article.tweet_views ? (article.tweet_views / 1000).toFixed(1) + 'k' : '0.5k'}</span>
+                </div>
+                <BookmarkButton articleId={article.id} variant="card" />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex gap-2">
+                {article.tags?.slice(0, 2).map(tag => (
+                  <span key={tag} className="text-[10px] text-white/20 hover:text-white/40 transition-colors cursor-pointer capitalize">#{tag}</span>
+                ))}
+              </div>
+              <Link href={article.article_url || articleUrl}>
+                <button className="text-[10px] uppercase tracking-widest font-bold text-white/40 hover:text-white flex items-center gap-1.5 group/link transition-colors">
+                  Original
+                  <ExternalLink size={10} className="transition-transform group-hover/link:translate-x-0.5" />
+                </button>
+              </Link>
+            </div>
           </div>
-        )}
+        </div>
       </div>
-    </div>
+    </FadeIn>
   )
 }
 
 export function ArticleCardSkeleton({ className }: { className?: string }) {
   return (
-    <div className={`bg-card rounded-lg overflow-hidden border border-border animate-pulse flex flex-col h-[480px] ${className}`}>
-      {/* Image skeleton */}
-      <div className="h-48 bg-muted flex-shrink-0" />
-      
-      {/* Content skeleton */}
-      <div className="p-4 flex flex-col flex-grow">
-        {/* Title skeleton */}
-        <div className="space-y-2 mb-3">
-          <div className="h-5 bg-muted rounded w-full" />
-          <div className="h-5 bg-muted rounded w-3/4" />
+    <div className={cn("rounded-[2rem] bg-white/[0.03] border border-white/5 overflow-hidden h-[520px] animate-pulse", className)}>
+      <div className="aspect-video bg-white/5" />
+      <div className="p-6 space-y-4">
+        <div className="space-y-3">
+          <div className="h-3 bg-white/5 rounded w-1/4" />
+          <div className="h-6 bg-white/5 rounded w-full" />
+          <div className="h-6 bg-white/5 rounded w-2/3" />
+          <div className="h-4 bg-white/5 rounded w-full" />
+          <div className="h-4 bg-white/5 rounded w-full" />
         </div>
-        
-        {/* Description skeleton */}
-        <div className="flex-grow space-y-2 mb-4">
-          <div className="h-4 bg-muted rounded w-full" />
-          <div className="h-4 bg-muted rounded w-5/6" />
-          <div className="h-4 bg-muted rounded w-2/3" />
-        </div>
-        
-        {/* Author info skeleton */}
-        <div className="flex items-center gap-2 mb-3">
-          <div className="h-6 w-6 rounded-full bg-muted" />
-          <div className="h-3 bg-muted rounded w-20" />
-          <div className="h-3 bg-muted rounded w-12" />
-        </div>
-        
-        {/* Stats and actions skeleton */}
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-3">
-            <div className="h-3 bg-muted rounded w-8" />
-            <div className="h-3 bg-muted rounded w-8" />
-            <div className="h-3 bg-muted rounded w-8" />
+        <div className="pt-4 border-t border-white/5 flex justify-between items-center">
+          <div className="flex gap-2 items-center">
+            <div className="w-6 h-6 rounded-full bg-white/5" />
+            <div className="h-3 bg-white/5 rounded w-20" />
           </div>
-          <div className="h-3 w-3 bg-muted rounded" />
-        </div>
-        
-        {/* Link skeleton */}
-        <div className="h-3 bg-muted rounded w-20 mb-3" />
-        
-        {/* Tags skeleton */}
-        <div className="flex gap-1">
-          <div className="h-3 bg-muted rounded w-12" />
-          <div className="h-3 bg-muted rounded w-16" />
+          <div className="h-3 bg-white/5 rounded w-12" />
         </div>
       </div>
     </div>

@@ -1,15 +1,13 @@
 "use client"
 
-import React, { useState } from "react"
-import { motion } from "framer-motion"
+import React from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import Image from "next/image"
-import { User, ChevronDown, Settings } from "lucide-react"
+import { User, ChevronDown, Settings, LogOut } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { ThemeToggle } from '@/components/theme-toggle'
 import { generateCategorySlug } from '@/lib/url-utils'
-
 
 import {
   DropdownMenu,
@@ -18,11 +16,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 
-interface NavItem {
-  name: string
-  url: string
-  icon: React.ComponentType<{ size?: number; strokeWidth?: number }>
-}
 
 interface ModernNavProps {
   user?: {
@@ -38,434 +31,124 @@ interface ModernNavProps {
 }
 
 export function ModernNav({ user, className }: ModernNavProps) {
-  const [activeTab, setActiveTab] = useState("Home")
-  // Theme functionality removed
   const router = useRouter()
-  
-  // Remove filter logic as we're replacing with Trending
 
   const userDisplayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User'
   const userInitial = userDisplayName.charAt(0).toUpperCase()
 
-  const navItems: NavItem[] = [
-    { name: 'Profile', url: '#', icon: User },
+  const CATEGORIES = [
+    'Hardware', 'Gaming', 'Health', 'Environment', 'Personal Story',
+    'Culture', 'Philosophy', 'History', 'Education', 'Design',
+    'Marketing', 'AI', 'Crypto', 'Tech', 'Data', 'Startups',
+    'Business', 'Markets', 'Product', 'Security', 'Policy',
+    'Science', 'Media'
   ]
 
+  const handleLogout = async () => {
+    try {
+      const { createClient } = await import('@/lib/supabase/client')
+      const supabase = createClient()
+      localStorage.clear()
+      sessionStorage.clear()
+      await supabase.auth.signOut({ scope: 'local' })
+      window.location.replace('/login')
+    } catch (error) {
+      console.error('Logout failed:', error)
+      window.location.replace('/login')
+    }
+  }
+
   return (
-    <>
+    <nav className={cn("fixed top-0 left-0 right-0 z-50 flex justify-center p-6 pointer-events-none", className)}>
+      <div className="flex items-center gap-2 bg-[#1A1A1A]/80 backdrop-blur-2xl border border-white/10 p-1.5 rounded-full shadow-2xl pointer-events-auto transition-all duration-500 hover:border-white/20">
+        {/* Logo */}
+        <Link href="/landing" className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-white/5 transition-colors group">
+          <Image src="/logo.svg" alt="Xarticle" width={20} height={20} className="invert opacity-100 drop-shadow-[0_0_8px_rgba(255,255,255,0.8)] transition-all duration-300 group-hover:scale-110" />
+        </Link>
 
+        <div className="h-4 w-px bg-white/10 mx-1" />
 
-      {/* Desktop Navigation */}
-      <nav className="hidden md:block fixed top-0 left-1/2 -translate-x-1/2 z-50 mt-6">
-        <div className="flex items-center gap-4 bg-background/70 backdrop-blur-md border border-border py-3 px-6 rounded-full shadow-2xl">
-          {/* Logo */}
-          <button onClick={() => router.push('/landing')} className="flex items-center gap-2 group cursor-pointer hover:cursor-pointer">
-            <div className="w-6 h-6 flex items-center justify-center hover:opacity-80 transition-all duration-300 group-hover:scale-110">
-              <Image src="/logo.svg" alt="Xarticle Logo" width={24} height={24} className="w-6 h-6" />
-            </div>
-            <span className="text-sm font-bold text-foreground group-hover:text-accent-foreground transition-colors">Xarticle</span>
+        {/* Navigation Items */}
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => router.push('/about')}
+            className="px-4 py-2 text-[11px] font-medium tracking-widest uppercase text-white/50 hover:text-white transition-colors rounded-full hover:bg-white/5"
+          >
+            About
           </button>
 
-          {/* Navigation Items */}
-          <div className="flex items-center gap-2">
-            {/* Trending Button */}
-            <button 
-              onClick={() => router.push('/trending')}
-              className="px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-full transition-colors cursor-pointer"
-            >
-              Trending
-            </button>
-
-            
-            {/* Categories Dropdown */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-full transition-colors cursor-pointer">
-                  Categories
-                  <ChevronDown className="w-3 h-3" />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-48 max-h-60 overflow-y-auto">
-                {['All Categories', 'Hardware', 'Gaming', 'Health', 'Environment', 'Personal Story', 'Culture', 'Philosophy', 'History', 'Education', 'Design', 'Marketing', 'AI', 'Crypto', 'Tech', 'Data', 'Startups', 'Business', 'Markets', 'Product', 'Security', 'Policy', 'Science', 'Media'].map((category) => (
-                  <DropdownMenuItem key={category} asChild>
-                    <button
-                      onClick={() => {
-                        if (category === 'All Categories') {
-                          router.push('/category/All')
-                        } else {
-                          router.push(`/category/${generateCategorySlug(category)}`)
-                        }
-                      }}
-                      className="w-full cursor-pointer text-left"
-                    >
-                      {category}
-                    </button>
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            {/* About Button */}
-            <button
-              onClick={() => router.push('/about')}
-              className="px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-full transition-colors cursor-pointer"
-            >
-              About
-            </button>
-
-
-
-            {/* User Profile Dropdown or Login Button */}
-            {user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-2 pl-2 hover:bg-accent/50 rounded-full p-2 transition-colors cursor-pointer">
-                    <Avatar className="w-6 h-6">
-                      {user?.user_metadata?.avatar_url ? (
-                        <AvatarImage src={user.user_metadata.avatar_url} alt={userDisplayName} />
-                      ) : null}
-                      <AvatarFallback className="bg-muted text-foreground text-xs font-medium">
-                        {userInitial}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="text-foreground text-xs font-medium hidden lg:block">{userDisplayName}</span>
-                    <ChevronDown size={14} className="text-muted-foreground" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="mt-2">
-                  <DropdownMenuItem asChild>
-                    <button 
-                      onClick={() => router.push('/profile')}
-                      className="w-full flex items-center justify-start cursor-pointer"
-                    >
-                      <Settings size={16} className="mr-2" />
-                      Account
-                    </button>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="p-0">
-                    <ThemeToggle />
-                  </DropdownMenuItem>
-
-                  <DropdownMenuItem asChild>
-                     <button 
-                       onClick={async () => {
-                         try {
-                           console.log('Logout button clicked')
-                           const { createClient } = await import('@/lib/supabase/client')
-                           const supabase = createClient()
-                           
-                           // Clear all local storage and session storage first
-                           localStorage.clear()
-                           sessionStorage.clear()
-                           
-                           // Try to sign out with timeout
-                           const signOutPromise = supabase.auth.signOut({ scope: 'local' })
-                           const timeoutPromise = new Promise((_, reject) => 
-                             setTimeout(() => reject(new Error('Timeout')), 5000)
-                           )
-                           
-                           try {
-                             await Promise.race([signOutPromise, timeoutPromise])
-                             console.log('Logout successful')
-                           } catch (signOutError) {
-                             console.warn('Sign out request failed or timed out:', signOutError)
-                             // Continue with local logout
-                           }
-                           
-                           // Force redirect regardless of sign out result
-                           window.location.replace('/login')
-                         } catch (error) {
-                           console.error('Logout failed:', error)
-                           // Clear storage anyway and redirect as fallback
-                           localStorage.clear()
-                           sessionStorage.clear()
-                           window.location.replace('/login')
-                         }
-                       }}
-                       className="w-full flex items-center justify-start px-2 py-1.5 text-sm cursor-pointer"
-                     >
-                       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
-                         <path d="m16 17 5-5-5-5"></path>
-                         <path d="M21 12H9"></path>
-                         <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                       </svg>
-                       Logout
-                     </button>
-                   </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-2 pl-2 hover:bg-accent/50 rounded-full p-2 transition-colors cursor-pointer">
-                    <Avatar className="w-6 h-6">
-                      <AvatarFallback className="bg-muted text-foreground text-xs font-medium">
-                        <User size={12} />
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="text-foreground text-xs font-medium hidden lg:block">Guest</span>
-                    <ChevronDown size={14} className="text-muted-foreground" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="mt-2">
-                  <DropdownMenuItem asChild>
-                    <button 
-                      onClick={() => router.push('/login')}
-                      className="w-full flex items-center justify-start cursor-pointer"
-                    >
-                      <User size={16} className="mr-2" />
-                      Login
-                    </button>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="p-0">
-                    <ThemeToggle />
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-             )}
-          </div>
-        </div>
-      </nav>
-
-      {/* Mobile Tubelight Navigation */}
-      <div
-        className={cn(
-          "md:hidden fixed bottom-0 left-1/2 -translate-x-1/2 z-50 mb-6",
-          className,
-        )}
-      >
-        <div className="flex items-center gap-1 bg-background/70 backdrop-blur-md border border-border py-2 px-2 rounded-full shadow-2xl">
-          {/* Mobile Logo */}
-          <button onClick={() => router.push('/landing')} className="flex items-center gap-2 group cursor-pointer hover:cursor-pointer">
-            <div className="w-6 h-6 flex items-center justify-center hover:opacity-80 transition-all duration-300 group-hover:scale-110">
-              <Image src="/logo.svg" alt="Xarticle Logo" width={24} height={24} className="w-6 h-6" />
-            </div>
-            <span className="text-sm font-bold text-foreground group-hover:text-accent-foreground transition-colors">Xarticle</span>
-          </button>
-          
-          {/* Trending Button for Mobile */}
-          <button 
+          <button
             onClick={() => router.push('/trending')}
-            className="relative cursor-pointer text-sm font-semibold px-2 py-2 rounded-full transition-colors text-muted-foreground hover:text-foreground"
-            title="Trending"
+            className="px-4 py-2 text-[11px] font-medium tracking-widest uppercase text-white/50 hover:text-white transition-colors rounded-full hover:bg-white/5"
           >
             Trending
           </button>
-          
 
-          
-          {/* Category Dropdown for Mobile */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button
-                className="relative cursor-pointer text-sm font-semibold px-2 py-2 rounded-full transition-colors text-muted-foreground hover:text-foreground"
-                title="Categories"
-              >
-                Category
+              <button className="flex items-center gap-1.5 px-4 py-2 text-[11px] font-medium tracking-widest uppercase text-white/50 hover:text-white transition-colors rounded-full hover:bg-white/5">
+                Categories
+                <ChevronDown size={12} className="opacity-50" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="mb-2 w-48 max-h-60 overflow-y-auto">
-              {['All Categories', 'Hardware', 'Gaming', 'Health', 'Environment', 'Personal Story', 'Culture', 'Philosophy', 'History', 'Education', 'Design', 'Marketing', 'AI', 'Crypto', 'Tech', 'Data', 'Startups', 'Business', 'Markets', 'Product', 'Security', 'Policy', 'Science', 'Media'].map((category) => (
-                <DropdownMenuItem key={category} asChild>
-                  <button
-                    onClick={() => {
-                      if (category === 'All Categories') {
-                        router.push('/category/All')
-                      } else {
-                        router.push(`/category/${generateCategorySlug(category)}`)
-                      }
-                    }}
-                    className="w-full cursor-pointer text-left px-2 py-1.5 text-sm"
-                  >
-                    {category}
-                  </button>
+            <DropdownMenuContent align="center" className="w-56 mt-4 bg-[#0A0A0A]/95 backdrop-blur-xl border border-white/10 rounded-2xl p-2 max-h-80 overflow-y-auto custom-scrollbar">
+              <DropdownMenuItem onClick={() => router.push('/category/All')} className="rounded-lg text-[11px] uppercase tracking-wider text-white/50 hover:text-white hover:bg-white/5 cursor-pointer">
+                All Categories
+              </DropdownMenuItem>
+              {CATEGORIES.map((category) => (
+                <DropdownMenuItem
+                  key={category}
+                  onClick={() => router.push(`/category/${generateCategorySlug(category)}`)}
+                  className="rounded-lg text-[11px] uppercase tracking-wider text-white/50 hover:text-white hover:bg-white/5 cursor-pointer"
+                >
+                  {category}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
-
-          {/* About Button for Mobile */}
-          <button
-            onClick={() => router.push('/about')}
-            className="relative cursor-pointer text-sm font-semibold px-2 py-2 rounded-full transition-colors text-muted-foreground hover:text-foreground"
-            title="About"
-          >
-            About
-          </button>
-          
-
-          {navItems.map((item) => {
-            const Icon = item.icon
-            const isActive = activeTab === item.name
-
-if (item.name === 'Profile') {
-              if (user) {
-                return (
-                  <DropdownMenu key={item.name}>
-                    <DropdownMenuTrigger asChild>
-                      <button
-                        className={cn(
-                          "relative cursor-pointer text-sm font-semibold px-2 py-2 rounded-full transition-colors",
-                          "text-muted-foreground hover:text-foreground",
-                          isActive && "bg-accent/50 text-foreground",
-                        )}
-                        onClick={() => setActiveTab(item.name)}
-                      >
-                        <Icon size={18} strokeWidth={2.5} />
-                        {isActive && (
-                          <motion.div
-                            layoutId="mobile-lamp"
-                            className="absolute inset-0 w-full bg-accent/20 rounded-full -z-10"
-                            initial={false}
-                            transition={{
-                              type: "spring",
-                              stiffness: 300,
-                              damping: 30,
-                            }}
-                          />
-                        )}
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="mt-2">
-                      <DropdownMenuItem asChild>
-                        <button 
-                          onClick={() => router.push('/profile')}
-                          className="w-full flex items-center justify-start text-popover-foreground hover:bg-accent cursor-pointer px-2 py-1.5 text-sm"
-                        >
-                          <Settings size={16} className="mr-2" />
-                          Account
-                        </button>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem className="text-popover-foreground hover:bg-accent p-0">
-                        <ThemeToggle />
-                      </DropdownMenuItem>
-
-                      <DropdownMenuItem asChild>
-                         <button 
-                           onClick={async () => {
-                             try {
-                               console.log('Mobile logout button clicked')
-                               const { createClient } = await import('@/lib/supabase/client')
-                               const supabase = createClient()
-                               
-                               // Clear all local storage and session storage first
-                               localStorage.clear()
-                               sessionStorage.clear()
-                               
-                               // Try to sign out with timeout
-                               const signOutPromise = supabase.auth.signOut({ scope: 'local' })
-                               const timeoutPromise = new Promise((_, reject) => 
-                                 setTimeout(() => reject(new Error('Timeout')), 5000)
-                               )
-                               
-                               try {
-                                 await Promise.race([signOutPromise, timeoutPromise])
-                                 console.log('Mobile logout successful')
-                               } catch (signOutError) {
-                                 console.warn('Mobile sign out request failed or timed out:', signOutError)
-                                 // Continue with local logout
-                               }
-                               
-                               // Force redirect regardless of sign out result
-                               window.location.replace('/login')
-                             } catch (error) {
-                               console.error('Mobile logout failed:', error)
-                               // Clear storage anyway and redirect as fallback
-                               localStorage.clear()
-                               sessionStorage.clear()
-                               window.location.replace('/login')
-                             }
-                           }}
-                           className="w-full flex items-center justify-start text-popover-foreground hover:bg-accent px-2 py-1.5 text-sm cursor-pointer"
-                         >
-                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
-                             <path d="m16 17 5-5-5-5"></path>
-                             <path d="M21 12H9"></path>
-                             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                           </svg>
-                           Logout
-                         </button>
-                       </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                )
-              } else {
-                return (
-                  <DropdownMenu key={item.name}>
-                    <DropdownMenuTrigger asChild>
-                      <button
-                        className={cn(
-                          "relative cursor-pointer text-sm font-semibold px-2 py-2 rounded-full transition-colors",
-                          "text-muted-foreground hover:text-foreground",
-                          isActive && "bg-accent/50 text-foreground",
-                        )}
-                        onClick={() => setActiveTab(item.name)}
-                      >
-                        Login
-                        {isActive && (
-                          <motion.div
-                            layoutId="mobile-lamp"
-                            className="absolute inset-0 w-full bg-accent/20 rounded-full -z-10"
-                            initial={false}
-                            transition={{
-                              type: "spring",
-                              stiffness: 300,
-                              damping: 30,
-                            }}
-                          />
-                        )}
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="mt-2">
-                      <DropdownMenuItem asChild>
-                        <button 
-                          onClick={() => router.push('/login')}
-                          className="w-full flex items-center justify-start text-popover-foreground hover:bg-accent cursor-pointer px-2 py-1.5 text-sm"
-                        >
-                          <User size={16} className="mr-2" />
-                          Login
-                        </button>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem className="text-popover-foreground hover:bg-accent p-0">
-                        <ThemeToggle />
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                )
-              }
-            }
-
-            return (
-              <button
-                key={item.name}
-                className={cn(
-                  "relative cursor-pointer text-sm font-semibold px-2 py-2 rounded-full transition-colors",
-                  "text-muted-foreground hover:text-foreground",
-                  isActive && "bg-accent/50 text-foreground",
-                )}
-                onClick={() => {
-                  setActiveTab(item.name)
-                  router.push(item.url)
-                }}
-              >
-                <Icon size={18} strokeWidth={2.5} />
-                {isActive && (
-                  <motion.div
-                    layoutId="mobile-lamp"
-                    className="absolute inset-0 w-full bg-accent/20 rounded-full -z-10"
-                    initial={false}
-                    transition={{
-                      type: "spring",
-                      stiffness: 300,
-                      damping: 30,
-                    }}
-                  />
-                )}
-              </button>
-            )
-          })}
         </div>
+
+        <div className="h-4 w-px bg-white/10 mx-1" />
+
+        {/* User / Login */}
+        {user ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="flex items-center gap-2 pl-2 pr-1.5 py-1.5 rounded-full hover:bg-white/5 transition-colors group">
+                <Avatar className="w-7 h-7 border border-white/10">
+                  {user?.user_metadata?.avatar_url && <AvatarImage src={user.user_metadata.avatar_url} />}
+                  <AvatarFallback className="bg-white/5 text-white/50 text-[10px] font-bold">
+                    {userInitial}
+                  </AvatarFallback>
+                </Avatar>
+                <ChevronDown size={12} className="text-white/30 group-hover:text-white/50 transition-colors" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56 mt-4 bg-[#0A0A0A]/95 backdrop-blur-xl border border-white/10 rounded-2xl p-2">
+              <div className="px-3 py-2 mb-2">
+                <p className="text-[10px] uppercase tracking-[0.2em] text-white/30 font-bold mb-1">Authenticated as</p>
+                <p className="text-sm font-medium text-white/90 truncate">{userDisplayName}</p>
+              </div>
+              <DropdownMenuItem onClick={() => router.push('/profile')} className="rounded-lg gap-3 py-2.5 text-white/70 hover:text-white hover:bg-white/5 cursor-pointer">
+                <Settings size={16} className="opacity-50" />
+                <span className="text-xs">Account Settings</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleLogout} className="rounded-lg gap-3 py-2.5 text-red-400 hover:text-red-300 hover:bg-red-400/5 cursor-pointer">
+                <LogOut size={16} className="opacity-50" />
+                <span className="text-xs">Sign Out</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : (
+          <button
+            onClick={() => router.push('/login')}
+            className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-white/5 transition-colors group"
+            title="Sign In"
+          >
+            <User size={20} className="text-white/50 group-hover:text-white transition-colors" />
+          </button>
+        )}
       </div>
-    </>  
+    </nav>
   )
 }

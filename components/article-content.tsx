@@ -1,9 +1,11 @@
 'use client'
 
+import React, { useEffect, useState } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { ExternalLink } from 'lucide-react'
+import { ExternalLink, Clock, Calendar, Share2, Twitter } from 'lucide-react'
 import { BookmarkButton } from '@/components/bookmark-button'
 import { useRouter } from 'next/navigation'
+import { FadeIn } from './motion-wrapper'
 
 interface ArticleContentProps {
   article: {
@@ -40,109 +42,129 @@ export function ArticleContent({
   relativeTime
 }: ArticleContentProps) {
   const router = useRouter()
+  const [readingProgress, setReadingProgress] = useState(0)
 
-  // Use English content
-  const displayTitle = article.title_english
-  const displayContent = article.summary_english
+  useEffect(() => {
+    const updateReadingProgress = () => {
+      const currentProgress = window.scrollY
+      const scrollHeight = document.documentElement.scrollHeight - window.innerHeight
+      if (scrollHeight) {
+        setReadingProgress(Number((currentProgress / scrollHeight).toFixed(2)) * 100)
+      }
+    }
+
+    window.addEventListener('scroll', updateReadingProgress)
+    return () => window.removeEventListener('scroll', updateReadingProgress)
+  }, [])
+
+  const displayTitle = article.title_english || article.title
+  const displayContent = article.summary_english || article.summary_chinese
 
   return (
-    <>
-      {/* Article Header */}
-      <header className="mb-8">
-        <h1 className="text-3xl md:text-4xl font-bold mb-4 leading-tight">
-          {displayTitle}
-        </h1>
-        
-        {/* Author Info */}
-        <div className="flex items-center justify-between mb-4">
-          <div 
-            className="flex items-center gap-3 cursor-pointer hover:bg-accent/30 rounded-lg p-2 -m-2 transition-colors"
-            onClick={() => router.push(`/author/${authorHandle}`)}
-          >
-            <Avatar className="h-12 w-12">
-              {avatarUrl ? (
-                <AvatarImage 
-                  src={avatarUrl} 
-                  alt={`${article.author_name} profile picture`}
-                  loading="lazy"
-                  referrerPolicy="no-referrer"
-                />
-              ) : null}
-              <AvatarFallback className="text-sm font-medium bg-muted text-foreground">
-                {authorInitials}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <div className="font-medium text-foreground hover:text-blue-600 transition-colors">{article.author_name}</div>
-              <div className="text-sm text-muted-foreground">@{authorHandle}</div>
-            </div>
+    <div className="relative">
+      {/* Reading Progress Indicator */}
+      <div className="fixed top-0 left-0 w-full h-[2px] bg-white/5 z-[60]">
+        <div
+          className="h-full bg-white transition-all duration-150 ease-out shadow-[0_0_10px_rgba(255,255,255,0.5)]"
+          style={{ width: `${readingProgress}%` }}
+        />
+      </div>
+
+      <FadeIn direction="none" delay={0.1}>
+        <header className="mb-16 space-y-8">
+          <div className="flex flex-wrap items-center gap-3 text-[10px] uppercase tracking-[0.2em] text-white/30 font-bold">
+            <span className="flex items-center gap-2">
+              <Calendar size={12} />
+              {new Date(publishedDate || '').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+            </span>
+            <span>•</span>
+            <span className="flex items-center gap-2">
+              <Clock size={12} />
+              {relativeTime}
+            </span>
+            {article.category && (
+              <>
+                <span>•</span>
+                <span className="text-white/60">/ {article.category}</span>
+              </>
+            )}
           </div>
-          
 
-        </div>
+          <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-white leading-[1.1]">
+            {displayTitle}
+          </h1>
 
-        {/* Publication Date */}
-        {publishedDate && (
-          <div className="text-sm text-muted-foreground mb-4">
-            Published {relativeTime}
-          </div>
-        )}
-
-
-
-
-      </header>
-
-      {/* Article Content */}
-      <article>
-        {displayContent ? (
-          <div className="article-content">
-            <div 
-              className="article-content"
-              dangerouslySetInnerHTML={{ __html: displayContent.replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br />').replace(/^/, '<p>').replace(/$/, '</p>') }}
-            />
-          </div>
-        ) : (
-          <div className="text-muted-foreground italic text-lg leading-relaxed">
-            Full article content is not available.
-          </div>
-        )}
-      </article>
-
-      {/* Footer */}
-      <footer className="mt-12 pt-8 border-t border-border">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          {/* Categories */}
-          {article.category && (
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Categories:</span>
-              <div className="flex flex-wrap gap-2">
-                {article.category.split(',').slice(0, 2).map((cat, index) => (
-                  <span key={index} className="inline-flex items-center rounded-full bg-muted text-muted-foreground border border-border px-3 py-1 text-sm">
-                    {cat.trim()}
-                  </span>
-                ))}
+          <div className="flex items-center justify-between pt-8 border-t border-white/5">
+            <div
+              className="flex items-center gap-4 cursor-pointer group"
+              onClick={() => router.push(`/author/${authorHandle}`)}
+            >
+              <Avatar className="h-12 w-12 border border-white/10 transition-transform duration-500 group-hover:scale-110">
+                {avatarUrl && <AvatarImage src={avatarUrl} referrerPolicy="no-referrer" />}
+                <AvatarFallback className="bg-white/5 text-white/30 text-sm font-bold">{authorInitials}</AvatarFallback>
+              </Avatar>
+              <div className="flex flex-col">
+                <span className="text-sm font-bold text-white group-hover:text-white/80 transition-colors">{article.author_name}</span>
+                <span className="text-xs text-white/30">@{authorHandle}</span>
               </div>
             </div>
-          )}
 
-          {/* Bookmark and Original Article Link */}
-          <div className="flex items-center gap-4">
-            <BookmarkButton articleId={article.id} variant="page" />
+            <div className="flex items-center gap-4">
+              <BookmarkButton articleId={article.id} variant="page" />
+              <button
+                onClick={() => window.open(`https://twitter.com/intent/tweet?url=${window.location.href}&text=${encodeURIComponent(displayTitle)}`, '_blank')}
+                className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors text-white/50 hover:text-white"
+              >
+                <Share2 size={18} />
+              </button>
+            </div>
+          </div>
+        </header>
+      </FadeIn>
+
+      <FadeIn delay={0.3} distance={20}>
+        <article className="prose prose-invert prose-lg max-w-none">
+          {displayContent ? (
+            <div
+              className="space-y-8 text-white/70 leading-[1.8] font-light text-xl selection:bg-white/20"
+              dangerouslySetInnerHTML={{
+                __html: displayContent
+                  .split('\n\n')
+                  .map(para => `<p class="mb-8">${para.replace(/\n/g, '<br />')}</p>`)
+                  .join('')
+              }}
+            />
+          ) : (
+            <div className="p-12 rounded-[2rem] bg-white/[0.03] border border-white/5 text-center">
+              <p className="text-white/30 italic text-lg leading-relaxed">
+                Summary is being generated or content is unavailable.
+              </p>
+            </div>
+          )}
+        </article>
+      </FadeIn>
+
+      <FadeIn delay={0.5} className="mt-20 pt-12 border-t border-white/5">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-8">
+          <div className="flex items-center gap-6">
+            <span className="text-xs uppercase tracking-widest text-white/20 font-bold">Source</span>
             {article.article_url && (
               <a
                 href={article.article_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors"
+                className="group flex items-center gap-2 text-white/40 hover:text-white transition-colors"
               >
-                <ExternalLink className="h-4 w-4" />
-                <span>View original article</span>
+                <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors">
+                  <Twitter size={14} />
+                </div>
+                <span className="text-sm font-medium">Read original thread on X</span>
+                <ExternalLink size={12} className="opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
               </a>
             )}
           </div>
         </div>
-      </footer>
-    </>
+      </FadeIn>
+    </div>
   )
 }

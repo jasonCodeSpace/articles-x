@@ -3,7 +3,7 @@
  */
 import { createStep, StepResult, WorkflowContext } from '../engine'
 import { HarvestedArticle } from '@/lib/ingest'
-import { generateArticleAnalysis, ArticleAnalysis } from '@/lib/gemini'
+import { generateArticleAnalysis, ArticleAnalysis } from '@/lib/deepseek'
 import { createClient } from '@supabase/supabase-js'
 
 export interface GenerateSummariesInput {

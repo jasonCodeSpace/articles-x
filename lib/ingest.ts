@@ -6,6 +6,7 @@ import fs from 'fs'
 import path from 'path'
 
 // Zod schema for harvested article fields
+// Zod schema for harvested article fields
 const HarvestedArticleSchema = z.object({
   article_url: z.string().url(),
   title: z.string().min(1),
@@ -17,6 +18,15 @@ const HarvestedArticleSchema = z.object({
   original_url: z.string().url().optional(),
   created_at: z.string(), // Twitter's created_at format
   featured_image_url: z.string().optional(),
+  full_article_content: z.string().optional(),
+  tweet_text: z.string().optional(),
+  metrics: z.object({
+    views: z.number().int(),
+    replies: z.number().int(),
+    retweets: z.number().int(),
+    likes: z.number().int(),
+    bookmarks: z.number().int(),
+  }).optional(),
 })
 
 export type HarvestedArticle = z.infer<typeof HarvestedArticleSchema>
@@ -32,7 +42,7 @@ export interface DatabaseArticle {
   title: string
   slug: string
   full_article_content: string
-  article_preview_text?: string
+  // article_preview_text removed as per user request
   author_name: string
   author_handle?: string
   author_avatar?: string
@@ -41,6 +51,12 @@ export interface DatabaseArticle {
   category?: string
   tweet_published_at?: string
   tweet_id?: string
+  tweet_text?: string
+  tweet_views?: number
+  tweet_replies?: number
+  tweet_retweets?: number
+  tweet_likes?: number
+  tweet_bookmarks?: number
   article_published_at?: string
   article_url?: string
 }
@@ -76,9 +92,11 @@ export function mapTweetToArticle(tweet: TwitterTweet): HarvestedArticle | null 
     const authorProfileImage = userLegacy?.profile_image_url_https || userFallback?.profile_image_url_https
     
     // Extract tweet info
-    const tweetId = tweet.legacy?.id_str || tweet.rest_id
-    const createdAt = tweet.legacy?.created_at
-    const tweetText = tweet.legacy?.full_text || tweet.legacy?.text || ''
+    // Use legacy object for metrics if available
+    const legacy = tweet.legacy;
+    const tweetId = legacy?.id_str || tweet.rest_id
+    const createdAt = legacy?.created_at
+    const tweetText = legacy?.full_text || legacy?.text || ''
     
     if (!authorHandle || !tweetId || !createdAt) {
       console.warn(`Tweet missing required data - handle: ${authorHandle}, id: ${tweetId}, createdAt: ${createdAt}`)
@@ -89,12 +107,58 @@ export function mapTweetToArticle(tweet: TwitterTweet): HarvestedArticle | null 
     const articleUrl = `https://x.com/${authorHandle}/status/${tweetId}`
     const restId = articleResult.rest_id // still capture rest_id for metadata if available
 
-    // Extract title and description (prefer preview_text over description)
+    // Extract title
+    // Logic: Convert title to lowercase (handled in generateSlug but strict output requirement is for slug. Title itself can be original?). 
+    // User schema says "title, title_english". "slug (Fix Immediate): ... Convert title to lowercase". 
+    // This implies the SLUG derivation uses lowercase. The Title field itself usually retains casing for display, 
+    // but the User Request for Slug says "Convert title to lowercase" as a step for Slug.
+    // I will keep original title in `title` field, and strict slug logic handles the rest.
     const title = articleResult.title || tweetText.slice(0, 100) || 'Untitled Article'
+    
+    // article_preview_text is DELETED. We still capture excerpt for internal logic if needed, 
+    // but user says "DELETE this field. It is redundant". 
+    // I will map it to 'excerpt' content, but not save it to DB 'article_preview_text'.
+    // Or simpler, just capture full content.
     const excerpt = articleResult.preview_text || articleResult.description || tweetText.slice(0, 200) || undefined
     
     // Extract cover image URL from cover_media.media_info.original_img_url
     const featuredImageUrl = articleResult.cover_media?.media_info?.original_img_url
+
+    // Full Content from Deep Fetch
+    // Access the 'content' field we added to schema
+    // If deep fetch worked, 'content' should be populated in articleResult
+    const fullContent = articleResult.content || excerpt || title;
+
+    // Helper to parse metrics that might be strings like "1.2k"
+    const parseMetric = (val: string | number | undefined): number => {
+      if (val === undefined || val === null) return 0;
+      if (typeof val === 'number') return val;
+      
+      const v = val.toLowerCase().trim();
+      if (v.endsWith('k')) {
+        return Math.floor(parseFloat(v.slice(0, -1)) * 1000);
+      }
+      if (v.endsWith('m')) {
+        return Math.floor(parseFloat(v.slice(0, -1)) * 1000000);
+      }
+      if (v.endsWith('b')) {
+        return Math.floor(parseFloat(v.slice(0, -1)) * 1000000000);
+      }
+      return parseInt(v.replace(/,/g, ''), 10) || 0;
+    };
+
+    // Metrics
+    // Capture from legacy object or views
+    
+    let views = 0;
+    if (tweet.views?.count) {
+        views = parseMetric(tweet.views.count);
+    }
+    
+    const replyCount = parseMetric(legacy?.reply_count);
+    const retweetCount = parseMetric(legacy?.retweet_count);
+    const favoriteCount = parseMetric(legacy?.favorite_count);
+    const bookmarkCount = parseMetric(legacy?.bookmark_count);
 
     const harvestedArticle: HarvestedArticle = {
       article_url: articleUrl,
@@ -107,6 +171,15 @@ export function mapTweetToArticle(tweet: TwitterTweet): HarvestedArticle | null 
       original_url: articleResult.url,
       created_at: createdAt,
       featured_image_url: featuredImageUrl,
+      full_article_content: fullContent,
+      tweet_text: tweetText,
+      metrics: {
+        views: views,
+        replies: replyCount,
+        retweets: retweetCount,
+        likes: favoriteCount,
+        bookmarks: bookmarkCount
+      }
     }
 
     // Validate the harvested data
@@ -179,16 +252,17 @@ function getCategoryForAuthor(): string | undefined {
  * Convert harvested article to database article format
  */
 export function harvestedToDatabase(harvested: HarvestedArticle): DatabaseArticle {
-  // Generate slug from title with short ID
+  // Generate slug from title with short ID using the updated strict logic
   const titleSlug = generateSlugFromTitle(harvested.title)
   const shortId = generateShortId(harvested.tweet_id)
-  const slug = `${titleSlug}--${shortId}`
   
-  // Use excerpt or create one from title
-  const excerpt = harvested.excerpt || `Article by ${harvested.author_handle}`
+  // Requirement: Append the first 6 chars of the ID at the end for uniqueness.
+  // Example: Title "La gente que vive..." -> Slug la-gente-que-vive-en-la-calle-43e1c3.
+  const slug = `${titleSlug}-${shortId}`
   
   // Create basic content
-  const content = harvested.excerpt || harvested.title
+  // Requirement: Extract the entire HTML/Text body... Do not truncate.
+  const content = harvested.full_article_content || harvested.excerpt || harvested.title
   
   // Parse Twitter date to ISO string
   const publishedAt = parseTwitterDate(harvested.created_at)
@@ -203,7 +277,7 @@ export function harvestedToDatabase(harvested: HarvestedArticle): DatabaseArticl
     title: harvested.title,
     slug,
     full_article_content: content,
-    article_preview_text: excerpt,
+    // article_preview_text removed
     author_name: harvested.author_handle,
     author_handle: harvested.author_handle,
     author_avatar: harvested.author_avatar || undefined,
@@ -211,6 +285,12 @@ export function harvestedToDatabase(harvested: HarvestedArticle): DatabaseArticl
     tag: ['twitter', 'imported'],
     tweet_published_at: publishedAt,
     tweet_id: harvested.tweet_id,
+    tweet_text: harvested.tweet_text,
+    tweet_views: harvested.metrics?.views,
+    tweet_replies: harvested.metrics?.replies,
+    tweet_retweets: harvested.metrics?.retweets,
+    tweet_likes: harvested.metrics?.likes,
+    tweet_bookmarks: harvested.metrics?.bookmarks,
     article_published_at: publishedAt, // Assuming article published at same time as tweet
     article_url: harvested.article_url,
   }

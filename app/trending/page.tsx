@@ -4,6 +4,8 @@ import { FeedLoading } from '@/components/feed-loading'
 import { createClient } from '@/lib/supabase/server'
 import { Article } from '@/components/article-card'
 import { Metadata } from 'next'
+import Link from 'next/link'
+import { Sparkles } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: 'Trending Articles From X | Xarticle',
@@ -63,9 +65,9 @@ async function fetchTrendingArticles(options: {
   filter?: string
 }): Promise<Article[]> {
   const supabase = await createClient()
-  
+
   let query = supabase
-    .from('article_main')
+    .from('articles')
     .select(`
       *,
       summary_english,
@@ -73,29 +75,29 @@ async function fetchTrendingArticles(options: {
     `)
     .order('article_published_at', { ascending: false })
     .limit(1000)
-  
+
   if (options.search && options.search.trim()) {
     query = query.or(`title.ilike.%${options.search.trim()}%,title_english.ilike.%${options.search.trim()}%`)
   }
-  
+
   if (options.category && options.category !== 'all' && options.category.trim()) {
     // Use ilike to match category within comma-separated values
     query = query.ilike('category', `%${options.category.trim()}%`)
   }
-  
+
   const { data, error } = await query
-  
+
   if (error) {
     console.error('Error fetching trending articles:', error)
     return []
   }
-  
+
   return data || []
 }
 
 export default async function TrendingPage({ searchParams }: PageProps) {
   const { category, search, filter } = await searchParams
-  
+
   // Fetch trending articles
   const articles = await fetchTrendingArticles({ category, search, filter })
 
@@ -134,36 +136,49 @@ export default async function TrendingPage({ searchParams }: PageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
-      <main className="mx-auto max-w-7xl px-6 py-12">
-        {/* H1 + 副标题 */}
-        <header className="text-center mb-8">
-          <h1 className="text-5xl font-bold tracking-tight">
-            Trending Articles From X
-          </h1>
-          <p className="mt-3 text-lg text-muted-foreground">
-            The latest curated reads from leading voices.
-          </p>
-        </header>
+      <div className="min-h-screen bg-[#0A0A0A] text-white selection:bg-white/20">
+        {/* Decorative background orbs */}
+        <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+          <div className="absolute -top-[10%] left-[10%] w-[30%] h-[30%] bg-white/[0.02] rounded-full blur-[120px]" />
+          <div className="absolute bottom-[20%] right-[10%] w-[25%] h-[25%] bg-white/[0.02] rounded-full blur-[120px]" />
+        </div>
 
+        <main className="relative z-10 mx-auto max-w-7xl px-6 pt-32 pb-20">
+          <header className="mb-16 flex flex-col lg:flex-row justify-between items-start lg:items-end gap-10">
+            <div className="space-y-4">
+              <h1 className="text-5xl md:text-7xl font-bold tracking-tighter">
+                Trending <span className="text-white/40">reads.</span>
+              </h1>
+              <p className="text-white/40 text-lg font-light max-w-lg">
+                The latest high-value articles and threads, filtered across all categories.
+              </p>
+            </div>
 
+            <Link href="/summary" className="group relative w-full lg:w-96 p-8 rounded-[2rem] bg-white/[0.03] border border-white/5 hover:bg-white/[0.08] hover:border-white/10 transition-all duration-500 overflow-hidden shadow-2xl flex items-center gap-6">
+              <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-500">
+                <Sparkles className="text-white/70" size={24} />
+              </div>
+              <div className="space-y-1">
+                <div className="text-[10px] uppercase tracking-[0.2em] text-white/30 font-bold">Daily Briefing</div>
+                <h3 className="text-xl font-medium text-white/90 group-hover:text-white transition-colors">Daily AI Report</h3>
+                <p className="text-xs text-white/40 font-light leading-relaxed">
+                  Summarized insights from today&apos;s best content.
+                </p>
+              </div>
+            </Link>
+          </header>
 
-        {/* H2: Search（语义可见，视觉隐藏） */}
-        <section aria-labelledby="search" className="mb-6">
-          <h2 id="search" className="sr-only">Search</h2>
-          {/* 搜索组件将通过ArticleFeed渲染 */}
-        </section>
-
-        {/* H2: Article Feed（语义可见，视觉隐藏；替代"Latest Trending Articles"可见标题） */}
-        <section aria-labelledby="feed" className="mb-12">
-          <h2 id="feed" className="sr-only">Article Feed</h2>
-          <Suspense fallback={<FeedLoading />}>
-            <ArticleFeed 
-            initialArticles={articles} 
-            initialSearchQuery={search || ''}
-          />
-          </Suspense>
-        </section>
-      </main>
+          <section aria-labelledby="feed">
+            <h2 id="feed" className="sr-only">Article Feed</h2>
+            <Suspense fallback={<FeedLoading />}>
+              <ArticleFeed
+                initialArticles={articles}
+                initialSearchQuery={search || ''}
+              />
+            </Suspense>
+          </section>
+        </main>
+      </div>
     </>
   )
 }

@@ -2,10 +2,11 @@
 
 import React, { useEffect, useState } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { ExternalLink, Clock, Calendar, Share2, Twitter } from 'lucide-react'
+import { ExternalLink, Clock, Calendar, Share2, Twitter, Globe } from 'lucide-react'
 import { BookmarkButton } from '@/components/bookmark-button'
 import { useRouter } from 'next/navigation'
 import { FadeIn } from './motion-wrapper'
+import { Button } from '@/components/ui/button'
 
 interface ArticleContentProps {
   article: {
@@ -43,6 +44,7 @@ export function ArticleContent({
 }: ArticleContentProps) {
   const router = useRouter()
   const [readingProgress, setReadingProgress] = useState(0)
+  const [displayLanguage, setDisplayLanguage] = useState<'en' | 'cn'>('en')
 
   useEffect(() => {
     const updateReadingProgress = () => {
@@ -57,9 +59,18 @@ export function ArticleContent({
     return () => window.removeEventListener('scroll', updateReadingProgress)
   }, [])
 
-  const displayTitle = article.title_english || article.title
-  // Display full article content first, fall back to summary if not available
-  const displayContent = article.full_article_content_english || article.full_article_content || article.summary_english || article.summary_chinese
+  // Display title based on language preference
+  const displayTitle = displayLanguage === 'en'
+    ? (article.title_english || article.title)
+    : article.title
+
+  // Display summary based on language preference
+  const displaySummary = displayLanguage === 'en'
+    ? article.summary_english
+    : article.summary_chinese
+
+  // Check if both languages are available for summary
+  const hasBothLanguages = article.summary_english && article.summary_chinese
 
   return (
     <div className="relative">
@@ -123,13 +134,40 @@ export function ArticleContent({
         </header>
       </FadeIn>
 
+      {/* Summary Section */}
+      {displaySummary && (
+        <FadeIn delay={0.2} distance={20}>
+          <div className="mb-12 p-8 rounded-[2rem] bg-white/[0.03] border border-white/5">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-[10px] uppercase tracking-[0.2em] font-bold text-white/30">
+                AI Summary
+              </h2>
+              {hasBothLanguages && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setDisplayLanguage(displayLanguage === 'en' ? 'cn' : 'en')}
+                  className="flex items-center gap-2 text-[10px] uppercase tracking-widest font-bold text-white/40 hover:text-white hover:bg-white/5"
+                >
+                  <Globe size={12} />
+                  {displayLanguage === 'en' ? 'CN' : 'EN'}
+                </Button>
+              )}
+            </div>
+            <div className="text-white/60 leading-relaxed whitespace-pre-line">
+              {displaySummary}
+            </div>
+          </div>
+        </FadeIn>
+      )}
+
       <FadeIn delay={0.3} distance={20}>
         <article className="prose prose-invert prose-lg max-w-none">
-          {displayContent ? (
+          {article.full_article_content || article.full_article_content_english ? (
             <div
               className="space-y-8 text-white/70 leading-[1.8] font-light text-xl selection:bg-white/20"
               dangerouslySetInnerHTML={{
-                __html: displayContent
+                __html: (displayLanguage === 'en' ? article.full_article_content_english : article.full_article_content) || article.full_article_content || ''
                   .split('\n\n')
                   .map(para => `<p class="mb-8">${para.replace(/\n/g, '<br />')}</p>`)
                   .join('')
@@ -138,7 +176,7 @@ export function ArticleContent({
           ) : (
             <div className="p-12 rounded-[2rem] bg-white/[0.03] border border-white/5 text-center">
               <p className="text-white/30 italic text-lg leading-relaxed">
-                Summary is being generated or content is unavailable.
+                Full content is unavailable. Read the original on X.
               </p>
             </div>
           )}

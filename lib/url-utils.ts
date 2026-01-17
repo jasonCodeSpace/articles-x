@@ -32,11 +32,12 @@ export function generateSlugFromTitle(title: string): string {
 }
 
 /**
- * Generate slug with fallback for non-English titles
+ * Generate slug with preference for English title
+ * Always uses title_english if available (regardless of original language)
  */
 export function generateSlug(title: string, titleEnglish: string | null, tweetId: string): string {
-  // Try English title first for non-English content
-  if (titleEnglish && !isEnglish(title)) {
+  // Always prefer English title if available
+  if (titleEnglish) {
     const slug = generateSlugFromTitle(titleEnglish)
     if (slug.length > 0) return slug
   }

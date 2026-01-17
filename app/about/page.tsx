@@ -1,6 +1,6 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
-import { ArrowLeft, Target, Shield, Mail, Globe, Sparkles, Zap, Layout } from 'lucide-react'
+import { Target, Shield, Mail, Globe, Sparkles, Zap, Layout } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { createClient } from '@/lib/supabase/server'
 import { ClientNavWrapper } from '@/components/client-nav-wrapper'
@@ -34,13 +34,6 @@ export default async function About() {
       <main className="relative z-10 mx-auto max-w-5xl px-6 pt-40 pb-20">
         {/* Hero Section */}
         <section className="mb-20">
-          <FadeIn direction="none" delay={0.1}>
-            <Link href="/" className="inline-flex items-center text-[10px] uppercase tracking-[0.2em] font-bold text-white/30 hover:text-white transition-colors mb-10 group">
-              <ArrowLeft className="w-3 h-3 mr-2 transition-transform group-hover:-translate-x-1" />
-              Back to Collection
-            </Link>
-          </FadeIn>
-
           <header className="max-w-2xl">
             <FadeIn delay={0.2} distance={30}>
               <h1 className="text-4xl md:text-6xl font-bold tracking-tight leading-[1.1] mb-6">

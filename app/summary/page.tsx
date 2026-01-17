@@ -1,9 +1,10 @@
 import { Suspense } from 'react'
 import { unstable_cache } from 'next/cache'
-import { createAnonClient } from '@/lib/supabase/server'
+import { createAnonClient, createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { Calendar, FileText, ChevronRight, Sparkles } from 'lucide-react'
+import { Calendar, FileText, ChevronRight, ChevronLeft, Sparkles } from 'lucide-react'
 import { Metadata } from 'next'
+import { ClientNavWrapper } from '@/components/client-nav-wrapper'
 
 export const metadata: Metadata = {
   title: 'Daily Reports - AI-Curated Summaries | Xarticle',
@@ -25,8 +26,8 @@ export const metadata: Metadata = {
   },
 }
 
-// Use ISR with 5 minute revalidation
-export const revalidate = 300
+// Use dynamic for auth
+export const dynamic = 'force-dynamic'
 
 interface DailySummary {
   id: string
@@ -187,8 +188,14 @@ function LoadingSkeleton() {
 export default async function DailyReportsPage() {
   const summaries = await getDailySummaries()
 
+  // Get user for nav
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-white selection:bg-white/20">
+      <ClientNavWrapper initialUser={user} categories={[]} />
+
       {/* Decorative background orbs */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
         <div className="absolute -top-[10%] left-[10%] w-[30%] h-[30%] bg-white/[0.02] rounded-full blur-[120px]" />
@@ -196,6 +203,15 @@ export default async function DailyReportsPage() {
       </div>
 
       <main className="relative z-10 mx-auto max-w-4xl px-6 pt-32 pb-20">
+        {/* Back button */}
+        <Link
+          href="/trending"
+          className="inline-flex items-center gap-2 text-sm text-white/40 hover:text-white/70 transition-colors mb-8"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          Back to Articles
+        </Link>
+
         <header className="mb-12">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center">

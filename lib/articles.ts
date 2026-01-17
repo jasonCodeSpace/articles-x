@@ -250,7 +250,7 @@ export async function getPreviousArticle(currentArticleId: string): Promise<Arti
 export async function getNextArticle(currentArticleId: string): Promise<Article | null> {
   try {
     const supabase = await createClient()
-    
+
     const { data, error } = await supabase
       .rpc('get_next_article', { current_article_id: currentArticleId })
 
@@ -260,9 +260,60 @@ export async function getNextArticle(currentArticleId: string): Promise<Article 
     }
 
     return data?.[0] || null
-    
+
   } catch (error) {
     console.error('Unexpected error fetching next article:', error)
     return null
+  }
+}
+
+/**
+ * Get related articles (same category, recent)
+ */
+export async function getRelatedArticles(articleId: string, category: string | null, limit: number = 4): Promise<Article[]> {
+  try {
+    const supabase = await createClient()
+
+    let query = supabase
+      .from('articles')
+      .select(`
+        id,
+        title,
+        title_english,
+        slug,
+        image,
+        category,
+        author_name,
+        author_handle,
+        author_avatar,
+        article_published_at,
+        updated_at,
+        tweet_views
+      `)
+      .neq('id', articleId)
+      .order('article_published_at', { ascending: false })
+      .limit(limit)
+
+    // Filter by category if available
+    if (category && category.trim()) {
+      query = query.ilike('category', `%${category.trim()}%`)
+    }
+
+    const { data, error } = await query
+
+    if (error) {
+      console.error('Error fetching related articles:', error)
+      return []
+    }
+
+    return (data || []).map((item) => ({
+      ...item,
+      tags: [],
+      created_at: item.article_published_at || item.updated_at || new Date().toISOString(),
+    })) as unknown as Article[]
+
+  } catch (error) {
+    console.error('Unexpected error fetching related articles:', error)
+    return []
   }
 }

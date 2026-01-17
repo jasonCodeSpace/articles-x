@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { SummaryContentClient } from '@/components/summary-content-client'
+import { ClientNavWrapper } from '@/components/client-nav-wrapper'
 import { Metadata } from 'next'
 import Link from 'next/link'
 import { ChevronLeft } from 'lucide-react'
@@ -97,14 +98,22 @@ export default async function ReportPage({ params }: PageProps) {
     notFound()
   }
 
-  const summary = await getSummary(date)
+  const supabase = await createClient()
+  const [summary, userResult] = await Promise.all([
+    getSummary(date),
+    supabase.auth.getUser()
+  ])
 
   if (!summary) {
     notFound()
   }
 
+  const user = userResult.data?.user
+
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-white">
+      <ClientNavWrapper initialUser={user} categories={[]} />
+
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
         <div className="absolute -top-[10%] left-[10%] w-[30%] h-[30%] bg-white/[0.02] rounded-full blur-[120px]" />
         <div className="absolute bottom-[20%] right-[10%] w-[25%] h-[25%] bg-white/[0.02] rounded-full blur-[120px]" />

@@ -1,8 +1,11 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { getArticleBySlug, getPreviousArticle, getNextArticle } from '@/lib/articles'
+import Link from 'next/link'
+import { ChevronLeft } from 'lucide-react'
+import { getArticleBySlug, getPreviousArticle, getNextArticle, getRelatedArticles } from '@/lib/articles'
 import { ArticleContent } from '@/components/article-content'
 import { ArticleNavigation } from '@/components/article-navigation'
+import { RelatedArticles } from '@/components/related-articles'
 
 interface ArticlePageProps {
   params: Promise<{
@@ -58,10 +61,11 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     notFound()
   }
 
-  // Get previous and next articles
-  const [previousArticle, nextArticle] = await Promise.all([
+  // Get previous and next articles, and related articles
+  const [previousArticle, nextArticle, relatedArticles] = await Promise.all([
     getPreviousArticle(article.id),
-    getNextArticle(article.id)
+    getNextArticle(article.id),
+    getRelatedArticles(article.id, article.category || null, 2)
   ])
 
   // Generate author initials
@@ -169,7 +173,16 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           <div className="absolute top-[40%] -right-[10%] w-[30%] h-[30%] bg-white/[0.02] rounded-full blur-[120px]" />
         </div>
 
-        <div className="relative z-10 max-w-3xl mx-auto px-6 pt-32 pb-20">
+        <div className="relative z-10 max-w-3xl mx-auto px-6 pt-24 pb-20">
+          {/* Back button */}
+          <Link
+            href="/trending"
+            className="inline-flex items-center gap-2 text-sm text-white/40 hover:text-white/70 transition-colors mb-8"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            Back to Articles
+          </Link>
+
           <ArticleContent
             article={{
               ...article,
@@ -181,12 +194,21 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             publishedDate={publishedDate}
             relativeTime={relativeTime}
           />
+
+          {/* Previous/Next Navigation */}
           <div className="mt-20 pt-10 border-t border-white/5">
             <ArticleNavigation
               previousArticle={previousArticle}
               nextArticle={nextArticle}
             />
           </div>
+
+          {/* Related Articles */}
+          {relatedArticles.length > 0 && (
+            <div className="mt-16 pt-10 border-t border-white/5">
+              <RelatedArticles articles={relatedArticles} />
+            </div>
+          )}
         </div>
       </div>
     </>

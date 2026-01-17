@@ -222,22 +222,62 @@ export async function getArticleStats() {
 }
 
 /**
- * Get previous article
+ * Get previous article (older than current)
+ * Falls back to direct query if RPC function is not available
  */
 export async function getPreviousArticle(currentArticleId: string): Promise<Article | null> {
   try {
     const supabase = await createClient()
-    
+
+    // First try to get the current article's published date
+    const { data: currentArticle, error: currentError } = await supabase
+      .from('articles')
+      .select('id, article_published_at, updated_at')
+      .eq('id', currentArticleId)
+      .single()
+
+    if (currentError || !currentArticle) {
+      console.error('Error fetching current article:', currentError)
+      return null
+    }
+
+    const currentDate = currentArticle.article_published_at || currentArticle.updated_at
+
+    // Query for the previous article (older than current)
     const { data, error } = await supabase
-      .rpc('get_previous_article', { current_article_id: currentArticleId })
+      .from('articles')
+      .select(`
+        id,
+        title,
+        title_english,
+        slug,
+        image,
+        category,
+        author_name,
+        author_handle,
+        author_avatar,
+        article_published_at,
+        updated_at
+      `)
+      .lt('article_published_at', currentDate)
+      .order('article_published_at', { ascending: false })
+      .limit(1)
 
     if (error) {
       console.error('Error fetching previous article:', error)
       return null
     }
 
-    return data?.[0] || null
-    
+    if (!data || data.length === 0) {
+      return null
+    }
+
+    return {
+      ...data[0],
+      tags: [],
+      created_at: data[0].article_published_at || data[0].updated_at || new Date().toISOString(),
+    } as Article
+
   } catch (error) {
     console.error('Unexpected error fetching previous article:', error)
     return null
@@ -245,21 +285,61 @@ export async function getPreviousArticle(currentArticleId: string): Promise<Arti
 }
 
 /**
- * Get next article
+ * Get next article (newer than current)
+ * Falls back to direct query if RPC function is not available
  */
 export async function getNextArticle(currentArticleId: string): Promise<Article | null> {
   try {
     const supabase = await createClient()
 
+    // First try to get the current article's published date
+    const { data: currentArticle, error: currentError } = await supabase
+      .from('articles')
+      .select('id, article_published_at, updated_at')
+      .eq('id', currentArticleId)
+      .single()
+
+    if (currentError || !currentArticle) {
+      console.error('Error fetching current article:', currentError)
+      return null
+    }
+
+    const currentDate = currentArticle.article_published_at || currentArticle.updated_at
+
+    // Query for the next article (newer than current)
     const { data, error } = await supabase
-      .rpc('get_next_article', { current_article_id: currentArticleId })
+      .from('articles')
+      .select(`
+        id,
+        title,
+        title_english,
+        slug,
+        image,
+        category,
+        author_name,
+        author_handle,
+        author_avatar,
+        article_published_at,
+        updated_at
+      `)
+      .gt('article_published_at', currentDate)
+      .order('article_published_at', { ascending: true })
+      .limit(1)
 
     if (error) {
       console.error('Error fetching next article:', error)
       return null
     }
 
-    return data?.[0] || null
+    if (!data || data.length === 0) {
+      return null
+    }
+
+    return {
+      ...data[0],
+      tags: [],
+      created_at: data[0].article_published_at || data[0].updated_at || new Date().toISOString(),
+    } as Article
 
   } catch (error) {
     console.error('Unexpected error fetching next article:', error)

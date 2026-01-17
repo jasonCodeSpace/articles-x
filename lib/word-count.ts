@@ -4,44 +4,6 @@
  */
 
 /**
- * Comprehensive CJK (Chinese, Japanese, Korean) Unicode ranges
- * Includes:
- * - CJK Unified Ideographs (基本汉字)
- * - CJK Unified Ideographs Extension A-G (扩展汉字区)
- * - CJK Compatibility Ideographs (兼容汉字)
- * - CJK Radicals (部首)
- * - CJK Symbols and Punctuation (CJK符号和标点)
- */
-const CJK_RANGES: Array<[number, number]> = [
-  // CJK Unified Ideographs (基本汉字)
-  [0x4e00, 0x9fff],
-  // CJK Unified Ideographs Extension A (扩展A区)
-  [0x3400, 0x4dbf],
-  // CJK Compatibility Ideographs (兼容汉字)
-  [0xf900, 0xfaff],
-  // CJK Radicals Supplement (部首补充)
-  [0x2e80, 0x2eff],
-  // CJK Symbols and Punctuation (CJK符号和标点)
-  [0x3000, 0x303f],
-  // CJK Strokes (笔画)
-  [0x31c0, 0x31ef],
-  // Ideographic Description Characters (表意文字描述字符)
-  [0x2ff0, 0x2fff],
-]
-
-/**
- * Regex pattern to match all CJK characters
- */
-const CJK_PATTERN = new RegExp(
-  CJK_RANGES.map(([start, end]) => {
-    const hexStart = start.toString(16).padStart(4, '0')
-    const hexEnd = end.toString(16).padStart(4, '0')
-    return `\\u${hexStart}-\\u${hexEnd}`
-  }).join('|'),
-  'gu'
-)
-
-/**
  * Simplified CJK pattern for performance (covers 99%+ of usage)
  * Includes basic CJK Unified Ideographs + Extension A + common symbols
  */

@@ -72,6 +72,30 @@ export function ArticleContent({
   // Check if both languages are available for summary
   const hasBothLanguages = article.summary_english && article.summary_chinese
 
+  // Format article content with proper paragraphs
+  const formatContent = (content: string | undefined): string => {
+    if (!content) return ''
+
+    // Split by double newlines for paragraphs
+    return content
+      .split(/\n\n+/)
+      .filter(para => para.trim())
+      .map(para => {
+        // Replace single newlines with <br> within paragraphs
+        const formatted = para.trim().replace(/\n/g, '<br />')
+        return `<p class="mb-6">${formatted}</p>`
+      })
+      .join('')
+  }
+
+  // Get the content to display based on language preference
+  const getDisplayContent = (): string => {
+    const content = displayLanguage === 'en'
+      ? (article.full_article_content_english || article.full_article_content)
+      : (article.full_article_content || article.full_article_content_english)
+    return formatContent(content)
+  }
+
   return (
     <div className="relative">
       {/* Reading Progress Indicator */}
@@ -150,7 +174,7 @@ export function ArticleContent({
                   className="flex items-center gap-2 text-[10px] uppercase tracking-widest font-bold text-white/40 hover:text-white hover:bg-white/5"
                 >
                   <Globe size={12} />
-                  {displayLanguage === 'en' ? 'CN' : 'EN'}
+                  {displayLanguage === 'en' ? 'EN' : 'CN'}
                 </Button>
               )}
             </div>
@@ -165,13 +189,8 @@ export function ArticleContent({
         <article className="prose prose-invert prose-lg max-w-none">
           {article.full_article_content || article.full_article_content_english ? (
             <div
-              className="space-y-8 text-white/70 leading-[1.8] font-light text-xl selection:bg-white/20"
-              dangerouslySetInnerHTML={{
-                __html: (displayLanguage === 'en' ? article.full_article_content_english : article.full_article_content) || article.full_article_content || ''
-                  .split('\n\n')
-                  .map(para => `<p class="mb-8">${para.replace(/\n/g, '<br />')}</p>`)
-                  .join('')
-              }}
+              className="text-white/70 leading-[1.9] font-light text-lg selection:bg-white/20"
+              dangerouslySetInnerHTML={{ __html: getDisplayContent() }}
             />
           ) : (
             <div className="p-12 rounded-[2rem] bg-white/[0.03] border border-white/5 text-center">
@@ -183,7 +202,7 @@ export function ArticleContent({
         </article>
       </FadeIn>
 
-      <FadeIn delay={0.5} className="mt-20 pt-12 border-t border-white/5">
+      <FadeIn delay={0.5} className="mt-12 pt-8 border-t border-white/5">
         <div className="flex flex-col md:flex-row justify-between items-center gap-8">
           <div className="flex items-center gap-6">
             <span className="text-xs uppercase tracking-widest text-white/20 font-bold">Source</span>

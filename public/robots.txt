@@ -26,6 +26,14 @@ User-agent: DuckDuckBot
 Allow: /
 Crawl-delay: 1
 
+User-agent: YandexBot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Yandex
+Allow: /
+Crawl-delay: 1
+
 # =====================================================
 # SOCIAL MEDIA CRAWLERS - Full Access for Open Graph
 # =====================================================

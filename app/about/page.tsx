@@ -28,8 +28,66 @@ export default async function About() {
 
   const categories: string[] = []
 
+  // Schema.org structured data for About page
+  const organizationSchema = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Xarticle",
+    "url": "https://www.xarticle.news",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://www.xarticle.news/og-image.png",
+      "width": 1200,
+      "height": 630
+    },
+    "description": "Xarticle is an AI-driven content curation platform that discovers, organizes, and summarizes high-quality long-form articles from X (formerly Twitter) with bilingual AI-powered summaries.",
+    "sameAs": [
+      "https://twitter.com/xarticle_news",
+      "https://www.xarticle.news"
+    ],
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "contactType": "customer service",
+      "email": "hi@xarticle.news",
+      "url": "https://www.xarticle.news/about"
+    },
+    "founder": "Xarticle Team",
+    "foundingDate": "2025",
+    "areaServed": "Worldwide",
+    "knowsLanguage": ["en", "zh"],
+    "slogan": "The Best Articles from X, Curated and Summarized"
+  }
+
+  const aboutPageSchema = {
+    "@context": "https://schema.org",
+    "@type": "AboutPage",
+    "name": "About Xarticle",
+    "description": "Learn about Xarticle - a content curation platform that discovers, organizes, and summarizes high-quality long-form articles from X with AI-powered bilingual summaries.",
+    "url": "https://www.xarticle.news/about",
+    "mainEntity": {
+      "@type": "Organization",
+      "name": "Xarticle",
+      "url": "https://www.xarticle.news"
+    },
+    "subjectOf": {
+      "@type": "CreativeWork",
+      "name": "Xarticle Platform",
+      "description": "AI-powered article curation from X with bilingual summaries",
+      "keywords": ["article curation", "AI summaries", "Twitter content", "X platform", "bilingual", "content discovery"]
+    }
+  }
+
   return (
-    <div className="min-h-screen bg-[#0A0A0A] text-white selection:bg-white/20 font-sans">
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(aboutPageSchema) }}
+      />
+      <div className="min-h-screen bg-[#0A0A0A] text-white selection:bg-white/20 font-sans">
       <ClientNavWrapper initialUser={user} categories={categories} />
 
       {/* Decorative background orbs */}
@@ -180,5 +238,6 @@ export default async function About() {
         </section>
       </main>
     </div>
+    </>
   )
 }

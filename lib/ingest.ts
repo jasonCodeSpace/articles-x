@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { TwitterTweet } from '@/lib/twitter'
 import { generateSlug, generateShortId } from '@/lib/url-utils'
+import { randomUUID } from 'crypto'
 import fs from 'fs'
 import path from 'path'
 
@@ -12,6 +13,7 @@ const HarvestedArticleSchema = z.object({
   title: z.string().min(1),
   excerpt: z.string().optional(),
   author_handle: z.string().min(1),
+  author_name: z.string().optional(), // Display name
   author_avatar: z.string().optional(),
   tweet_id: z.string(),
   rest_id: z.string().optional(),
@@ -31,6 +33,49 @@ const HarvestedArticleSchema = z.object({
 
 export type HarvestedArticle = z.infer<typeof HarvestedArticleSchema>
 
+/**
+ * Extract full article content from content_state.blocks
+ * This is the structure Twitter uses for article content
+ */
+function extractFullArticleContent(articleResult: Record<string, unknown>): string {
+  try {
+    // First try content_state.blocks (the correct structure for X Articles)
+    const contentState = articleResult?.content_state as { blocks?: Array<{ text?: string }> } | undefined
+    if (contentState?.blocks && Array.isArray(contentState.blocks)) {
+      const textBlocks = contentState.blocks
+        .filter((block: { text?: string }) => block.text && block.text.trim())
+        .map((block: { text?: string }) => block.text!.trim())
+
+      if (textBlocks.length > 0) {
+        const fullContent = textBlocks.join('\n\n')
+        console.log(`Extracted full article content: ${fullContent.length} characters`)
+        return fullContent
+      }
+    }
+
+    // Fallback to content.blocks (old structure)
+    const content = articleResult?.content as { blocks?: Array<{ text?: string }> } | undefined
+    if (content?.blocks && Array.isArray(content.blocks)) {
+      const textBlocks = content.blocks
+        .filter((block: { text?: string }) => block.text && block.text.trim())
+        .map((block: { text?: string }) => block.text!.trim())
+
+      if (textBlocks.length > 0) {
+        const fullContent = textBlocks.join('\n\n')
+        console.log(`Extracted full article content (fallback): ${fullContent.length} characters`)
+        return fullContent
+      }
+    }
+
+    // Final fallback to preview text or description
+    console.log('No blocks found, using preview text as fallback')
+    return (articleResult?.preview_text as string) || (articleResult?.description as string) || ''
+  } catch (error) {
+    console.error('Error extracting full article content:', error)
+    return (articleResult?.preview_text as string) || (articleResult?.description as string) || ''
+  }
+}
+
 // Interface for tweet data to be stored in tweets table
 export interface TweetData {
   tweet_id: string
@@ -39,6 +84,7 @@ export interface TweetData {
 }
 
 export interface DatabaseArticle {
+  id: string  // Pre-generated UUID for slug shortId
   title: string
   slug: string
   full_article_content: string
@@ -53,7 +99,6 @@ export interface DatabaseArticle {
   tweet_text?: string
   tweet_views?: number
   tweet_replies?: number
-  tweet_retweets?: number
   tweet_likes?: number
   article_published_at?: string
   article_url?: string
@@ -82,12 +127,24 @@ export function mapTweetToArticle(tweet: TwitterTweet): HarvestedArticle | null 
       return null
     }
 
-    // Extract user info from core.user_results.result.legacy (new API structure) or fallback to legacy.user (old structure)
-    const userLegacy = tweet.core?.user_results?.result?.legacy
+    // Extract user info - support both legacy and v2 API formats
+    // Legacy format: core.user_results.result.legacy.screen_name
+    // V2 format: core.user_results.result.core.screen_name
+    const userResult = tweet.core?.user_results?.result
+    const userLegacy = userResult?.legacy
+    const userCore = userResult?.core  // v2 format has user info in a 'core' subfield
     const userFallback = tweet.legacy?.user
-    
-    const authorHandle = userLegacy?.screen_name || userFallback?.screen_name
-    const authorProfileImage = userLegacy?.profile_image_url_https || userFallback?.profile_image_url_https
+
+    // Try to get screen_name from multiple locations
+    const authorHandle = userLegacy?.screen_name || userCore?.screen_name || userFallback?.screen_name
+
+    // Get profile image from legacy format or v2 avatar format
+    const authorProfileImage = userLegacy?.profile_image_url_https ||
+                               userResult?.avatar?.image_url ||
+                               userFallback?.profile_image_url_https
+
+    // Get author name (for display)
+    const authorName = userLegacy?.name || userCore?.name || userFallback?.name || authorHandle
     
     // Extract tweet info
     // Use legacy object for metrics if available
@@ -123,9 +180,8 @@ export function mapTweetToArticle(tweet: TwitterTweet): HarvestedArticle | null 
     const featuredImageUrl = articleResult.cover_media?.media_info?.original_img_url
 
     // Full Content from Deep Fetch
-    // Access the 'content' field we added to schema
-    // If deep fetch worked, 'content' should be populated in articleResult
-    const fullContent = articleResult.content || excerpt || title;
+    // Use the extractFullArticleContent function to properly extract from content_state.blocks
+    const fullContent = extractFullArticleContent(articleResult as Record<string, unknown>) || excerpt || title;
 
     // Helper to parse metrics that might be strings like "1.2k"
     const parseMetric = (val: string | number | undefined): number => {
@@ -163,6 +219,7 @@ export function mapTweetToArticle(tweet: TwitterTweet): HarvestedArticle | null 
       title,
       excerpt,
       author_handle: authorHandle,
+      author_name: authorName,
       author_avatar: authorProfileImage,
       tweet_id: tweetId,
       rest_id: restId,
@@ -250,9 +307,14 @@ function getCategoryForAuthor(): string | undefined {
  * Convert harvested article to database article format
  */
 export function harvestedToDatabase(harvested: HarvestedArticle): DatabaseArticle {
-  // Generate slug using new function with fallback for non-English titles
-  // title_english is null at harvest time, will be updated after summary generation
-  const slug = generateSlug(harvested.title, null, harvested.tweet_id)
+  // Pre-generate UUID for the article
+  const id = randomUUID()
+
+  // Generate slug with shortId suffix for URL lookup
+  // Format: title-slug--shortId (e.g., innovation-in-ai--a1b2c3)
+  const titleSlug = generateSlug(harvested.title, null, harvested.tweet_id)
+  const shortId = generateShortId(id)
+  const slug = `${titleSlug}--${shortId}`
 
   // Create basic content
   // Requirement: Extract the entire HTML/Text body... Do not truncate.
@@ -265,10 +327,11 @@ export function harvestedToDatabase(harvested: HarvestedArticle): DatabaseArticl
   const category = getCategoryForAuthor()
 
   const result: DatabaseArticle = {
+    id,
     title: harvested.title,
     slug,
     full_article_content: content,
-    author_name: harvested.author_handle,
+    author_name: harvested.author_name || harvested.author_handle,
     author_handle: harvested.author_handle,
     author_avatar: harvested.author_avatar || undefined,
     image: harvested.featured_image_url,
@@ -276,10 +339,10 @@ export function harvestedToDatabase(harvested: HarvestedArticle): DatabaseArticl
     tweet_published_at: publishedAt,
     tweet_id: harvested.tweet_id,
     tweet_text: harvested.tweet_text,
-    tweet_views: harvested.metrics?.views,
-    tweet_replies: harvested.metrics?.replies,
-    tweet_retweets: harvested.metrics?.retweets,
-    tweet_likes: harvested.metrics?.likes,
+    // Metrics columns (using correct column names)
+    tweet_views: harvested.metrics?.views || 0,
+    tweet_replies: harvested.metrics?.replies || 0,
+    tweet_likes: harvested.metrics?.likes || 0,
     article_published_at: publishedAt,
     article_url: harvested.article_url,
   }
@@ -296,20 +359,22 @@ export function harvestedToDatabase(harvested: HarvestedArticle): DatabaseArticl
  * Convert Twitter tweet to TweetData format for storage in tweets table
  */
 export function mapTweetToTweetData(tweet: TwitterTweet): TweetData {
-  // Extract user info from core.user_results.result.legacy (new API structure) or fallback to legacy.user (current structure)
-  const userLegacy = tweet.core?.user_results?.result?.legacy
+  // Extract user info - support both legacy and v2 API formats
+  const userResult = tweet.core?.user_results?.result
+  const userLegacy = userResult?.legacy
+  const userCore = userResult?.core  // v2 format
   const userFromTweetLegacy = tweet.legacy?.user
-  
-  const authorHandle = userLegacy?.screen_name || userFromTweetLegacy?.screen_name || 'unknown'
-  
+
+  const authorHandle = userLegacy?.screen_name || userCore?.screen_name || userFromTweetLegacy?.screen_name || 'unknown'
+
   // Extract tweet info from legacy object (current API structure)
   const tweetLegacy = tweet.legacy
   const tweetId = tweetLegacy?.id_str || tweet.rest_id || ''
-  
+
   // Check if tweet has article data
   const articleResult = tweet.article_results?.result || tweet.article?.article_results?.result
   const isArticle = !!articleResult
-  
+
   return {
     tweet_id: tweetId,
     author_handle: authorHandle,
@@ -389,6 +454,10 @@ export async function batchUpsertArticles(
               tag: dbArticle.tag,
               tweet_published_at: dbArticle.tweet_published_at,
               tweet_id: dbArticle.tweet_id,
+              tweet_text: dbArticle.tweet_text,
+              tweet_views: dbArticle.tweet_views,
+              tweet_replies: dbArticle.tweet_replies,
+              tweet_likes: dbArticle.tweet_likes,
               article_published_at: dbArticle.article_published_at,
               article_url: dbArticle.article_url,
             })

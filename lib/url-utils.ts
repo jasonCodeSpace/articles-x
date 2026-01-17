@@ -12,80 +12,42 @@
  */
 
 /**
- * Generate a URL-friendly slug from article title
+ * Generate URL-safe slug from title
+ * For non-English titles, use title_english instead
  */
 export function generateSlugFromTitle(title: string): string {
   if (!title || title.trim().length === 0) {
-    return 'article';
+    return ''
   }
 
-  // 1. Convert to lowercase
-  let slug = title.toLowerCase();
+  return title
+    .toLowerCase()
+    .normalize('NFD')                          // Decompose accents
+    .replace(/[\u0300-\u036f]/g, '')          // Remove accent marks
+    .replace(/[_\s]+/g, '-')                  // Spaces/underscores → hyphens
+    .replace(/[^a-z0-9-]/g, '')               // Remove non-alphanumeric
+    .replace(/-+/g, '-')                      // Collapse multiple hyphens
+    .replace(/^-|-$/g, '')                    // Trim leading/trailing hyphens
+    .substring(0, 100)                        // Limit length
+}
 
-  // 2. Transliterate CJK (keep existing pinyin/romaji logic as it's useful fallback for CJK titles)
-  // If we just remove non-ASCII on Chinese titles, they become empty.
-  // The user requirement "Transliterate non-ASCII characters" supports keeping this.
-  slug = slug
-    .replace(/[\u4e00-\u9fff]/g, (char) => {
-      const pinyinMap: { [key: string]: string } = {
-        '人': 'ren', '工': 'gong', '智': 'zhi', '能': 'neng', '的': 'de',
-        '未': 'wei', '来': 'lai', '发': 'fa', '展': 'zhan', '趋': 'qu', '势': 'shi'
-      };
-      return pinyinMap[char] || char; // If not in map, keep char (to be removed later if non-ascii?) 
-      // Actually, if we keep char, it will be stripped by the non-alphanumeric regex. 
-      // Better to potentially map more or accept we might lose some CJK if not mapped. 
-      // Given the user emphasized Spanish/Western examples, I'll stick to the strict "Remove all non-alphanumeric".
-    })
-    .replace(/[\u3040-\u309f\u30a0-\u30ff]/g, (char) => {
-        const romajiMap: { [key: string]: string } = {
-          'あ': 'a', 'い': 'i', 'う': 'u', 'え': 'e', 'お': 'o',
-          'か': 'ka', 'き': 'ki', 'く': 'ku', 'け': 'ke', 'こ': 'ko',
-          'に': 'ni', 'つ': 'tsu', 'て': 'te'
-        };
-        return romajiMap[char] || char;
-    });
-
-  // 3. Transliterate accents (normalize NFD and remove diacritics)
-  slug = slug.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-
-  // 4. Manually replace common non-ASCII chars to ASCII if normalization didn't catch them
-  const replacements: { [key: string]: string } = {
-    'á': 'a', 'é': 'e', 'í': 'i', 'ó': 'o', 'ú': 'u',
-    'à': 'a', 'è': 'e', 'ì': 'i', 'ò': 'o', 'ù': 'u',
-    'ä': 'a', 'ë': 'e', 'ï': 'i', 'ö': 'o', 'ü': 'u',
-    'â': 'a', 'ê': 'e', 'î': 'i', 'ô': 'o', 'û': 'u',
-    'ñ': 'n', 'ç': 'c', 'ß': 'ss', 
-    'æ': 'ae', 'œ': 'oe'
-  };
-  
-  slug = slug.replace(/[^\x00-\x7F]/g, (char) => replacements[char] || char);
-
-  // 5. Replace spaces and underscores with hyphens
-  slug = slug.replace(/[\s_]+/g, '-');
-
-  // 6. Remove all non-alphanumeric characters (except hyphens)
-  slug = slug.replace(/[^a-z0-9-]/g, '');
-
-  // 7. Clean up hyphens (multiple dashes, leading/trailing)
-  slug = slug.replace(/-+/g, '-').replace(/^-+|-+$/g, '');
-
-  if (!slug || slug.length < 1) {
-    return 'article';
+/**
+ * Generate slug with fallback for non-English titles
+ */
+export function generateSlug(title: string, titleEnglish: string | null, tweetId: string): string {
+  // Try English title first for non-English content
+  if (titleEnglish && !isEnglish(title)) {
+    const slug = generateSlugFromTitle(titleEnglish)
+    if (slug.length > 0) return slug
   }
 
-  // Limit length (optional but good practice, keeping ~60 to allow room for ID)
-  if (slug.length > 60) {
-    const truncated = slug.substring(0, 60);
-    // Try to cut at hyphen
-    const lastHyphen = truncated.lastIndexOf('-');
-    if (lastHyphen > 30) {
-      slug = truncated.substring(0, lastHyphen);
-    } else {
-      slug = truncated;
-    }
-  }
+  // Try original title
+  const slug = generateSlugFromTitle(title)
+  if (slug.length > 0) return slug
 
-  return slug;
+  // Fallback: article-{first 6 chars of tweet_id}
+  const shortId = tweetId.replace(/-/g, '').substring(0, 6)
+  return `article-${shortId}`
 }
 
 /**

@@ -37,8 +37,8 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 }
 
-// Use dynamic rendering since we need cookies() for Supabase auth
-export const dynamic = 'force-dynamic'
+// Use ISR with 5-minute revalidation
+export const revalidate = 300
 
 interface PageProps {
   searchParams: Promise<{ search?: string; page?: string }>

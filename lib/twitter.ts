@@ -2,10 +2,11 @@ import { z } from 'zod'
 import axios from 'axios'
 
 // Zod schemas for Twitter API response validation
+// TwitterUserSchema for legacy format (list-timeline)
 const TwitterUserSchema = z.object({
   id_str: z.string().optional(),
   rest_id: z.string().optional(),
-  screen_name: z.string(),
+  screen_name: z.string().optional(), // Made optional for v2 compatibility
   name: z.string().optional(),
   profile_image_url_https: z.string().optional(),
   following: z.boolean().optional(),
@@ -49,7 +50,21 @@ const ArticleResultSchema = z.object({
     preview_text: z.string().optional(),
     description: z.string().optional(),
     url: z.string().optional(),
-    content: z.string().optional(), // Full article content (HTML/Text)
+    content: z.string().optional(), // Full article content (HTML/Text) - legacy format
+    // content_state contains the full article content in blocks format
+    content_state: z.object({
+      blocks: z.array(z.object({
+        text: z.string().optional(),
+        type: z.string().optional(),
+        key: z.string().optional(),
+        data: z.unknown().optional(),
+        entityRanges: z.array(z.unknown()).optional(),
+        inlineStyleRanges: z.array(z.unknown()).optional(),
+        depth: z.number().optional(),
+      })).optional(),
+      // entityMap can be object or array depending on API response - use unknown for flexibility
+      entityMap: z.unknown().optional(),
+    }).optional(),
     cover_media: z.object({
       media_info: z.object({
         original_img_url: z.string().optional(),
@@ -95,9 +110,9 @@ const TweetLegacySchema = z.object({
     })).optional(),
     urls: z.array(z.object({
       url: z.string(),
-      expanded_url: z.string(),
-      display_url: z.string(),
-      indices: z.array(z.number()),
+      expanded_url: z.string().optional(),
+      display_url: z.string().optional(),
+      indices: z.array(z.number()).optional(),
     })).optional(),
     user_mentions: z.array(z.object({
       screen_name: z.string(),
@@ -109,14 +124,14 @@ const TweetLegacySchema = z.object({
       id_str: z.string(),
       media_url_https: z.string(),
       url: z.string(),
-      display_url: z.string(),
-      expanded_url: z.string(),
+      display_url: z.string().optional(),
+      expanded_url: z.string().optional(),
       type: z.string(),
       sizes: z.record(z.string(), z.object({
         w: z.number(),
         h: z.number(),
         resize: z.string(),
-      })),
+      })).optional(),
     })).optional(),
   }).optional(),
 })
@@ -134,7 +149,16 @@ const TweetSchema = z.object({
         has_graduated_access: z.boolean().optional(),
         is_blue_verified: z.boolean().optional(),
         profile_image_shape: z.string().optional(),
-        legacy: TwitterUserSchema,
+        legacy: TwitterUserSchema.optional(), // Made optional for v2 compatibility
+        // v2 format fields
+        core: z.object({
+          created_at: z.string().optional(),
+          name: z.string().optional(),
+          screen_name: z.string().optional(),
+        }).optional(),
+        avatar: z.object({
+          image_url: z.string().optional(),
+        }).optional(),
         tipjar_settings: z.object({
           is_enabled: z.boolean().optional(),
           bitcoin_handle: z.string().optional(),
@@ -309,7 +333,7 @@ export class TwitterClient {
    */
   async fetchTweet(tweetId: string): Promise<TwitterTweet | null> {
     return this.executeWithRateLimit(async () => {
-      const url = `https://${this.config.apiHost}/tweet`
+      const url = `https://${this.config.apiHost}/tweet-v2`
       const params = new URLSearchParams({
         pid: tweetId
       })
@@ -332,9 +356,53 @@ export class TwitterClient {
         throw error
       }
 
-      const data = await response.json() as { result?: { tweet_results?: { result?: unknown } } }
-      const tweet = data?.result?.tweet_results?.result
-      
+      const data = await response.json() as {
+        result?: {
+          tweetResult?: { result?: unknown }
+          tweet_results?: { result?: unknown }
+        }
+        data?: {
+          threaded_conversation_with_injections_v2?: {
+            instructions?: Array<{
+              type?: string
+              entries?: Array<{
+                content?: {
+                  itemContent?: {
+                    tweet_results?: { result?: unknown }
+                  }
+                }
+              }>
+            }>
+          }
+        }
+      }
+
+      // Try tweet-v2 response structure first (result.tweetResult.result)
+      let tweet: unknown = data?.result?.tweetResult?.result
+
+      // Try threaded_conversation structure
+      if (!tweet) {
+        const instructions = data?.data?.threaded_conversation_with_injections_v2?.instructions
+        if (instructions) {
+          for (const instruction of instructions) {
+            if (instruction.type === 'TimelineAddEntries' && instruction.entries) {
+              for (const entry of instruction.entries) {
+                if (entry.content?.itemContent?.tweet_results?.result) {
+                  tweet = entry.content.itemContent.tweet_results.result
+                  break
+                }
+              }
+            }
+            if (tweet) break
+          }
+        }
+      }
+
+      // Fallback to old response structure
+      if (!tweet) {
+        tweet = data?.result?.tweet_results?.result
+      }
+
       if (tweet) {
         const parsed = TweetSchema.safeParse(tweet)
         if (parsed.success) {
@@ -343,7 +411,7 @@ export class TwitterClient {
           console.warn('Failed to parse tweet:', parsed.error)
         }
       }
-      
+
       return null
     })
   }

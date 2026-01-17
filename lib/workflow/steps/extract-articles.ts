@@ -18,7 +18,7 @@ export interface ExtractArticlesOutput {
 }
 
 // Function to check if a tweet MIGHT be an article from the list view
-function isPotentialArticle(tweet: TwitterTweet): boolean {
+function _isPotentialArticle(tweet: TwitterTweet): boolean {
   // Check for article_results or if it looks like a long form post that might be an article
   // Some articles in list view show up with 'article' field
   return !!(tweet.article_results?.result || tweet.article?.article_results?.result || tweet.legacy?.full_text?.includes('https://t.co/'));

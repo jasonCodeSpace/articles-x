@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic'
 import { ArticleCard, Article } from '@/components/article-card'
 import { FeedEmptyState } from '@/components/feed-empty-state'
-import { useArticleFeed, TimePeriod } from '@/hooks/use-article-feed'
+import { useArticleFeed, TimePeriod, DisplayLanguage } from '@/hooks/use-article-feed'
 import { FeedLoading } from '@/components/feed-loading'
 import { StaggerContainer } from '@/components/motion-wrapper'
 
@@ -23,13 +23,15 @@ interface ArticleFeedProps {
   initialSearchQuery?: string
   initialCategory?: string
   initialTimePeriod?: TimePeriod
+  initialLanguage?: DisplayLanguage
 }
 
 export function ArticleFeed({
   initialArticles,
   initialSearchQuery = '',
   initialCategory = 'All',
-  initialTimePeriod = 'all'
+  initialTimePeriod = 'all',
+  initialLanguage = 'en'
 }: ArticleFeedProps) {
   const {
     paginatedArticles,
@@ -39,6 +41,7 @@ export function ArticleFeed({
     sortOption,
     selectedCategory,
     selectedTimePeriod,
+    displayLanguage,
     currentPage,
     totalPages,
     totalItems,
@@ -46,6 +49,7 @@ export function ArticleFeed({
     handleSort,
     handleCategoryChange,
     handleTimePeriodChange,
+    handleLanguageChange,
     handlePageChange,
     clearFilters,
     retry,
@@ -54,6 +58,7 @@ export function ArticleFeed({
     initialSearchQuery,
     initialCategory,
     initialTimePeriod,
+    initialLanguage,
     itemsPerPage: 12
   })
 
@@ -84,6 +89,8 @@ export function ArticleFeed({
           onCategoryChange={handleCategoryChange}
           selectedTimePeriod={selectedTimePeriod}
           onTimePeriodChange={handleTimePeriodChange}
+          displayLanguage={displayLanguage}
+          onLanguageChange={handleLanguageChange}
           totalItems={totalItems}
         />
       </section>
@@ -110,6 +117,7 @@ export function ArticleFeed({
                 article={article}
                 index={index}
                 priority={index < 6}
+                displayLanguage={displayLanguage}
               />
             ))}
           </StaggerContainer>

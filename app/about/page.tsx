@@ -50,7 +50,7 @@ export default async function About() {
             </FadeIn>
             <FadeIn delay={0.3} distance={20}>
               <p className="text-lg text-white/50 font-light leading-relaxed">
-                Xarticle is an AI-driven lens focusing on the absolute 1% of long-form content shared on X. We don't just aggregate; we refine, summarize, and organize for the serious reader.
+                Xarticle is an AI-driven lens focusing on the absolute 1% of long-form content shared on X. We don&apos;t just aggregate; we refine, summarize, and organize for the serious reader.
               </p>
             </FadeIn>
           </header>

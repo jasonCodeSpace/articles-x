@@ -1,7 +1,7 @@
 'use client'
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { ExternalLink, Eye, Repeat2, Heart, Bookmark } from 'lucide-react'
+import { ExternalLink, Eye } from 'lucide-react'
 import { BookmarkButton } from '@/components/bookmark-button'
 import { formatDistanceToNow } from '@/lib/date-utils'
 import Image from 'next/image'
@@ -10,6 +10,7 @@ import { useState, useEffect } from 'react'
 import { generateArticleUrl } from '@/lib/url-utils'
 import { cn } from '@/lib/utils'
 import { FadeIn } from './motion-wrapper'
+import { DisplayLanguage } from '@/hooks/use-article-feed'
 
 export interface Article {
   id: string
@@ -54,9 +55,10 @@ interface ArticleCardProps {
   className?: string
   index?: number
   priority?: boolean
+  displayLanguage?: DisplayLanguage
 }
 
-export function ArticleCard({ article, className, index = 0, priority = false }: ArticleCardProps) {
+export function ArticleCard({ article, className, index = 0, priority = false, displayLanguage = 'en' }: ArticleCardProps) {
   const languageFromDB = article.language
   const authorInitials = article.author_name
     ? article.author_name
@@ -77,9 +79,23 @@ export function ArticleCard({ article, className, index = 0, priority = false }:
   }, [publishedDate])
 
   const authorHandle = article.author_handle || 'unknown'
-  const displayTitle = article.title_english || article.title
-  const displayPreview = article.article_preview_text_english || article.article_preview_text
-  const descriptionText = displayPreview || article.description || article.excerpt || article.content
+
+  // Language-based display logic:
+  // EN: title = title_english (fallback to original), preview = summary_english
+  // CN: title = original title, preview = summary_chinese
+  const displayTitle = displayLanguage === 'en'
+    ? (article.title_english || article.title)
+    : article.title
+
+  const previewText = displayLanguage === 'en'
+    ? article.summary_english
+    : article.summary_chinese
+
+  // Truncate preview text to ~100 chars
+  const truncatedPreview = previewText
+    ? (previewText.length > 120 ? previewText.substring(0, 120) + '...' : previewText)
+    : null
+
   const avatarUrl = article.author_profile_image || article.author_avatar
   const coverUrl = article.article_image || article.featured_image_url || article.image
   const articleUrl = generateArticleUrl(article.title, article.id)
@@ -127,9 +143,9 @@ export function ArticleCard({ article, className, index = 0, priority = false }:
               </h3>
             </Link>
 
-            {descriptionText && (
+            {truncatedPreview && (
               <p className="text-sm text-white/40 leading-relaxed line-clamp-3 font-light">
-                {descriptionText}
+                {truncatedPreview}
               </p>
             )}
           </div>

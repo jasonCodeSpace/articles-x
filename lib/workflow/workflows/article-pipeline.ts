@@ -8,7 +8,7 @@
  * 4. 生成 AI 摘要
  * 5. 保存摘要
  */
-import { runWorkflow, WorkflowDefinition } from '../engine'
+import { runWorkflow, WorkflowDefinition, WorkflowStep } from '../engine'
 import { fetchListsStep } from '../steps/fetch-lists'
 import { extractArticlesStep } from '../steps/extract-articles'
 import { saveArticlesStep } from '../steps/save-articles'
@@ -19,11 +19,11 @@ export const articlePipelineWorkflow: WorkflowDefinition = {
   name: 'article-pipeline',
   description: '从 Twitter 获取文章并生成摘要',
   steps: [
-    fetchListsStep,
-    extractArticlesStep,
-    saveArticlesStep,
-    generateSummariesStep,
-    saveSummariesStep
+    fetchListsStep as WorkflowStep,
+    extractArticlesStep as WorkflowStep,
+    saveArticlesStep as WorkflowStep,
+    generateSummariesStep as WorkflowStep,
+    saveSummariesStep as WorkflowStep
   ]
 }
 

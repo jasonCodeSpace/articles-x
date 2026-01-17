@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Search, TrendingUp, Clock, ChevronDown, X, Calendar, Filter } from 'lucide-react'
+import { Search, TrendingUp, Clock, ChevronDown, X, Calendar, Globe, Tag } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,15 +11,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu'
-import { TimePeriod } from '@/hooks/use-article-feed'
-
-const CATEGORIES = [
-  'All',
-  'AI', 'Crypto', 'Tech', 'Startups', 'Business', 'Markets',
-  'Product', 'Design', 'Security', 'Data', 'Hardware', 'Gaming',
-  'Health', 'Environment', 'Culture', 'Philosophy', 'History',
-  'Education', 'Marketing', 'Policy', 'Science', 'Media', 'Personal Story'
-]
+import { TimePeriod, DisplayLanguage } from '@/hooks/use-article-feed'
 
 const TIME_PERIODS: { value: TimePeriod; label: string; shortLabel: string }[] = [
   { value: 'all', label: 'All Time', shortLabel: 'All' },
@@ -29,16 +21,29 @@ const TIME_PERIODS: { value: TimePeriod; label: string; shortLabel: string }[] =
   { value: '3months', label: 'Last 3 Months', shortLabel: '3M' },
 ]
 
+const LANGUAGES: { value: DisplayLanguage; label: string; shortLabel: string }[] = [
+  { value: 'en', label: 'English', shortLabel: 'EN' },
+  { value: 'cn', label: '中文', shortLabel: 'CN' },
+]
+
+const CATEGORIES = [
+  'All', 'AI', 'Tech', 'Crypto', 'Business', 'Startups', 'Markets',
+  'Product', 'Design', 'Data', 'Security', 'Policy', 'Science',
+  'Health', 'Culture', 'Media', 'Education', 'Philosophy', 'History'
+]
+
 interface FeedToolbarProps {
   onSearchChange: (search: string) => void
   searchValue: string
   isLoading?: boolean
   sortBy: 'latest' | 'hot'
   onSortChange: (sort: 'latest' | 'hot') => void
-  selectedCategory?: string
-  onCategoryChange?: (category: string) => void
   selectedTimePeriod?: TimePeriod
   onTimePeriodChange?: (period: TimePeriod) => void
+  displayLanguage?: DisplayLanguage
+  onLanguageChange?: (language: DisplayLanguage) => void
+  selectedCategory?: string
+  onCategoryChange?: (category: string) => void
   totalItems?: number
 }
 
@@ -48,10 +53,12 @@ export function FeedToolbar({
   isLoading = false,
   sortBy,
   onSortChange,
-  selectedCategory = 'All',
-  onCategoryChange,
   selectedTimePeriod = 'all',
   onTimePeriodChange,
+  displayLanguage = 'en',
+  onLanguageChange,
+  selectedCategory = 'All',
+  onCategoryChange,
   totalItems
 }: FeedToolbarProps) {
   const [searchInput, setSearchInput] = useState(searchValue)
@@ -69,20 +76,27 @@ export function FeedToolbar({
     return () => clearTimeout(timeoutId)
   }
 
-  const handleCategorySelect = (category: string) => {
-    if (onCategoryChange) {
-      onCategoryChange(category)
-    }
-  }
-
   const handleTimePeriodSelect = (period: TimePeriod) => {
     if (onTimePeriodChange) {
       onTimePeriodChange(period)
     }
   }
 
+  const handleLanguageSelect = (language: DisplayLanguage) => {
+    if (onLanguageChange) {
+      onLanguageChange(language)
+    }
+  }
+
+  const handleCategorySelect = (category: string) => {
+    if (onCategoryChange) {
+      onCategoryChange(category)
+    }
+  }
+
   const currentTimePeriod = TIME_PERIODS.find(p => p.value === selectedTimePeriod)
-  const hasActiveFilters = selectedCategory !== 'All' || selectedTimePeriod !== 'all'
+  const currentLanguage = LANGUAGES.find(l => l.value === displayLanguage)
+  const hasActiveFilters = selectedTimePeriod !== 'all' || selectedCategory !== 'All'
 
   return (
     <div className="space-y-4">
@@ -108,7 +122,7 @@ export function FeedToolbar({
 
         {/* Filters row - responsive */}
         <div className="flex items-center gap-2 sm:gap-3 flex-wrap sm:flex-nowrap">
-          {/* Category Filter */}
+          {/* Language Toggle */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -116,41 +130,31 @@ export function FeedToolbar({
                 size="sm"
                 className="flex items-center gap-1.5 sm:gap-2 rounded-xl text-white/50 hover:text-white hover:bg-white/5 transition-all px-3 sm:px-4 h-10 min-w-0"
               >
-                <Filter className="h-3.5 w-3.5 shrink-0 sm:hidden" />
-                <span className="text-[10px] sm:text-[11px] uppercase tracking-widest font-bold truncate max-w-[80px] sm:max-w-[100px]">
-                  {selectedCategory === 'All' ? 'Category' : selectedCategory}
+                <Globe className="h-3.5 w-3.5 shrink-0" />
+                <span className="text-[10px] sm:text-[11px] uppercase tracking-widest font-bold">
+                  {currentLanguage?.shortLabel || 'EN'}
                 </span>
-                {selectedCategory !== 'All' ? (
-                  <X
-                    className="h-3 w-3 opacity-50 hover:opacity-100 shrink-0"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleCategorySelect('All')
-                    }}
-                  />
-                ) : (
-                  <ChevronDown className="h-3 w-3 opacity-50 shrink-0" />
-                )}
+                <ChevronDown className="h-3 w-3 opacity-50 shrink-0" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent
               align="end"
-              className="w-48 bg-[#0A0A0A]/95 backdrop-blur-xl border border-white/10 rounded-2xl p-2 max-h-80 overflow-y-auto custom-scrollbar"
+              className="w-32 bg-[#0A0A0A]/95 backdrop-blur-xl border border-white/10 rounded-2xl p-2"
             >
               <DropdownMenuLabel className="text-[10px] uppercase tracking-widest text-white/30 px-2 py-1">
-                Category
+                Language
               </DropdownMenuLabel>
-              {CATEGORIES.map((category) => (
+              {LANGUAGES.map((lang) => (
                 <DropdownMenuItem
-                  key={category}
-                  onClick={() => handleCategorySelect(category)}
+                  key={lang.value}
+                  onClick={() => handleLanguageSelect(lang.value)}
                   className={`rounded-lg text-[11px] uppercase tracking-wider cursor-pointer transition-colors ${
-                    selectedCategory === category
+                    displayLanguage === lang.value
                       ? 'text-white bg-white/10'
                       : 'text-white/50 hover:text-white hover:bg-white/5'
                   }`}
                 >
-                  {category}
+                  {lang.label}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
@@ -204,6 +208,54 @@ export function FeedToolbar({
             </DropdownMenuContent>
           </DropdownMenu>
 
+          {/* Category Filter */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="flex items-center gap-1.5 sm:gap-2 rounded-xl text-white/50 hover:text-white hover:bg-white/5 transition-all px-3 sm:px-4 h-10 min-w-0"
+              >
+                <Tag className="h-3.5 w-3.5 shrink-0" />
+                <span className="text-[10px] sm:text-[11px] uppercase tracking-widest font-bold hidden xs:inline">
+                  {selectedCategory === 'All' ? 'Category' : selectedCategory}
+                </span>
+                {selectedCategory !== 'All' ? (
+                  <X
+                    className="h-3 w-3 opacity-50 hover:opacity-100 shrink-0"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleCategorySelect('All')
+                    }}
+                  />
+                ) : (
+                  <ChevronDown className="h-3 w-3 opacity-50 shrink-0" />
+                )}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="end"
+              className="w-44 max-h-80 overflow-y-auto bg-[#0A0A0A]/95 backdrop-blur-xl border border-white/10 rounded-2xl p-2"
+            >
+              <DropdownMenuLabel className="text-[10px] uppercase tracking-widest text-white/30 px-2 py-1">
+                Category
+              </DropdownMenuLabel>
+              {CATEGORIES.map((category) => (
+                <DropdownMenuItem
+                  key={category}
+                  onClick={() => handleCategorySelect(category)}
+                  className={`rounded-lg text-[11px] uppercase tracking-wider cursor-pointer transition-colors ${
+                    selectedCategory === category
+                      ? 'text-white bg-white/10'
+                      : 'text-white/50 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  {category}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           {/* Divider - hidden on mobile */}
           <div className="hidden sm:block w-px h-6 bg-white/10" />
 
@@ -240,21 +292,21 @@ export function FeedToolbar({
             )}
             {hasActiveFilters && (
               <div className="flex items-center gap-2">
-                {selectedCategory !== 'All' && (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/5 text-[10px] text-white/50">
-                    {selectedCategory}
-                    <X
-                      className="h-2.5 w-2.5 cursor-pointer hover:text-white"
-                      onClick={() => handleCategorySelect('All')}
-                    />
-                  </span>
-                )}
                 {selectedTimePeriod !== 'all' && (
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/5 text-[10px] text-white/50">
                     {currentTimePeriod?.label}
                     <X
                       className="h-2.5 w-2.5 cursor-pointer hover:text-white"
                       onClick={() => handleTimePeriodSelect('all')}
+                    />
+                  </span>
+                )}
+                {selectedCategory !== 'All' && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/5 text-[10px] text-white/50">
+                    {selectedCategory}
+                    <X
+                      className="h-2.5 w-2.5 cursor-pointer hover:text-white"
+                      onClick={() => handleCategorySelect('All')}
                     />
                   </span>
                 )}

@@ -6,7 +6,7 @@
  * 2. 生成 AI 报告
  * 3. 保存报告
  */
-import { createStep, runWorkflow, WorkflowDefinition, StepResult, WorkflowContext } from '../engine'
+import { createStep, runWorkflow, WorkflowDefinition, StepResult, WorkflowContext, WorkflowStep } from '../engine'
 import { createClient } from '@supabase/supabase-js'
 import { callDeepSeek } from '@/lib/deepseek'
 
@@ -214,9 +214,9 @@ export const dailyReportWorkflow: WorkflowDefinition = {
   name: 'daily-report',
   description: '生成每日文章报告',
   steps: [
-    fetchDailyArticlesStep,
-    generateReportStep,
-    saveReportStep
+    fetchDailyArticlesStep as WorkflowStep,
+    generateReportStep as WorkflowStep,
+    saveReportStep as WorkflowStep
   ]
 }
 

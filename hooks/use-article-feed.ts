@@ -7,12 +7,14 @@ import { SortOption } from '@/lib/articles'
 import { calculatePagination } from '@/components/pagination'
 
 export type TimePeriod = 'all' | 'today' | 'week' | 'month' | '3months'
+export type DisplayLanguage = 'en' | 'cn'
 
 interface UseArticleFeedProps {
   initialArticles: Article[]
   initialSearchQuery?: string
   initialCategory?: string
   initialTimePeriod?: TimePeriod
+  initialLanguage?: DisplayLanguage
   itemsPerPage?: number
 }
 
@@ -26,6 +28,7 @@ interface UseArticleFeedReturn {
   sortOption: SortOption
   selectedCategory: string
   selectedTimePeriod: TimePeriod
+  displayLanguage: DisplayLanguage
   currentPage: number
   totalPages: number
   totalItems: number
@@ -33,6 +36,7 @@ interface UseArticleFeedReturn {
   handleSort: (sort: SortOption) => void
   handleCategoryChange: (category: string) => void
   handleTimePeriodChange: (period: TimePeriod) => void
+  handleLanguageChange: (language: DisplayLanguage) => void
   handlePageChange: (page: number) => void
   handleTimeSort: () => void
   handleViewsSort: () => void
@@ -65,6 +69,7 @@ export function useArticleFeed({
   initialSearchQuery = '',
   initialCategory = 'All',
   initialTimePeriod = 'all',
+  initialLanguage = 'en',
   itemsPerPage = 15
 }: UseArticleFeedProps): UseArticleFeedReturn {
   const searchParams = useSearchParams()
@@ -74,6 +79,7 @@ export function useArticleFeed({
   const [searchQuery, setSearchQuery] = useState(initialSearchQuery)
   const [selectedCategory, setSelectedCategory] = useState(initialCategory)
   const [selectedTimePeriod, setSelectedTimePeriod] = useState<TimePeriod>(initialTimePeriod)
+  const [displayLanguage, setDisplayLanguage] = useState<DisplayLanguage>(initialLanguage)
   const [sortOption, setSortOption] = useState<SortOption>('newest')
   const [currentPage, setCurrentPage] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
@@ -183,6 +189,10 @@ export function useArticleFeed({
     setError(null)
   }, [])
 
+  const handleLanguageChange = useCallback((language: DisplayLanguage) => {
+    setDisplayLanguage(language)
+  }, [])
+
   const handlePageChange = useCallback((page: number) => {
     setCurrentPage(page)
   }, [])
@@ -243,6 +253,7 @@ export function useArticleFeed({
     sortOption,
     selectedCategory,
     selectedTimePeriod,
+    displayLanguage,
     currentPage,
     totalPages: paginationInfo.totalPages,
     totalItems: filteredArticles.length,
@@ -250,6 +261,7 @@ export function useArticleFeed({
     handleSort,
     handleCategoryChange,
     handleTimePeriodChange,
+    handleLanguageChange,
     handlePageChange,
     handleTimeSort,
     handleViewsSort,

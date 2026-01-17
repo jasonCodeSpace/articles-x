@@ -158,8 +158,8 @@ ${content.substring(0, 8000)}`;
     
     const hasChinese = (s: string) => /[\u4e00-\u9fff]/.test(s);
     
-    let chineseParts: string[] = [];
-    let englishParts: string[] = [];
+    const chineseParts: string[] = [];
+    const englishParts: string[] = [];
 
     for (const p of paragraphs) {
         if (hasChinese(p)) {
@@ -176,10 +176,9 @@ ${content.substring(0, 8000)}`;
          summary = { chinese: cleanText, english: cleanText }; // Fail safe
     } else if (chineseParts.length === 0) {
         // All English?
-        const mid = Math.floor(englishParts.length / 2);
-        summary = { 
-            chinese: "无法生成中文摘要", 
-            english: englishParts.join('\n\n') 
+        summary = {
+            chinese: "无法生成中文摘要",
+            english: englishParts.join('\n\n')
         };
     } else if (englishParts.length === 0) {
         // All Chinese?

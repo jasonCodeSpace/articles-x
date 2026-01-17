@@ -41,23 +41,16 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic'
 
 interface PageProps {
-  searchParams: Promise<{ category?: string; search?: string; page?: string; filter?: string }>
+  searchParams: Promise<{ search?: string; page?: string }>
 }
 
-
-
-// Custom fetch function for Trending articles from article_main table
-async function fetchTrendingArticles(options: {
+// Fetch all articles from database
+async function fetchAllArticles(options: {
   search?: string
-  category?: string
-  limit?: number
-  sort?: 'newest' | 'oldest'
-  language?: string
-  filter?: string
 }): Promise<Article[]> {
   const supabase = await createClient()
 
-  // Only select columns that exist in the database
+  // Select all columns needed for display, including summaries for both languages
   let query = supabase
     .from('articles')
     .select(`
@@ -79,24 +72,19 @@ async function fetchTrendingArticles(options: {
       article_url,
       language,
       summary_english,
+      summary_chinese,
       summary_generated_at
     `)
     .order('article_published_at', { ascending: false })
-    .limit(options.limit || 200)
 
   if (options.search && options.search.trim()) {
     query = query.or(`title.ilike.%${options.search.trim()}%,title_english.ilike.%${options.search.trim()}%`)
   }
 
-  if (options.category && options.category !== 'all' && options.category.trim()) {
-    // Use ilike to match category within comma-separated values
-    query = query.ilike('category', `%${options.category.trim()}%`)
-  }
-
   const { data, error } = await query
 
   if (error) {
-    console.error('Error fetching trending articles:', error)
+    console.error('Error fetching articles:', error)
     return []
   }
 
@@ -109,10 +97,10 @@ async function fetchTrendingArticles(options: {
 }
 
 export default async function TrendingPage({ searchParams }: PageProps) {
-  const { category, search, filter } = await searchParams
+  const { search } = await searchParams
 
-  // Fetch trending articles
-  const articles = await fetchTrendingArticles({ category, search, filter })
+  // Fetch all articles
+  const articles = await fetchAllArticles({ search })
 
   // Generate JSON-LD structured data for articles
   const structuredData = {
@@ -163,7 +151,7 @@ export default async function TrendingPage({ searchParams }: PageProps) {
                 Trending <span className="text-white/40">reads.</span>
               </h1>
               <p className="text-white/40 text-lg font-light max-w-lg">
-                The latest high-value articles and threads, filtered across all categories.
+                The latest high-value articles and threads from X.
               </p>
             </div>
 
@@ -187,7 +175,6 @@ export default async function TrendingPage({ searchParams }: PageProps) {
               <ArticleFeed
                 initialArticles={articles}
                 initialSearchQuery={search || ''}
-                initialCategory={category || 'All'}
               />
             </Suspense>
           </section>

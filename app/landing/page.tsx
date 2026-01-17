@@ -1,13 +1,11 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
 import Image from 'next/image'
-import { ArrowRight, BookOpen, Globe, Sparkles, Users, Shield, TrendingUp, Star, CheckCircle, Eye, Heart, Bookmark } from 'lucide-react'
+import { ArrowRight, BookOpen, Globe, Sparkles, Shield, TrendingUp, Bookmark, Eye } from 'lucide-react'
 import { ClientNavWrapper } from '@/components/client-nav-wrapper'
 import { createClient } from '@/lib/supabase/server'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { generateCategorySlug } from '@/lib/url-utils'
-import { FadeIn, StaggerContainer } from '@/components/motion-wrapper'
+import { FadeIn } from '@/components/motion-wrapper'
 
 export const metadata: Metadata = {
   title: 'Xarticle — The Best Articles from X, Curated and Summarized',

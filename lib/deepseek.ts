@@ -93,7 +93,6 @@ export async function generateArticleAnalysis(
     // 检测标题是否已经是英文
     // 如果是纯英文或主要英文，直接使用原标题作为 title_english
     const titleIsEnglish = isPureEnglish(title) || isMostlyEnglish(title)
-    const titleEnglish = titleIsEnglish ? title : null
 
     // If article is too short (<100 words), skip summary generation
     if (shouldSkip) {

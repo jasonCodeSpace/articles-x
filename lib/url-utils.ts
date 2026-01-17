@@ -159,3 +159,18 @@ export function generateShareableUrl(title: string, id: string, baseUrl?: string
   const domain = baseUrl || 'https://www.xarticle.news'
   return `${domain}${articlePath}`
 }
+
+/**
+ * Detect if text is primarily English (Latin characters)
+ * Returns true if >50% of letters are Latin alphabet
+ */
+export function isEnglish(text: string): boolean {
+  if (!text || text.trim().length === 0) return true
+
+  // Keep only letters (Latin + CJK + Japanese)
+  const letters = text.replace(/[^a-zA-Z\u4e00-\u9fff\u3040-\u309f\u30a0-\u30ff]/g, '')
+  if (letters.length === 0) return true
+
+  const latinChars = letters.replace(/[^a-zA-Z]/g, '').length
+  return latinChars / letters.length > 0.5
+}

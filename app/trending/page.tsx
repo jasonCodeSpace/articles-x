@@ -174,6 +174,7 @@ export default async function TrendingPage({ searchParams }: PageProps) {
               <ArticleFeed
                 initialArticles={articles}
                 initialSearchQuery={search || ''}
+                initialCategory={category || 'All'}
               />
             </Suspense>
           </section>

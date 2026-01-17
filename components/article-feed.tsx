@@ -1,7 +1,7 @@
 'use client'
 
 import dynamic from 'next/dynamic'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { ArticleCard, Article } from '@/components/article-card'
 import { FeedEmptyState } from '@/components/feed-empty-state'
 import { useArticleFeed } from '@/hooks/use-article-feed'
@@ -22,14 +22,16 @@ const Pagination = dynamic(() => import('@/components/pagination').then(mod => (
 interface ArticleFeedProps {
   initialArticles: Article[]
   initialSearchQuery?: string
+  initialCategory?: string
 }
 
-export function ArticleFeed({ initialArticles, initialSearchQuery = '' }: ArticleFeedProps) {
+export function ArticleFeed({ initialArticles, initialSearchQuery = '', initialCategory = 'All' }: ArticleFeedProps) {
   const [sortBy, setSortBy] = useState<'latest' | 'hot'>('latest')
+  const [selectedCategory, setSelectedCategory] = useState(initialCategory)
   const sortOption = sortBy === 'hot' ? 'views_high' : 'newest'
 
   const {
-    paginatedArticles,
+    paginatedArticles: unfilteredArticles,
     isLoading: feedLoading,
     error,
     searchQuery,
@@ -42,9 +44,34 @@ export function ArticleFeed({ initialArticles, initialSearchQuery = '' }: Articl
     retry,
   } = useArticleFeed({ initialArticles, initialSearchQuery, itemsPerPage: 12 })
 
+  // Filter articles by category client-side
+  const filteredArticles = useMemo(() => {
+    if (selectedCategory === 'All') {
+      return unfilteredArticles
+    }
+    return unfilteredArticles.filter((article: Article) => {
+      if (!article.category) return false
+      const categories = article.category.split(',').map(cat => cat.trim().toLowerCase())
+      return categories.includes(selectedCategory.toLowerCase())
+    })
+  }, [unfilteredArticles, selectedCategory])
+
   useEffect(() => {
     handleSort(sortOption)
   }, [sortOption, handleSort])
+
+  // Update category from URL if provided
+  useEffect(() => {
+    if (initialCategory && initialCategory !== 'All') {
+      setSelectedCategory(initialCategory)
+    }
+  }, [initialCategory])
+
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategory(category)
+    // Reset to first page when category changes
+    handlePageChange(1)
+  }
 
   if (feedLoading) {
     return <FeedLoading />
@@ -60,14 +87,19 @@ export function ArticleFeed({ initialArticles, initialSearchQuery = '' }: Articl
           isLoading={feedLoading}
           sortBy={sortBy}
           onSortChange={setSortBy}
+          selectedCategory={selectedCategory}
+          onCategoryChange={handleCategoryChange}
         />
       </section>
 
-      {error === 'no-results' || paginatedArticles.length === 0 ? (
+      {error === 'no-results' || filteredArticles.length === 0 ? (
         <FeedEmptyState
           type="no-results"
-          searchQuery={searchQuery}
-          onClearSearch={clearSearch}
+          searchQuery={searchQuery || (selectedCategory !== 'All' ? selectedCategory : '')}
+          onClearSearch={() => {
+            clearSearch()
+            setSelectedCategory('All')
+          }}
         />
       ) : initialArticles.length === 0 ? (
         <FeedEmptyState type="no-articles" />
@@ -79,7 +111,7 @@ export function ArticleFeed({ initialArticles, initialSearchQuery = '' }: Articl
       ) : (
         <div className="space-y-20">
           <StaggerContainer staggerChildren={0.05} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {paginatedArticles.map((article: Article, index: number) => (
+            {filteredArticles.map((article: Article, index: number) => (
               <ArticleCard
                 key={article.id}
                 article={article}
@@ -90,14 +122,16 @@ export function ArticleFeed({ initialArticles, initialSearchQuery = '' }: Articl
           </StaggerContainer>
 
           {/* Pagination */}
-          <div className="pt-10 border-t border-white/5">
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={handlePageChange}
-              className="mx-auto"
-            />
-          </div>
+          {totalPages > 1 && (
+            <div className="pt-10 border-t border-white/5">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+                className="mx-auto"
+              />
+            </div>
+          )}
         </div>
       )}
     </div>

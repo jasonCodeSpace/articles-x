@@ -7,7 +7,6 @@ import Image from "next/image"
 import { User, ChevronDown, Settings, LogOut } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { generateCategorySlug } from '@/lib/url-utils'
 
 import {
   DropdownMenu,
@@ -26,7 +25,7 @@ interface ModernNavProps {
       full_name?: string
     }
   }
-  categories: string[]
+  categories?: string[]
   className?: string
 }
 
@@ -35,14 +34,6 @@ export function ModernNav({ user, className }: ModernNavProps) {
 
   const userDisplayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User'
   const userInitial = userDisplayName.charAt(0).toUpperCase()
-
-  const CATEGORIES = [
-    'Hardware', 'Gaming', 'Health', 'Environment', 'Personal Story',
-    'Culture', 'Philosophy', 'History', 'Education', 'Design',
-    'Marketing', 'AI', 'Crypto', 'Tech', 'Data', 'Startups',
-    'Business', 'Markets', 'Product', 'Security', 'Policy',
-    'Science', 'Media'
-  ]
 
   const handleLogout = async () => {
     try {
@@ -83,29 +74,6 @@ export function ModernNav({ user, className }: ModernNavProps) {
           >
             Trending
           </button>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-1.5 px-4 py-2 text-[11px] font-medium tracking-widest uppercase text-white/50 hover:text-white transition-colors rounded-full hover:bg-white/5">
-                Categories
-                <ChevronDown size={12} className="opacity-50" />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="center" className="w-56 mt-4 bg-[#0A0A0A]/95 backdrop-blur-xl border border-white/10 rounded-2xl p-2 max-h-80 overflow-y-auto custom-scrollbar">
-              <DropdownMenuItem onClick={() => router.push('/category/All')} className="rounded-lg text-[11px] uppercase tracking-wider text-white/50 hover:text-white hover:bg-white/5 cursor-pointer">
-                All Categories
-              </DropdownMenuItem>
-              {CATEGORIES.map((category) => (
-                <DropdownMenuItem
-                  key={category}
-                  onClick={() => router.push(`/category/${generateCategorySlug(category)}`)}
-                  className="rounded-lg text-[11px] uppercase tracking-wider text-white/50 hover:text-white hover:bg-white/5 cursor-pointer"
-                >
-                  {category}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
         </div>
 
         <div className="h-4 w-px bg-white/10 mx-1" />

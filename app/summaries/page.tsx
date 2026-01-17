@@ -55,6 +55,7 @@ interface DailySummary {
   id: string
   date: string
   total_articles_count: number
+  summary_content: string | null
   summary_json_en: SummaryData | null
   summary_json_zh: SummaryData | null
   created_at: string
@@ -82,13 +83,24 @@ function SummaryCard({ summary }: { summary: DailySummary }) {
   const timeAgo = formatDistanceToNow(new Date(summary.created_at), {
     addSuffix: true
   })
-  
+
   const dateTitle = new Date(summary.date).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
     day: 'numeric'
   }) + ' Summary'
-  
+
+  // Get overview from summary data or extract from summary_content
+  let overview = summaryData?.overview
+  if (!overview && summary.summary_content) {
+    // Try to extract a preview from summary_content
+    // Skip markdown headers and get first paragraph
+    const lines = summary.summary_content.split('\n').filter(line =>
+      line.trim() && !line.startsWith('#') && !line.startsWith('{')
+    )
+    overview = lines.slice(0, 2).join(' ').substring(0, 200)
+  }
+
   return (
     <Link href={`/summary?date=${summary.date}`} className="block">
       <div className="bg-card border border-border rounded-xl overflow-hidden hover:bg-card/90 hover:border-border/80 transition-all duration-300 group cursor-pointer shadow-xl hover:shadow-2xl hover:scale-[1.02] flex flex-col h-[480px]">
@@ -117,7 +129,7 @@ function SummaryCard({ summary }: { summary: DailySummary }) {
           {/* Article preview text */}
           <div className="flex-grow">
             <p className="text-muted-foreground text-sm leading-relaxed line-clamp-3 mb-4">
-              {summaryData?.overview || `Daily summary featuring ${summary.total_articles_count} curated articles and insights from X.`}
+              {overview || `Daily summary featuring ${summary.total_articles_count} curated articles and insights from X.`}
             </p>
             
             {/* Key topics */}

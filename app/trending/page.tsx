@@ -160,7 +160,7 @@ export default async function TrendingPage({ searchParams }: PageProps) {
               </div>
               <div className="space-y-1">
                 <div className="text-[10px] uppercase tracking-[0.2em] text-white/30 font-bold">Daily Briefing</div>
-                <h3 className="text-xl font-medium text-white/90 group-hover:text-white transition-colors">Daily AI Report</h3>
+                <h3 className="text-xl font-medium text-white/90 group-hover:text-white transition-colors">Daily Report</h3>
                 <p className="text-xs text-white/40 font-light leading-relaxed">
                   Summarized insights from today&apos;s best content.
                 </p>

@@ -360,3 +360,123 @@ export async function testConnection(): Promise<boolean> {
     return false;
   }
 }
+
+/**
+ * Low-level DeepSeek API call
+ */
+export async function callDeepSeek(prompt: string, maxTokens = 2000): Promise<string> {
+  const apiLimitCheck = checkApiLimit('deepseek');
+  if (!apiLimitCheck.allowed) {
+    throw new Error(`Daily DeepSeek API limit exceeded: ${apiLimitCheck.message}`);
+  }
+
+  const apiCallResult = recordApiCall('deepseek');
+  if (!apiCallResult.success) {
+    throw new Error('Daily DeepSeek API limit exceeded during call recording');
+  }
+
+  const openai = initialize();
+  const completion = await openai.chat.completions.create({
+    model: 'deepseek-chat',
+    messages: [{ role: 'user', content: prompt }],
+    temperature: 0.3,
+    max_tokens: maxTokens,
+  });
+
+  return completion.choices[0]?.message?.content || '';
+}
+
+/**
+ * Generate English summary + category + title translation (if needed)
+ * Single language output: ALL ENGLISH
+ */
+export async function generateEnglishAnalysis(
+  content: string,
+  title: string,
+  needsTitleTranslation: boolean
+): Promise<{
+  summary_english: string
+  category: string
+  title_english: string | null
+}> {
+  const prompt = needsTitleTranslation
+    ? `Analyze this article and respond in English only.
+
+TITLE: ${title}
+
+CONTENT:
+${content.substring(0, 8000)}
+
+Respond in this exact format:
+TITLE_ENGLISH: [English translation of the title]
+CATEGORY: [One word category: Technology, Business, Politics, Science, Culture, Sports, Other]
+SUMMARY: [2-3 sentence summary in English]`
+    : `Analyze this article and respond in English only.
+
+TITLE: ${title}
+
+CONTENT:
+${content.substring(0, 8000)}
+
+Respond in this exact format:
+CATEGORY: [One word category: Technology, Business, Politics, Science, Culture, Sports, Other]
+SUMMARY: [2-3 sentence summary in English]`
+
+  const response = await callDeepSeek(prompt)
+  return parseEnglishResponse(response, title, needsTitleTranslation)
+}
+
+/**
+ * Translate English summary to Chinese
+ * Single language output: ALL CHINESE
+ */
+export async function translateToChinese(summaryEnglish: string): Promise<string> {
+  const prompt = `将以下英文摘要翻译成中文，只输出中文翻译，不要有任何英文：
+
+${summaryEnglish}`
+
+  const response = await callDeepSeek(prompt)
+  return response.trim()
+}
+
+/**
+ * Parse English analysis response
+ */
+function parseEnglishResponse(
+  text: string,
+  originalTitle: string,
+  needsTitleTranslation: boolean
+): { summary_english: string; category: string; title_english: string | null } {
+  const lines = text.split('\n').map(l => l.trim()).filter(Boolean)
+
+  let title_english: string | null = null
+  let category = 'Other'
+  let summary_english = ''
+
+  for (const line of lines) {
+    if (line.startsWith('TITLE_ENGLISH:')) {
+      title_english = line.replace('TITLE_ENGLISH:', '').trim()
+    } else if (line.startsWith('CATEGORY:')) {
+      category = line.replace('CATEGORY:', '').trim()
+    } else if (line.startsWith('SUMMARY:')) {
+      summary_english = line.replace('SUMMARY:', '').trim()
+    }
+  }
+
+  // If no SUMMARY label found, use remaining text
+  if (!summary_english) {
+    const summaryStart = text.indexOf('SUMMARY:')
+    if (summaryStart !== -1) {
+      summary_english = text.substring(summaryStart + 8).trim()
+    } else {
+      // Last resort: use the whole response minus parsed fields
+      summary_english = text
+    }
+  }
+
+  return {
+    summary_english,
+    category,
+    title_english: needsTitleTranslation ? title_english : originalTitle
+  }
+}

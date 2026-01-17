@@ -62,7 +62,6 @@ async function getArticles(search?: string): Promise<Article[]> {
       author_avatar,
       article_published_at,
       updated_at,
-      tag,
       tweet_views,
       tweet_replies,
       tweet_likes,
@@ -70,7 +69,8 @@ async function getArticles(search?: string): Promise<Article[]> {
       language,
       summary_english,
       summary_chinese,
-      summary_generated_at
+      summary_generated_at,
+      full_article_content
     `)
     .order('article_published_at', { ascending: false, nullsFirst: false })
 
@@ -89,7 +89,7 @@ async function getArticles(search?: string): Promise<Article[]> {
   // Map database fields to Article interface
   return (data || []).map(item => ({
     ...item,
-    tags: item.tag ? item.tag.split(',').map((t: string) => t.trim()) : [],
+    tags: [],
     created_at: item.article_published_at || item.updated_at || new Date().toISOString(),
   })) as Article[]
 }

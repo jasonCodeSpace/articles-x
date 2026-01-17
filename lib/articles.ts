@@ -18,7 +18,7 @@ export interface FetchArticlesOptions {
  */
 export async function fetchArticles(options: FetchArticlesOptions = {}): Promise<Article[]> {
   const {
-    limit = 500, // Limit to 500 articles for categories
+    limit = 200, // Optimized limit for fast loading
     sort = 'newest',
     search,
     category,
@@ -29,11 +29,34 @@ export async function fetchArticles(options: FetchArticlesOptions = {}): Promise
 
   try {
     const supabase = await createClient()
-    
+
+    // Only select columns needed for article cards to reduce payload size
     let query = supabase
       .from('articles')
       .select(`
-        *,
+        id,
+        title,
+        title_english,
+        slug,
+        article_preview_text,
+        article_preview_text_english,
+        image,
+        article_image,
+        category,
+        author_name,
+        author_handle,
+        author_avatar,
+        author_profile_image,
+        article_published_at,
+        created_at,
+        updated_at,
+        tags,
+        tweet_views,
+        tweet_replies,
+        tweet_retweets,
+        tweet_likes,
+        article_url,
+        language,
         summary_english,
         summary_generated_at
       `)
@@ -137,6 +160,7 @@ export async function getArticleCategories(): Promise<string[]> {
 
 /**
  * Get a single article by slug
+ * Uses RPC function for O(1) lookup instead of table scanning
  */
 export async function getArticleBySlug(slug: string): Promise<Article | null> {
   try {
@@ -151,49 +175,22 @@ export async function getArticleBySlug(slug: string): Promise<Article | null> {
 
     const shortId = parts[parts.length - 1];
 
-    // Fetch articles in batches to handle large datasets
-    // Supabase has a default limit of 1000 rows per request
-    const batchSize = 1000;
-    let offset = 0;
-    let foundArticle: Article | null = null;
+    // Use RPC function for efficient lookup (O(1) with index)
+    const { data, error } = await supabase
+      .rpc('find_articles_by_short_id', { short_id: shortId })
 
-    while (!foundArticle) {
-      const { data, error } = await supabase
-        .from('articles')
-        .select('*')
-        .range(offset, offset + batchSize - 1)
-        .order('article_published_at', { ascending: false })
-
-      if (error) {
-        console.error('Error fetching articles:', error)
-        return null
-      }
-
-      if (!data || data.length === 0) {
-        // No more articles to fetch
-        break
-      }
-
-      // Find article where the UUID starts with the shortId
-      foundArticle = data.find(a => {
-        const idWithoutDashes = a.id.replace(/-/g, '')
-        return idWithoutDashes.substring(0, 6) === shortId
-      }) || null
-
-      if (data.length < batchSize) {
-        // Last batch, no more articles
-        break
-      }
-
-      offset += batchSize
+    if (error) {
+      console.error('Error fetching article by short_id:', error)
+      return null
     }
 
-    if (!foundArticle) {
+    if (!data || data.length === 0) {
       console.error('Article not found for shortId:', shortId)
       return null
     }
 
-    return foundArticle
+    // Return the first matching article
+    return data[0] as Article
 
   } catch (error) {
     console.error('Unexpected error fetching article by slug:', error)

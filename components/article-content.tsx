@@ -58,7 +58,8 @@ export function ArticleContent({
   }, [])
 
   const displayTitle = article.title_english || article.title
-  const displayContent = article.summary_english || article.summary_chinese
+  // Display full article content first, fall back to summary if not available
+  const displayContent = article.full_article_content_english || article.full_article_content || article.summary_english || article.summary_chinese
 
   return (
     <div className="relative">

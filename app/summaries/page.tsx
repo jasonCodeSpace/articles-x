@@ -42,6 +42,9 @@ export const metadata = {
   },
 }
 
+// Use ISR for fast loading
+export const revalidate = 300
+
 interface SummaryData {
   title: string
   content: string

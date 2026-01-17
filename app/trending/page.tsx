@@ -66,15 +66,38 @@ async function fetchTrendingArticles(options: {
 }): Promise<Article[]> {
   const supabase = await createClient()
 
+  // Only select columns needed for the card display to reduce payload size
   let query = supabase
     .from('articles')
     .select(`
-      *,
+      id,
+      title,
+      title_english,
+      slug,
+      article_preview_text,
+      article_preview_text_english,
+      image,
+      article_image,
+      category,
+      author_name,
+      author_handle,
+      author_avatar,
+      author_profile_image,
+      article_published_at,
+      created_at,
+      updated_at,
+      tags,
+      tweet_views,
+      tweet_replies,
+      tweet_retweets,
+      tweet_likes,
+      article_url,
+      language,
       summary_english,
       summary_generated_at
     `)
     .order('article_published_at', { ascending: false })
-    .limit(1000)
+    .limit(options.limit || 200)
 
   if (options.search && options.search.trim()) {
     query = query.or(`title.ilike.%${options.search.trim()}%,title_english.ilike.%${options.search.trim()}%`)

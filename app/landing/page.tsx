@@ -39,6 +39,9 @@ export const metadata: Metadata = {
   }
 }
 
+// Use ISR for fast loading
+export const revalidate = 300
+
 export default async function LandingPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -62,10 +65,12 @@ export default async function LandingPage() {
   const { data: trendingArticles } = await supabase
     .from('articles')
     .select(`
-      *,
-      summary_chinese,
+      id,
+      title,
+      slug,
       summary_english,
-      summary_generated_at
+      author_handle,
+      tweet_views
     `)
     .eq('language', 'en')
     .gte('article_published_at', sevenDaysAgoISO)

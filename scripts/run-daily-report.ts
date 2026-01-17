@@ -3,7 +3,9 @@
  * 每日报告工作流运行脚本
  * 用于 cron 定时任务
  */
-import 'dotenv/config'
+import dotenv from 'dotenv'
+import path from 'path'
+dotenv.config({ path: path.join(process.cwd(), '.env.local') })
 import { runDailyReport } from '../lib/workflow/workflows/daily-report'
 
 async function main() {

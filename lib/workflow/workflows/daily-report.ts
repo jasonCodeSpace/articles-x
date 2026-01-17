@@ -8,7 +8,7 @@
  */
 import { createStep, runWorkflow, WorkflowDefinition, StepResult, WorkflowContext } from '../engine'
 import { createClient } from '@supabase/supabase-js'
-import { GoogleGenerativeAI } from '@google/generative-ai'
+import { callDeepSeek } from '@/lib/deepseek'
 
 function createServiceRoleClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL
@@ -26,7 +26,7 @@ interface DailyArticle {
   summary_chinese: string | null
   summary_english: string | null
   author_handle: string | null
-  published_at: string
+  article_published_at: string
 }
 
 interface FetchDailyArticlesOutput {
@@ -46,12 +46,15 @@ const fetchDailyArticlesStep = createStep<unknown, FetchDailyArticlesOutput>(
 
       const { data, error } = await supabase
         .from('articles')
-        .select('id, title, category, summary_chinese, summary_english, author_handle, published_at')
-        .gte('published_at', startOfDay)
-        .lte('published_at', endOfDay)
-        .order('published_at', { ascending: false })
+        .select('id, title, category, summary_chinese, summary_english, author_handle, article_published_at')
+        .gte('article_published_at', startOfDay)
+        .lte('article_published_at', endOfDay)
+        .order('article_published_at', { ascending: false })
 
-      if (error) throw error
+      if (error) {
+        console.error('Supabase error:', error)
+        throw new Error(error.message || JSON.stringify(error))
+      }
 
       if (!data || data.length === 0) {
         return {
@@ -100,11 +103,6 @@ const generateReportStep = createStep<FetchDailyArticlesOutput, GenerateReportOu
   async (input: FetchDailyArticlesOutput, ctx: WorkflowContext): Promise<StepResult<GenerateReportOutput>> => {
     try {
       const { articles, date } = input
-      const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_AI_API_KEY
-      if (!apiKey) throw new Error('GEMINI_API_KEY not set')
-
-      const genAI = new GoogleGenerativeAI(apiKey)
-      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
 
       // 准备文章摘要
       const articleSummaries = articles.map(a =>
@@ -127,8 +125,7 @@ CHINESE:
 ENGLISH:
 [English report here]`
 
-      const result = await model.generateContent(prompt)
-      const text = result.response.text()
+      const text = await callDeepSeek(prompt, 2000)
 
       const chineseMatch = text.match(/CHINESE:\s*([\s\S]*?)(?=ENGLISH:|$)/i)
       const englishMatch = text.match(/ENGLISH:\s*([\s\S]*?)$/i)
@@ -173,19 +170,24 @@ const saveReportStep = createStep<GenerateReportOutput, SaveReportOutput>(
       const { report, date, articleCount } = input
       const supabase = createServiceRoleClient()
 
+      // 合并中英文报告作为 summary_content
+      const summaryContent = `# Daily Report - ${date}\n\n## 中文版\n${report.chinese}\n\n## English Version\n${report.english}`
+
       const { data, error } = await supabase
-        .from('daily_reports')
+        .from('daily_summary')
         .upsert({
           date,
-          report_chinese: report.chinese,
-          report_english: report.english,
-          article_count: articleCount,
-          generated_at: new Date().toISOString()
+          summary_content: summaryContent,
+          top_article_title: 'Daily Report',
+          total_articles_count: articleCount
         }, { onConflict: 'date' })
         .select('id')
         .single()
 
-      if (error) throw error
+      if (error) {
+        console.error('Supabase error saving report:', error)
+        throw new Error(error.message || JSON.stringify(error))
+      }
 
       ctx.logs.push({
         timestamp: new Date(),

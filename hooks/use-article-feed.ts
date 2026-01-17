@@ -1,14 +1,18 @@
 'use client'
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Article } from '@/components/article-card'
 import { SortOption } from '@/lib/articles'
 import { calculatePagination } from '@/components/pagination'
 
+export type TimePeriod = 'all' | 'today' | 'week' | 'month' | '3months'
+
 interface UseArticleFeedProps {
   initialArticles: Article[]
   initialSearchQuery?: string
+  initialCategory?: string
+  initialTimePeriod?: TimePeriod
   itemsPerPage?: number
 }
 
@@ -20,28 +24,56 @@ interface UseArticleFeedReturn {
   error: string | null
   searchQuery: string
   sortOption: SortOption
+  selectedCategory: string
+  selectedTimePeriod: TimePeriod
   currentPage: number
   totalPages: number
   totalItems: number
   handleSearch: (query: string) => void
   handleSort: (sort: SortOption) => void
+  handleCategoryChange: (category: string) => void
+  handleTimePeriodChange: (period: TimePeriod) => void
   handlePageChange: (page: number) => void
   handleTimeSort: () => void
   handleViewsSort: () => void
   clearSearch: () => void
+  clearFilters: () => void
   retry: () => void
+}
+
+// Helper function to get date threshold for time period
+function getDateThreshold(period: TimePeriod): Date | null {
+  if (period === 'all') return null
+
+  const now = new Date()
+  switch (period) {
+    case 'today':
+      return new Date(now.getFullYear(), now.getMonth(), now.getDate())
+    case 'week':
+      return new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+    case 'month':
+      return new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+    case '3months':
+      return new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000)
+    default:
+      return null
+  }
 }
 
 export function useArticleFeed({
   initialArticles,
   initialSearchQuery = '',
+  initialCategory = 'All',
+  initialTimePeriod = 'all',
   itemsPerPage = 15
 }: UseArticleFeedProps): UseArticleFeedReturn {
   const searchParams = useSearchParams()
-  
+
   // State
   const [articles] = useState<Article[]>(initialArticles)
   const [searchQuery, setSearchQuery] = useState(initialSearchQuery)
+  const [selectedCategory, setSelectedCategory] = useState(initialCategory)
+  const [selectedTimePeriod, setSelectedTimePeriod] = useState<TimePeriod>(initialTimePeriod)
   const [sortOption, setSortOption] = useState<SortOption>('newest')
   const [currentPage, setCurrentPage] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
@@ -49,27 +81,43 @@ export function useArticleFeed({
 
   // Monitor URL parameter changes and reload page if filter changes
   useEffect(() => {
-    // Only run on client side after hydration
     if (typeof window === 'undefined') return
-    
+
     const currentFilter = searchParams.get('filter')
-    // Force page reload when filter parameter changes
-    // This ensures the server-side data fetching runs with the new filter
     const urlFilter = new URLSearchParams(window.location.search).get('filter')
     if (urlFilter !== currentFilter) {
       window.location.reload()
     }
   }, [searchParams])
 
-  // Filter and sort articles client-side
+  // Filter and sort articles client-side (category and time filtering happen BEFORE pagination)
   const filteredArticles = useMemo(() => {
     let filtered = [...articles]
+
+    // Apply category filter
+    if (selectedCategory && selectedCategory !== 'All') {
+      filtered = filtered.filter(article => {
+        if (!article.category) return false
+        const categories = article.category.split(',').map(cat => cat.trim().toLowerCase())
+        return categories.includes(selectedCategory.toLowerCase())
+      })
+    }
+
+    // Apply time period filter
+    const dateThreshold = getDateThreshold(selectedTimePeriod)
+    if (dateThreshold) {
+      filtered = filtered.filter(article => {
+        const articleDate = new Date(article.article_published_at || article.created_at)
+        return articleDate >= dateThreshold
+      })
+    }
 
     // Apply search filter
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase().trim()
       filtered = filtered.filter(article =>
         article.title.toLowerCase().includes(query) ||
+        article.title_english?.toLowerCase().includes(query) ||
         article.author_name.toLowerCase().includes(query) ||
         article.author_handle?.toLowerCase().includes(query)
       )
@@ -98,7 +146,7 @@ export function useArticleFeed({
     })
 
     return filtered
-  }, [articles, searchQuery, sortOption])
+  }, [articles, selectedCategory, selectedTimePeriod, searchQuery, sortOption])
 
   // Calculate pagination
   const paginationInfo = useMemo(() => {
@@ -114,15 +162,26 @@ export function useArticleFeed({
   // Handlers
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query)
-    setCurrentPage(1) // Reset to first page when searching
+    setCurrentPage(1)
     setError(null)
   }, [])
 
   const handleSort = useCallback((sort: SortOption) => {
     setSortOption(sort)
+    setCurrentPage(1)
   }, [])
 
+  const handleCategoryChange = useCallback((category: string) => {
+    setSelectedCategory(category)
+    setCurrentPage(1)
+    setError(null)
+  }, [])
 
+  const handleTimePeriodChange = useCallback((period: TimePeriod) => {
+    setSelectedTimePeriod(period)
+    setCurrentPage(1)
+    setError(null)
+  }, [])
 
   const handlePageChange = useCallback((page: number) => {
     setCurrentPage(page)
@@ -130,14 +189,20 @@ export function useArticleFeed({
 
   const clearSearch = useCallback(() => {
     setSearchQuery('')
-    setCurrentPage(1) // Reset to first page when clearing search
+    setCurrentPage(1)
+    setError(null)
+  }, [])
+
+  const clearFilters = useCallback(() => {
+    setSearchQuery('')
+    setSelectedCategory('All')
+    setSelectedTimePeriod('all')
+    setCurrentPage(1)
     setError(null)
   }, [])
 
   const retry = useCallback(() => {
     setError(null)
-    // In a real implementation, you might refetch data here
-    // For now, we're using static data from server
   }, [])
 
   const handleTimeSort = useCallback(() => {
@@ -151,23 +216,22 @@ export function useArticleFeed({
 
   const handleViewsSort = useCallback(() => {
     if (sortOption === 'views_high') {
-      // Second click: reset to default (newest)
       setSortOption('newest')
     } else {
-      // First click: sort by views high to low
       setSortOption('views_high')
     }
     setCurrentPage(1)
   }, [sortOption])
 
-  // Set error if no results found with search
+  // Set error if no results found
   useEffect(() => {
-    if (searchQuery.trim() && filteredArticles.length === 0 && articles.length > 0) {
+    if ((searchQuery.trim() || selectedCategory !== 'All' || selectedTimePeriod !== 'all') &&
+        filteredArticles.length === 0 && articles.length > 0) {
       setError('no-results')
     } else {
       setError(null)
     }
-  }, [searchQuery, filteredArticles.length, articles.length])
+  }, [searchQuery, selectedCategory, selectedTimePeriod, filteredArticles.length, articles.length])
 
   return {
     articles,
@@ -177,15 +241,20 @@ export function useArticleFeed({
     error,
     searchQuery,
     sortOption,
+    selectedCategory,
+    selectedTimePeriod,
     currentPage,
     totalPages: paginationInfo.totalPages,
     totalItems: filteredArticles.length,
     handleSearch,
     handleSort,
+    handleCategoryChange,
+    handleTimePeriodChange,
     handlePageChange,
     handleTimeSort,
     handleViewsSort,
     clearSearch,
+    clearFilters,
     retry,
   }
 }

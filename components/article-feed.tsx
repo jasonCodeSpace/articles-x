@@ -1,10 +1,9 @@
 'use client'
 
 import dynamic from 'next/dynamic'
-import { useState, useEffect, useMemo } from 'react'
 import { ArticleCard, Article } from '@/components/article-card'
 import { FeedEmptyState } from '@/components/feed-empty-state'
-import { useArticleFeed } from '@/hooks/use-article-feed'
+import { useArticleFeed, TimePeriod } from '@/hooks/use-article-feed'
 import { FeedLoading } from '@/components/feed-loading'
 import { StaggerContainer } from '@/components/motion-wrapper'
 
@@ -23,59 +22,53 @@ interface ArticleFeedProps {
   initialArticles: Article[]
   initialSearchQuery?: string
   initialCategory?: string
+  initialTimePeriod?: TimePeriod
 }
 
-export function ArticleFeed({ initialArticles, initialSearchQuery = '', initialCategory = 'All' }: ArticleFeedProps) {
-  const [sortBy, setSortBy] = useState<'latest' | 'hot'>('latest')
-  const [selectedCategory, setSelectedCategory] = useState(initialCategory)
-  const sortOption = sortBy === 'hot' ? 'views_high' : 'newest'
-
+export function ArticleFeed({
+  initialArticles,
+  initialSearchQuery = '',
+  initialCategory = 'All',
+  initialTimePeriod = 'all'
+}: ArticleFeedProps) {
   const {
-    paginatedArticles: unfilteredArticles,
+    paginatedArticles,
     isLoading: feedLoading,
     error,
     searchQuery,
+    sortOption,
+    selectedCategory,
+    selectedTimePeriod,
     currentPage,
     totalPages,
+    totalItems,
     handleSearch,
     handleSort,
+    handleCategoryChange,
+    handleTimePeriodChange,
     handlePageChange,
-    clearSearch,
+    clearFilters,
     retry,
-  } = useArticleFeed({ initialArticles, initialSearchQuery, itemsPerPage: 12 })
+  } = useArticleFeed({
+    initialArticles,
+    initialSearchQuery,
+    initialCategory,
+    initialTimePeriod,
+    itemsPerPage: 12
+  })
 
-  // Filter articles by category client-side
-  const filteredArticles = useMemo(() => {
-    if (selectedCategory === 'All') {
-      return unfilteredArticles
-    }
-    return unfilteredArticles.filter((article: Article) => {
-      if (!article.category) return false
-      const categories = article.category.split(',').map(cat => cat.trim().toLowerCase())
-      return categories.includes(selectedCategory.toLowerCase())
-    })
-  }, [unfilteredArticles, selectedCategory])
+  // Convert sortOption to sortBy for toolbar
+  const sortBy = sortOption === 'views_high' ? 'hot' : 'latest'
 
-  useEffect(() => {
-    handleSort(sortOption)
-  }, [sortOption, handleSort])
-
-  // Update category from URL if provided
-  useEffect(() => {
-    if (initialCategory && initialCategory !== 'All') {
-      setSelectedCategory(initialCategory)
-    }
-  }, [initialCategory])
-
-  const handleCategoryChange = (category: string) => {
-    setSelectedCategory(category)
-    // Reset to first page when category changes
-    handlePageChange(1)
+  const handleSortByChange = (newSortBy: 'latest' | 'hot') => {
+    handleSort(newSortBy === 'hot' ? 'views_high' : 'newest')
   }
 
   if (feedLoading) {
     return <FeedLoading />
   }
+
+  const hasActiveFilters = searchQuery || selectedCategory !== 'All' || selectedTimePeriod !== 'all'
 
   return (
     <div className="space-y-12">
@@ -86,20 +79,20 @@ export function ArticleFeed({ initialArticles, initialSearchQuery = '', initialC
           searchValue={searchQuery}
           isLoading={feedLoading}
           sortBy={sortBy}
-          onSortChange={setSortBy}
+          onSortChange={handleSortByChange}
           selectedCategory={selectedCategory}
           onCategoryChange={handleCategoryChange}
+          selectedTimePeriod={selectedTimePeriod}
+          onTimePeriodChange={handleTimePeriodChange}
+          totalItems={totalItems}
         />
       </section>
 
-      {error === 'no-results' || filteredArticles.length === 0 ? (
+      {error === 'no-results' || paginatedArticles.length === 0 ? (
         <FeedEmptyState
           type="no-results"
-          searchQuery={searchQuery || (selectedCategory !== 'All' ? selectedCategory : '')}
-          onClearSearch={() => {
-            clearSearch()
-            setSelectedCategory('All')
-          }}
+          searchQuery={hasActiveFilters ? (searchQuery || selectedCategory || selectedTimePeriod) : ''}
+          onClearSearch={clearFilters}
         />
       ) : initialArticles.length === 0 ? (
         <FeedEmptyState type="no-articles" />
@@ -111,7 +104,7 @@ export function ArticleFeed({ initialArticles, initialSearchQuery = '', initialC
       ) : (
         <div className="space-y-20">
           <StaggerContainer staggerChildren={0.05} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredArticles.map((article: Article, index: number) => (
+            {paginatedArticles.map((article: Article, index: number) => (
               <ArticleCard
                 key={article.id}
                 article={article}

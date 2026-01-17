@@ -8,6 +8,18 @@ import { useRouter } from 'next/navigation'
 import { FadeIn } from './motion-wrapper'
 import { Button } from '@/components/ui/button'
 
+const XIcon = ({ size = 16, className = "" }: { size?: number, className?: string }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    className={className}
+  >
+    <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z" />
+  </svg>
+)
+
 interface ArticleContentProps {
   article: {
     id: string
@@ -202,7 +214,7 @@ export function ArticleContent({
         </article>
       </FadeIn>
 
-      <FadeIn delay={0.5} className="mt-8 pt-4 border-t border-white/5">
+      <FadeIn delay={0.5} className="mt-4 pt-4 border-t border-white/5">
         <div className="flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex items-center gap-4">
             <span className="text-xs uppercase tracking-widest text-white/20 font-bold">Source</span>
@@ -214,7 +226,7 @@ export function ArticleContent({
                 className="group flex items-center gap-2 text-white/40 hover:text-white transition-colors"
               >
                 <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors">
-                  <Twitter size={14} />
+                  <XIcon size={14} />
                 </div>
                 <span className="text-sm font-medium">Read original thread on X</span>
                 <ExternalLink size={12} className="opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />

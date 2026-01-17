@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createAnonClient } from '@/lib/supabase/server';
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,9 +20,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-
-
-    const supabase = await createClient();
+    // Use anon client (no cookies needed for analytics)
+    const supabase = createAnonClient();
 
     // 插入Web Vitals数据 (只使用存在的列)
     const { error } = await supabase
@@ -37,20 +36,16 @@ export async function POST(request: NextRequest) {
       });
 
     if (error) {
-      console.error('Error inserting web vitals:', error);
-      return NextResponse.json(
-        { error: 'Failed to store metrics' },
-        { status: 500 }
-      );
+      // Log but don't fail - analytics shouldn't break the app
+      console.warn('Web vitals insert warning:', error.message);
+      return NextResponse.json({ success: false, warning: error.message });
     }
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Web vitals API error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    // Log but return success - analytics failures shouldn't affect user experience
+    console.warn('Web vitals API warning:', error instanceof Error ? error.message : 'Unknown error');
+    return NextResponse.json({ success: false });
   }
 }
 
@@ -60,8 +55,8 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const days = parseInt(searchParams.get('days') || '7');
     const metric = searchParams.get('metric');
-    
-    const supabase = await createClient();
+
+    const supabase = createAnonClient();
     
     let query = supabase
       .from('web_vitals')

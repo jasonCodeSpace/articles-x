@@ -198,7 +198,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           />
 
           {/* Previous/Next Navigation */}
-          <div className="mt-6 pt-4">
+          <div className="mt-2 pt-4">
             <ArticleNavigation
               previousArticle={previousArticle}
               nextArticle={nextArticle}

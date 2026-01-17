@@ -26,10 +26,10 @@ export function ArticleNavigation({ previousArticle, nextArticle }: ArticleNavig
     const handleKeyDown = (event: KeyboardEvent) => {
       // Only handle arrow keys if no input/textarea is focused
       const activeElement = document.activeElement as HTMLElement
-      const isInputFocused = activeElement?.tagName === 'INPUT' || 
-                            activeElement?.tagName === 'TEXTAREA' ||
-                            activeElement?.contentEditable === 'true'
-      
+      const isInputFocused = activeElement?.tagName === 'INPUT' ||
+        activeElement?.tagName === 'TEXTAREA' ||
+        activeElement?.contentEditable === 'true'
+
       if (isInputFocused) return
 
       if (event.key === 'ArrowLeft' && previousArticle) {
@@ -63,7 +63,7 @@ export function ArticleNavigation({ previousArticle, nextArticle }: ArticleNavig
   }
 
   return (
-    <div className="flex justify-between items-center mt-12 pt-8 border-t border-border">
+    <div className="flex justify-between items-center mt-4 pt-8 border-t border-border">
       {/* Previous Article */}
       <div className="flex-1">
         {previousArticle ? (

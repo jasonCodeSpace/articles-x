@@ -159,37 +159,31 @@ export async function getArticleCategories(): Promise<string[]> {
 
 /**
  * Get a single article by slug
- * Uses RPC function for O(1) lookup instead of table scanning
+ * Looks up article directly by slug column
  */
 export async function getArticleBySlug(slug: string): Promise<Article | null> {
   try {
     const supabase = await createClient()
 
-    // Extract article ID from slug (last part after --)
-    const parts = slug.split('--');
-    if (parts.length < 2) {
-      console.error('Invalid slug format:', slug)
-      return null;
-    }
-
-    const shortId = parts[parts.length - 1];
-
-    // Use RPC function for efficient lookup (O(1) with index)
+    // Direct lookup by slug
     const { data, error } = await supabase
-      .rpc('find_articles_by_short_id', { p_short_id: shortId })
+      .from('articles')
+      .select('*')
+      .eq('slug', slug)
+      .limit(1)
+      .single()
 
     if (error) {
-      console.error('Error fetching article by short_id:', error)
+      console.error('Error fetching article by slug:', error)
       return null
     }
 
-    if (!data || data.length === 0) {
-      console.error('Article not found for shortId:', shortId)
+    if (!data) {
+      console.error('Article not found for slug:', slug)
       return null
     }
 
-    // Return the first matching article
-    return data[0] as Article
+    return data as Article
 
   } catch (error) {
     console.error('Unexpected error fetching article by slug:', error)

@@ -1,14 +1,9 @@
 /**
  * Utility functions for generating and parsing article URLs
- * 
- * IMPORTANT: Article slugs should ONLY be generated ONCE when creating a new article.
- * Once a slug is generated, it should NEVER be modified by any other code.
- * This ensures URL stability and prevents broken links.
- * 
- * The only place where article slugs should be generated:
- * - lib/ingest.ts (when creating articles from harvested data)
- * - app/api/process-articles/route.ts (when creating articles from tweet processing)
- * - app/api/process-articles/route.ts (when creating articles from processed tweets)
+ *
+ * Article slugs are generated from title_english (or title if no English translation)
+ * Format: lowercase words separated by hyphens, no ID suffix
+ * Example: "networking-at-crypto-events-a-guide-to-doing-it-right"
  */
 
 /**
@@ -95,23 +90,22 @@ export function generateShortId(uuid: string): string {
 }
 
 /**
- * Generate article URL with meaningful title and permanent ID
- * Format: /article/title-slug--shortId
+ * Generate article URL with slug (no ID suffix)
+ * Format: /article/title-slug
  */
 export function generateArticleUrl(title: string, id: string): string {
   const titleSlug = generateSlugFromTitle(title)
-  const shortId = generateShortId(id)
-  return `/article/${titleSlug}--${shortId}`
+  return `/article/${titleSlug}`
 }
 
 /**
- * Extract article ID from article URL slug
+ * Note: extractArticleIdFromSlug is deprecated
+ * Articles are now looked up directly by slug
  */
 export function extractArticleIdFromSlug(slug: string): string {
+  // Deprecated - kept for backwards compatibility
   const parts = slug.split('--')
-  const lastPart = parts[parts.length - 1]
-  // Remove any leading dashes that might be present
-  return lastPart.replace(/^-+/, '')
+  return parts[parts.length - 1].replace(/^-+/, '')
 }
 
 /**

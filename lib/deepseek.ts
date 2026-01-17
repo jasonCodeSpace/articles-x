@@ -33,6 +33,28 @@ export interface ArticleAnalysis {
 }
 
 /**
+ * 检测文本是否主要包含英文（不包含中文字符）
+ */
+function isPureEnglish(text: string): boolean {
+  // 检查是否包含中文字符
+  const hasChinese = /[\u4e00-\u9fff]/.test(text);
+  // 检查是否包含英文字母
+  const hasEnglish = /[a-zA-Z]/.test(text);
+  // 如果有英文且没有中文，认为是纯英文
+  return hasEnglish && !hasChinese;
+}
+
+/**
+ * 检测文本是否主要为英文（允许少量中文）
+ */
+function isMostlyEnglish(text: string): boolean {
+  const chineseChars = (text.match(/[\u4e00-\u9fff]/g) || []).length;
+  const totalChars = text.replace(/\s/g, '').length;
+  // 如果中文字符少于总字符的 20%，认为是英文
+  return totalChars > 0 && (chineseChars / totalChars) < 0.2;
+}
+
+/**
  * Count words in content (handles both English and Chinese)
  */
 function countWords(text: string): number {
@@ -68,6 +90,11 @@ export async function generateArticleAnalysis(
     const wordCount = countWords(content)
     const { targetLength, shouldSkip } = getSummaryLengthInstructions(wordCount)
 
+    // 检测标题是否已经是英文
+    // 如果是纯英文或主要英文，直接使用原标题作为 title_english
+    const titleIsEnglish = isPureEnglish(title) || isMostlyEnglish(title)
+    const titleEnglish = titleIsEnglish ? title : null
+
     // If article is too short (<100 words), skip summary generation
     if (shouldSkip) {
       console.log(`Article "${title}" has only ${wordCount} words, skipping summary generation`)
@@ -94,23 +121,24 @@ export async function generateArticleAnalysis(
 
     const openai = initialize();
 
+    // 根据标题是否需要翻译，动态构建 prompt
+    const titleInstruction = titleIsEnglish
+      ? `TITLE_ENGLISH: ${title} (already in English, no translation needed)`
+      : `TITLE_ENGLISH: [Translate the original title to pure English - NO Chinese characters allowed]`;
+
     const prompt = `CRITICAL: You MUST follow this EXACT output format. Any deviation will cause system failure.
 
 TASK: Analyze this article and provide the response in the EXACT format specified below.
 
 You must:
 1. Detect the primary language of the article.
-2. Translate the title to English (if not already English).
-3. Produce a STRUCTURED, well-organized summary in Simplified Chinese and English.
-4. Categorize the article.
+2. Produce a STRUCTURED, well-organized summary in Simplified Chinese and English.
+3. Categorize the article.
+
+${titleIsEnglish ? 'NOTE: Title is already in English.' : 'CRITICAL: Translate the title to pure English. NO Chinese characters in the translated title!'}
 
 LANGUAGE DETECTION:
 Use ISO 639-1 language codes (en, zh, es, etc.).
-
-TITLE TRANSLATION:
-- Translate the original title to English.
-- If the title is already in English, return it exactly as is.
-- Field: TITLE_ENGLISH
 
 SUMMARIES:
 - summary_chinese: MUST be in Simplified Chinese (简体中文). Even if the article is English/Spanish.
@@ -135,7 +163,7 @@ SUMMARY STRUCTURE:
 
 OUTPUT FORMAT (FOLLOW EXACTLY):
 LANGUAGE: [detected language code]
-TITLE_ENGLISH: [The title translated to English]
+${titleInstruction}
 
 [Chinese paragraph 1 - main topic overview]
 
@@ -172,8 +200,20 @@ ${content.substring(0, 8000)}`;
     const language = languageMatch ? languageMatch[1].trim() : 'en';
 
     // Parse Title English
-    const titleMatch = text.match(/TITLE_ENGLISH:\s*([^\n]+)/i);
-    const titleEnglish = titleMatch ? titleMatch[1].trim() : title;
+    let titleEnglish: string;
+    if (titleIsEnglish) {
+      // Title is already English, use original
+      titleEnglish = title;
+    } else {
+      // Try to parse from AI response
+      const titleMatch = text.match(/TITLE_ENGLISH:\s*([^\n]+)/i);
+      titleEnglish = titleMatch ? titleMatch[1].trim() : title;
+      // 如果解析出的标题包含中文，回退到原标题
+      if (/[\u4e00-\u9fff]/.test(titleEnglish)) {
+        console.warn(`Parsed title contains Chinese, falling back to original: ${titleEnglish}`);
+        titleEnglish = title;
+      }
+    }
 
     // Parse Category
     const categoryMatch = text.match(/CATEGORY:\s*([^\n]+)/i);

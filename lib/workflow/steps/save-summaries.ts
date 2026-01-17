@@ -3,6 +3,7 @@
  */
 import { createStep, StepResult, WorkflowContext } from '../engine'
 import { ArticleWithSummary } from './generate-summaries'
+import { generateSlug } from '@/lib/url-utils'
 import { createClient } from '@supabase/supabase-js'
 
 export interface SaveSummariesInput {
@@ -35,14 +36,22 @@ export const saveSummariesStep = createStep<SaveSummariesInput, SaveSummariesOut
 
       for (const { article, analysis } of processed) {
         try {
+          // Generate proper slug now that we have title_english
+          const newSlug = generateSlug(
+            article.title,
+            analysis.title_english,
+            article.tweet_id
+          )
+
           const { error } = await supabase
             .from('articles')
             .update({
-              summary_chinese: analysis.summary.chinese,
-              summary_english: analysis.summary.english,
-              title_english: analysis.title_english, // Save translated title
+              summary_chinese: analysis.summary_chinese,
+              summary_english: analysis.summary_english,
+              title_english: analysis.title_english,
               language: analysis.language,
               category: analysis.category,
+              slug: newSlug, // Update slug with proper English translation
               summary_generated_at: new Date().toISOString()
             })
             .eq('title', article.title)
@@ -52,7 +61,7 @@ export const saveSummariesStep = createStep<SaveSummariesInput, SaveSummariesOut
               timestamp: new Date(),
               level: 'warn',
               step: 'save-summaries',
-              message: `Failed to save summary for: ${article.title}`
+              message: `Failed to save summary for: ${article.title} - ${error.message}`
             })
             failed++
           } else {

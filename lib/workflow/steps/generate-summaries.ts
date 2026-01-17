@@ -1,9 +1,11 @@
 /**
  * Step 4: 生成 AI 摘要（包含翻译）
+ * 使用分离的 EN/ZH 调用确保语言纯净
  */
 import { createStep, StepResult, WorkflowContext } from '../engine'
 import { HarvestedArticle } from '@/lib/ingest'
-import { generateArticleAnalysis, ArticleAnalysis } from '@/lib/deepseek'
+import { generateEnglishAnalysis, translateToChinese } from '@/lib/deepseek'
+import { isEnglish } from '@/lib/url-utils'
 import { createClient } from '@supabase/supabase-js'
 
 export interface GenerateSummariesInput {
@@ -13,9 +15,17 @@ export interface GenerateSummariesInput {
   skipped: number
 }
 
+export interface ArticleAnalysisResult {
+  summary_english: string
+  summary_chinese: string
+  title_english: string | null
+  category: string
+  language: string
+}
+
 export interface ArticleWithSummary {
   article: HarvestedArticle
-  analysis: ArticleAnalysis
+  analysis: ArticleAnalysisResult
 }
 
 export interface GenerateSummariesOutput {
@@ -45,7 +55,7 @@ export const generateSummariesStep = createStep<GenerateSummariesInput, Generate
       // 获取需要生成摘要的文章（没有摘要的）
       const { data: dbArticles } = await supabase
         .from('articles')
-        .select('id, title, full_article_content, article_preview_text, summary_chinese, summary_english')
+        .select('id, title, full_article_content, summary_chinese, summary_english')
         .in('title', articles.map(a => a.title))
         .is('summary_chinese', null)
 
@@ -61,18 +71,44 @@ export const generateSummariesStep = createStep<GenerateSummariesInput, Generate
         timestamp: new Date(),
         level: 'info',
         step: 'generate-summaries',
-        message: `Generating summaries for ${dbArticles.length} articles`
+        message: `Generating summaries for ${dbArticles.length} articles using separate EN/ZH calls`
       })
 
       for (const dbArticle of dbArticles) {
         try {
-          const content = dbArticle.full_article_content || dbArticle.article_preview_text || dbArticle.title
-          const analysis = await generateArticleAnalysis(content, dbArticle.title)
+          const content = dbArticle.full_article_content || dbArticle.title
+          const needsTitleTranslation = !isEnglish(dbArticle.title)
+          const detectedLanguage = needsTitleTranslation ? 'zh' : 'en'
+
+          // Call 1: English analysis
+          const englishResult = await generateEnglishAnalysis(
+            content,
+            dbArticle.title,
+            needsTitleTranslation
+          )
+
+          // Call 2: Chinese translation
+          const summary_chinese = await translateToChinese(englishResult.summary_english)
+
+          const analysis: ArticleAnalysisResult = {
+            summary_english: englishResult.summary_english,
+            summary_chinese: summary_chinese,
+            title_english: needsTitleTranslation ? englishResult.title_english : dbArticle.title,
+            category: englishResult.category,
+            language: detectedLanguage
+          }
 
           const matchingArticle = articles.find(a => a.title === dbArticle.title)
           if (matchingArticle) {
             processed.push({ article: matchingArticle, analysis })
           }
+
+          ctx.logs.push({
+            timestamp: new Date(),
+            level: 'info',
+            step: 'generate-summaries',
+            message: `Generated summary for: ${dbArticle.title.substring(0, 50)}...`
+          })
 
           // 延迟避免 API 限制
           await new Promise(resolve => setTimeout(resolve, 1000))
@@ -81,7 +117,7 @@ export const generateSummariesStep = createStep<GenerateSummariesInput, Generate
             timestamp: new Date(),
             level: 'warn',
             step: 'generate-summaries',
-            message: `Failed to generate summary for: ${dbArticle.title}`
+            message: `Failed to generate summary for: ${dbArticle.title} - ${error}`
           })
           failed.push(dbArticle.title)
         }

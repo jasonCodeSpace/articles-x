@@ -39,39 +39,5 @@
         }
       ]
     }
-  ],
-  "crons": [
-    {
-      "path": "/api/fetch-timeline",
-      "schedule": "0,6,12,18,24,30,36,42,48,54,59 * * * *"
-    },
-    {
-      "path": "/api/process-articles",
-      "schedule": "3,27,40,51 * * * *"
-    },
-    {
-      "path": "/api/generate-summaries",
-      "schedule": "5,30,53 * * * *"
-    },
-    {
-      "path": "/api/cleanup-tweets",
-      "schedule": "*/5 * * * *"
-    },
-    {
-      "path": "/api/update-article-tags",
-      "schedule": "0 * * * *"
-    },
-    {
-      "path": "/api/cron/translate-articles",
-      "schedule": "6,31,43,54 * * * *"
-    },
-    {
-      "path": "/api/fix-slugs",
-      "schedule": "*/5 * * * *"
-    },
-    {
-      "path": "/api/cron/generate-daily-summary",
-      "schedule": "0 7 * * *"
-    }
   ]
 }

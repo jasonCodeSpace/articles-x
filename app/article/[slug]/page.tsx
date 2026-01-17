@@ -6,7 +6,7 @@ import { getArticleBySlug, getPreviousArticle, getNextArticle, getRelatedArticle
 import { ArticleContent } from '@/components/article-content'
 import { ArticleNavigation } from '@/components/article-navigation'
 import { RelatedArticles } from '@/components/related-articles'
-import { ArticleComments } from '@/components/article-comments'
+import { ArticleComments } from '@/components/comments'
 import { ScrollToTopButton } from '@/components/scroll-to-top-button'
 
 interface ArticlePageProps {
@@ -67,7 +67,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   const [previousArticle, nextArticle, relatedArticles] = await Promise.all([
     getPreviousArticle(article.id),
     getNextArticle(article.id),
-    getRelatedArticles(article.id, article.category || null, 2)
+    getRelatedArticles(article.id, 2)
   ])
 
   // Generate author initials
@@ -147,8 +147,8 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       {
         "@type": "ListItem",
         "position": 2,
-        "name": article.category || "Articles",
-        "item": article.category ? `https://www.xarticle.news/category/${article.category}` : "https://www.xarticle.news/trending"
+        "name": "Articles",
+        "item": "https://www.xarticle.news/trending"
       },
       {
         "@type": "ListItem",

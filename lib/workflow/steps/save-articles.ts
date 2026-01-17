@@ -2,7 +2,7 @@
  * Step 3: 保存文章到 Supabase
  */
 import { createStep, StepResult, WorkflowContext } from '../engine'
-import { HarvestedArticle, batchUpsertArticles } from '@/lib/ingest'
+import { HarvestedArticle, batchUpsertArticles } from '@/lib/services/article'
 
 export interface SaveArticlesInput {
   articles: HarvestedArticle[]

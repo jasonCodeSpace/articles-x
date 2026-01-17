@@ -436,8 +436,9 @@ export async function callDeepSeek(prompt: string, maxTokens = 2000): Promise<st
 }
 
 /**
- * Generate English summary + category + title translation (if needed)
+ * Generate English summary + title translation (if needed)
  * Single language output: ALL ENGLISH
+ * NOTE: Category is no longer generated - trending is based on full-text search
  */
 export async function generateEnglishAnalysis(
   content: string,
@@ -445,7 +446,6 @@ export async function generateEnglishAnalysis(
   needsTitleTranslation: boolean
 ): Promise<{
   summary_english: string
-  category: string
   title_english: string | null
 }> {
   const prompt = needsTitleTranslation
@@ -458,7 +458,6 @@ ${content.substring(0, 8000)}
 
 Respond in this exact format:
 TITLE_ENGLISH: [English translation of the title]
-CATEGORY: [One word category: Technology, Business, Politics, Science, Culture, Sports, Other]
 SUMMARY: [2-3 sentence summary in English]`
     : `Analyze this article and respond in English only.
 
@@ -468,7 +467,6 @@ CONTENT:
 ${content.substring(0, 8000)}
 
 Respond in this exact format:
-CATEGORY: [One word category: Technology, Business, Politics, Science, Culture, Sports, Other]
 SUMMARY: [2-3 sentence summary in English]`
 
   const response = await callDeepSeek(prompt)
@@ -495,18 +493,15 @@ function parseEnglishResponse(
   text: string,
   originalTitle: string,
   needsTitleTranslation: boolean
-): { summary_english: string; category: string; title_english: string | null } {
+): { summary_english: string; title_english: string | null } {
   const lines = text.split('\n').map(l => l.trim()).filter(Boolean)
 
   let title_english: string | null = null
-  let category = 'Other'
   let summary_english = ''
 
   for (const line of lines) {
     if (line.startsWith('TITLE_ENGLISH:')) {
       title_english = line.replace('TITLE_ENGLISH:', '').trim()
-    } else if (line.startsWith('CATEGORY:')) {
-      category = line.replace('CATEGORY:', '').trim()
     } else if (line.startsWith('SUMMARY:')) {
       summary_english = line.replace('SUMMARY:', '').trim()
     }
@@ -525,7 +520,6 @@ function parseEnglishResponse(
 
   return {
     summary_english,
-    category,
     title_english: needsTitleTranslation ? title_english : originalTitle
   }
 }

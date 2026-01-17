@@ -9,8 +9,6 @@ export interface FetchArticlesOptions {
   search?: string
   category?: string
   language?: string
-  tag?: string
-  tags?: string[]
 }
 
 /**
@@ -23,8 +21,6 @@ export async function fetchArticles(options: FetchArticlesOptions = {}): Promise
     search,
     category,
     language,
-    tag,
-    tags,
   } = options
 
   try {
@@ -45,7 +41,6 @@ export async function fetchArticles(options: FetchArticlesOptions = {}): Promise
         author_avatar,
         article_published_at,
         updated_at,
-        tag,
         tweet_views,
         tweet_replies,
         tweet_likes,
@@ -73,15 +68,6 @@ export async function fetchArticles(options: FetchArticlesOptions = {}): Promise
       query = query.eq('language', language.trim())
     }
 
-    // Apply tag filter (tag is a comma-separated string)
-    if (tags && tags.length > 0) {
-      // Filter by multiple tags using OR condition with ilike for comma-separated values
-      const tagConditions = tags.map(t => `tag.ilike.%${t.trim()}%`).join(',')
-      query = query.or(tagConditions)
-    } else if (tag && tag.trim()) {
-      query = query.ilike('tag', `%${tag.trim()}%`)
-    }
-
     // Apply sorting - use article_published_at for article_main table
     if (sort === 'newest') {
       query = query.order('article_published_at', { ascending: false, nullsFirst: false })
@@ -103,9 +89,9 @@ export async function fetchArticles(options: FetchArticlesOptions = {}): Promise
     // Map database fields to Article interface
     return (data || []).map((item: Record<string, unknown>) => ({
       ...item,
-      tags: item.tag ? (item.tag as string).split(',').map((t: string) => t.trim()) : [],
+      tags: [],
       created_at: item.article_published_at || item.updated_at || new Date().toISOString(),
-    })) as Article[]
+    })) as unknown as Article[]
     
   } catch (error) {
     console.error('Unexpected error fetching articles:', error)
@@ -359,13 +345,13 @@ export async function getNextArticle(currentArticleId: string): Promise<Article 
 }
 
 /**
- * Get related articles (same category, recent)
+ * Get related articles (recent articles, excluding current)
  */
-export async function getRelatedArticles(articleId: string, category: string | null, limit: number = 4): Promise<Article[]> {
+export async function getRelatedArticles(articleId: string, limit: number = 4): Promise<Article[]> {
   try {
     const supabase = await createClient()
 
-    let query = supabase
+    const { data, error } = await supabase
       .from('articles')
       .select(`
         id,
@@ -373,7 +359,6 @@ export async function getRelatedArticles(articleId: string, category: string | n
         title_english,
         slug,
         image,
-        category,
         author_name,
         author_handle,
         author_avatar,
@@ -384,13 +369,6 @@ export async function getRelatedArticles(articleId: string, category: string | n
       .neq('id', articleId)
       .order('article_published_at', { ascending: false })
       .limit(limit)
-
-    // Filter by category if available
-    if (category && category.trim()) {
-      query = query.ilike('category', `%${category.trim()}%`)
-    }
-
-    const { data, error } = await query
 
     if (error) {
       console.error('Error fetching related articles:', error)

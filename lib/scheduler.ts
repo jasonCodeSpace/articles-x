@@ -1,5 +1,4 @@
-import { createTwitterClient, TwitterTweet } from './twitter'
-import { ingestTweetsFromLists } from './ingest'
+import { createTwitterClient, TwitterTweet, ingestTweetsFromLists } from './services'
 import { getActiveTwitterListIds, markListAsScanned } from './twitter-lists'
 
 interface SchedulerConfig {

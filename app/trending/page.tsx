@@ -57,7 +57,6 @@ async function getArticles(search?: string): Promise<Article[]> {
       title_english,
       slug,
       image,
-      category,
       author_name,
       author_handle,
       author_avatar,
@@ -76,7 +75,8 @@ async function getArticles(search?: string): Promise<Article[]> {
     .order('article_published_at', { ascending: false, nullsFirst: false })
 
   if (search && search.trim()) {
-    query = query.or(`title.ilike.%${search.trim()}%,title_english.ilike.%${search.trim()}%`)
+    // Search in title and full_article_content only (NOT in summaries)
+    query = query.or(`title.ilike.%${search.trim()}%,title_english.ilike.%${search.trim()}%,full_article_content.ilike.%${search.trim()}%`)
   }
 
   const { data, error } = await query

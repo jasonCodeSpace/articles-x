@@ -2,42 +2,8 @@ import { Suspense } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ClientNavWrapper } from '@/components/client-nav-wrapper'
-import { SummaryContentClient } from '@/components/summary-content-client'
+import { SummaryContentClient, type DailySummary } from '@/components/summary'
 import { notFound } from 'next/navigation'
-
-interface SummarySection {
-  watchlist?: string[]
-  key_data_points?: string[]
-  other_quick_reads?: string[]
-  policy_media_security?: string[]
-}
-
-interface SummaryJson {
-  date: string
-  lang: string
-  meta: {
-    notes: string
-    domains_covered: string[]
-  }
-  counts: {
-    articles_total: number
-  }
-  sections: SummarySection
-}
-
-interface DailySummary {
-  id: string
-  date: string
-  summary_content: string
-  summary_json_en: SummaryJson | null
-  summary_json_zh: SummaryJson | null
-  top_article_title: string
-  top_article_id: string | null
-  total_articles_count: number
-  categories_summary: Record<string, unknown> | null
-  created_at: string
-  updated_at: string
-}
 
 interface Article {
   id: string

@@ -84,9 +84,9 @@ export async function GET(request: NextRequest) {
     }
 
     // Filter articles that need slug regeneration
-    const filteredArticles = articles.filter((article: { id: string; slug: string; title?: string }) => {
+    const filteredArticles = articles?.filter((article: { id: string; slug: string; title?: string }) => {
       if (!article.slug || !article.title) return false
-      
+
       // Check if slug starts with -- (missing title part)
       if (article.slug.startsWith('--')) {
         return true

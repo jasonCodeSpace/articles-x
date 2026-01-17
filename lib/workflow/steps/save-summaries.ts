@@ -63,7 +63,6 @@ export const saveSummariesStep = createStep<SaveSummariesInput, SaveSummariesOut
               summary_english: analysis.summary_english,
               title_english: analysis.title_english,
               language: analysis.language,
-              category: analysis.category,
               slug: newSlug, // Update slug with proper English translation
               summary_generated_at: new Date().toISOString()
             })

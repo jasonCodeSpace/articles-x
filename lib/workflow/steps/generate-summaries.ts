@@ -4,7 +4,7 @@
  * 根据文章字数决定是否生成摘要以及摘要长度
  */
 import { createStep, StepResult, WorkflowContext } from '../engine'
-import { HarvestedArticle } from '@/lib/ingest'
+import { HarvestedArticle } from '@/lib/services/article'
 import { generateEnglishAnalysis, translateToChinese } from '@/lib/deepseek'
 import { isEnglish } from '@/lib/url-utils'
 import { countWords, getSummaryRequirement } from '@/lib/word-count'
@@ -21,7 +21,6 @@ export interface ArticleAnalysisResult {
   summary_english: string
   summary_chinese: string
   title_english: string | null
-  category: string
   language: string
   word_count: number
   summary_skipped: boolean
@@ -117,7 +116,6 @@ export const generateSummariesStep = createStep<GenerateSummariesInput, Generate
                   summary_english: '',
                   summary_chinese: '',
                   title_english: dbArticle.title,
-                  category: 'Uncategorized',
                   language: 'en',
                   word_count: wordCount,
                   summary_skipped: true
@@ -144,7 +142,6 @@ export const generateSummariesStep = createStep<GenerateSummariesInput, Generate
             summary_english: englishResult.summary_english,
             summary_chinese: summary_chinese,
             title_english: needsTitleTranslation ? englishResult.title_english : dbArticle.title,
-            category: englishResult.category,
             language: detectedLanguage,
             word_count: wordCount,
             summary_skipped: false

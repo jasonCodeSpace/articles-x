@@ -29,7 +29,6 @@ export interface Article {
   article_published_at?: string
   created_at: string
   tags: string[]
-  category?: string
   article_url?: string
   tweet_id?: string
   tweet_text?: string
@@ -131,12 +130,6 @@ export function ArticleCard({ article, className, index = 0, priority = false, d
 
         <div className="flex flex-col flex-grow p-6 space-y-4">
           <div className="flex-grow space-y-3">
-            <div className="flex flex-wrap gap-2">
-              {article.category?.split(',').slice(0, 2).map((cat, i) => (
-                <span key={i} className="text-[10px] uppercase tracking-wider text-white/30 font-medium">/ {cat.trim()}</span>
-              ))}
-            </div>
-
             <Link href={articleUrl} className="block group/title">
               <h3 className="text-xl font-medium leading-tight text-white/90 group-hover/title:text-white transition-colors line-clamp-2 tracking-tight">
                 {displayTitle}

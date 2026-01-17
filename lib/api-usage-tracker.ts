@@ -1,6 +1,6 @@
 /**
  * API Usage Tracker
- * 管理 RapidAPI Twitter API、Gemini API 和 DeepSeek API 的每日调用次数限制
+ * 管理 RapidAPI Twitter API 和 DeepSeek API 的每日调用次数限制
  */
 
 interface ApiUsage {
@@ -11,21 +11,18 @@ interface ApiUsage {
 
 interface ApiUsageStore {
   rapidapi: ApiUsage
-  gemini: ApiUsage
   deepseek: ApiUsage
 }
 
 // API 调用限制配置
 export const API_LIMITS = {
   RAPIDAPI_DAILY_LIMIT: 1600,
-  GEMINI_DAILY_LIMIT: 700,
   DEEPSEEK_DAILY_LIMIT: 1000,
 } as const
 
 // 内存存储（生产环境建议使用 Redis）
 let apiUsageStore: ApiUsageStore = {
   rapidapi: { count: 0, date: getCurrentDateString(), resetTime: getNextResetTime() },
-  gemini: { count: 0, date: getCurrentDateString(), resetTime: getNextResetTime() },
   deepseek: { count: 0, date: getCurrentDateString(), resetTime: getNextResetTime() }
 }
 
@@ -57,10 +54,6 @@ function resetDailyCounters() {
     apiUsageStore.rapidapi = { count: 0, date: currentDate, resetTime }
   }
 
-  if (apiUsageStore.gemini.date !== currentDate) {
-    apiUsageStore.gemini = { count: 0, date: currentDate, resetTime }
-  }
-
   if (apiUsageStore.deepseek.date !== currentDate) {
     apiUsageStore.deepseek = { count: 0, date: currentDate, resetTime }
   }
@@ -69,7 +62,7 @@ function resetDailyCounters() {
 /**
  * 检查 API 调用是否超出限制
  */
-export function checkApiLimit(apiType: 'rapidapi' | 'gemini' | 'deepseek'): {
+export function checkApiLimit(apiType: 'rapidapi' | 'deepseek'): {
   allowed: boolean
   currentCount: number
   limit: number
@@ -81,7 +74,6 @@ export function checkApiLimit(apiType: 'rapidapi' | 'gemini' | 'deepseek'): {
   const usage = apiUsageStore[apiType]
   const limitMap = {
     rapidapi: API_LIMITS.RAPIDAPI_DAILY_LIMIT,
-    gemini: API_LIMITS.GEMINI_DAILY_LIMIT,
     deepseek: API_LIMITS.DEEPSEEK_DAILY_LIMIT,
   }
   const limit = limitMap[apiType]
@@ -100,7 +92,7 @@ export function checkApiLimit(apiType: 'rapidapi' | 'gemini' | 'deepseek'): {
 /**
  * 记录 API 调用
  */
-export function recordApiCall(apiType: 'rapidapi' | 'gemini' | 'deepseek'): {
+export function recordApiCall(apiType: 'rapidapi' | 'deepseek'): {
   success: boolean
   currentCount: number
   limit: number
@@ -111,7 +103,6 @@ export function recordApiCall(apiType: 'rapidapi' | 'gemini' | 'deepseek'): {
   const usage = apiUsageStore[apiType]
   const limitMap = {
     rapidapi: API_LIMITS.RAPIDAPI_DAILY_LIMIT,
-    gemini: API_LIMITS.GEMINI_DAILY_LIMIT,
     deepseek: API_LIMITS.DEEPSEEK_DAILY_LIMIT,
   }
   const limit = limitMap[apiType]
@@ -146,7 +137,7 @@ export function getApiUsageStats(): {
     resetTime: number
     percentage: number
   }
-  gemini: {
+  deepseek: {
     count: number
     limit: number
     remaining: number
@@ -155,10 +146,10 @@ export function getApiUsageStats(): {
   }
 } {
   resetDailyCounters()
-  
+
   const rapidapiUsage = apiUsageStore.rapidapi
-  const geminiUsage = apiUsageStore.gemini
-  
+  const deepseekUsage = apiUsageStore.deepseek
+
   return {
     rapidapi: {
       count: rapidapiUsage.count,
@@ -167,12 +158,12 @@ export function getApiUsageStats(): {
       resetTime: rapidapiUsage.resetTime,
       percentage: Math.round((rapidapiUsage.count / API_LIMITS.RAPIDAPI_DAILY_LIMIT) * 100)
     },
-    gemini: {
-      count: geminiUsage.count,
-      limit: API_LIMITS.GEMINI_DAILY_LIMIT,
-      remaining: API_LIMITS.GEMINI_DAILY_LIMIT - geminiUsage.count,
-      resetTime: geminiUsage.resetTime,
-      percentage: Math.round((geminiUsage.count / API_LIMITS.GEMINI_DAILY_LIMIT) * 100)
+    deepseek: {
+      count: deepseekUsage.count,
+      limit: API_LIMITS.DEEPSEEK_DAILY_LIMIT,
+      remaining: API_LIMITS.DEEPSEEK_DAILY_LIMIT - deepseekUsage.count,
+      resetTime: deepseekUsage.resetTime,
+      percentage: Math.round((deepseekUsage.count / API_LIMITS.DEEPSEEK_DAILY_LIMIT) * 100)
     }
   }
 }
@@ -186,7 +177,6 @@ export function resetApiCounters() {
 
   apiUsageStore = {
     rapidapi: { count: 0, date: currentDate, resetTime },
-    gemini: { count: 0, date: currentDate, resetTime },
     deepseek: { count: 0, date: currentDate, resetTime }
   }
 }

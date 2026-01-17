@@ -2,8 +2,8 @@
  * Step 2: 从推文中提取文章
  */
 import { createStep, StepResult, WorkflowContext } from '../engine'
-import { TwitterTweet, createTwitterClient } from '@/lib/twitter'
-import { mapTweetToArticle, HarvestedArticle } from '@/lib/ingest'
+import { TwitterTweet, createTwitterClient } from '@/lib/services/twitter'
+import { mapTweetToArticle, HarvestedArticle } from '@/lib/services/article'
 
 export interface ExtractArticlesInput {
   tweets: TwitterTweet[]

@@ -2,7 +2,7 @@
  * Step 1: 从 Twitter Lists 获取推文
  */
 import { createStep, StepResult, WorkflowContext } from '../engine'
-import { createTwitterClient, TwitterTweet } from '@/lib/twitter'
+import { createTwitterClient, TwitterTweet } from '@/lib/services/twitter'
 import { getActiveTwitterListIds } from '@/lib/twitter-lists'
 
 export interface FetchListsOutput {

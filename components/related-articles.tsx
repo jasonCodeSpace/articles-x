@@ -46,14 +46,8 @@ export function RelatedArticles({ articles }: RelatedArticlesProps) {
                 <h4 className="text-sm font-medium text-white/80 group-hover:text-white transition-colors line-clamp-2 mb-1">
                   {displayTitle}
                 </h4>
-                <div className="flex items-center gap-2 text-[10px] text-white/30">
+                <div className="text-[10px] text-white/30">
                   <span>@{article.author_handle}</span>
-                  {article.category && (
-                    <>
-                      <span>•</span>
-                      <span>{article.category}</span>
-                    </>
-                  )}
                 </div>
               </div>
             </Link>

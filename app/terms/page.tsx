@@ -14,36 +14,14 @@ export const metadata: Metadata = {
 
 export default async function Terms() {
   const supabase = await createClient()
-  
+
   const {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // Fetch categories for navigation
-  let categories: string[] = [];
-  try {
-    const { data, error } = await supabase
-      .from('articles')
-      .select('category')
-      .not('category', 'is', null);
-
-    if (!error && data) {
-      const uniqueCategories = new Set<string>();
-      data.forEach(article => {
-        if (article.category) {
-          const firstCategory = article.category.split(',')[0].trim();
-          uniqueCategories.add(firstCategory);
-        }
-      });
-      categories = Array.from(uniqueCategories).sort();
-    }
-  } catch (error) {
-    console.error('Error fetching categories:', error);
-  }
-
   return (
     <div className="min-h-screen bg-background">
-      <ClientNavWrapper initialUser={user} categories={categories} />
+      <ClientNavWrapper initialUser={user} />
       
       <div className="pt-20 md:pt-16 pb-20 md:pb-0">
         <div className="container mx-auto px-4 py-8 max-w-4xl">

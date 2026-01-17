@@ -5,14 +5,14 @@ import { useSearchParams } from 'next/navigation'
 import { Article } from '@/components/article-card'
 import { SortOption } from '@/lib/articles'
 import { calculatePagination } from '@/components/pagination'
+import type { TimePeriod, DisplayLanguage } from '@/components/feed'
 
-export type TimePeriod = 'all' | 'today' | 'week' | 'month' | '3months'
-export type DisplayLanguage = 'en' | 'cn'
+// Re-export types for backward compatibility
+export type { TimePeriod, DisplayLanguage } from '@/components/feed'
 
 interface UseArticleFeedProps {
   initialArticles: Article[]
   initialSearchQuery?: string
-  initialCategory?: string
   initialTimePeriod?: TimePeriod
   initialLanguage?: DisplayLanguage
   itemsPerPage?: number
@@ -26,7 +26,6 @@ interface UseArticleFeedReturn {
   error: string | null
   searchQuery: string
   sortOption: SortOption
-  selectedCategory: string
   selectedTimePeriod: TimePeriod
   displayLanguage: DisplayLanguage
   currentPage: number
@@ -34,7 +33,6 @@ interface UseArticleFeedReturn {
   totalItems: number
   handleSearch: (query: string) => void
   handleSort: (sort: SortOption) => void
-  handleCategoryChange: (category: string) => void
   handleTimePeriodChange: (period: TimePeriod) => void
   handleLanguageChange: (language: DisplayLanguage) => void
   handlePageChange: (page: number) => void
@@ -67,7 +65,6 @@ function getDateThreshold(period: TimePeriod): Date | null {
 export function useArticleFeed({
   initialArticles,
   initialSearchQuery = '',
-  initialCategory = 'All',
   initialTimePeriod = 'all',
   initialLanguage = 'en',
   itemsPerPage = 15
@@ -77,7 +74,6 @@ export function useArticleFeed({
   // State
   const [articles] = useState<Article[]>(initialArticles)
   const [searchQuery, setSearchQuery] = useState(initialSearchQuery)
-  const [selectedCategory, setSelectedCategory] = useState(initialCategory)
   const [selectedTimePeriod, setSelectedTimePeriod] = useState<TimePeriod>(initialTimePeriod)
   const [displayLanguage, setDisplayLanguage] = useState<DisplayLanguage>(initialLanguage)
   const [sortOption, setSortOption] = useState<SortOption>('newest')
@@ -96,18 +92,9 @@ export function useArticleFeed({
     }
   }, [searchParams])
 
-  // Filter and sort articles client-side (category and time filtering happen BEFORE pagination)
+  // Filter and sort articles client-side (time filtering happens BEFORE pagination)
   const filteredArticles = useMemo(() => {
     let filtered = [...articles]
-
-    // Apply category filter
-    if (selectedCategory && selectedCategory !== 'All') {
-      filtered = filtered.filter(article => {
-        if (!article.category) return false
-        const categories = article.category.split(',').map(cat => cat.trim().toLowerCase())
-        return categories.includes(selectedCategory.toLowerCase())
-      })
-    }
 
     // Apply time period filter
     const dateThreshold = getDateThreshold(selectedTimePeriod)
@@ -124,6 +111,7 @@ export function useArticleFeed({
       filtered = filtered.filter(article =>
         article.title.toLowerCase().includes(query) ||
         article.title_english?.toLowerCase().includes(query) ||
+        article.full_article_content?.toLowerCase().includes(query) ||
         article.author_name.toLowerCase().includes(query) ||
         article.author_handle?.toLowerCase().includes(query)
       )
@@ -152,7 +140,7 @@ export function useArticleFeed({
     })
 
     return filtered
-  }, [articles, selectedCategory, selectedTimePeriod, searchQuery, sortOption])
+  }, [articles, selectedTimePeriod, searchQuery, sortOption])
 
   // Calculate pagination
   const paginationInfo = useMemo(() => {
@@ -177,12 +165,6 @@ export function useArticleFeed({
     setCurrentPage(1)
   }, [])
 
-  const handleCategoryChange = useCallback((category: string) => {
-    setSelectedCategory(category)
-    setCurrentPage(1)
-    setError(null)
-  }, [])
-
   const handleTimePeriodChange = useCallback((period: TimePeriod) => {
     setSelectedTimePeriod(period)
     setCurrentPage(1)
@@ -205,7 +187,6 @@ export function useArticleFeed({
 
   const clearFilters = useCallback(() => {
     setSearchQuery('')
-    setSelectedCategory('All')
     setSelectedTimePeriod('all')
     setCurrentPage(1)
     setError(null)
@@ -235,13 +216,13 @@ export function useArticleFeed({
 
   // Set error if no results found
   useEffect(() => {
-    if ((searchQuery.trim() || selectedCategory !== 'All' || selectedTimePeriod !== 'all') &&
+    if ((searchQuery.trim() || selectedTimePeriod !== 'all') &&
         filteredArticles.length === 0 && articles.length > 0) {
       setError('no-results')
     } else {
       setError(null)
     }
-  }, [searchQuery, selectedCategory, selectedTimePeriod, filteredArticles.length, articles.length])
+  }, [searchQuery, selectedTimePeriod, filteredArticles.length, articles.length])
 
   return {
     articles,
@@ -251,7 +232,6 @@ export function useArticleFeed({
     error,
     searchQuery,
     sortOption,
-    selectedCategory,
     selectedTimePeriod,
     displayLanguage,
     currentPage,
@@ -259,7 +239,6 @@ export function useArticleFeed({
     totalItems: filteredArticles.length,
     handleSearch,
     handleSort,
-    handleCategoryChange,
     handleTimePeriodChange,
     handleLanguageChange,
     handlePageChange,

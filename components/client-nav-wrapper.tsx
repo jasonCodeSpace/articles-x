@@ -7,7 +7,7 @@ import { User } from '@supabase/supabase-js'
 
 interface ClientNavWrapperProps {
   initialUser?: User | null
-  categories: string[]
+  categories?: string[]
 }
 
 export function ClientNavWrapper({ initialUser, categories }: ClientNavWrapperProps) {

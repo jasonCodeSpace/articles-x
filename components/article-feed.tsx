@@ -3,12 +3,13 @@
 import dynamic from 'next/dynamic'
 import { ArticleCard, Article } from '@/components/article-card'
 import { FeedEmptyState } from '@/components/feed-empty-state'
-import { useArticleFeed, TimePeriod, DisplayLanguage } from '@/hooks/use-article-feed'
+import { useArticleFeed } from '@/hooks/use-article-feed'
 import { FeedLoading } from '@/components/feed-loading'
 import { StaggerContainer } from '@/components/motion-wrapper'
+import type { TimePeriod, DisplayLanguage } from '@/components/feed'
 
 // Dynamic import for non-critical components
-const FeedToolbar = dynamic(() => import('@/components/feed-toolbar').then(mod => ({ default: mod.FeedToolbar })), {
+const FeedToolbar = dynamic(() => import('@/components/feed').then(mod => ({ default: mod.FeedToolbar })), {
   ssr: false,
   loading: () => <div className="h-16 bg-white/5 rounded-2xl animate-pulse" />
 })
@@ -21,7 +22,6 @@ const Pagination = dynamic(() => import('@/components/pagination').then(mod => (
 interface ArticleFeedProps {
   initialArticles: Article[]
   initialSearchQuery?: string
-  initialCategory?: string
   initialTimePeriod?: TimePeriod
   initialLanguage?: DisplayLanguage
 }
@@ -29,7 +29,6 @@ interface ArticleFeedProps {
 export function ArticleFeed({
   initialArticles,
   initialSearchQuery = '',
-  initialCategory = 'All',
   initialTimePeriod = 'all',
   initialLanguage = 'en'
 }: ArticleFeedProps) {
@@ -39,7 +38,6 @@ export function ArticleFeed({
     error,
     searchQuery,
     sortOption,
-    selectedCategory,
     selectedTimePeriod,
     displayLanguage,
     currentPage,
@@ -47,7 +45,6 @@ export function ArticleFeed({
     totalItems,
     handleSearch,
     handleSort,
-    handleCategoryChange,
     handleTimePeriodChange,
     handleLanguageChange,
     handlePageChange,
@@ -56,7 +53,6 @@ export function ArticleFeed({
   } = useArticleFeed({
     initialArticles,
     initialSearchQuery,
-    initialCategory,
     initialTimePeriod,
     initialLanguage,
     itemsPerPage: 12
@@ -73,7 +69,7 @@ export function ArticleFeed({
     return <FeedLoading />
   }
 
-  const hasActiveFilters = searchQuery || selectedCategory !== 'All' || selectedTimePeriod !== 'all'
+  const hasActiveFilters = searchQuery || selectedTimePeriod !== 'all'
 
   return (
     <div className="space-y-12">
@@ -85,8 +81,6 @@ export function ArticleFeed({
           isLoading={feedLoading}
           sortBy={sortBy}
           onSortChange={handleSortByChange}
-          selectedCategory={selectedCategory}
-          onCategoryChange={handleCategoryChange}
           selectedTimePeriod={selectedTimePeriod}
           onTimePeriodChange={handleTimePeriodChange}
           displayLanguage={displayLanguage}
@@ -98,7 +92,7 @@ export function ArticleFeed({
       {error === 'no-results' || paginatedArticles.length === 0 ? (
         <FeedEmptyState
           type="no-results"
-          searchQuery={hasActiveFilters ? (searchQuery || selectedCategory || selectedTimePeriod) : ''}
+          searchQuery={hasActiveFilters ? (searchQuery || selectedTimePeriod) : ''}
           onClearSearch={clearFilters}
         />
       ) : initialArticles.length === 0 ? (

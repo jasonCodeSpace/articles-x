@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 
 import { createClient } from '@supabase/supabase-js'
-import { generateArticleAnalysis, generateCategories } from '@/lib/gemini'
+import { generateArticleAnalysis, generateCategories } from '@/lib/deepseek'
 import * as dotenv from 'dotenv'
 
 // Load environment variables
@@ -27,7 +27,7 @@ interface ArticleToProcess {
 }
 
 async function recategorizeArticles() {
-  console.log('🔄 Starting article re-categorization using Gemini AI...')
+  console.log('🔄 Starting article re-categorization using DeepSeek AI...')
   
   // Get articles that have categories and content to re-analyze
   const { data: articles, error: fetchError } = await supabase
@@ -69,7 +69,7 @@ async function recategorizeArticles() {
         continue
       }
       
-      // Generate new analysis using Gemini
+      // Generate new analysis using DeepSeek
       const analysis = await generateArticleAnalysis(content, article.title)
       
       // Generate categories
@@ -143,13 +143,13 @@ async function recategorizeArticles() {
 
 async function main() {
   try {
-    // Test Gemini connection first
-    console.log('🧪 Testing Gemini API connection...')
+    // Test DeepSeek connection first
+    console.log('🧪 Testing DeepSeek API connection...')
     const testAnalysis = await generateArticleAnalysis(
       'This is a test article about Bitcoin price analysis.',
       'Bitcoin Market Update'
     )
-    console.log('✅ Gemini API connection successful')
+    console.log('✅ DeepSeek API connection successful')
     console.log(`   Test result - Language: ${testAnalysis.language}`)
     
     await recategorizeArticles()

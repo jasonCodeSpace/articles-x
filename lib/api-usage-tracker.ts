@@ -183,10 +183,11 @@ export function getApiUsageStats(): {
 export function resetApiCounters() {
   const currentDate = getCurrentDateString()
   const resetTime = getNextResetTime()
-  
+
   apiUsageStore = {
     rapidapi: { count: 0, date: currentDate, resetTime },
-    gemini: { count: 0, date: currentDate, resetTime }
+    gemini: { count: 0, date: currentDate, resetTime },
+    deepseek: { count: 0, date: currentDate, resetTime }
   }
 }
 

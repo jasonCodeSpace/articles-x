@@ -14,7 +14,7 @@ interface CommentFormProps {
   submitting: boolean
 }
 
-export function CommentForm({ user, articleId, commentCount, onSubmit, submitting }: CommentFormProps) {
+export function CommentForm({ user, articleId: _articleId, commentCount, onSubmit, submitting }: CommentFormProps) {
   const [newComment, setNewComment] = useState('')
   const router = useRouter()
 

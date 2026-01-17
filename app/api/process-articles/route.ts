@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/service';
+import { verifyBearerToken } from '@/lib/auth/timing-safe-equal';
+import { notifyIndexNow, getArticleUrl } from '@/lib/indexnow';
 
 const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY || '';
 const RAPIDAPI_HOST = 'twitter241.p.rapidapi.com';
@@ -181,16 +183,34 @@ function extractUrlsFromTweet(legacy: TweetLegacy): string[] {
 
 
 
-// Function to validate if content is a legitimate article
-function isValidArticle(articleUrl: string): boolean {
-  // Only check if the article URL contains x.com
-  const isValidUrl = articleUrl.includes('x.com');
-  
-  if (!isValidUrl) {
-    console.log(`Article URL validation failed: ${articleUrl} does not contain x.com`);
-    return false;
+// Function to validate if content is a legitimate article URL
+// For Twitter native articles, URL should be x.com format
+// For external articles, URL should NOT be x.com/twitter.com
+function isValidArticleUrl(articleUrl: string, isTwitterNative: boolean): boolean {
+  const hasXCom = articleUrl.includes('x.com');
+  const hasTwitterCom = articleUrl.includes('twitter.com');
+
+  if (isTwitterNative) {
+    // Twitter native articles should have x.com URL
+    if (!hasXCom) {
+      console.log(`Twitter native article URL validation failed: ${articleUrl} does not contain x.com`);
+      return false;
+    }
+  } else {
+    // External articles should NOT be x.com or twitter.com URLs
+    if (hasXCom || hasTwitterCom) {
+      console.log(`External article URL validation failed: ${articleUrl} is a Twitter URL`);
+      return false;
+    }
+    // Basic URL validation for external articles
+    try {
+      new URL(articleUrl);
+    } catch {
+      console.log(`External article URL validation failed: ${articleUrl} is not a valid URL`);
+      return false;
+    }
   }
-  
+
   console.log(`Article URL validation passed: ${articleUrl}`);
   return true;
 }
@@ -560,7 +580,7 @@ async function processTweetForArticle(tweetId: string, authorHandle: string): Pr
       const title = extractedArticle.title || tweetText.substring(0, 100) || 'Untitled Article';
       
       // Check if this is a legitimate article
-      if (!isValidArticle(firstUrl)) {
+      if (!isValidArticleUrl(firstUrl, false)) {
         console.log(`Article URL validation failed for ${firstUrl}, marking as non-article...`);
         
         // Update the tweet in database to mark it as not having an article
@@ -648,7 +668,7 @@ async function processTweetForArticle(tweetId: string, authorHandle: string): Pr
     const articleUrl = `https://x.com/${authorHandle}/status/${tweetId}`;
     
     // Validate article URL
-    if (!isValidArticle(articleUrl)) {
+    if (!isValidArticleUrl(articleUrl, true)) {
       console.log(`Article URL validation failed for tweet ${tweetId}, marking as non-article...`);
       
       // Update the tweet in database to mark it as not having an article
@@ -757,6 +777,27 @@ async function insertArticle(article: ArticleData, retryCount = 0): Promise<bool
     }
     
     console.log(`✓ Successfully saved article: ${article.title}`);
+
+    // Notify IndexNow after successful insert (only for new articles, not updates)
+    if (!existingArticle) {
+      // Fetch the inserted article to get its slug for IndexNow notification
+      const { data: insertedArticle } = await supabase
+        .from('articles')
+        .select('slug')
+        .eq('tweet_id', article.tweet_id)
+        .single();
+
+      if (insertedArticle?.slug) {
+        const articleUrl = getArticleUrl(insertedArticle.slug);
+        console.log(`[IndexNow] Notifying search engines about new article: ${articleUrl}`);
+        notifyIndexNow(articleUrl).catch((err) => {
+          console.error('[IndexNow] Failed to notify search engines:', err);
+        });
+      } else {
+        console.log('[IndexNow] No slug found for article, skipping notification');
+      }
+    }
+
     return true;
   } catch (error: unknown) {
     console.error('Failed to save article:', error);
@@ -779,9 +820,8 @@ async function insertArticle(article: ArticleData, retryCount = 0): Promise<bool
 }
 
 export async function GET(request: NextRequest) {
-  // Verify cron secret
-  const authHeader = request.headers.get('authorization');
-  if (!authHeader || !authHeader.startsWith('Bearer ') || authHeader.slice(7) !== CRON_SECRET) {
+  // Verify cron secret using timing-safe comparison
+  if (!verifyBearerToken(request.headers.get('authorization'), CRON_SECRET || '')) {
     console.error('Unauthorized access attempt to process-articles API');
     return NextResponse.json(
       { error: 'Unauthorized' },
@@ -950,9 +990,8 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  // Verify cron secret
-  const authHeader = request.headers.get('authorization');
-  if (!authHeader || !authHeader.startsWith('Bearer ') || authHeader.slice(7) !== CRON_SECRET) {
+  // Verify cron secret using timing-safe comparison
+  if (!verifyBearerToken(request.headers.get('authorization'), CRON_SECRET || '')) {
     return NextResponse.json(
       { error: 'Unauthorized' },
       { status: 401 }

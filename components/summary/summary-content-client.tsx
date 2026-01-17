@@ -1,5 +1,4 @@
 'use client'
-import { useMemo } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { useSummaryLanguage } from './use-summary-language'
 import { useSummaryParser } from './summary-parser'

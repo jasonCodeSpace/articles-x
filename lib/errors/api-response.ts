@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
-import type { ErrorHandlerResult } from './handler'
-import { handleError, formatErrorResponse } from './handler'
+import { handleError } from './handler'
 
 /**
  * Create a standardized error response for API routes
@@ -58,27 +57,27 @@ export async function handleApiRoute<T>(
  * Common error responses
  */
 export const errorResponses = {
-  badRequest: (message = 'Bad Request', details?: Record<string, unknown>) =>
+  badRequest: (message = 'Bad Request') =>
     errorResponse(new Error(message), 400),
 
-  unauthorized: (message = 'Unauthorized', details?: Record<string, unknown>) =>
+  unauthorized: (message = 'Unauthorized') =>
     errorResponse(new Error(message), 401),
 
-  forbidden: (message = 'Forbidden', details?: Record<string, unknown>) =>
+  forbidden: (message = 'Forbidden') =>
     errorResponse(new Error(message), 403),
 
-  notFound: (message = 'Not Found', details?: Record<string, unknown>) =>
+  notFound: (message = 'Not Found') =>
     errorResponse(new Error(message), 404),
 
-  conflict: (message = 'Conflict', details?: Record<string, unknown>) =>
+  conflict: (message = 'Conflict') =>
     errorResponse(new Error(message), 409),
 
-  unprocessableEntity: (message = 'Unprocessable Entity', details?: Record<string, unknown>) =>
+  unprocessableEntity: (message = 'Unprocessable Entity') =>
     errorResponse(new Error(message), 422),
 
-  tooManyRequests: (message = 'Too Many Requests', details?: Record<string, unknown>) =>
+  tooManyRequests: (message = 'Too Many Requests') =>
     errorResponse(new Error(message), 429),
 
-  internalError: (message = 'Internal Server Error', details?: Record<string, unknown>) =>
+  internalError: (message = 'Internal Server Error') =>
     errorResponse(new Error(message), 500)
 }

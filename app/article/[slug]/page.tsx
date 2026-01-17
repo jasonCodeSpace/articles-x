@@ -33,6 +33,13 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
   return {
     title: `${title} | XArticle`,
     description,
+    alternates: {
+      canonical: `https://www.xarticle.news/article/${slug}`,
+      languages: {
+        'x-default': `https://www.xarticle.news/article/${slug}`,
+        'en': `https://www.xarticle.news/article/${slug}`,
+      }
+    },
     openGraph: {
       title,
       description,

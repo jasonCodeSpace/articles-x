@@ -139,7 +139,11 @@ export async function generateMetadata({ params }: AuthorPageProps): Promise<Met
       images: authorInfo.avatar_url ? [authorInfo.avatar_url] : undefined
     },
     alternates: {
-      canonical: `https://www.xarticle.news/author/${handle}`
+      canonical: `https://www.xarticle.news/author/${handle}`,
+      languages: {
+        'x-default': `https://www.xarticle.news/author/${handle}`,
+        'en': `https://www.xarticle.news/author/${handle}`,
+      }
     }
   }
 }

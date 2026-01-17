@@ -33,7 +33,13 @@ export const metadata: Metadata = {
     description: 'Curated, up-to-date reads from leading voices on X.',
     images: ['/og-image.png'],
   },
-  alternates: { canonical: 'https://www.xarticle.news/trending' },
+  alternates: {
+    canonical: 'https://www.xarticle.news/trending',
+    languages: {
+      'x-default': 'https://www.xarticle.news/trending',
+      'en': 'https://www.xarticle.news/trending',
+    }
+  },
   robots: { index: true, follow: true },
 }
 

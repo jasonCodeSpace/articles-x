@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useTransition } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Article } from '@/components/article-card'
 import { SortOption } from '@/lib/articles'
@@ -80,6 +80,7 @@ export function useArticleFeed({
   const [currentPage, setCurrentPage] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isPending, startTransition] = useTransition()
 
   // Monitor URL parameter changes and reload page if filter changes
   useEffect(() => {
@@ -155,20 +156,26 @@ export function useArticleFeed({
 
   // Handlers
   const handleSearch = useCallback((query: string) => {
-    setSearchQuery(query)
-    setCurrentPage(1)
-    setError(null)
+    startTransition(() => {
+      setSearchQuery(query)
+      setCurrentPage(1)
+      setError(null)
+    })
   }, [])
 
   const handleSort = useCallback((sort: SortOption) => {
-    setSortOption(sort)
-    setCurrentPage(1)
+    startTransition(() => {
+      setSortOption(sort)
+      setCurrentPage(1)
+    })
   }, [])
 
   const handleTimePeriodChange = useCallback((period: TimePeriod) => {
-    setSelectedTimePeriod(period)
-    setCurrentPage(1)
-    setError(null)
+    startTransition(() => {
+      setSelectedTimePeriod(period)
+      setCurrentPage(1)
+      setError(null)
+    })
   }, [])
 
   const handleLanguageChange = useCallback((language: DisplayLanguage) => {
@@ -180,16 +187,20 @@ export function useArticleFeed({
   }, [])
 
   const clearSearch = useCallback(() => {
-    setSearchQuery('')
-    setCurrentPage(1)
-    setError(null)
+    startTransition(() => {
+      setSearchQuery('')
+      setCurrentPage(1)
+      setError(null)
+    })
   }, [])
 
   const clearFilters = useCallback(() => {
-    setSearchQuery('')
-    setSelectedTimePeriod('all')
-    setCurrentPage(1)
-    setError(null)
+    startTransition(() => {
+      setSearchQuery('')
+      setSelectedTimePeriod('all')
+      setCurrentPage(1)
+      setError(null)
+    })
   }, [])
 
   const retry = useCallback(() => {
@@ -197,21 +208,25 @@ export function useArticleFeed({
   }, [])
 
   const handleTimeSort = useCallback(() => {
-    if (sortOption === 'newest') {
-      setSortOption('oldest')
-    } else {
-      setSortOption('newest')
-    }
-    setCurrentPage(1)
+    startTransition(() => {
+      if (sortOption === 'newest') {
+        setSortOption('oldest')
+      } else {
+        setSortOption('newest')
+      }
+      setCurrentPage(1)
+    })
   }, [sortOption])
 
   const handleViewsSort = useCallback(() => {
-    if (sortOption === 'views_high') {
-      setSortOption('newest')
-    } else {
-      setSortOption('views_high')
-    }
-    setCurrentPage(1)
+    startTransition(() => {
+      if (sortOption === 'views_high') {
+        setSortOption('newest')
+      } else {
+        setSortOption('views_high')
+      }
+      setCurrentPage(1)
+    })
   }, [sortOption])
 
   // Set error if no results found

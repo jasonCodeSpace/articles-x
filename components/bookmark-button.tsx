@@ -16,11 +16,11 @@ export function BookmarkButton({ articleId, variant = 'card', className }: Bookm
   const [isBookmarked, setIsBookmarked] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [user, setUser] = useState<User | null>(null)
-  const supabase = createClient()
 
   // Check authentication and bookmark status on mount
   useEffect(() => {
     const checkUserAndBookmark = async () => {
+      const supabase = createClient()
       try {
         const { data: { user }, error: userError } = await supabase.auth.getUser()
         
@@ -61,7 +61,7 @@ export function BookmarkButton({ articleId, variant = 'card', className }: Bookm
     }
 
     checkUserAndBookmark()
-  }, [articleId, supabase])
+  }, [articleId])
 
   const handleBookmark = async (e: React.MouseEvent) => {
     e.preventDefault()

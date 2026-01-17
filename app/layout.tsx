@@ -20,6 +20,15 @@ export const metadata: Metadata = {
   title: "Xarticle - Curated Articles from X (Twitter)",
   description: "Discover trending discussions, insights, and curated content from top voices on X (Twitter). Read daily summaries of the most engaging articles.",
   keywords: ['articles', 'news', 'twitter', 'x', 'social media', 'content', 'curated', 'trending', 'discussions'],
+  alternates: {
+    canonical: 'https://www.xarticle.news/',
+    // x-default indicates this is the default URL for all language versions
+    // since we use client-side language switching on the same URL
+    languages: {
+      'x-default': 'https://www.xarticle.news/',
+      'en': 'https://www.xarticle.news/',
+    }
+  },
   authors: [{ name: 'Xarticle' }],
   creator: 'Xarticle',
   publisher: 'Xarticle',

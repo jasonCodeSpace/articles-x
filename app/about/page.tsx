@@ -9,6 +9,13 @@ import { FadeIn, StaggerContainer } from '@/components/motion-wrapper'
 export const metadata: Metadata = {
   title: 'About Xarticle | AI-Powered Article Curation',
   description: 'Learn about Xarticle - a content curation platform that discovers, organizes, and summarizes high-quality long-form articles from X with AI-powered bilingual summaries.',
+  alternates: {
+    canonical: 'https://www.xarticle.news/about',
+    languages: {
+      'x-default': 'https://www.xarticle.news/about',
+      'en': 'https://www.xarticle.news/about',
+    }
+  },
   robots: 'index, follow'
 }
 

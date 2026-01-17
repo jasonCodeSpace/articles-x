@@ -28,9 +28,6 @@ export function ArticleComments({ articleId }: ArticleCommentsProps) {
     setSubmitting(true)
     try {
       await postComment(content)
-    } catch (error) {
-      // Error is handled by the hook, comment was already removed
-      // You might want to show a toast notification here
     } finally {
       setSubmitting(false)
     }

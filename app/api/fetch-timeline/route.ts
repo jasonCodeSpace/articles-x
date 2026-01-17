@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { timingSafeEqual } from '@/lib/auth/timing-safe-equal';
 
 const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY || '';
 const RAPIDAPI_HOST = 'twitter241.p.rapidapi.com';
@@ -285,12 +286,17 @@ async function saveTweetsToDatabase(tweets: Array<{
 }
 
 export async function GET(request: NextRequest) {
-  // Verify cron secret for security
+  // Verify cron secret for security using timing-safe comparison
   const authHeader = request.headers.get('authorization');
   const querySecret = request.nextUrl.searchParams.get('secret');
-  
-  if ((!authHeader || !authHeader.startsWith('Bearer ') || authHeader.slice(7) !== CRON_SECRET) && 
-      querySecret !== CRON_SECRET) {
+  const expectedSecret = CRON_SECRET || '';
+
+  const bearerValid = authHeader?.startsWith('Bearer ') &&
+    timingSafeEqual(authHeader.slice(7), expectedSecret);
+  const queryValid = querySecret !== null &&
+    timingSafeEqual(querySecret, expectedSecret);
+
+  if (!bearerValid && !queryValid) {
     console.error('Unauthorized access attempt to fetch-timeline API');
     return NextResponse.json(
       { error: 'Unauthorized' },

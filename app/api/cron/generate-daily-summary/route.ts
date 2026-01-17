@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/service'
-import { GoogleGenerativeAI } from '@google/generative-ai'
+import { callDeepSeek } from '@/lib/deepseek'
 
 const CRON_SECRET = process.env.CRON_SECRET
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || process.env.GOOGLE_AI_API_KEY || '')
 
 export async function GET(request: NextRequest) {
   try {
@@ -23,15 +22,21 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    if (!process.env.GEMINI_API_KEY && !process.env.GOOGLE_AI_API_KEY) {
+    if (!process.env.DEEPSEEK_API_KEY) {
       return NextResponse.json(
-        { error: 'Gemini API key not configured' },
+        { error: 'DeepSeek API key not configured' },
         { status: 500 }
       )
     }
 
     const supabase = createServiceClient()
     const today = new Date().toISOString().split('T')[0]
+    const formattedDate = new Date().toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    })
 
     // Get articles with tag 'Day'
     const { data: articles, error: articlesError } = await supabase
@@ -41,7 +46,7 @@ export async function GET(request: NextRequest) {
       .not('summary_english', 'is', null)
       .order('tweet_published_at', { ascending: false })
       .order('tweet_views', { ascending: false })
-    
+
     if (articlesError || !articles || articles.length === 0) {
       return NextResponse.json({
         success: false,
@@ -52,7 +57,7 @@ export async function GET(request: NextRequest) {
 
     // Find top article by views
     const topArticle = articles[0]
-    
+
     // Count articles by category
     const categoriesCount: Record<string, number> = {}
     articles.forEach(article => {
@@ -61,134 +66,64 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    // Generate summary using Gemini
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
-    
-    const articlesText = articles.map(a => 
-      `Title: ${a.title}\nSummary: ${a.summary_english || a.summary_chinese}\nCategory: ${a.category}`
+    // Prepare articles text for prompt
+    const articlesText = articles.map(a =>
+      `Title: ${a.title}\nSummary: ${a.summary_english}\nCategory: ${a.category}`
     ).join('\n\n')
-    
-    const prompt = `Role 
-You are the editor for Xarticle. Generate a concise, factual daily brief from today's articles. No emojis. Output two JSON objects: one for English ("lang":"en") and one for Chinese ("lang":"zh"). Do not output anything else. 
 
-Input fields per article 
-id, title, author_name, category, summary_english, url?, published_at? 
+    // Step 1: Generate English digest
+    const englishDigestPrompt = `Create a daily digest from these article summaries.
+Format (no emoji, plain text only):
 
-Sections & lengths 
+DAILY DIGEST | ${formattedDate} | ${articles.length} Articles
 
-key_data_points: 6–10 bullets with numbers 
+HIGHLIGHTS
 
-watchlist: 5 bullets (project/product + what to watch + why it matters) 
+1. [Most important article title]
+   [One sentence summary]
 
-policy_media_security: 4–7 bullets 
+2. [Second article title]
+   [One sentence summary]
 
-other_quick_reads: 6–10 bullets (science/culture/design/education/health/gaming etc.) 
-Target total per language: ~450–700 words. 
+3. [Third article title]
+   [One sentence summary]
 
-Selection rules 
 
-Prefer hard metrics: volume, users/MAU/DAU, retention, TVL, tx count, service area, growth %, funding, dates/milestones. 
+QUICK READS
 
-Cover broadly: AI×Crypto infrastructure, consumer adoption, policy/security, major company moves; ensure ≥5 distinct domains overall. 
+- [Brief topic point]
+- [Brief topic point]
+- [Brief topic point]
 
-Deduplicate overlaps; keep the most conservative or newest figure. 
 
-Compact numbers: 5.9M, $20B+, 0.5–0.7M, 30×, 190 sq mi. 
+KEY NUMBERS
 
-Use precise terms (translate accurately in zh): service area, retention, mainnet, badge, liquidity rewards, TVL, prediction market, rollup. 
+- [Number]: [Context]
+- [Number]: [Context]
 
-Prefer items from today / last 72h; avoid hype and unverifiable claims. 
-
-Formatting rules 
-
-Return exactly two code-fenced JSON objects (no Markdown outside code fences). 
-
-Keys must appear in both languages and in this order. 
-
-Schema 
-
-{ 
-  "lang": "en", 
-  "date": "${today}", 
-  "counts": { "articles_total": ${articles.length} }, 
-  "sections": { 
-    "key_data_points": ["..."], 
-    "watchlist": ["..."], 
-    "policy_media_security": ["..."], 
-    "other_quick_reads": ["..."] 
-  }, 
-  "meta": { 
-    "domains_covered": ["AI Infra","Crypto/DeFi","Policy/Security","Business/Markets","Science/Health","Media/Culture","Gaming/Product"], 
-    "notes": "Numbers normalized; duplicates merged" 
-  } 
-} 
-
-Chinese object uses identical structure with "lang":"zh" and translated content. 
-
-Now produce the two JSON objects using today's articles:
-
+Articles:
 ${articlesText}`
 
-    const result = await model.generateContent(prompt)
-    const responseText = result.response.text().trim()
-    
-    // Parse the JSON objects from the response
-    let summaryJsonEn = null
-    let summaryJsonZh = null
-    let summaryContent = responseText // fallback to original text
-    
-    try {
-      // Extract JSON objects from code fences
-      const jsonMatches = responseText.match(/```json\s*([\s\S]*?)\s*```/g)
-      if (jsonMatches && jsonMatches.length >= 1) {
-        const firstJsonText = jsonMatches[0].replace(/```json\s*|\s*```/g, '').trim()
-        const firstJson = JSON.parse(firstJsonText)
-        
-        if (jsonMatches.length >= 2) {
-          // Two JSON objects found
-          const secondJsonText = jsonMatches[1].replace(/```json\s*|\s*```/g, '').trim()
-          const secondJson = JSON.parse(secondJsonText)
-          
-          if (firstJson.lang === 'en') {
-            summaryJsonEn = firstJson
-            summaryJsonZh = secondJson
-          } else {
-            summaryJsonEn = secondJson
-            summaryJsonZh = firstJson
-          }
-        } else {
-          // Only one JSON object found, determine language
-          if (firstJson.lang === 'en') {
-            summaryJsonEn = firstJson
-          } else if (firstJson.lang === 'zh') {
-            summaryJsonZh = firstJson
-          } else {
-            // Default to English if lang is not specified
-            summaryJsonEn = firstJson
-          }
-        }
-        
-        // Generate a clean summary content
-        if (summaryJsonEn && summaryJsonZh) {
-          summaryContent = `English Summary:\n${JSON.stringify(summaryJsonEn, null, 2)}\n\nChinese Summary:\n${JSON.stringify(summaryJsonZh, null, 2)}`
-        } else if (summaryJsonEn) {
-          summaryContent = `English Summary:\n${JSON.stringify(summaryJsonEn, null, 2)}`
-        } else if (summaryJsonZh) {
-          summaryContent = `Chinese Summary:\n${JSON.stringify(summaryJsonZh, null, 2)}`
-        }
-      }
-    } catch (parseError) {
-      console.warn('Failed to parse JSON objects from response, using raw text:', parseError)
-    }
-    
-    // Upsert daily summary (insert or update if exists)
+    const digestEnglish = await callDeepSeek(englishDigestPrompt, 1500)
+
+    // Step 2: Translate to Chinese
+    const chineseDigestPrompt = `将以下英文日报翻译成中文，保持相同格式，不要有emoji：
+
+${digestEnglish}`
+
+    const digestChinese = await callDeepSeek(chineseDigestPrompt, 1500)
+
+    // Combine for storage
+    const summaryContent = `=== ENGLISH ===\n\n${digestEnglish}\n\n=== 中文 ===\n\n${digestChinese}`
+
+    // Upsert daily summary
     const { error: upsertError } = await supabase
       .from('daily_summary')
       .upsert({
         date: today,
         summary_content: summaryContent,
-        summary_json_en: summaryJsonEn,
-        summary_json_zh: summaryJsonZh,
+        summary_json_en: null, // No longer using JSON format
+        summary_json_zh: null,
         top_article_title: topArticle.title,
         top_article_id: topArticle.id,
         total_articles_count: articles.length,
@@ -198,7 +133,7 @@ ${articlesText}`
       })
       .select()
       .single()
-    
+
     if (upsertError) {
       console.error('Error upserting daily summary:', upsertError)
       return NextResponse.json(
@@ -215,7 +150,7 @@ ${articlesText}`
       topArticle: topArticle.title,
       categories: Object.keys(categoriesCount).length
     })
-    
+
   } catch (error) {
     console.error('Error generating daily summary:', error)
     return NextResponse.json(

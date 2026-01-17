@@ -228,7 +228,7 @@ export function ArticleContent({
                 <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors">
                   <XIcon size={14} />
                 </div>
-                <span className="text-sm font-medium">Read original thread on X</span>
+                <span className="text-sm font-medium">Read original article on X</span>
                 <ExternalLink size={12} className="opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
               </a>
             )}

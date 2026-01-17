@@ -6,6 +6,7 @@ import { getArticleBySlug, getPreviousArticle, getNextArticle, getRelatedArticle
 import { ArticleContent } from '@/components/article-content'
 import { ArticleNavigation } from '@/components/article-navigation'
 import { RelatedArticles } from '@/components/related-articles'
+import { ArticleComments } from '@/components/article-comments'
 
 interface ArticlePageProps {
   params: Promise<{
@@ -195,8 +196,13 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             relativeTime={relativeTime}
           />
 
+          {/* Comments Section */}
+          <div className="mt-16 pt-10 border-t border-white/5">
+            <ArticleComments articleId={article.id} />
+          </div>
+
           {/* Previous/Next Navigation */}
-          <div className="mt-20 pt-10 border-t border-white/5">
+          <div className="mt-16 pt-10 border-t border-white/5">
             <ArticleNavigation
               previousArticle={previousArticle}
               nextArticle={nextArticle}

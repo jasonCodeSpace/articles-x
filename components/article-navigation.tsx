@@ -11,6 +11,14 @@ interface ArticleNavigationProps {
   nextArticle?: Article | null
 }
 
+// Truncate title to first few words (max 40 characters)
+function truncateTitle(title: string, maxChars = 40): string {
+  if (title.length <= maxChars) return title
+  const truncated = title.substring(0, maxChars)
+  const lastSpace = truncated.lastIndexOf(' ')
+  return truncated.substring(0, lastSpace > 0 ? lastSpace : maxChars) + '...'
+}
+
 export function ArticleNavigation({ previousArticle, nextArticle }: ArticleNavigationProps) {
   const router = useRouter()
 
@@ -67,8 +75,8 @@ export function ArticleNavigation({ previousArticle, nextArticle }: ArticleNavig
             <ChevronLeft className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
             <div className="flex flex-col items-start">
               <span className="text-sm text-muted-foreground mb-1">Previous Article</span>
-              <span className="font-medium text-foreground group-hover:text-blue-600 transition-colors line-clamp-2">
-                {previousArticle.title_english || previousArticle.title}
+              <span className="font-medium text-foreground group-hover:text-blue-600 transition-colors">
+                {truncateTitle(previousArticle.title_english || previousArticle.title)}
               </span>
             </div>
           </Button>
@@ -87,8 +95,8 @@ export function ArticleNavigation({ previousArticle, nextArticle }: ArticleNavig
           >
             <div className="flex flex-col items-end">
               <span className="text-sm text-muted-foreground mb-1">Next Article</span>
-              <span className="font-medium text-foreground group-hover:text-blue-600 transition-colors line-clamp-2">
-                {nextArticle.title_english || nextArticle.title}
+              <span className="font-medium text-foreground group-hover:text-blue-600 transition-colors">
+                {truncateTitle(nextArticle.title_english || nextArticle.title)}
               </span>
             </div>
             <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />

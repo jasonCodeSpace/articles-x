@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { notifyIndexNow, notifyIndexNowBatch, getArticleUrl } from '@/lib/indexnow'
+import { notifyIndexNowBatch, getArticleUrl } from '@/lib/indexnow'
 
 /**
  * IndexNow Notification API

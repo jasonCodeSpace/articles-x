@@ -40,7 +40,10 @@ interface ListMember {
 }
 
 interface ListMembersResponse {
-  cursor?: string
+  cursor?: {
+    bottom?: string
+    top?: string
+  }
   result?: {
     timeline?: {
       instructions?: Array<{
@@ -60,11 +63,11 @@ interface ListMembersResponse {
 async function fetchListMembers(listId: string): Promise<ListMember[]> {
   const members: ListMember[] = []
   const seenIds = new Set<string>()
-  let cursor: string | undefined = undefined
-  let sameCount = 0
-  const MAX_SAME_COUNT = 2 // Break after 2 pages with no new members
+  let cursor: string | undefined = ''  // Start with empty string for first page
+  let pageCount = 0
+  const MAX_PAGES = 20 // Safety limit
 
-  while (sameCount < MAX_SAME_COUNT) {
+  while (pageCount < MAX_PAGES) {
     try {
       const url = `https://${RAPIDAPI_HOST}/list-members`
       const searchParams: Record<string, string> = {
@@ -101,46 +104,20 @@ async function fetchListMembers(listId: string): Promise<ListMember[]> {
             }
           }
 
-          // Find next cursor from cursor-bottom-* entry
-          for (const entry of instruction.entries) {
-            if (entry.entryId?.startsWith('cursor-bottom-')) {
-              cursor = entry.content?.value || entry.content?.cursor?.value
-              break
-            }
-            if (entry.content?.cursorType === 'Bottom') {
-              cursor = entry.content?.value
-              break
-            }
-          }
-        }
-
-        // Also check for TimelineAddToModule instruction
-        if (instruction.type === 'TimelineAddToModule' && instruction.entries) {
-          for (const entry of instruction.entries) {
-            if (entry.entryId?.startsWith('user-')) {
-              const member = entry.content?.itemContent?.user_results?.result
-              if (member && member.legacy && !seenIds.has(member.rest_id)) {
-                seenIds.add(member.rest_id)
-                members.push(member)
-                newMembersThisPage++
-              }
-            }
-          }
         }
       }
 
-      // Update cursor from top-level if not found in entries
-      if (response.data.cursor) {
-        cursor = response.data.cursor
+      // Update cursor from top-level (this is the correct location)
+      if (response.data.cursor?.bottom) {
+        cursor = response.data.cursor.bottom
+      } else {
+        // No more cursor, we're done
+        break
       }
 
       console.log(`  Page fetch: ${newMembersThisPage} new members, total: ${members.length} from list ${listId}`)
 
-      if (newMembersThisPage === 0) {
-        sameCount++
-      } else {
-        sameCount = 0
-      }
+      pageCount++
 
       // Rate limiting - sleep between requests
       await sleep(300)

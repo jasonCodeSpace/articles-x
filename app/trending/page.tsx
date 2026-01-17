@@ -37,17 +37,8 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 }
 
-// Enable ISR for better TTFB performance
-export const dynamic = 'force-static'
-export const revalidate = 60 // Revalidate every 60 seconds for ISR
-
-// Generate static params for both daily and weekly views
-export async function generateStaticParams() {
-  return [
-    {}, // Default (daily)
-    { filter: 'week' }, // Weekly
-  ]
-}
+// Use dynamic rendering since we need cookies() for Supabase auth
+export const dynamic = 'force-dynamic'
 
 interface PageProps {
   searchParams: Promise<{ category?: string; search?: string; page?: string; filter?: string }>
@@ -66,7 +57,7 @@ async function fetchTrendingArticles(options: {
 }): Promise<Article[]> {
   const supabase = await createClient()
 
-  // Only select columns needed for the card display to reduce payload size
+  // Only select columns that exist in the database
   let query = supabase
     .from('articles')
     .select(`
@@ -74,22 +65,16 @@ async function fetchTrendingArticles(options: {
       title,
       title_english,
       slug,
-      article_preview_text,
-      article_preview_text_english,
       image,
-      article_image,
       category,
       author_name,
       author_handle,
       author_avatar,
-      author_profile_image,
       article_published_at,
-      created_at,
       updated_at,
-      tags,
+      tag,
       tweet_views,
       tweet_replies,
-      tweet_retweets,
       tweet_likes,
       article_url,
       language,
@@ -115,7 +100,12 @@ async function fetchTrendingArticles(options: {
     return []
   }
 
-  return data || []
+  // Map database fields to Article interface
+  return (data || []).map(item => ({
+    ...item,
+    tags: item.tag ? item.tag.split(',').map((t: string) => t.trim()) : [],
+    created_at: item.article_published_at || item.updated_at || new Date().toISOString(),
+  })) as Article[]
 }
 
 export default async function TrendingPage({ searchParams }: PageProps) {

@@ -193,10 +193,6 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   )
 }
 
-export async function generateStaticParams() {
-  return []
-}
-
 // Use ISR with 5-minute revalidation for article pages
 export const revalidate = 300
-export const dynamic = 'force-static'
+export const dynamic = 'force-dynamic'

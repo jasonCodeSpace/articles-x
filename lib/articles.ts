@@ -38,22 +38,16 @@ export async function fetchArticles(options: FetchArticlesOptions = {}): Promise
         title,
         title_english,
         slug,
-        article_preview_text,
-        article_preview_text_english,
         image,
-        article_image,
         category,
         author_name,
         author_handle,
         author_avatar,
-        author_profile_image,
         article_published_at,
-        created_at,
         updated_at,
-        tags,
+        tag,
         tweet_views,
         tweet_replies,
-        tweet_retweets,
         tweet_likes,
         article_url,
         language,
@@ -79,13 +73,13 @@ export async function fetchArticles(options: FetchArticlesOptions = {}): Promise
       query = query.eq('language', language.trim())
     }
 
-    // Apply tag filter (if these fields exist in article_main)
+    // Apply tag filter (tag is a comma-separated string)
     if (tags && tags.length > 0) {
-      // Filter by multiple tags using OR condition
-      const tagConditions = tags.map(t => `tag.eq.${t.trim()}`).join(',')
+      // Filter by multiple tags using OR condition with ilike for comma-separated values
+      const tagConditions = tags.map(t => `tag.ilike.%${t.trim()}%`).join(',')
       query = query.or(tagConditions)
     } else if (tag && tag.trim()) {
-      query = query.eq('tag', tag.trim())
+      query = query.ilike('tag', `%${tag.trim()}%`)
     }
 
     // Apply sorting - use article_published_at for article_main table
@@ -106,7 +100,12 @@ export async function fetchArticles(options: FetchArticlesOptions = {}): Promise
       throw new Error(`Failed to fetch articles: ${error.message}`)
     }
 
-    return data || []
+    // Map database fields to Article interface
+    return (data || []).map((item: Record<string, unknown>) => ({
+      ...item,
+      tags: item.tag ? (item.tag as string).split(',').map((t: string) => t.trim()) : [],
+      created_at: item.article_published_at || item.updated_at || new Date().toISOString(),
+    })) as Article[]
     
   } catch (error) {
     console.error('Unexpected error fetching articles:', error)
@@ -177,7 +176,7 @@ export async function getArticleBySlug(slug: string): Promise<Article | null> {
 
     // Use RPC function for efficient lookup (O(1) with index)
     const { data, error } = await supabase
-      .rpc('find_articles_by_short_id', { short_id: shortId })
+      .rpc('find_articles_by_short_id', { p_short_id: shortId })
 
     if (error) {
       console.error('Error fetching article by short_id:', error)

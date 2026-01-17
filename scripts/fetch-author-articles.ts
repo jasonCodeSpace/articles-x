@@ -236,54 +236,95 @@ function extractArticleUrls(tweet: TwitterTweet): string[] {
  */
 async function fetchArticleContent(url: string): Promise<{ title: string; content: string } | null> {
   try {
-    // Use a simple extraction approach
+    // Skip X.com internal links
+    if (url.includes('x.com/') || url.includes('twitter.com/')) {
+      return null
+    }
+
     const response = await axios.get(url, {
-      timeout: 15000,
+      timeout: 20000,
+      maxRedirects: 5,
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
       }
     })
 
     const html = response.data
 
-    // Extract title
-    const titleMatch = html.match(/<title>([^<]+)<\/title>/i)
-    const title = titleMatch ? titleMatch[1].trim() : 'Untitled'
-
-    // Extract main content (simple approach)
-    // Try common content selectors
-    const contentSelectors = [
-      /<article[^>]*>([\s\S]*?)<\/article>/i,
-      /<div[^>]*class="[^"]*content[^"]*"[^>]*>([\s\S]*?)<\/div>/i,
-      /<main[^>]*>([\s\S]*?)<\/main>/i
+    // Extract title - try multiple methods
+    let title = 'Untitled'
+    const titlePatterns = [
+      /<meta\s+property="og:title"\s+content="([^"]*)"/i,
+      /<meta\s+name="twitter:title"\s+content="([^"]*)"/i,
+      /<h1[^>]*>([^<]+)<\/h1>/i,
+      /<title>([^<]+)<\/title>/i
     ]
-
-    let content = ''
-    for (const selector of contentSelectors) {
-      const match = html.match(selector)
+    for (const pattern of titlePatterns) {
+      const match = html.match(pattern)
       if (match) {
-        // Remove HTML tags and get plain text
-        content = match[1]
+        title = match[1].trim()
+          .replace(/&quot;/g, '"')
+          .replace(/&amp;/g, '&')
+          .replace(/&lt;/g, '<')
+          .replace(/&gt;/g, '>')
+          .replace(/&#39;/g, "'")
+        if (title.length > 3) break
+      }
+    }
+
+    // Extract content - try multiple methods
+    let content = ''
+
+    // Method 1: Meta description
+    const descMatch = html.match(/<meta\s+name="description"\s+content="([^"]*)"/i) ||
+                     html.match(/<meta\s+property="og:description"\s+content="([^"]*)"/i)
+    if (descMatch) {
+      content = descMatch[1]
+        .replace(/&quot;/g, '"')
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&#39;/g, "'")
+    }
+
+    // Method 2: Article tag
+    if (content.length < 100) {
+      const articleMatch = html.match(/<article[^>]*>([\s\S]*?)<\/article>/i)
+      if (articleMatch) {
+        const text = articleMatch[1]
           .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
           .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
           .replace(/<[^>]+>/g, ' ')
           .replace(/\s+/g, ' ')
           .trim()
-        if (content.length > 200) break
+        if (text.length > content.length) {
+          content = text
+        }
       }
     }
 
-    // If no content found, get meta description
-    if (content.length < 200) {
-      const descMatch = html.match(/<meta[^>]*name="description"[^>]*content="([^"]*)"/i)
-      if (descMatch) {
-        content = descMatch[1]
+    // Method 3: Paragraph tags
+    if (content.length < 100) {
+      const pMatches = html.match(/<p[^>]*>([^<]+)<\/p>/gi)
+      if (pMatches) {
+        const text = pMatches
+          .map((m: string) => m.replace(/<[^>]+>/g, ' ').trim())
+          .join(' ')
+          .replace(/\s+/g, ' ')
+          .trim()
+        if (text.length > content.length) {
+          content = text
+        }
       }
     }
 
-    return { title, content: content.substring(0, 10000) } // Limit content length
-  } catch (error) {
-    console.error(`    Failed to fetch ${url}:`, error)
+    content = content.substring(0, 15000) // Limit content length
+
+    return { title, content }
+  } catch (error: any) {
+    // Log error without full stack trace
+    const msg = error.message || String(error)
+    console.error(`    Failed to fetch ${url}: ${msg}`)
     return null
   }
 }
@@ -528,9 +569,7 @@ async function main() {
   }
 
   // Process each author
-  // TEST: Only process first author
-  const authorsToProcess = authors.slice(0, 1)  // Remove .slice(0, 1) to process all
-  for (const author of authorsToProcess) {
+  for (const author of authors) {
     await processAuthor(author)
 
     // Progress update every 10 authors

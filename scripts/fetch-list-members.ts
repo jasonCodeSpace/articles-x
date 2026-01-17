@@ -1,5 +1,6 @@
 /**
  * Fetch all members from Twitter lists and upload to Supabase authors table
+ * Also saves top 100 by followers for article processing
  *
  * Usage: npx tsx scripts/fetch-list-members.ts
  */
@@ -7,6 +8,7 @@
 import { createClient } from '@supabase/supabase-js'
 import axios from 'axios'
 import { config } from 'dotenv'
+import { writeFileSync } from 'fs'
 
 // Load environment variables from .env.local
 config({ path: '.env.local' })
@@ -38,19 +40,14 @@ interface ListMember {
 }
 
 interface ListMembersResponse {
+  cursor?: string
   result?: {
     timeline?: {
       instructions?: Array<{
         type?: string
         entries?: Array<{
           entryId?: string
-          content?: {
-            itemContent?: {
-              user_results?: {
-                result?: ListMember
-              }
-            }
-          }
+          content?: any
         }>
       }>
     }
@@ -62,16 +59,22 @@ interface ListMembersResponse {
  */
 async function fetchListMembers(listId: string): Promise<ListMember[]> {
   const members: ListMember[] = []
-  let cursor: string | undefined = ''
+  const seenIds = new Set<string>()
+  let cursor: string | undefined = undefined
+  let sameCount = 0
+  const MAX_SAME_COUNT = 2 // Break after 2 pages with no new members
 
-  while (cursor !== undefined && cursor !== null) {
+  while (sameCount < MAX_SAME_COUNT) {
     try {
       const url = `https://${RAPIDAPI_HOST}/list-members`
-      const params = new URLSearchParams({
+      const searchParams: Record<string, string> = {
         listId,
-        count: '100',
-        ...(cursor && { cursor })
-      })
+        count: '100'
+      }
+      if (cursor) {
+        searchParams.cursor = cursor
+      }
+      const params = new URLSearchParams(searchParams)
 
       const response = await axios.get<ListMembersResponse>(`${url}?${params}`, {
         headers: {
@@ -83,37 +86,64 @@ async function fetchListMembers(listId: string): Promise<ListMember[]> {
 
       // Parse members from response
       const instructions = response.data.result?.timeline?.instructions || []
+      let newMembersThisPage = 0
+
       for (const instruction of instructions) {
         if (instruction.type === 'TimelineAddEntries' && instruction.entries) {
           for (const entry of instruction.entries) {
             if (entry.entryId?.startsWith('user-')) {
               const member = entry.content?.itemContent?.user_results?.result
-              if (member && member.legacy) {
+              if (member && member.legacy && !seenIds.has(member.rest_id)) {
+                seenIds.add(member.rest_id)
                 members.push(member)
+                newMembersThisPage++
+              }
+            }
+          }
+
+          // Find next cursor from cursor-bottom-* entry
+          for (const entry of instruction.entries) {
+            if (entry.entryId?.startsWith('cursor-bottom-')) {
+              cursor = entry.content?.value || entry.content?.cursor?.value
+              break
+            }
+            if (entry.content?.cursorType === 'Bottom') {
+              cursor = entry.content?.value
+              break
+            }
+          }
+        }
+
+        // Also check for TimelineAddToModule instruction
+        if (instruction.type === 'TimelineAddToModule' && instruction.entries) {
+          for (const entry of instruction.entries) {
+            if (entry.entryId?.startsWith('user-')) {
+              const member = entry.content?.itemContent?.user_results?.result
+              if (member && member.legacy && !seenIds.has(member.rest_id)) {
+                seenIds.add(member.rest_id)
+                members.push(member)
+                newMembersThisPage++
               }
             }
           }
         }
       }
 
-      // Find next cursor
-      cursor = undefined
-      for (const instruction of instructions) {
-        if (instruction.type === 'TimelineAddEntries' && instruction.entries) {
-          const cursorEntry = instruction.entries.find((e: any) =>
-            e.entryId?.startsWith('cursor-bottom-') || e.content?.cursorType === 'Bottom'
-          )
-          if (cursorEntry && (cursorEntry as any).content?.value) {
-            cursor = (cursorEntry as any).content.value
-            break
-          }
-        }
+      // Update cursor from top-level if not found in entries
+      if (response.data.cursor) {
+        cursor = response.data.cursor
       }
 
-      console.log(`  Fetched ${members.length} members so far from list ${listId}`)
+      console.log(`  Page fetch: ${newMembersThisPage} new members, total: ${members.length} from list ${listId}`)
+
+      if (newMembersThisPage === 0) {
+        sameCount++
+      } else {
+        sameCount = 0
+      }
 
       // Rate limiting - sleep between requests
-      await sleep(200)
+      await sleep(300)
     } catch (error) {
       console.error(`Error fetching list ${listId}:`, error)
       break
@@ -128,7 +158,6 @@ async function fetchListMembers(listId: string): Promise<ListMember[]> {
  */
 async function uploadAuthors(members: ListMember[]): Promise<void> {
   let uploaded = 0
-  let skipped = 0
   let errors = 0
 
   for (const member of members) {
@@ -160,7 +189,7 @@ async function uploadAuthors(members: ListMember[]): Promise<void> {
     }
   }
 
-  console.log(`\nUpload complete: ${uploaded} uploaded, ${skipped} skipped, ${errors} errors`)
+  console.log(`\nUpload complete: ${uploaded} uploaded, ${errors} errors`)
 }
 
 function sleep(ms: number): Promise<void> {
@@ -184,9 +213,9 @@ async function main() {
 
   console.log(`\nTotal members fetched: ${allMembers.length}`)
 
-  // Remove duplicates based on screen_name
+  // Remove duplicates based on rest_id
   const uniqueMembers = Array.from(
-    new Map(allMembers.map(m => [m.legacy.screen_name, m])).values()
+    new Map(allMembers.map(m => [m.rest_id, m])).values()
   )
   console.log(`Unique members: ${uniqueMembers.length}\n`)
 
@@ -199,8 +228,25 @@ async function main() {
     console.log(`  ${i + 1}. @${m.legacy.screen_name} (${m.legacy.followers_count.toLocaleString()} followers) - ${m.legacy.name}`)
   })
 
-  // Upload to Supabase
-  console.log('\nUploading to Supabase...')
+  // Save top 100 to JSON file for article processing
+  const top100 = uniqueMembers.slice(0, 100)
+  const top100Data = top100.map(m => ({
+    user_id: m.rest_id,
+    screen_name: m.legacy.screen_name,
+    name: m.legacy.name,
+    verified: m.legacy.verified,
+    profile_image_url: m.legacy.profile_image_url_https,
+    followers_count: m.legacy.followers_count
+  }))
+
+  writeFileSync(
+    '/Users/haochengwang/Desktop/claude/xarticle/top100-authors.json',
+    JSON.stringify(top100Data, null, 2)
+  )
+  console.log(`\nSaved top 100 authors to top100-authors.json`)
+
+  // Upload ALL unique members to Supabase
+  console.log('\nUploading ALL authors to Supabase...')
   await uploadAuthors(uniqueMembers)
 
   console.log('\nDone!')

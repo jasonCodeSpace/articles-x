@@ -141,26 +141,60 @@ export async function getArticleCategories(): Promise<string[]> {
 export async function getArticleBySlug(slug: string): Promise<Article | null> {
   try {
     const supabase = await createClient()
-    
+
     // Extract article ID from slug (last part after --)
     const parts = slug.split('--');
     if (parts.length < 2) {
+      console.error('Invalid slug format:', slug)
       return null;
     }
-    
-    const shortId = parts[parts.length - 1];
-    
-    // Find article by matching the short ID within the full UUID using raw SQL
-  const { data, error } = await supabase
-    .rpc('get_article_by_short_id', { short_id: shortId });
 
-    if (error || !data || data.length === 0) {
-      console.error('Error fetching article by slug:', error)
+    const shortId = parts[parts.length - 1];
+
+    // Fetch articles in batches to handle large datasets
+    // Supabase has a default limit of 1000 rows per request
+    const batchSize = 1000;
+    let offset = 0;
+    let foundArticle: Article | null = null;
+
+    while (!foundArticle) {
+      const { data, error } = await supabase
+        .from('articles')
+        .select('*')
+        .range(offset, offset + batchSize - 1)
+        .order('article_published_at', { ascending: false })
+
+      if (error) {
+        console.error('Error fetching articles:', error)
+        return null
+      }
+
+      if (!data || data.length === 0) {
+        // No more articles to fetch
+        break
+      }
+
+      // Find article where the UUID starts with the shortId
+      foundArticle = data.find(a => {
+        const idWithoutDashes = a.id.replace(/-/g, '')
+        return idWithoutDashes.substring(0, 6) === shortId
+      }) || null
+
+      if (data.length < batchSize) {
+        // Last batch, no more articles
+        break
+      }
+
+      offset += batchSize
+    }
+
+    if (!foundArticle) {
+      console.error('Article not found for shortId:', shortId)
       return null
     }
 
-    return data[0]
-    
+    return foundArticle
+
   } catch (error) {
     console.error('Unexpected error fetching article by slug:', error)
     return null

@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { TwitterTweet } from '@/lib/twitter'
-import { generateSlugFromTitle, generateShortId } from '@/lib/url-utils'
+import { generateSlug, generateShortId } from '@/lib/url-utils'
 import fs from 'fs'
 import path from 'path'
 
@@ -42,7 +42,6 @@ export interface DatabaseArticle {
   title: string
   slug: string
   full_article_content: string
-  // article_preview_text removed as per user request
   author_name: string
   author_handle?: string
   author_avatar?: string
@@ -56,7 +55,6 @@ export interface DatabaseArticle {
   tweet_replies?: number
   tweet_retweets?: number
   tweet_likes?: number
-  tweet_bookmarks?: number
   article_published_at?: string
   article_url?: string
 }
@@ -252,23 +250,16 @@ function getCategoryForAuthor(): string | undefined {
  * Convert harvested article to database article format
  */
 export function harvestedToDatabase(harvested: HarvestedArticle): DatabaseArticle {
-  // Generate slug from title with short ID using the updated strict logic
-  const titleSlug = generateSlugFromTitle(harvested.title)
-  const shortId = generateShortId(harvested.tweet_id)
-  
-  // Requirement: Append the first 6 chars of the ID at the end for uniqueness.
-  // Example: Title "La gente que vive..." -> Slug la-gente-que-vive-en-la-calle-43e1c3.
-  const slug = `${titleSlug}-${shortId}`
-  
+  // Generate slug using new function with fallback for non-English titles
+  // title_english is null at harvest time, will be updated after summary generation
+  const slug = generateSlug(harvested.title, null, harvested.tweet_id)
+
   // Create basic content
   // Requirement: Extract the entire HTML/Text body... Do not truncate.
   const content = harvested.full_article_content || harvested.excerpt || harvested.title
-  
+
   // Parse Twitter date to ISO string
   const publishedAt = parseTwitterDate(harvested.created_at)
-  
-  // Generate tweet URL from tweet_id
-  const tweetUrl = `https://twitter.com/${harvested.author_handle}/status/${harvested.tweet_id}`
 
   // Get category based on author handle (disabled to prevent automatic assignment)
   const category = getCategoryForAuthor()
@@ -277,7 +268,6 @@ export function harvestedToDatabase(harvested: HarvestedArticle): DatabaseArticl
     title: harvested.title,
     slug,
     full_article_content: content,
-    // article_preview_text removed
     author_name: harvested.author_handle,
     author_handle: harvested.author_handle,
     author_avatar: harvested.author_avatar || undefined,
@@ -290,8 +280,7 @@ export function harvestedToDatabase(harvested: HarvestedArticle): DatabaseArticl
     tweet_replies: harvested.metrics?.replies,
     tweet_retweets: harvested.metrics?.retweets,
     tweet_likes: harvested.metrics?.likes,
-    tweet_bookmarks: harvested.metrics?.bookmarks,
-    article_published_at: publishedAt, // Assuming article published at same time as tweet
+    article_published_at: publishedAt,
     article_url: harvested.article_url,
   }
 
@@ -393,7 +382,6 @@ export async function batchUpsertArticles(
             .update({
               title: dbArticle.title,
               full_article_content: dbArticle.full_article_content,
-              article_preview_text: dbArticle.article_preview_text,
               author_name: dbArticle.author_name,
               author_handle: dbArticle.author_handle,
               author_avatar: dbArticle.author_avatar,

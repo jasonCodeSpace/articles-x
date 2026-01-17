@@ -42,7 +42,6 @@ export const revalidate = 300
 
 export default async function LandingPage() {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
 
   const categories = [
     'Hardware', 'Gaming', 'Health', 'Environment', 'Personal Story',
@@ -52,30 +51,27 @@ export default async function LandingPage() {
     'Science', 'Media'
   ]
 
-  const { count: totalArticles } = await supabase
-    .from('articles')
-    .select('*', { count: 'exact', head: true })
-
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
   const sevenDaysAgoISO = sevenDaysAgo.toISOString();
 
-  const { data: trendingArticles } = await supabase
-    .from('articles')
-    .select(`
-      id,
-      title,
-      slug,
-      summary_english,
-      author_handle,
-      tweet_views
-    `)
-    .eq('language', 'en')
-    .gte('article_published_at', sevenDaysAgoISO)
-    .not('summary_english', 'is', null)
-    .neq('summary_english', '')
-    .order('tweet_views', { ascending: false })
-    .limit(3)
+  // Parallel data fetching for better performance
+  const [userResult, countResult, articlesResult] = await Promise.all([
+    supabase.auth.getUser(),
+    supabase.from('articles').select('*', { count: 'exact', head: true }),
+    supabase.from('articles')
+      .select('id, title, slug, summary_english, author_handle, tweet_views')
+      .eq('language', 'en')
+      .gte('article_published_at', sevenDaysAgoISO)
+      .not('summary_english', 'is', null)
+      .neq('summary_english', '')
+      .order('tweet_views', { ascending: false })
+      .limit(3)
+  ])
+
+  const user = userResult.data?.user
+  const totalArticles = countResult.count
+  const trendingArticles = articlesResult.data
 
   const faqSchema = {
     "@context": "https://schema.org",

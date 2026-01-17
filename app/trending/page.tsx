@@ -1,7 +1,8 @@
 import { Suspense } from 'react'
+import { unstable_cache } from 'next/cache'
 import { ArticleFeed } from '@/components/article-feed'
 import { FeedLoading } from '@/components/feed-loading'
-import { createClient } from '@/lib/supabase/server'
+import { createAnonClient } from '@/lib/supabase/server'
 import { Article } from '@/components/article-card'
 import { Metadata } from 'next'
 import Link from 'next/link'
@@ -44,56 +45,65 @@ interface PageProps {
   searchParams: Promise<{ search?: string; page?: string }>
 }
 
-// Fetch all articles from database
+// Cached function for fetching articles (revalidates every 60 seconds)
+const getCachedArticles = unstable_cache(
+  async (search?: string): Promise<Article[]> => {
+    const supabase = createAnonClient()
+
+    // Select all columns needed for display, including summaries for both languages
+    let query = supabase
+      .from('articles')
+      .select(`
+        id,
+        title,
+        title_english,
+        slug,
+        image,
+        category,
+        author_name,
+        author_handle,
+        author_avatar,
+        article_published_at,
+        updated_at,
+        tag,
+        tweet_views,
+        tweet_replies,
+        tweet_likes,
+        article_url,
+        language,
+        summary_english,
+        summary_chinese,
+        summary_generated_at
+      `)
+      .order('article_published_at', { ascending: false })
+
+    if (search && search.trim()) {
+      query = query.or(`title.ilike.%${search.trim()}%,title_english.ilike.%${search.trim()}%`)
+    }
+
+    const { data, error } = await query
+
+    if (error) {
+      console.error('Error fetching articles:', error)
+      return []
+    }
+
+    // Map database fields to Article interface
+    return (data || []).map(item => ({
+      ...item,
+      tags: item.tag ? item.tag.split(',').map((t: string) => t.trim()) : [],
+      created_at: item.article_published_at || item.updated_at || new Date().toISOString(),
+    })) as Article[]
+  },
+  ['articles-list'],
+  { revalidate: 60, tags: ['articles'] }
+)
+
+// Fetch all articles from database (uses cache)
 async function fetchAllArticles(options: {
   search?: string
 }): Promise<Article[]> {
-  const supabase = await createClient()
-
-  // Select all columns needed for display, including summaries for both languages
-  let query = supabase
-    .from('articles')
-    .select(`
-      id,
-      title,
-      title_english,
-      slug,
-      image,
-      category,
-      author_name,
-      author_handle,
-      author_avatar,
-      article_published_at,
-      updated_at,
-      tag,
-      tweet_views,
-      tweet_replies,
-      tweet_likes,
-      article_url,
-      language,
-      summary_english,
-      summary_chinese,
-      summary_generated_at
-    `)
-    .order('article_published_at', { ascending: false })
-
-  if (options.search && options.search.trim()) {
-    query = query.or(`title.ilike.%${options.search.trim()}%,title_english.ilike.%${options.search.trim()}%`)
-  }
-
-  const { data, error } = await query
-
-  if (error) {
-    console.error('Error fetching articles:', error)
-    return []
-  }
-
-  // Map database fields to Article interface
-  return (data || []).map(item => ({
-    ...item,
-    tags: item.tag ? item.tag.split(',').map((t: string) => t.trim()) : [],
-    created_at: item.article_published_at || item.updated_at || new Date().toISOString(),
-  })) as Article[]
+  return getCachedArticles(options.search)
 }
 
 export default async function TrendingPage({ searchParams }: PageProps) {

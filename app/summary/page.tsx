@@ -1,5 +1,6 @@
 import { Suspense } from 'react'
-import { createClient } from '@/lib/supabase/server'
+import { unstable_cache } from 'next/cache'
+import { createAnonClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { Calendar, FileText, ChevronRight, Sparkles } from 'lucide-react'
 import { Metadata } from 'next'
@@ -24,7 +25,8 @@ export const metadata: Metadata = {
   },
 }
 
-export const dynamic = 'force-dynamic'
+// Use ISR with 5 minute revalidation
+export const revalidate = 300
 
 interface DailySummary {
   id: string
@@ -37,21 +39,30 @@ interface DailySummary {
   created_at: string
 }
 
+// Cached function for fetching summaries
+const getCachedSummaries = unstable_cache(
+  async (): Promise<DailySummary[]> => {
+    const supabase = createAnonClient()
+
+    const { data, error } = await supabase
+      .from('daily_summary')
+      .select('*')
+      .order('date', { ascending: false })
+      .limit(100)
+
+    if (error) {
+      console.error('Error fetching daily summaries:', error)
+      return []
+    }
+
+    return data || []
+  },
+  ['daily-summaries'],
+  { revalidate: 300, tags: ['summaries'] }
+)
+
 async function getDailySummaries(): Promise<DailySummary[]> {
-  const supabase = await createClient()
-
-  const { data, error } = await supabase
-    .from('daily_summary')
-    .select('*')
-    .order('date', { ascending: false })
-    .limit(100)
-
-  if (error) {
-    console.error('Error fetching daily summaries:', error)
-    return []
-  }
-
-  return data || []
+  return getCachedSummaries()
 }
 
 function formatDate(dateStr: string): { weekday: string; day: string; monthYear: string } {

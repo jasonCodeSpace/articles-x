@@ -93,7 +93,7 @@ export function generateShortId(uuid: string): string {
  * Generate article URL with slug (no ID suffix)
  * Format: /article/title-slug
  */
-export function generateArticleUrl(title: string, id: string): string {
+export function generateArticleUrl(title: string, _id: string): string {
   const titleSlug = generateSlugFromTitle(title)
   return `/article/${titleSlug}`
 }
@@ -111,10 +111,10 @@ export function extractArticleIdFromSlug(slug: string): string {
 /**
  * Generate full article URL for sharing
  */
-export function generateShareableUrl(title: string, id: string, baseUrl?: string): string {
-  const articlePath = generateArticleUrl(title, id)
+export function generateShareableUrl(title: string, _id: string, baseUrl?: string): string {
+  const titleSlug = generateSlugFromTitle(title)
   const domain = baseUrl || 'https://www.xarticle.news'
-  return `${domain}${articlePath}`
+  return `${domain}/article/${titleSlug}`
 }
 
 /**

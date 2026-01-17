@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { ExternalLink, Clock, Calendar, Share2, Twitter, Globe } from 'lucide-react'
+import { ExternalLink, Clock, Calendar, Share2, Globe } from 'lucide-react'
 import { BookmarkButton } from '@/components/bookmark-button'
 import { useRouter } from 'next/navigation'
 import { FadeIn } from './motion-wrapper'

@@ -159,19 +159,36 @@ export async function getArticleCategories(): Promise<string[]> {
 
 /**
  * Get a single article by slug
- * Looks up article directly by slug column
+ * Handles both formats:
+ * - New: title-only (e.g., "networking-at-crypto-events")
+ * - Old: title--shortId (e.g., "networking-at-crypto-events--a1b2c3")
  */
 export async function getArticleBySlug(slug: string): Promise<Article | null> {
   try {
     const supabase = await createClient()
 
-    // Direct lookup by slug
+    // First try direct slug lookup (new format)
     const { data, error } = await supabase
       .from('articles')
       .select('*')
       .eq('slug', slug)
       .limit(1)
-      .single()
+      .maybeSingle()
+
+    // If not found and slug contains --, try old format with shortId
+    if (!data) {
+      const parts = slug.split('--')
+      if (parts.length >= 2) {
+        const shortId = parts[parts.length - 1]
+        // Use RPC function for efficient short ID lookup
+        const { data: dataByShortId, error: errorByShortId } = await supabase
+          .rpc('find_articles_by_short_id', { p_short_id: shortId })
+
+        if (!errorByShortId && dataByShortId && dataByShortId.length > 0) {
+          return dataByShortId[0] as Article
+        }
+      }
+    }
 
     if (error) {
       console.error('Error fetching article by slug:', error)

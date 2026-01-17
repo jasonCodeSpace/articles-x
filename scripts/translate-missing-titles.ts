@@ -96,7 +96,7 @@ async function main() {
     .from('articles')
     .select('id, title, title_english')
     .is('title_english', null)
-    .order('created_at', { ascending: false })
+    .order('updated_at', { ascending: false })
 
   if (error) {
     console.error('Error fetching articles:', error)

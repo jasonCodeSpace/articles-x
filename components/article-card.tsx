@@ -98,7 +98,7 @@ export function ArticleCard({ article, className, index = 0, priority = false, d
 
   const avatarUrl = article.author_profile_image || article.author_avatar
   const coverUrl = article.article_image || article.featured_image_url || article.image
-  const articleUrl = generateArticleUrl(article.title, article.id)
+  const articleUrl = generateArticleUrl(article.title, article.id, article.slug)
 
   return (
     <FadeIn delay={index * 0.05} direction="up" distance={20} className="h-full">

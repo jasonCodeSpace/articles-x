@@ -9,11 +9,9 @@ function regenerateSlugFromTitle(title: string, articleId: string): string {
   if (!title || title.trim().length === 0) {
     return `article--${generateShortId(articleId)}`
   }
-  
-  const titleSlug = generateSlugFromTitle(title)
-  const shortId = generateShortId(articleId)
-  
-  return `${titleSlug}--${shortId}`
+
+  // 只返回slug，不添加shortId后缀
+  return generateSlugFromTitle(title)
 }
 
 const CRON_SECRET = process.env.CRON_SECRET
@@ -34,6 +32,12 @@ function isAuthorized(request: NextRequest): boolean {
 
 export async function GET(request: NextRequest) {
   try {
+    // Temporarily disabled - API is causing slug reset issues
+    return NextResponse.json(
+      { message: 'API temporarily disabled' },
+      { status: 503 }
+    )
+
     // Verify authorization
     if (!isAuthorized(request)) {
       return NextResponse.json(
@@ -60,7 +64,7 @@ export async function GET(request: NextRequest) {
         }
       }
     )
-    
+
     console.log('🔧 Starting slug regeneration process...')
     
     // Find articles with potentially problematic slugs, ordered by tweet publication date
@@ -171,6 +175,12 @@ export async function GET(request: NextRequest) {
 // Also support POST for manual triggers
 export async function POST(request: NextRequest) {
   try {
+    // Temporarily disabled - API is causing slug reset issues
+    return NextResponse.json(
+      { message: 'API temporarily disabled' },
+      { status: 503 }
+    )
+
     // Verify authorization
     if (!isAuthorized(request)) {
       return NextResponse.json(

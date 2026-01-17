@@ -93,7 +93,13 @@ export function generateShortId(uuid: string): string {
  * Generate article URL with slug (no ID suffix)
  * Format: /article/title-slug
  */
-export function generateArticleUrl(title: string, _id: string): string {
+export function generateArticleUrl(title: string, _id: string, slug?: string): string {
+  // Use existing slug from database if available (preferred)
+  if (slug && slug.trim()) {
+    return `/article/${slug}`
+  }
+
+  // Fallback: generate from title
   const titleSlug = generateSlugFromTitle(title)
   return `/article/${titleSlug}`
 }

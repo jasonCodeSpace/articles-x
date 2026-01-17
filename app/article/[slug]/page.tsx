@@ -7,6 +7,7 @@ import { ArticleContent } from '@/components/article-content'
 import { ArticleNavigation } from '@/components/article-navigation'
 import { RelatedArticles } from '@/components/related-articles'
 import { ArticleComments } from '@/components/article-comments'
+import { ScrollToTopButton } from '@/components/scroll-to-top-button'
 
 interface ArticlePageProps {
   params: Promise<{
@@ -196,13 +197,8 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             relativeTime={relativeTime}
           />
 
-          {/* Comments Section */}
-          <div className="mt-16 pt-10 border-t border-white/5">
-            <ArticleComments articleId={article.id} />
-          </div>
-
           {/* Previous/Next Navigation */}
-          <div className="mt-16 pt-10 border-t border-white/5">
+          <div className="mt-12 pt-8 border-t border-white/5">
             <ArticleNavigation
               previousArticle={previousArticle}
               nextArticle={nextArticle}
@@ -211,11 +207,19 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
           {/* Related Articles */}
           {relatedArticles.length > 0 && (
-            <div className="mt-16 pt-10 border-t border-white/5">
+            <div className="mt-12 pt-8 border-t border-white/5">
               <RelatedArticles articles={relatedArticles} />
             </div>
           )}
+
+          {/* Comments Section - below related articles */}
+          <div className="mt-12 pt-8 border-t border-white/5">
+            <ArticleComments articleId={article.id} />
+          </div>
         </div>
+
+        {/* Scroll to Top Button */}
+        <ScrollToTopButton />
       </div>
     </>
   )

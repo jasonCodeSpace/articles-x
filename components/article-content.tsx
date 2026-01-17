@@ -202,9 +202,9 @@ export function ArticleContent({
         </article>
       </FadeIn>
 
-      <FadeIn delay={0.5} className="mt-12 pt-8 border-t border-white/5">
-        <div className="flex flex-col md:flex-row justify-between items-center gap-8">
-          <div className="flex items-center gap-6">
+      <FadeIn delay={0.5} className="mt-8 pt-4 border-t border-white/5">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="flex items-center gap-4">
             <span className="text-xs uppercase tracking-widest text-white/20 font-bold">Source</span>
             {article.article_url && (
               <a

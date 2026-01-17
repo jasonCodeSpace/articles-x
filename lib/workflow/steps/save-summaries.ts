@@ -33,9 +33,22 @@ export const saveSummariesStep = createStep<SaveSummariesInput, SaveSummariesOut
       const supabase = createServiceRoleClient()
       let saved = 0
       let failed = 0
+      let skipped = 0
 
       for (const { article, analysis } of processed) {
         try {
+          // 如果摘要被跳过（文章太短），标记为已处理但不保存摘要
+          if (analysis.summary_skipped) {
+            ctx.logs.push({
+              timestamp: new Date(),
+              level: 'info',
+              step: 'save-summaries',
+              message: `Skipping save for "${article.title.substring(0, 40)}..." - article too short (${analysis.word_count} words)`
+            })
+            skipped++
+            continue
+          }
+
           // Generate proper slug now that we have title_english
           const newSlug = generateSlug(
             article.title,
@@ -66,6 +79,12 @@ export const saveSummariesStep = createStep<SaveSummariesInput, SaveSummariesOut
             failed++
           } else {
             saved++
+            ctx.logs.push({
+              timestamp: new Date(),
+              level: 'info',
+              step: 'save-summaries',
+              message: `Saved ${analysis.word_count}w article: ${article.title.substring(0, 40)}...`
+            })
           }
         } catch {
           failed++
@@ -76,7 +95,7 @@ export const saveSummariesStep = createStep<SaveSummariesInput, SaveSummariesOut
         timestamp: new Date(),
         level: 'info',
         step: 'save-summaries',
-        message: `Saved ${saved} summaries, ${failed} failed`
+        message: `Saved ${saved} summaries, ${skipped} skipped (too short), ${failed} failed`
       })
 
       return {

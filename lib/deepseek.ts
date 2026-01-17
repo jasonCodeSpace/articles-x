@@ -29,6 +29,31 @@ export interface ArticleAnalysis {
   language: string;
   category?: string;
   title_english?: string; // New field
+  skipSummary?: boolean; // True if article is too short
+}
+
+/**
+ * Count words in content (handles both English and Chinese)
+ */
+function countWords(text: string): number {
+  // Count Chinese characters
+  const chineseChars = (text.match(/[\u4e00-\u9fff]/g) || []).length
+  // Count English words (split by whitespace, filter empty)
+  const englishWords = text.replace(/[\u4e00-\u9fff]/g, ' ').split(/\s+/).filter(w => w.length > 0).length
+  return chineseChars + englishWords
+}
+
+/**
+ * Get summary length instructions based on word count
+ */
+function getSummaryLengthInstructions(wordCount: number): { targetLength: string; shouldSkip: boolean } {
+  if (wordCount < 100) {
+    return { targetLength: '', shouldSkip: true }
+  } else if (wordCount <= 1500) {
+    return { targetLength: '100-200 words', shouldSkip: false }
+  } else {
+    return { targetLength: '250-500 words', shouldSkip: false }
+  }
 }
 
 /**
@@ -39,6 +64,22 @@ export async function generateArticleAnalysis(
   title: string
 ): Promise<ArticleAnalysis> {
   try {
+    // Check word count and determine summary requirements
+    const wordCount = countWords(content)
+    const { targetLength, shouldSkip } = getSummaryLengthInstructions(wordCount)
+
+    // If article is too short (<100 words), skip summary generation
+    if (shouldSkip) {
+      console.log(`Article "${title}" has only ${wordCount} words, skipping summary generation`)
+      return {
+        summary: { chinese: '', english: '' },
+        language: 'en',
+        category: undefined,
+        title_english: title,
+        skipSummary: true
+      }
+    }
+
     // 检查 API 每日调用限制
     const apiLimitCheck = checkApiLimit('deepseek');
     if (!apiLimitCheck.allowed) {
@@ -60,7 +101,7 @@ TASK: Analyze this article and provide the response in the EXACT format specifie
 You must:
 1. Detect the primary language of the article.
 2. Translate the title to English (if not already English).
-3. Produce an ULTRA-CONCISE, read-aloud friendly summary in Simplified Chinese and English.
+3. Produce a STRUCTURED, well-organized summary in Simplified Chinese and English.
 4. Categorize the article.
 
 LANGUAGE DETECTION:
@@ -76,28 +117,37 @@ SUMMARIES:
 - summary_english: MUST be in English. Even if the article is Chinese/Spanish. Or else it is a failure.
 
 ROLE:
-TTS-ready summarizer. Output EXACTLY two sections: first Chinese (2-3 paragraphs), then English (2-3 paragraphs).
-NO headings, labels, markers, asterisks, or format indicators of ANY kind within the summary text.
+Expert content summarizer. Create structured, informative summaries that help readers quickly understand:
+- The main topic and thesis of the article
+- Key insights, data points, or arguments
+- Important conclusions or takeaways
 
-TASK:
-Read ARTICLE. Write a comprehensive, natural, read-aloud description.
-Target ~300 words for EACH language section. Maximize information density.
+SUMMARY LENGTH REQUIREMENT:
+Each summary (Chinese and English) should be ${targetLength} total.
+The article has ${wordCount} words.
+
+SUMMARY STRUCTURE:
+- Start with a concise overview of the main topic (1-2 sentences)
+- Present key points and insights in a logical order
+- End with the main conclusion or takeaway
+- NO headings, labels, markers, asterisks, or format indicators
+- Write in natural, flowing paragraphs (2-3 paragraphs per language)
 
 OUTPUT FORMAT (FOLLOW EXACTLY):
 LANGUAGE: [detected language code]
 TITLE_ENGLISH: [The title translated to English]
 
-[Chinese paragraph 1]
+[Chinese paragraph 1 - main topic overview]
 
-[Chinese paragraph 2]
+[Chinese paragraph 2 - key insights and points]
 
-[Chinese paragraph 3 if needed]
+[Chinese paragraph 3 if needed - conclusions]
 
-[English paragraph 1]
+[English paragraph 1 - main topic overview]
 
-[English paragraph 2]
+[English paragraph 2 - key insights and points]
 
-[English paragraph 3 if needed]
+[English paragraph 3 if needed - conclusions]
 
 CATEGORY: [Select up to 3 categories from: Hardware, Gaming, Health, Environment, Personal Story, Culture, Philosophy, History, Education, Design, Marketing, AI, Crypto, Tech, Data, Startups, Business, Markets, Product, Security, Policy, Science, Media]
 

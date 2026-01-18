@@ -55,7 +55,6 @@ export const metadata: Metadata = {
     title: 'Xarticle - Curated Articles from X (Twitter)',
     description: 'Discover trending discussions, insights, and curated content from top voices on X (Twitter). Read daily summaries of the most engaging articles.',
   },
-},
   twitter: {
     card: 'summary_large_image',
     site: '@xarticle_news',
@@ -63,23 +62,22 @@ export const metadata: Metadata = {
     title: 'Xarticle - Curated Articles from X (Twitter)',
     description: 'Discover trending discussions, insights, and curated content from top voices on X (Twitter). Read daily summaries of the most engaging articles.',
   },
-   },
-viewport: {
-  width: 'device-width',
-  initialScale: 1,
-  maximumScale: 5,
-},
-robots: {
-  index: true,
-    follow: true,
-      googleBot: {
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 5,
+  },
+  robots: {
     index: true,
+    follow: true,
+    googleBot: {
+      index: true,
       follow: true,
-        'max-video-preview': -1,
-          'max-image-preview': 'large',
-            'max-snippet': -1,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
     },
-},
+  },
 };
 
 export default function RootLayout({

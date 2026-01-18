@@ -4,8 +4,6 @@ import { FeedLoading } from '@/components/feed-loading'
 import { createAnonClient } from '@/lib/supabase/server'
 import { Article } from '@/components/article-card'
 import { Metadata } from 'next'
-import Link from 'next/link'
-import { Sparkles } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: 'Trending Articles From X | Xarticle',
@@ -166,18 +164,6 @@ export default async function TrendingPage({ searchParams }: PageProps) {
               </p>
             </div>
 
-            <Link href="/summary" className="group relative w-full lg:w-96 p-8 rounded-[2rem] bg-white/[0.03] border border-white/5 hover:bg-white/[0.08] hover:border-white/10 transition-all duration-500 overflow-hidden shadow-2xl flex items-center gap-6">
-              <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-500">
-                <Sparkles className="text-white/70" size={24} />
-              </div>
-              <div className="space-y-1">
-                <div className="text-[10px] uppercase tracking-[0.2em] text-white/30 font-bold">Daily Briefing</div>
-                <h3 className="text-xl font-medium text-white/90 group-hover:text-white transition-colors">Daily Report</h3>
-                <p className="text-xs text-white/40 font-light leading-relaxed">
-                  Summarized insights from today&apos;s best content.
-                </p>
-              </div>
-            </Link>
           </header>
 
           <section aria-labelledby="feed">

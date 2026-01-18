@@ -45,7 +45,6 @@ export function ArticleComments({ articleId }: ArticleCommentsProps) {
       <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/5">
         <CommentForm
           user={user}
-          articleId={articleId}
           commentCount={realCommentCount}
           onSubmit={handleSubmit}
           submitting={submitting}

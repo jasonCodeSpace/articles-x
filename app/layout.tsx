@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
@@ -14,6 +14,12 @@ const inter = Inter({
   display: "swap",
   variable: "--font-inter",
 });
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.xarticle.news'),
@@ -61,11 +67,6 @@ export const metadata: Metadata = {
     creator: '@xarticle_news',
     title: 'Xarticle - Curated Articles from X (Twitter)',
     description: 'Discover trending discussions, insights, and curated content from top voices on X (Twitter). Read daily summaries of the most engaging articles.',
-  },
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 5,
   },
   robots: {
     index: true,

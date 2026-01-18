@@ -17,24 +17,6 @@ export interface ExtractArticlesOutput {
   articlesFound: number
 }
 
-// Function to check if a tweet MIGHT be an article from the list view
-function _isPotentialArticle(tweet: TwitterTweet): boolean {
-  // Check for article_results or if it looks like a long form post that might be an article
-  // Some articles in list view show up with 'article' field
-  return !!(tweet.article_results?.result || tweet.article?.article_results?.result || tweet.legacy?.full_text?.includes('https://t.co/'));
-  // Note: The user said "fetch the list... For every item found... fetch the specific Tweet Detail".
-  // This could mean fetch EVERYTHING. But that would be expensive.
-  // "For every item found, use the tweet_id... to make a separate API call... to fetch... Full Article JSON" implies we only care about Actual Articles.
-  // If we fetch every tweet detail, we waste API calls on normal tweets.
-  // However, "data integrity issues... zero metrics" implies we need metrics for the tweets that ARE articles.
-  // So we filter for things that look like articles.
-  // Let's stick to: if it has article content OR if it's a candidate.
-  // To be safe and since I can't easily know if a link is an Article without checking, I will trust the 'article' field existence if possible.
-  // If the list view doesn't return 'article' object for articles, we have a problem.
-  // Assuming list view returns minimal info.
-  // Better heuristic: checks if it has 'article' or 'article_results' structure.
-}
-
 export const extractArticlesStep = createStep<ExtractArticlesInput, ExtractArticlesOutput>(
   'extract-articles',
   async (input: ExtractArticlesInput, ctx: WorkflowContext): Promise<StepResult<ExtractArticlesOutput>> => {

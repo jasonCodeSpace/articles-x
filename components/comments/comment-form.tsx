@@ -8,13 +8,12 @@ import { useRouter } from 'next/navigation'
 
 interface CommentFormProps {
   user: { id: string; email?: string } | null
-  articleId: string
   commentCount: number
   onSubmit: (content: string) => Promise<void>
   submitting: boolean
 }
 
-export function CommentForm({ user, articleId: _articleId, commentCount, onSubmit, submitting }: CommentFormProps) {
+export function CommentForm({ user, commentCount, onSubmit, submitting }: CommentFormProps) {
   const [newComment, setNewComment] = useState('')
   const router = useRouter()
 

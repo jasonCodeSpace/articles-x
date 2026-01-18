@@ -24,8 +24,25 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.xarticle.news'),
   title: "Xarticle - Curated Articles from X (Twitter)",
-  description: "Discover trending discussions, insights, and curated content from top voices on X (Twitter). Read daily summaries of the most engaging articles.",
-  keywords: ['articles', 'news', 'twitter', 'x', 'social media', 'content', 'curated', 'trending', 'discussions'],
+  description: "The smartest way to read long-form content from X. AI-powered summaries of the best articles on tech, business, crypto, and culture. Fast search, zero noise.",
+  keywords: [
+    'X articles',
+    'Twitter long-form',
+    'Articles on X',
+    'X article summaries',
+    'AI article summaries',
+    'Twitter content summaries',
+    'X insights fast',
+    'AI-powered reading',
+    'noise-free reading',
+    'curated X content',
+    'best Twitter threads',
+    'X article directory',
+    'Twitter article search',
+    'how to read X articles efficiently',
+    'summarized Twitter content',
+    'X creators directory'
+  ],
   alternates: {
     canonical: 'https://www.xarticle.news/',
     // x-default indicates this is the default URL for all language versions
@@ -59,14 +76,14 @@ export const metadata: Metadata = {
     url: 'https://www.xarticle.news',
     siteName: 'Xarticle',
     title: 'Xarticle - Curated Articles from X (Twitter)',
-    description: 'Discover trending discussions, insights, and curated content from top voices on X (Twitter). Read daily summaries of the most engaging articles.',
+    description: 'The smartest way to read long-form content from X. AI-powered summaries of the best articles on tech, business, crypto, and culture. Fast search, zero noise.',
   },
   twitter: {
     card: 'summary_large_image',
     site: '@xarticle_news',
     creator: '@xarticle_news',
     title: 'Xarticle - Curated Articles from X (Twitter)',
-    description: 'Discover trending discussions, insights, and curated content from top voices on X (Twitter). Read daily summaries of the most engaging articles.',
+    description: 'The smartest way to read long-form content from X. AI-powered summaries of the best articles on tech, business, crypto, and culture. Fast search, zero noise.',
   },
   robots: {
     index: true,

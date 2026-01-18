@@ -526,6 +526,111 @@ ${summaryEnglish}`
 }
 
 /**
+ * Generate comprehensive reading guide (professional article analysis)
+ * This creates a detailed, structured guide that helps readers fully understand the article
+ */
+export async function generateReadingGuide(
+  content: string,
+  title: string
+): Promise<{
+  summary_english: string
+  title_english: string
+}> {
+  const wordCount = countWords(content)
+
+  // Determine scope based on article length
+  let scopeInstructions = ''
+  if (wordCount > 3000) {
+    scopeInstructions = `This is a LONG article (${wordCount} words). Provide a concise but comprehensive guide (250-400 words) covering the main arguments and key insights.`
+  } else if (wordCount > 1000) {
+    scopeInstructions = `This is a medium-length article (${wordCount} words). Provide a concise guide (150-250 words) covering the main points.`
+  } else {
+    scopeInstructions = `This is a short article (${wordCount} words). Provide a brief guide (100-150 words) capturing the essence.`
+  }
+
+  const prompt = `You are an expert editorial assistant. Your task is to create a COMPREHENSIVE READING GUIDE for this article.
+
+A reading guide is NOT a brief summary. It should:
+- Help readers understand what they will gain from reading the full article
+- Capture the nuance, arguments, and key insights
+- Be detailed enough to serve as a standalone professional analysis
+
+${scopeInstructions}
+
+ARTICLE TITLE: ${title}
+
+ARTICLE CONTENT (FULL TEXT):
+${content}
+
+OUTPUT FORMAT (FOLLOW EXACTLY):
+TITLE_ENGLISH: [Translate title to English if needed]
+READING_GUIDE: [Your comprehensive reading guide in English]
+
+READING GUIDE STRUCTURE (3 parts):
+• Opening Hook - What makes this article worth reading?
+• Core Thesis & Framework - What is the main argument or model presented?
+• Key Insights - 3-5 bullet points covering the main ideas and takeaways
+
+REQUIREMENTS:
+- Use bullet points (•) for the Key Insights section
+- You may use numbered lists like "1." "2." for structured content
+- DO NOT use asterisks (**), bold markdown, or any special formatting symbols
+- Be specific with concrete details from the article
+- Preserve the author's voice and key terminology`
+
+  const response = await callDeepSeek(prompt, 4000)
+  const parsed = parseEnglishResponseWithGuide(response, title)
+  return parsed
+}
+
+/**
+ * Parse English analysis response with reading guide format
+ */
+function parseEnglishResponseWithGuide(
+  text: string,
+  title: string
+): { summary_english: string; title_english: string } {
+  const lines = text.split('\n').map(l => l.trim()).filter(Boolean)
+
+  let title_english = title
+  let summary_english = ''
+
+  for (const line of lines) {
+    if (line.startsWith('TITLE_ENGLISH:')) {
+      title_english = line.replace('TITLE_ENGLISH:', '').trim()
+    } else if (line.startsWith('READING_GUIDE:')) {
+      summary_english = line.replace('READING_GUIDE:', '').trim()
+    } else if (line.startsWith('SUMMARY:')) {
+      summary_english = line.replace('SUMMARY:', '').trim()
+    }
+  }
+
+  // If no label found, use remaining text
+  if (!summary_english) {
+    const guideStart = text.indexOf('READING_GUIDE:')
+    if (guideStart !== -1) {
+      summary_english = text.substring(guideStart + 14).trim()
+    } else {
+      const summaryStart = text.indexOf('SUMMARY:')
+      if (summaryStart !== -1) {
+        summary_english = text.substring(summaryStart + 8).trim()
+      } else {
+        // Last resort: use the whole response
+        summary_english = text
+      }
+    }
+  }
+
+  // Clean up any asterisks that might appear
+  summary_english = summary_english.replace(/\*\*/g, '').replace(/\*/g, '')
+
+  return {
+    summary_english,
+    title_english
+  }
+}
+
+/**
  * Parse English analysis response
  */
 function parseEnglishResponse(

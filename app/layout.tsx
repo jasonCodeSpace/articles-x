@@ -9,7 +9,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { WebVitals } from "@/components/web-vitals";
 import { CookieConsent } from "@/components/cookie-consent";
 
-const inter = Inter({ 
+const inter = Inter({
   subsets: ["latin"],
   display: "swap",
   variable: "--font-inter",
@@ -54,38 +54,32 @@ export const metadata: Metadata = {
     siteName: 'Xarticle',
     title: 'Xarticle - Curated Articles from X (Twitter)',
     description: 'Discover trending discussions, insights, and curated content from top voices on X (Twitter). Read daily summaries of the most engaging articles.',
-    images: [
-       {
-         url: '/og-image.png',
-         width: 1200,
-         height: 630,
-         alt: 'Xarticle - Curated Articles from X (Twitter)',
-         type: 'image/png',
-        },
-      ],
   },
+},
   twitter: {
-     card: 'summary_large_image',
-     site: '@xarticle_news',
-     creator: '@xarticle_news',
-     title: 'Xarticle - Curated Articles from X (Twitter)',
-     description: 'Discover trending discussions, insights, and curated content from top voices on X (Twitter). Read daily summaries of the most engaging articles.',
-     images: {
-       url: '/og-image.png',
-       alt: 'Xarticle - Curated Articles from X (Twitter)',
-     },
-   },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      'max-video-preview': -1,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
-    },
+    card: 'summary_large_image',
+    site: '@xarticle_news',
+    creator: '@xarticle_news',
+    title: 'Xarticle - Curated Articles from X (Twitter)',
+    description: 'Discover trending discussions, insights, and curated content from top voices on X (Twitter). Read daily summaries of the most engaging articles.',
   },
+   },
+viewport: {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+},
+robots: {
+  index: true,
+    follow: true,
+      googleBot: {
+    index: true,
+      follow: true,
+        'max-video-preview': -1,
+          'max-image-preview': 'large',
+            'max-snippet': -1,
+    },
+},
 };
 
 export default function RootLayout({
@@ -129,7 +123,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://pbs.twimg.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://www.googletagmanager.com" />
         <link rel="preconnect" href="https://www.google-analytics.com" />
-        
+
         {/* DNS prefetch for additional domains */}
         <link rel="dns-prefetch" href="//pbs.twimg.com" />
         <link rel="dns-prefetch" href="//fonts.googleapis.com" />
@@ -153,7 +147,7 @@ export default function RootLayout({
             gtag('config', 'G-2TMVNWYFES');
           `}
         </Script>
-        
+
         <ThemeProvider>
           <LanguageProvider>
             {children}

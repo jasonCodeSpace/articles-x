@@ -102,7 +102,7 @@ export function ArticleCard({ article, className, index = 0, priority = false, d
   return (
     <FadeIn delay={index * 0.05} direction="up" distance={20} className="h-full">
       <div className={cn(
-        "group relative flex flex-col h-[520px] rounded-[2rem] bg-white/[0.03] border border-white/5 overflow-hidden transition-all duration-500 hover:bg-white/[0.06] hover:border-white/10 hover:shadow-2xl hover:shadow-white/5",
+        "group relative flex flex-col h-[520px] rounded-[2rem] bg-card border border-border overflow-hidden transition-all duration-500 hover:bg-white/[0.06] hover:border-white/10 hover:shadow-2xl hover:shadow-white/5",
         className
       )}>
         {/* Cover Image */}
@@ -121,7 +121,7 @@ export function ArticleCard({ article, className, index = 0, priority = false, d
             <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A]/80 via-transparent to-transparent opacity-60" />
 
             {languageFromDB && (
-              <div className="absolute top-4 left-4 px-2 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-[10px] uppercase tracking-widest text-white/50">
+              <div className="absolute top-4 left-4 px-2 py-1 rounded-full bg-white/10 backdrop-blur-md border border-border text-[10px] uppercase tracking-widest text-white/50">
                 {languageFromDB}
               </div>
             )}
@@ -143,10 +143,10 @@ export function ArticleCard({ article, className, index = 0, priority = false, d
             )}
           </div>
 
-          <div className="space-y-4 pt-4 border-t border-white/5">
+          <div className="space-y-4 pt-4 border-t border-border">
             <div className="flex items-center justify-between">
               <Link href={`/author/${encodeURIComponent(authorHandle)}`} className="flex items-center gap-2 group/author">
-                <Avatar className="h-6 w-6 border border-white/10 transition-transform group-hover/author:scale-110">
+                <Avatar className="h-6 w-6 border border-border transition-transform group-hover/author:scale-110">
                   {avatarUrl && <AvatarImage src={avatarUrl} referrerPolicy="no-referrer" />}
                   <AvatarFallback className="text-[10px] bg-white/5 text-white/30">{authorInitials}</AvatarFallback>
                 </Avatar>
@@ -196,7 +196,7 @@ export const ArticleCardMemo = memo(ArticleCard, (prevProps, nextProps) => {
 
 export function ArticleCardSkeleton({ className }: { className?: string }) {
   return (
-    <div className={cn("rounded-[2rem] bg-white/[0.03] border border-white/5 overflow-hidden h-[520px] animate-pulse", className)}>
+    <div className={cn("rounded-[2rem] bg-card border border-border overflow-hidden h-[520px] animate-pulse", className)}>
       <div className="aspect-video bg-white/5" />
       <div className="p-6 space-y-4">
         <div className="space-y-3">
@@ -206,7 +206,7 @@ export function ArticleCardSkeleton({ className }: { className?: string }) {
           <div className="h-4 bg-white/5 rounded w-full" />
           <div className="h-4 bg-white/5 rounded w-full" />
         </div>
-        <div className="pt-4 border-t border-white/5 flex justify-between items-center">
+        <div className="pt-4 border-t border-border flex justify-between items-center">
           <div className="flex gap-2 items-center">
             <div className="w-6 h-6 rounded-full bg-white/5" />
             <div className="h-3 bg-white/5 rounded w-20" />

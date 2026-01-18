@@ -126,7 +126,7 @@ export default async function HomePage() {
               {/* Hero Content */}
               <div className="lg:col-span-7 space-y-10 text-center lg:text-left">
                 <FadeIn direction="none" delay={0.1}>
-                  <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-medium tracking-wider uppercase text-white/50 mb-4 mx-auto lg:mx-0">
+                  <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-white/5 border border-border text-[10px] font-medium tracking-wider uppercase text-white/50 mb-4 mx-auto lg:mx-0">
                     <Sparkles size={12} className="text-white" />
                     <span>AI-Curated Excellence</span>
                   </div>
@@ -167,10 +167,10 @@ export default async function HomePage() {
                 {trendingArticles && trendingArticles.length > 0 ? (
                   <FadeIn direction="left" distance={40} className="relative group">
                     <div className="absolute -inset-4 bg-gradient-to-r from-white/5 to-transparent rounded-[3rem] blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-                    <Link href={`/article/${trendingArticles[0].slug}`} className="block relative overflow-hidden rounded-[2.5rem] border border-white/10 bg-white/5 p-8 transition-all duration-500 hover:border-white/20 hover:bg-white/[0.08] shadow-2xl">
+                    <Link href={`/article/${trendingArticles[0].slug}`} className="block relative overflow-hidden rounded-[2.5rem] border border-border bg-card p-8 transition-all duration-500 hover:border-white/20 hover:bg-white/[0.08] shadow-2xl">
                       <div className="space-y-6">
                         <div className="flex items-center justify-between">
-                          <div className="px-3 py-1 rounded-full bg-white/10 border border-white/10 text-[10px] uppercase tracking-widest font-bold text-white/60">
+                          <div className="px-3 py-1 rounded-full bg-white/10 border border-border text-[10px] uppercase tracking-widest font-bold text-white/60">
                             Weekly Highlight
                           </div>
                           <div className="flex items-center gap-1 text-[10px] tracking-widest uppercase text-white/30">
@@ -196,7 +196,7 @@ export default async function HomePage() {
                     </Link>
                   </FadeIn>
                 ) : (
-                  <div className="h-[400px] rounded-[2.5rem] bg-white/5 border border-white/10 animate-pulse flex items-center justify-center">
+                  <div className="h-[400px] rounded-[2.5rem] bg-card border border-border animate-pulse flex items-center justify-center">
                     <span className="text-white/20 text-sm tracking-widest uppercase">Loading Weekly Highlight...</span>
                   </div>
                 )}
@@ -217,14 +217,14 @@ export default async function HomePage() {
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[
-                { title: 'Real-time Signal', desc: 'Continuous discovery of high-value threads and articles.', icon: TrendingUp },
-                { title: 'AI Synthesis', desc: 'Precision summaries for long-form content.', icon: Sparkles },
-                { title: 'Smart Search', desc: 'Find insights across thousands of curated articles.', icon: Globe },
-                { title: 'Noise Filter', desc: 'Purely chronological feeds. No engagement algorithms.', icon: Shield },
-                { title: 'Universal Access', desc: 'AI-powered translations for global accessibility.', icon: BookOpen },
-                { title: 'Personal Archive', desc: 'Build your own knowledge base from X content.', icon: Bookmark },
+                { title: 'Fresh Daily', desc: 'New articles arrive every 20 minutes, ready when you are.', icon: TrendingUp },
+                { title: 'Clear Summaries', desc: 'Know what matters before you commit to reading.', icon: Sparkles },
+                { title: 'Search Freely', desc: 'Find exactly what you need, no algorithms involved.', icon: Globe },
+                { title: 'Pure Feed', desc: 'Chronological flow. No notifications, no urgency.', icon: Shield },
+                { title: 'Read Anywhere', desc: 'AI translations in your language, on your time.', icon: BookOpen },
+                { title: 'Your Library', desc: 'Save what resonates. Build slowly, return often.', icon: Bookmark },
               ].map((benefit, i) => (
-                <FadeIn key={i} delay={0.1 * i} className="group p-8 rounded-[2rem] bg-white/[0.03] border border-white/5 hover:bg-white/[0.08] hover:border-white/10 transition-all duration-500 text-left">
+                <FadeIn key={i} delay={0.1 * i} className="group p-8 rounded-[2rem] bg-card border border-border hover:bg-white/[0.08] hover:border-white/10 transition-all duration-500 text-left">
                   <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
                     <benefit.icon className="text-white/70" size={24} />
                   </div>
@@ -237,7 +237,7 @@ export default async function HomePage() {
         </section>
 
         {/* Social Proof Stats */}
-        <section className="py-20 px-6 border-y border-white/5 z-10 relative">
+        <section className="py-20 px-6 border-y border-border z-10 relative">
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-around items-center gap-12">
             <FadeIn delay={0.1} className="text-center">
               <div className="text-5xl font-bold tracking-tighter mb-2">{totalArticles?.toLocaleString() || '2,500'}+</div>
@@ -256,7 +256,7 @@ export default async function HomePage() {
 
         {/* Final CTA */}
         <section className="py-40 px-6 z-10 relative">
-          <div className="max-w-4xl mx-auto rounded-[3rem] bg-gradient-to-br from-white/[0.08] to-transparent border border-white/10 p-12 md:p-24 text-center">
+          <div className="max-w-4xl mx-auto rounded-[3rem] bg-gradient-to-br from-white/[0.08] to-transparent border border-border p-12 md:p-24 text-center">
             <FadeIn>
               <h3 className="text-5xl md:text-7xl font-bold tracking-tighter mb-10">
                 Join the <br />
@@ -292,7 +292,7 @@ export default async function HomePage() {
         </section>
 
         {/* Minimal Footer */}
-        <footer className="py-20 px-6 border-t border-white/5 z-10 relative">
+        <footer className="py-20 px-6 border-t border-border z-10 relative">
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-10 text-center md:text-left">
             <div className="flex items-center gap-3">
               <Image src="/logo.svg" alt="Logo" width={28} height={28} className="invert opacity-50" />

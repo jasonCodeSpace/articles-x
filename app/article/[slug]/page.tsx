@@ -27,8 +27,13 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
   }
 
   const title = article.title_english || article.title
-  const description = article.summary_english || article.summary_chinese ||
-    (article.full_article_content ? article.full_article_content.substring(0, 160) + '...' : '')
+
+  // Get first sentence from summary for description
+  const summary = article.summary_english || article.summary_chinese || ''
+  const firstSentence = summary.split(/[.!?。！？]/)[0]
+  const description = firstSentence.length > 160
+    ? firstSentence.substring(0, 160) + '...'
+    : firstSentence + (firstSentence && !summary.split(/[.!?。！？]/)[0].endsWith('.') ? '.' : '')
 
   return {
     title: `${title} | XArticle`,
@@ -46,18 +51,11 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
       type: 'article',
       publishedTime: article.article_published_at || article.updated_at,
       authors: [article.author_name],
-      images: article.image ? [{
-        url: article.image,
-        width: 1200,
-        height: 630,
-        alt: title
-      }] : undefined
     },
     twitter: {
       card: 'summary_large_image',
       title,
       description,
-      images: article.image ? [article.image] : undefined
     }
   }
 }
@@ -76,6 +74,13 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     getNextArticle(article.id),
     getRelatedArticles(article.id, 2)
   ])
+
+  // Get first sentence from summary for description
+  const summary = article.summary_english || article.summary_chinese || ''
+  const firstSentence = summary.split(/[.!?。！？]/)[0]
+  const description = firstSentence.length > 160
+    ? firstSentence.substring(0, 160) + '...'
+    : firstSentence + (firstSentence && !summary.split(/[.!?。！？]/)[0].endsWith('.') ? '.' : '')
 
   // Generate author initials
   const authorInitials = article.author_name
@@ -134,7 +139,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       }
     },
     "image": article.image || "https://www.xarticle.news/og-image.png",
-    "description": (article.summary_english || article.summary_chinese || "")?.substring(0, 160),
+    "description": description,
     "mainEntityOfPage": {
       "@type": "WebPage",
       "@id": `https://www.xarticle.news/article/${slug}`

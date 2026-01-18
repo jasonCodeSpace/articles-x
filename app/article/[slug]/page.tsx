@@ -28,12 +28,12 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
 
   const title = article.title_english || article.title
 
-  // Get first sentence from summary for description
-  const summary = article.summary_english || article.summary_chinese || ''
-  const firstSentence = summary.split(/[.!?。！？]/)[0]
+  // Get first sentence from summary_english for description
+  const summary = article.summary_english || ''
+  const firstSentence = summary.split(/[.!?]/)[0]
   const description = firstSentence.length > 160
     ? firstSentence.substring(0, 160) + '...'
-    : firstSentence + (firstSentence && !summary.split(/[.!?。！？]/)[0].endsWith('.') ? '.' : '')
+    : firstSentence
 
   return {
     title: `${title} | XArticle`,
@@ -75,12 +75,12 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     getRelatedArticles(article.id, 2)
   ])
 
-  // Get first sentence from summary for description
-  const summary = article.summary_english || article.summary_chinese || ''
-  const firstSentence = summary.split(/[.!?。！？]/)[0]
+  // Get first sentence from summary_english for description
+  const summary = article.summary_english || ''
+  const firstSentence = summary.split(/[.!?]/)[0]
   const description = firstSentence.length > 160
     ? firstSentence.substring(0, 160) + '...'
-    : firstSentence + (firstSentence && !summary.split(/[.!?。！？]/)[0].endsWith('.') ? '.' : '')
+    : firstSentence
 
   // Generate author initials
   const authorInitials = article.author_name

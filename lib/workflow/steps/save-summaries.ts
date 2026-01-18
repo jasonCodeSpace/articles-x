@@ -37,24 +37,45 @@ export const saveSummariesStep = createStep<SaveSummariesInput, SaveSummariesOut
 
       for (const { article, analysis } of processed) {
         try {
-          // 如果摘要被跳过（文章太短），标记为已处理但不保存摘要
-          if (analysis.summary_skipped) {
-            ctx.logs.push({
-              timestamp: new Date(),
-              level: 'info',
-              step: 'save-summaries',
-              message: `Skipping save for "${article.title.substring(0, 40)}..." - article too short (${analysis.word_count} words)`
-            })
-            skipped++
-            continue
-          }
-
           // Generate proper slug now that we have title_english
           const newSlug = generateSlug(
             article.title,
             analysis.title_english,
             article.tweet_id
           )
+
+          // 如果摘要被跳过（文章太短），只更新 title_english 和 slug，不保存摘要
+          if (analysis.summary_skipped) {
+            // Still need to update title_english and slug for short articles!
+            const { error } = await supabase
+              .from('articles')
+              .update({
+                title_english: analysis.title_english,
+                slug: newSlug, // Update slug with proper English translation
+                language: analysis.language
+              })
+              .eq('title', article.title)
+
+            if (error) {
+              ctx.logs.push({
+                timestamp: new Date(),
+                level: 'warn',
+                step: 'save-summaries',
+                message: `Failed to update title_english for: ${article.title} - ${error.message}`
+              })
+              failed++
+            } else {
+              ctx.logs.push({
+                timestamp: new Date(),
+                level: 'info',
+                step: 'save-summaries',
+                message: `Updated title_english for short article: ${article.title.substring(0, 40)}...`
+              })
+              saved++
+            }
+            skipped++
+            continue
+          }
 
           const { error } = await supabase
             .from('articles')

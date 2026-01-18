@@ -5,7 +5,7 @@
  */
 import { createStep, StepResult, WorkflowContext } from '../engine'
 import { HarvestedArticle } from '@/lib/services/article'
-import { generateEnglishAnalysis, translateToChinese } from '@/lib/deepseek'
+import { generateEnglishAnalysis, translateToChinese, callDeepSeek } from '@/lib/deepseek'
 import { isEnglish } from '@/lib/url-utils'
 import { countWords, getSummaryRequirement } from '@/lib/word-count'
 import { createClient } from '@supabase/supabase-js'
@@ -44,6 +44,40 @@ function createServiceRoleClient() {
     throw new Error('Supabase environment variables not set')
   }
   return createClient(supabaseUrl, serviceKey)
+}
+
+/**
+ * Check if text contains Chinese characters
+ */
+function hasChinese(text: string): boolean {
+  return /[\u4e00-\u9fff]/.test(text || '')
+}
+
+/**
+ * Translate just the title to English (for short articles that skip summary)
+ */
+async function translateTitleOnly(title: string): Promise<string> {
+  if (!hasChinese(title)) {
+    return title // Already in English
+  }
+
+  const prompt = `Translate this title to pure English. NO Chinese characters allowed. Return ONLY the English title, nothing else.
+
+Title: ${title}
+
+English translation:`
+
+  try {
+    const result = await callDeepSeek(prompt, 200)
+    const translated = result.trim().replace(/^[\"']|[\"']$/g, '')
+    // If result still has Chinese, return original
+    if (hasChinese(translated)) {
+      return title
+    }
+    return translated
+  } catch {
+    return title
+  }
 }
 
 export const generateSummariesStep = createStep<GenerateSummariesInput, GenerateSummariesOutput>(
@@ -108,15 +142,17 @@ export const generateSummariesStep = createStep<GenerateSummariesInput, Generate
             })
 
             // 仍然保存标记为跳过的文章，避免重复处理
+            // 但必须生成英文标题，确保 slug 正确
             const matchingArticle = articles.find(a => a.title === dbArticle.title)
             if (matchingArticle) {
+              const titleEnglish = await translateTitleOnly(dbArticle.title)
               processed.push({
                 article: matchingArticle,
                 analysis: {
                   summary_english: '',
                   summary_chinese: '',
-                  title_english: dbArticle.title,
-                  language: 'en',
+                  title_english: titleEnglish,
+                  language: isEnglish(dbArticle.title) ? 'en' : 'zh',
                   word_count: wordCount,
                   summary_skipped: true
                 }

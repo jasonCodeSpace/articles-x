@@ -15,6 +15,12 @@ export interface FetchListTimelineOptions {
   count?: number
 }
 
+export interface FetchUserTweetsOptions {
+  userId: string
+  cursor?: string
+  count?: number
+}
+
 export interface TwitterApiError extends Error {
   status?: number
   response?: unknown
@@ -78,6 +84,100 @@ export class TwitterClient {
       const data = await response.json()
       return parseTweetFromDetail(data)
     })
+  }
+
+  /**
+   * Fetch tweets for a specific user
+   */
+  async fetchUserTweets(options: FetchUserTweetsOptions): Promise<TwitterTimelineResponse> {
+    return this.rateLimiter.execute(async () => {
+      const url = `https://${this.config.apiHost}/user-tweets`
+      const params = new URLSearchParams({
+        id: options.userId,
+        count: (options.count || 20).toString(),
+        ...(options.cursor && { cursor: options.cursor })
+      })
+
+      const response = await this.fetchWithRetry(`${url}?${params}`)
+
+      if (!response.ok) {
+        const error = new Error(`Twitter API error: ${response.status} ${response.statusText}`) as TwitterApiError
+        error.status = response.status
+        error.response = await response.json().catch(() => null)
+        throw error
+      }
+
+      return (await response.json()) as TwitterTimelineResponse
+    })
+  }
+
+  /**
+   * Get user ID by username (handle)
+   */
+  async getUserIdByUsername(username: string): Promise<string | null> {
+    return this.rateLimiter.execute(async () => {
+      // Try multiple possible endpoints
+      const endpoints = [
+        `/UserByScreenName?screenname=${username}`,
+        `/user-info?username=${username}`,
+        `/get-user-by-username?username=${username}`
+      ]
+
+      for (const endpoint of endpoints) {
+        try {
+          const url = `https://${this.config.apiHost}${endpoint}`
+          const response = await this.fetchWithRetry(url)
+
+          if (response.ok) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const data = await response.json() as any
+            // Try different possible response structures
+            return data?.rest_id || data?.data?.rest_id || data?.user?.rest_id || data?.id_str || null
+          }
+        } catch {
+          // Continue to next endpoint
+        }
+      }
+
+      return null
+    })
+  }
+
+  /**
+   * Fetch all pages of a user's tweets
+   */
+  async fetchAllUserTweets(userId: string, maxPages = 5): Promise<TwitterTweet[]> {
+    const allTweets: TwitterTweet[] = []
+    let cursor: string | undefined
+    let pageCount = 0
+
+    while (pageCount < maxPages) {
+      try {
+        const response = await this.fetchUserTweets({
+          userId,
+          cursor,
+          count: 20
+        })
+
+        const tweets = extractTweetsFromResponse(response)
+        allTweets.push(...tweets)
+
+        const nextCursor = extractNextCursor(response)
+        if (!nextCursor || nextCursor === cursor) {
+          break
+        }
+
+        cursor = nextCursor
+        pageCount++
+
+        await RateLimiter.sleep(100)
+      } catch (error) {
+        console.error(`Error fetching page ${pageCount + 1} for user ${userId}:`, error)
+        break
+      }
+    }
+
+    return allTweets
   }
 
   /**

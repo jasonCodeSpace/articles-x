@@ -19,6 +19,7 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 5,
+  themeColor: '#0A0A0A',
 };
 
 export const metadata: Metadata = {
@@ -133,24 +134,25 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        {/* Preconnect to external domains for performance optimization */}
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        {/* Preconnect to critical external domains only */}
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://pbs.twimg.com" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://www.googletagmanager.com" />
-        <link rel="preconnect" href="https://www.google-analytics.com" />
-
-        {/* DNS prefetch for additional domains */}
-        <link rel="dns-prefetch" href="//pbs.twimg.com" />
-        <link rel="dns-prefetch" href="//fonts.googleapis.com" />
-        <link rel="dns-prefetch" href="//www.googletagmanager.com" />
       </head>
       <body className={`${inter.variable} font-sans antialiased bg-background text-foreground`}>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
         />
-        {/* Google Analytics - delayed for performance */}
+        <ThemeProvider>
+          <LanguageProvider>
+            {children}
+          </LanguageProvider>
+        </ThemeProvider>
+        {/* Defer non-critical scripts */}
+        <WebVitals />
+        <CookieConsent />
+        <Analytics />
+        <SpeedInsights />
+        {/* Google Analytics - loaded after page is idle */}
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-2TMVNWYFES"
           strategy="lazyOnload"
@@ -163,16 +165,6 @@ export default function RootLayout({
             gtag('config', 'G-2TMVNWYFES');
           `}
         </Script>
-
-        <ThemeProvider>
-          <LanguageProvider>
-            {children}
-          </LanguageProvider>
-        </ThemeProvider>
-        <WebVitals />
-        <CookieConsent />
-        <SpeedInsights />
-        <Analytics />
       </body>
     </html>
   );

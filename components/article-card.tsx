@@ -6,7 +6,7 @@ import { BookmarkButton } from '@/components/bookmark-button'
 import { formatDistanceToNow } from '@/lib/date-utils'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, memo } from 'react'
 import { generateArticleUrl } from '@/lib/url-utils'
 import { cn } from '@/lib/utils'
 import { FadeIn } from './motion-wrapper'
@@ -184,6 +184,15 @@ export function ArticleCard({ article, className, index = 0, priority = false, d
     </FadeIn>
   )
 }
+
+// Memoize ArticleCard to prevent unnecessary re-renders
+export const ArticleCardMemo = memo(ArticleCard, (prevProps, nextProps) => {
+  return (
+    prevProps.article.id === nextProps.article.id &&
+    prevProps.article.tweet_views === nextProps.article.tweet_views &&
+    prevProps.displayLanguage === nextProps.displayLanguage
+  )
+})
 
 export function ArticleCardSkeleton({ className }: { className?: string }) {
   return (

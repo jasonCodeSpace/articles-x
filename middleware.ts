@@ -30,7 +30,11 @@ export async function middleware(request: NextRequest) {
                        pathname === '/sitemap-ping.xml' ||
                        pathname.startsWith('/sitemap') && pathname.endsWith('.xml') ||
                        pathname.endsWith('.html') ||
-                       pathname === '/rss.xml'
+                       pathname === '/rss.xml' ||
+                       // IndexNow key verification file
+                       pathname.endsWith('.txt') ||
+                       // Yandex verification file
+                       pathname.startsWith('/yandex_') && pathname.endsWith('.html')
   
   // Check if it's a shared article link (has referrer from external source)
   const referrer = request.headers.get('referer')

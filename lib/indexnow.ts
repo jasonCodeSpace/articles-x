@@ -14,7 +14,7 @@ const INDEXNOW_ENDPOINTS = [
   // 'https://indexnow.yandex.com/indexnow',  // Yandex (optional)
 ]
 
-const INDEXNOW_KEY = process.env.INDEXNOW_KEY || 'xarticle_news_key'
+const INDEXNOW_KEY = process.env.INDEXNOW_KEY || 'xarticle_news_key_061414_jason'
 const SITE_HOST = 'www.xarticle.news'
 
 export interface IndexNowResponse {
@@ -130,7 +130,7 @@ export function getIndexNowKeyFileLocation(): string {
  * Verify if the key is properly configured
  */
 export function isIndexNowConfigured(): boolean {
-  return !!INDEXNOW_KEY && INDEXNOW_KEY !== 'xarticle_news_key'
+  return !!INDEXNOW_KEY && INDEXNOW_KEY !== 'xarticle_news_key_061414_jason'
 }
 
 /**

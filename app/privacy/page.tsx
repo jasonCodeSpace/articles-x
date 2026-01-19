@@ -59,7 +59,7 @@ export default async function Privacy() {
                 Xarticle (&quot;Xarticle&quot;, &quot;we&quot;, &quot;our&quot;, &quot;us&quot;) is a website that curates links to long-form articles shared on X and across the web, and provides AI-generated summaries and organization. Xarticle is operated by an individual (the &quot;Operator&quot;). You can contact us at hi@xarticle.news.
               </p>
               <p>
-                This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use <Link href="/" className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">https://www.xarticle.news/</Link> (the &quot;Service&quot;). By using the Service, you agree to the practices described here.
+                This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use <Link href="/" className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">Xarticle website</Link> (the &quot;Service&quot;). By using the Service, you agree to the practices described here.
               </p>
               <h4>Scope</h4>
               <p>
@@ -278,7 +278,7 @@ export default async function Privacy() {
               <p>
                 <strong>X (Twitter):</strong> <a href="https://x.com/0xJason65066" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">@0xJason65066</a> (DM)<br />
                 <strong>Email:</strong> hi@xarticle.news<br />
-                <strong>Website:</strong> <Link href="/" className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">https://www.xarticle.news/</Link>
+                <strong>Website:</strong> <Link href="/" className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">Xarticle homepage</Link>
               </p>
               <p>We typically respond right away.</p>
             </CardContent>

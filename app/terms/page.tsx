@@ -56,7 +56,7 @@ export default async function Terms() {
             </CardHeader>
             <CardContent className="prose dark:prose-invert max-w-none">
               <p>
-                Welcome to Xarticle (&quot;Xarticle&quot;, &quot;we&quot;, &quot;our&quot;, &quot;us&quot;). These Terms of Service (&quot;Terms&quot;) govern your use of <Link href="/" className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">https://www.xarticle.news/</Link> (the &quot;Service&quot;).
+                Welcome to Xarticle (&quot;Xarticle&quot;, &quot;we&quot;, &quot;our&quot;, &quot;us&quot;). These Terms of Service (&quot;Terms&quot;) govern your use of <Link href="/" className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">Xarticle website</Link> (the &quot;Service&quot;).
               </p>
               <p>
                 By accessing or using the Service, you agree to be bound by these Terms. If you do not agree, please do not use the Service.

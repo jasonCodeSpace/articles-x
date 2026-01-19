@@ -1,0 +1,58 @@
+# Xarticle
+
+> Xarticle is an AI-powered content curation platform that discovers, organizes, and summarizes high-quality long-form articles from X (formerly Twitter). The platform uses AI to generate bilingual summaries (English and Chinese) for articles shared by thought leaders, VCs, founders, and researchers in tech, business, crypto, and culture.
+
+## Key Information
+
+- **Content Source**: Monitors thousands of X accounts for long-form article shares
+- **AI Summaries**: Automatic bilingual summaries using OpenAI and Google Generative AI
+- **Database**: PostgreSQL via Supabase for article storage and user authentication
+- **Framework**: Next.js 15 with React 19, TypeScript, Tailwind CSS
+- **Deployment**: Vercel with edge regions (Singapore, Hong Kong, San Francisco)
+- **Update Frequency**: New articles arrive every 15-20 minutes via automated cron jobs
+- **Revalidation**: ISR with 5-minute revalidation for article pages
+
+## API Endpoints
+
+- [Articles API](https://www.xarticle.news/api/articles): List and filter all curated articles
+- [Article by Author](https://www.xarticle.news/api/author/[handle]): Get articles by specific X author
+- [Bookmarks API](https://www.xarticle.news/api/bookmarks): User bookmark management (requires auth)
+- [Categories API](https://www.xarticle.news/api/categories): Available content categories
+- [Timeline Fetch](https://www.xarticle.news/api/fetch-timeline): Fetch latest articles from followed X accounts
+- [Health Check](https://www.xarticle.news/api/health): System status endpoint
+- [RSS Feed](https://www.xarticle.news/rss.xml): Full RSS feed of all articles
+
+## Core Pages
+
+- [Trending](https://www.xarticle.news/trending): Main feed of all curated articles with search and filtering
+- [Home](https://www.xarticle.news/): Landing page with featured content and platform overview
+- [About](https://www.xarticle.news/about): Platform mission and features explanation
+- [Privacy Policy](https://www.xarticle.news/privacy): Privacy practices and data handling
+- [Terms of Service](https://www.xarticle.news/terms): Terms and conditions
+
+## Data Schema
+
+Articles contain the following fields:
+- `id`: Unique identifier
+- `title`, `title_english`: Article titles (original and English)
+- `slug`: URL-friendly identifier
+- `image`: Article thumbnail image URL
+- `author_name`, `author_handle`, `author_avatar`: Author information
+- `article_published_at`: Original publication date
+- `tweet_views`, `tweet_replies`, `tweet_likes`: Engagement metrics
+- `article_url`: Source article URL
+- `language`: Content language (en/zh)
+- `summary_english`, `summary_chinese`: AI-generated summaries
+- `tags`: Content categories
+
+## SEO & Discovery
+
+- [Sitemap](https://www.xarticle.news/sitemap.xml): Complete sitemap of all articles
+- [X account](https://x.com/xarticle_news): Follow for updates
+
+## Optional
+
+- [Contact](https://www.xarticle.news/contact): Contact form for inquiries
+- [Profile](https://www.xarticle.news/profile): User profile and saved articles (requires auth)
+- [Login](https://www.xarticle.news/login): User authentication
+- [Register](https://www.xarticle.news/register): Create new account

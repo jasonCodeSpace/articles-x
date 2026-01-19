@@ -21,11 +21,11 @@ export const metadata: Metadata = {
     type: 'website',
     images: [
       {
-        url: '/og-image.png',
+        url: '/og-image.webp',
         width: 1200,
         height: 630,
         alt: 'Xarticle - Curated Articles from X',
-        type: 'image/png'
+        type: 'image/webp'
       }
     ]
   },
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Xarticle — The Best Articles from X, Curated and Summarized',
     description: 'Discover the most valuable long-form articles shared on X. Read crisp summaries, browse by topic or account, and save your personal must-read list.',
-    images: ['/og-image.png']
+    images: ['/og-image.webp']
   }
 }
 

@@ -149,7 +149,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         "url": "https://www.xarticle.news/logo.svg"
       }
     },
-    "image": article.image || "https://www.xarticle.news/og-image.png",
+    "image": article.image || "https://www.xarticle.news/og-image.webp",
     "description": description,
     "mainEntityOfPage": {
       "@type": "WebPage",

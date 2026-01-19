@@ -16,11 +16,11 @@ export const metadata: Metadata = {
     type: 'website',
     images: [
       {
-        url: '/og-image.png',
+        url: '/og-image.webp',
         width: 1200,
         height: 630,
         alt: 'Xarticle — Trending Articles From X',
-        type: 'image/png'
+        type: 'image/webp'
       },
     ],
     locale: 'en_US',
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Trending Articles From X | Xarticle',
     description: 'Curated, up-to-date reads from leading voices on X.',
-    images: ['/og-image.png'],
+    images: ['/og-image.webp'],
   },
   alternates: {
     canonical: 'https://www.xarticle.news/trending',

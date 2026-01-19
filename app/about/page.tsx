@@ -36,7 +36,7 @@ export default async function About() {
     "url": "https://www.xarticle.news",
     "logo": {
       "@type": "ImageObject",
-      "url": "https://www.xarticle.news/og-image.png",
+      "url": "https://www.xarticle.news/og-image.webp",
       "width": 1200,
       "height": 630
     },

@@ -55,9 +55,9 @@ export default async function HomePage() {
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
   const sevenDaysAgoISO = sevenDaysAgo.toISOString();
 
-  // Fetch articles in parallel - skip auth for faster public page load
-  const [countResult, articlesResult] = await Promise.all([
-    supabase.from('articles').select('*', { count: 'exact', head: true }),
+  // Fetch articles in parallel - use materialized view for fast stats lookup
+  const [statsResult, articlesResult] = await Promise.all([
+    supabase.from('article_stats').select('total_published').eq('id', 1).single(),
     supabase.from('articles')
       .select('id, title, slug, summary_english, author_handle, tweet_views')
       .eq('language', 'en')
@@ -68,7 +68,7 @@ export default async function HomePage() {
       .limit(3)
   ])
 
-  const totalArticles = countResult.count
+  const totalArticles = statsResult.data?.total_published ?? 2500
   const trendingArticles = articlesResult.data
 
   const faqSchema = {

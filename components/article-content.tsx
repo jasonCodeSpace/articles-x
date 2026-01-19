@@ -130,12 +130,6 @@ export function ArticleContent({
               <Clock size={12} />
               {relativeTime}
             </span>
-            {article.category && (
-              <>
-                <span>•</span>
-                <span className="text-white/60">/ {article.category}</span>
-              </>
-            )}
           </div>
 
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-white leading-[1.1]">

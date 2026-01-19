@@ -1,20 +1,16 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
-import Script from "next/script";
 import "./globals.css";
 import { LanguageProvider } from "@/contexts/language-context";
 import { ThemeProvider } from "@/contexts/theme-context";
-import { SpeedInsights } from "@vercel/speed-insights/next";
-import { Analytics } from "@vercel/analytics/next";
-import { WebVitals } from "@/components/web-vitals";
-import { CookieConsent } from "@/components/cookie-consent";
 import { ErrorBoundary } from "@/components/error-boundary";
 
 const inter = Inter({
   subsets: ["latin"],
-  display: "optional",
+  display: "swap",
   variable: "--font-inter",
   preload: true,
+  adjustFontFallback: true,
 });
 
 export const viewport: Viewport = {
@@ -154,24 +150,6 @@ export default function RootLayout({
             </LanguageProvider>
           </ThemeProvider>
         </ErrorBoundary>
-        {/* Defer non-critical scripts */}
-        <WebVitals />
-        <CookieConsent />
-        <Analytics />
-        <SpeedInsights />
-        {/* Google Analytics - loaded after page is idle */}
-        <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-2TMVNWYFES"
-          strategy="lazyOnload"
-        />
-        <Script id="google-analytics" strategy="lazyOnload">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-2TMVNWYFES');
-          `}
-        </Script>
       </body>
     </html>
   );

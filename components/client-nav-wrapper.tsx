@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useTransition } from 'react'
+import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { User } from '@supabase/supabase-js'
 import { ModernNav } from './modern-nav'
@@ -10,33 +10,34 @@ interface ClientNavWrapperProps {
   categories?: string[]
 }
 
+type UserData = { user: User | null } | { error: Error }
+
 export function ClientNavWrapper({ initialUser, categories }: ClientNavWrapperProps) {
   const [user, setUser] = useState<User | null>(initialUser || null)
-  const [isPending, startTransition] = useTransition()
 
   useEffect(() => {
-    // Use transition to avoid blocking UI
-    startTransition(() => {
-      // Get current user on mount - with timeout protection
-      const getCurrentUser = async () => {
-        try {
-          const supabase = createClient()
-          const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('Auth timeout')), 3000)
-          )
-          const { data: { user: currentUser } } = await Promise.race([
-            supabase.auth.getUser(),
-            timeoutPromise
-          ]) as any
-          setUser(currentUser)
-        } catch (error) {
-          // Silently fail - show nav without user
-          setUser(null)
-        }
-      }
+    // Get current user on mount - with timeout protection
+    const getCurrentUser = async () => {
+      try {
+        const supabase = createClient()
+        const timeoutPromise = new Promise<UserData>((_, reject) =>
+          setTimeout(() => reject(new Error('Auth timeout')), 3000)
+        )
+        const result = await Promise.race([
+          supabase.auth.getUser(),
+          timeoutPromise
+        ])
 
-      getCurrentUser()
-    })
+        if ('user' in result) {
+          setUser(result.user)
+        }
+      } catch {
+        // Silently fail - show nav without user
+        setUser(null)
+      }
+    }
+
+    getCurrentUser()
 
     // Listen for auth changes - debounced
     let authTimer: NodeJS.Timeout | null = null

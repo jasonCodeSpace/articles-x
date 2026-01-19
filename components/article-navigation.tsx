@@ -4,7 +4,6 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { Article } from '@/components/article-card'
 
 interface ArticleNavigationProps {
@@ -45,18 +44,6 @@ export function ArticleNavigation({ previousArticle, nextArticle }: ArticleNavig
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [previousArticle, nextArticle, router])
-
-  const handlePreviousClick = () => {
-    if (previousArticle) {
-      router.push(`/article/${previousArticle.slug}`)
-    }
-  }
-
-  const handleNextClick = () => {
-    if (nextArticle) {
-      router.push(`/article/${nextArticle.slug}`)
-    }
-  }
 
   // Don't render if no navigation options available
   if (!previousArticle && !nextArticle) {

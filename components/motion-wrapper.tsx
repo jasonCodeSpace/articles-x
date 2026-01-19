@@ -1,9 +1,9 @@
 "use client"
 
-import { motion, HTMLMotionProps } from "framer-motion"
-import { ReactNode } from "react"
+import { ReactNode, HTMLAttributes } from "react"
+import { cn } from "@/lib/utils"
 
-interface FadeInProps extends HTMLMotionProps<"div"> {
+interface FadeInProps extends HTMLAttributes<HTMLDivElement> {
     children: ReactNode
     delay?: number
     direction?: "up" | "down" | "left" | "right" | "none"
@@ -15,66 +15,57 @@ export function FadeIn({
     delay = 0,
     direction = "up",
     distance = 20,
+    className = "",
+    style,
     ...props
 }: FadeInProps) {
-    const directions = {
-        up: { y: distance },
-        down: { y: -distance },
-        left: { x: distance },
-        right: { x: -distance },
-        none: { x: 0, y: 0 },
+    // For left/right animations
+    if (direction === "left" || direction === "right") {
+        const translateX = direction === "left" ? distance : -distance
+        return (
+            <div
+                className={cn("animate-fade-in-up", className)}
+                style={{
+                    animationDelay: `${delay}s`,
+                    transform: `translateX(${translateX}px)`,
+                    opacity: 0,
+                    animationFillMode: "both",
+                    ...style,
+                }}
+                {...props}
+            >
+                {children}
+            </div>
+        )
     }
 
+    const distanceValue = direction === "down" ? -distance : distance
+
     return (
-        <motion.div
-            initial={{
-                opacity: 0,
-                ...directions[direction],
-            }}
-            whileInView={{
-                opacity: 1,
-                x: 0,
-                y: 0,
-            }}
-            viewport={{ once: true }}
-            transition={{
-                duration: 0.8,
-                delay,
-                ease: [0.21, 0.47, 0.32, 0.98],
+        <div
+            className={cn("animate-fade-in-up", className)}
+            style={{
+                animationDelay: delay > 0 ? `${delay}s` : undefined,
+                ["--distance" as string]: `${distanceValue}px`,
+                ...style,
             }}
             {...props}
         >
             {children}
-        </motion.div>
+        </div>
     )
 }
 
 export function StaggerContainer({
     children,
-    staggerChildren = 0.1,
-    delayChildren = 0,
+    className = "",
     ...props
 }: {
     children: ReactNode
-    staggerChildren?: number
-    delayChildren?: number
-} & HTMLMotionProps<"div">) {
+} & HTMLAttributes<HTMLDivElement>) {
     return (
-        <motion.div
-            initial="initial"
-            whileInView="animate"
-            viewport={{ once: true }}
-            variants={{
-                animate: {
-                    transition: {
-                        staggerChildren,
-                        delayChildren,
-                    },
-                },
-            }}
-            {...props}
-        >
+        <div className={className} {...props}>
             {children}
-        </motion.div>
+        </div>
     )
 }

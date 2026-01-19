@@ -5,9 +5,18 @@ import { ChevronLeft } from 'lucide-react'
 import { getArticleBySlug, getPreviousArticle, getNextArticle, getRelatedArticles } from '@/lib/articles'
 import { ArticleContent } from '@/components/article-content'
 import { ArticleNavigation } from '@/components/article-navigation'
-import { RelatedArticles } from '@/components/related-articles'
-import { ArticleComments } from '@/components/comments'
-import { ScrollToTopButton } from '@/components/scroll-to-top-button'
+import dynamic from 'next/dynamic'
+
+// Lazy load non-critical components for better performance
+const RelatedArticles = dynamic(() => import('@/components/related-articles').then(mod => ({ default: mod.RelatedArticles })), {
+  loading: () => <div className="h-32 animate-pulse bg-white/5 rounded-2xl" />
+})
+
+const ArticleComments = dynamic(() => import('@/components/comments').then(mod => ({ default: mod.ArticleComments })), {
+  loading: () => <div className="h-64 animate-pulse bg-white/5 rounded-2xl" />
+})
+
+const ScrollToTopButton = dynamic(() => import('@/components/scroll-to-top-button').then(mod => ({ default: mod.ScrollToTopButton })))
 
 interface ArticlePageProps {
   params: Promise<{
@@ -239,4 +248,3 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
 // Use ISR with 5-minute revalidation for article pages
 export const revalidate = 300
-export const dynamic = 'force-dynamic'

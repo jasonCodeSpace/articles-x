@@ -11,8 +11,9 @@ import { CookieConsent } from "@/components/cookie-consent";
 
 const inter = Inter({
   subsets: ["latin"],
-  display: "swap",
+  display: "optional",
   variable: "--font-inter",
+  preload: true,
 });
 
 export const viewport: Viewport = {
@@ -134,8 +135,11 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
       <head>
-        {/* Preconnect to critical external domains only */}
+        {/* Preconnect to critical external domains for performance */}
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://pbs.twimg.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://images.unsplash.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://pskhqphqikghdyqmgsud.supabase.co" crossOrigin="anonymous" />
       </head>
       <body className={`${inter.variable} font-sans antialiased bg-background text-foreground`}>
         <script

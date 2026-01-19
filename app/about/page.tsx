@@ -115,7 +115,7 @@ export default async function About() {
         </section>
 
         {/* Content Grid */}
-        <StaggerContainer staggerChildren={0.1} delayChildren={0.4}>
+        <StaggerContainer>
           <div className="space-y-6">
 
             {/* Mission Card - Full Width */}

@@ -5,7 +5,6 @@ import { ArticleCardMemo, Article } from '@/components/article-card'
 import { FeedEmptyState } from '@/components/feed-empty-state'
 import { useArticleFeed } from '@/hooks/use-article-feed'
 import { FeedLoading } from '@/components/feed-loading'
-import { StaggerContainer } from '@/components/motion-wrapper'
 import type { TimePeriod, DisplayLanguage } from '@/components/feed'
 
 // Dynamic import for non-critical components
@@ -104,17 +103,22 @@ export function ArticleFeed({
         />
       ) : (
         <div className="space-y-20">
-          <StaggerContainer staggerChildren={0.05} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {paginatedArticles.map((article: Article, index: number) => (
-              <ArticleCardMemo
+              <div
                 key={article.id}
-                article={article}
-                index={index}
-                priority={index < 6}
-                displayLanguage={displayLanguage}
-              />
+                className="animate-fade-in-up"
+                style={{ animationDelay: `${Math.min(index * 0.05, 0.3)}s` } as React.CSSProperties}
+              >
+                <ArticleCardMemo
+                  article={article}
+                  index={index}
+                  priority={index < 6}
+                  displayLanguage={displayLanguage}
+                />
+              </div>
             ))}
-          </StaggerContainer>
+          </div>
 
           {/* Pagination */}
           {totalPages > 1 && (

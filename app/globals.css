@@ -114,3 +114,46 @@ h3 {
   letter-spacing: -0.04em;
   font-weight: 700;
 }
+
+/* Performance Optimized Animations (replaces framer-motion) */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(var(--distance, 20px));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.6s cubic-bezier(0.21, 0.47, 0.32, 0.98) both;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.4s ease-out both;
+}
+
+/* Stagger delays for grid items */
+.animate-delay-100 { animation-delay: 0.05s; }
+.animate-delay-200 { animation-delay: 0.1s; }
+.animate-delay-300 { animation-delay: 0.15s; }
+.animate-delay-400 { animation-delay: 0.2s; }
+.animate-delay-500 { animation-delay: 0.25s; }
+.animate-delay-600 { animation-delay: 0.3s; }
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in-up,
+  .animate-fade-in {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}

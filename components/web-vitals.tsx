@@ -9,6 +9,18 @@ interface WebVitalsProps {
 
 export function WebVitals({ onMetric }: WebVitalsProps) {
   useEffect(() => {
+    // Use requestIdleCallback to defer non-critical work
+    const scheduleMetricSend = (metric: Metric) => {
+      // Use requestIdleCallback if available, otherwise use setTimeout
+      const scheduleFn = typeof window !== 'undefined' && 'requestIdleCallback' in window
+        ? window.requestIdleCallback
+        : (cb: () => void) => window.setTimeout(cb, 0);
+
+      scheduleFn(() => {
+        handleMetric(metric);
+      });
+    };
+
     const handleMetric = (metric: Metric) => {
       // 发送到自定义分析服务或Supabase
       if (onMetric) {
@@ -18,29 +30,52 @@ export function WebVitals({ onMetric }: WebVitalsProps) {
         if (process.env.NODE_ENV === 'development') {
           console.log('Web Vital:', metric);
         }
-        
-        // 发送到分析服务
-        sendToAnalytics(metric);
+
+        // 发送到分析服务（使用 batch sending）
+        queueMetricForSending(metric);
       }
     };
 
     // 监听所有核心Web Vitals指标
-    onCLS(handleMetric);
-    onFCP(handleMetric);
-    onINP(handleMetric);
-    onLCP(handleMetric);
-    onTTFB(handleMetric);
+    onCLS(scheduleMetricSend);
+    onFCP(scheduleMetricSend);
+    onINP(scheduleMetricSend);
+    onLCP(scheduleMetricSend);
+    onTTFB(scheduleMetricSend);
   }, [onMetric]);
 
   return null;
 }
 
+// Metric queue for batch sending to reduce network requests
+const metricQueue: Metric[] = [];
+let sendTimeout: NodeJS.Timeout | null = null;
+
+function queueMetricForSending(metric: Metric) {
+  metricQueue.push(metric);
+
+  // Clear existing timeout
+  if (sendTimeout) {
+    clearTimeout(sendTimeout);
+  }
+
+  // Send batched metrics after 2 seconds of inactivity
+  sendTimeout = setTimeout(() => {
+    sendBatchedMetrics();
+  }, 2000);
+}
+
 // 发送指标到分析服务
-async function sendToAnalytics(metric: Metric) {
+async function sendBatchedMetrics() {
+  if (metricQueue.length === 0) return;
+
+  const metricsToSend = [...metricQueue];
+  metricQueue.length = 0; // Clear queue
+
   try {
     // 确保只在客户端执行
     if (typeof window === 'undefined') return;
-    
+
     // 发送到自定义API端点
     await fetch('/api/analytics/web-vitals', {
       method: 'POST',
@@ -48,18 +83,19 @@ async function sendToAnalytics(metric: Metric) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        name: metric.name,
-        value: metric.value,
-        delta: metric.delta,
-        id: metric.id,
+        metrics: metricsToSend,
         url: window.location.href,
         userAgent: navigator.userAgent,
         timestamp: Date.now(),
       }),
+      // Use keepalive to ensure request completes even if page is unloaded
+      keepalive: true,
     });
   } catch (error) {
     // 静默失败，不影响用户体验
-    console.error('Failed to send web vitals:', error);
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Failed to send web vitals:', error);
+    }
   }
 }
 
@@ -78,14 +114,14 @@ export function checkPerformanceBudget(metric: Metric): boolean {
     console.warn(`Performance budget exceeded for ${metric.name}: ${metric.value} > ${budget}`);
     return false;
   }
-  
+
   return true;
 }
 
 // 获取设备类型
 export function getDeviceType(): 'mobile' | 'tablet' | 'desktop' {
   if (typeof window === 'undefined') return 'desktop';
-  
+
   const width = window.innerWidth;
   if (width < 768) return 'mobile';
   if (width < 1024) return 'tablet';
@@ -97,7 +133,7 @@ export function getConnectionType(): string {
   if (typeof navigator === 'undefined' || !('connection' in navigator)) {
     return 'unknown';
   }
-  
+
   const connection = (navigator as unknown as { connection?: { effectiveType?: string } }).connection;
   return connection?.effectiveType || 'unknown';
 }

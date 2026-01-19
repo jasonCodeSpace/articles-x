@@ -125,27 +125,27 @@ export default async function HomePage() {
             <div className="grid lg:grid-cols-12 gap-12 items-center">
               {/* Hero Content */}
               <div className="lg:col-span-7 space-y-10 text-center lg:text-left">
-                <FadeIn direction="none" delay={0.1}>
+                <FadeIn direction="none" delay={0}>
                   <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-white/5 border border-border text-[10px] font-medium tracking-wider uppercase text-white/50 mb-4 mx-auto lg:mx-0">
                     <Sparkles size={12} className="text-white" />
                     <span>AI-Curated Excellence</span>
                   </div>
                 </FadeIn>
 
-                <FadeIn delay={0.2} distance={30}>
+                <FadeIn delay={0} distance={30}>
                   <h1 className="text-6xl md:text-8xl font-bold leading-[0.9] tracking-tighter">
                     Read the best of <br />
                     <span className="text-white/40 text-glow">X platform.</span>
                   </h1>
                 </FadeIn>
 
-                <FadeIn delay={0.3} distance={20}>
+                <FadeIn delay={0} distance={20}>
                   <p className="text-xl text-white/50 max-w-lg leading-relaxed font-light mx-auto lg:mx-0">
                     The absolute 1% of long-form content on X, filtered and organized for serious readers. No noise, just value.
                   </p>
                 </FadeIn>
 
-                <FadeIn delay={0.4} direction="none">
+                <FadeIn delay={0} direction="none">
                   <div className="flex flex-col sm:flex-row gap-6 pt-4 justify-center lg:justify-start">
                     <Link href="/trending">
                       <Button size="lg" className="bg-white text-black hover:bg-white/90 text-sm font-medium px-10 py-7 rounded-full transition-all duration-500 hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.1)]">

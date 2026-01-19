@@ -1,19 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import dynamic from 'next/dynamic'
 import { User } from '@supabase/supabase-js'
-
-// Lazy load ModernNav for better initial load performance
-const ModernNav = dynamic(() => import('./modern-nav').then(mod => ({ default: mod.ModernNav })), {
-  ssr: false,
-  loading: () => (
-    <nav className="fixed top-0 left-0 right-0 z-50 flex justify-center p-6 pointer-events-none">
-      <div className="h-14 w-64 bg-white/5 rounded-full animate-pulse" />
-    </nav>
-  )
-})
+import { ModernNav } from './modern-nav'
 
 interface ClientNavWrapperProps {
   initialUser?: User | null
@@ -22,57 +12,73 @@ interface ClientNavWrapperProps {
 
 export function ClientNavWrapper({ initialUser, categories }: ClientNavWrapperProps) {
   const [user, setUser] = useState<User | null>(initialUser || null)
-  const supabase = createClient()
+  const [isPending, startTransition] = useTransition()
 
   useEffect(() => {
-    // Get current user on mount
-    const getCurrentUser = async () => {
-      try {
-        const { data: { user: currentUser } } = await supabase.auth.getUser()
-        setUser(currentUser)
-      } catch (error) {
-        console.error('Error getting user:', error)
-        setUser(null)
-      }
-    }
-
-    getCurrentUser()
-
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('ClientNavWrapper - Auth state change:', event, session?.user)
-      setUser(session?.user ?? null)
-
-      // Force page reload on sign out to clear all cached state
-      if (event === 'SIGNED_OUT') {
-        console.log('User signed out, clearing state and redirecting')
-
-        // Clear any remaining local storage items
+    // Use transition to avoid blocking UI
+    startTransition(() => {
+      // Get current user on mount - with timeout protection
+      const getCurrentUser = async () => {
         try {
-          localStorage.removeItem('supabase.auth.token')
-          sessionStorage.clear()
+          const supabase = createClient()
+          const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Auth timeout')), 3000)
+          )
+          const { data: { user: currentUser } } = await Promise.race([
+            supabase.auth.getUser(),
+            timeoutPromise
+          ]) as any
+          setUser(currentUser)
         } catch (error) {
-          console.warn('Error clearing storage:', error)
+          // Silently fail - show nav without user
+          setUser(null)
         }
-
-        // Small delay to ensure the state is updated
-        setTimeout(() => {
-          const currentPath = window.location.pathname
-          console.log('Current path:', currentPath)
-
-          if (currentPath !== '/login' && currentPath !== '/register' && currentPath !== '/landing') {
-            console.log('Redirecting to login page')
-            window.location.replace('/login')
-          }
-        }, 150)
       }
+
+      getCurrentUser()
     })
 
-    return () => subscription.unsubscribe()
-  }, [supabase])
+    // Listen for auth changes - debounced
+    let authTimer: NodeJS.Timeout | null = null
+    try {
+      const supabase = createClient()
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+        // Debounce rapid auth changes
+        if (authTimer) clearTimeout(authTimer)
+        authTimer = setTimeout(() => {
+          setUser(session?.user ?? null)
 
+          if (event === 'SIGNED_OUT') {
+            try {
+              if (typeof localStorage !== 'undefined') {
+                localStorage.removeItem('supabase.auth.token')
+              }
+              if (typeof sessionStorage !== 'undefined') {
+                sessionStorage.clear()
+              }
+            } catch {
+              // Ignore storage errors
+            }
+
+            const currentPath = window.location.pathname
+            if (currentPath !== '/login' && currentPath !== '/register' && currentPath !== '/landing') {
+              window.location.replace('/login')
+            }
+          }
+        }, 100)
+      })
+
+      return () => {
+        if (authTimer) clearTimeout(authTimer)
+        subscription.unsubscribe()
+      }
+    } catch {
+      // If Supabase fails to initialize, just show nav without auth
+      return
+    }
+  }, [])
+
+  // Always render nav immediately, even during auth check
   return <ModernNav user={user ? {
     id: user.id,
     email: user.email,

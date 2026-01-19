@@ -2,14 +2,14 @@
 const nextConfig = {
   // Enable compression
   compress: true,
-  
+
   // Enable experimental features for better performance
   experimental: {
     // Disable optimizeCss to fix Vercel deployment issues
     // optimizeCss: true,
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
   },
-  
+
   // Image optimization
   images: {
     formats: ['image/webp', 'image/avif'],

@@ -1,0 +1,14 @@
+# Modern browsers - no polyfills needed for ES2022 features
+# Array.at, flat, flatMap, Object.fromEntries, Object.hasOwn, String.trimStart/End
+# are all supported natively
+>= 0.5%
+last 2 versions
+Firefox ESR
+not dead
+not IE 11
+# Specifically exclude browsers needing these polyfills
+Chrome >= 92
+Firefox >= 90
+Safari >= 15.1
+Edge >= 92
+iOS >= 15.1

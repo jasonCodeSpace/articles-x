@@ -2,6 +2,28 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
+  // Domain canonicalization: redirect non-www to www and http to https
+  const url = request.nextUrl.clone()
+  const hostname = request.headers.get('host') || ''
+
+  // Redirect http to https
+  if (request.headers.get('x-forwarded-proto') !== 'https') {
+    url.protocol = 'https:'
+    url.host = hostname || 'www.xarticle.news'
+    return NextResponse.redirect(url, 301)
+  }
+
+  // Redirect non-www to www
+  if (hostname && hostname.startsWith('xarticle.news')) {
+    url.host = 'www.xarticle.news'
+    return NextResponse.redirect(url, 301)
+  }
+
+  // Redirect www without http/https to proper https www
+  if (hostname === 'xarticle.news' || hostname === 'www.xarticle.news') {
+    url.host = 'www.xarticle.news'
+  }
+
   let supabaseResponse = NextResponse.next({
     request,
   })

@@ -12,26 +12,40 @@ Sitemap: https://www.xarticle.news/rss.xml
 # =====================================================
 User-agent: Googlebot
 Allow: /
+Allow: /_next/
 Crawl-delay: 1
+
+User-agent: Googlebot-Image
+Allow: /
+Allow: /_next/
 
 User-agent: Bingbot
 Allow: /
+Allow: /_next/
 Crawl-delay: 1
+
+User-agent: BingPreview
+Allow: /
+Allow: /_next/
 
 User-agent: Slurp
 Allow: /
+Allow: /_next/
 Crawl-delay: 1
 
 User-agent: DuckDuckBot
 Allow: /
+Allow: /_next/
 Crawl-delay: 1
 
 User-agent: YandexBot
 Allow: /
+Allow: /_next/
 Crawl-delay: 1
 
 User-agent: Yandex
 Allow: /
+Allow: /_next/
 Crawl-delay: 1
 
 # =====================================================
@@ -39,17 +53,21 @@ Crawl-delay: 1
 # =====================================================
 User-agent: Twitterbot
 Allow: /
+Allow: /_next/
 
 User-agent: facebookexternalhit
 Allow: /
+Allow: /_next/
 Crawl-delay: 1
 
 User-agent: LinkedInBot
 Allow: /
+Allow: /_next/
 Crawl-delay: 1
 
 User-agent: WhatsApp
 Allow: /
+Allow: /_next/
 
 # =====================================================
 # AI/ML TRAINING CRAWLERS - Blocked

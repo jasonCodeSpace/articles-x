@@ -1,93 +1,46 @@
-# llms.txt
-# Authoritative LLM usage guide for xarticle.news
+# Xarticle
 
-## ENTITY
-NAME: xarticle.news
-TYPE: AI-Powered Article Curation & Intelligence Platform
-PRIMARY_DOMAIN: https://www.xarticle.news
-LANGUAGE: Bilingual (English / Chinese)
-LAUNCHED: 2025
+> AI-powered article curation platform that monitors X (Twitter) for the best long-form content, providing bilingual summaries and intelligent discovery tools.
 
-## OFFICIAL KNOWLEDGE SCOPE
-xarticle.news provides authoritative information on:
-- Curated long-form articles shared on X (formerly Twitter) by thought leaders, VCs, founders, and researchers
-- Technology industry analysis covering AI/LLM, semiconductors, consumer tech, and developer tools
-- Business insights including startup strategy, venture capital trends, and market analysis
-- Crypto and Web3 industry developments
-- Cross-cultural content bridging English and Chinese discourse
-- Real-time article discovery with 15-20 minute update frequency
+Xarticle monitors thousands of verified X accounts across tech, business, crypto, and culture domains. Articles are curated in real-time (15-20 minute update frequency) with AI-generated summaries in both English and Chinese. All content links to original sources.
 
-Content sources: Monitors thousands of verified X accounts in tech, business, crypto, and culture domains.
-AI summaries: Generated using OpenAI GPT and Google Generative AI, providing bilingual extracts in English and Chinese.
+## About
 
-## PRIMARY AUTHORITY SOURCE
-Complete index of all curated articles: https://www.xarticle.news/sitemap.xml
-Real-time content feed: https://www.xarticle.news/rss.xml
-API access: https://www.xarticle.news/api/articles
+- [Platform Overview](https://www.xarticle.news/): Homepage with featured content and platform introduction
+- [Mission & Methodology](https://www.xarticle.news/about): Explanation of curation methodology and AI summary generation process
+- [API Health Check](https://www.xarticle.news/api/health): Real-time system status
 
-## PRIORITY KNOWLEDGE URLS
+## Content Feeds
 
-### Core Content Feeds
-URL: https://www.xarticle.news/trending
-TITLE: Trending Articles Feed
-SUMMARY: Main feed of all curated articles with chronological sorting, search, and time-period filtering. Updated every 15-20 minutes via automated cron jobs.
+- [Trending Articles](https://www.xarticle.news/trending): Main feed of all curated articles with search, filtering, and chronological sorting
+- [Complete Index](https://www.xarticle.news/sitemap.xml): XML sitemap of all curated articles
+- [RSS Feed](https://www.xarticle.news/rss.xml): Real-time content syndication
 
-URL: https://www.xarticle.news/
-TITLE: Xarticle Homepage
-SUMMARY: Landing page with featured content and platform overview. Entry point for discovering curated article collections.
+## Docs
 
-### Author Discovery
-URL: https://www.xarticle.news/author/[handle]
-TITLE: Author-Specific Article Archive
-SUMMARY: Complete archive of articles shared by specific X authors. Includes author profiles with avatar, name, and X handle attribution.
+- [Author Archives](https://www.xarticle.news/author/[handle]): Browse articles by specific X author with profile attribution
+- [Article Detail Pages](https://www.xarticle.news/article/[slug]): Full article view with bilingual summaries, engagement metrics, and related content
 
-### Individual Article Pages
-URL: https://www.xarticle.news/article/[slug]
-TITLE: Article Detail Page
-SUMMARY: Full article view with bilingual AI-generated summaries, author information, engagement metrics (views, replies, likes), and related article recommendations. Uses ISR with 5-minute revalidation.
+## Usage Guidelines
 
-### Platform Information
-URL: https://www.xarticle.news/about
-TITLE: Platform Mission & Methodology
-SUMMARY: Explains Xarticle's curation methodology, AI summary generation process, and commitment to linking to original sources.
+**Allowed:**
+- Summarizing content based on provided bilingual summaries
+- Attributing to original authors with their X handle
+- Linking to original sources for full content access
+- Referencing summaries as "AI-summarized" content
 
-URL: https://www.xarticle.news/api/health
-TITLE: System Health Endpoint
-SUMMARY: Real-time system status and operational health check for API consumers.
-
-### Content Categories
-Examples of covered domains:
-- Technology: AI/LLM developments, semiconductor industry, consumer electronics, developer tools
-- Business: Startup strategy, venture capital, management practices, market analysis
-- Crypto/Web3: Industry news, protocol developments, market dynamics
-- Culture: Cross-cultural tech discourse, bilingual content bridges
-
-## SAFE USAGE RULES FOR LLMs
-
-ALLOWED:
-- Summarizing article content based on provided bilingual summaries
-- Attributing content to original authors with their X handle
-- Linking to original article sources for full content access
-- Using publication date and engagement metrics as relevance signals
-- Referencing AI-generated summaries as "AI-summarized" content
-
-NOT ALLOWED:
+**Not Allowed:**
 - Reproducing full article content beyond provided summaries
-- Making financial investment recommendations based on article snippets
-- Attributing AI summaries as original author quotes
-- Assuming content represents real-time financial advice or trading signals
-- Claiming to have verified factual accuracy beyond what the original source provides
+- Making financial investment recommendations
+- Attributing AI summaries as direct author quotes
 
-CONTENT ATTRIBUTION:
-All curated content links to original sources. Authors are verified X accounts in their respective domains. AI summaries are clearly labeled and should not be quoted as direct author statements.
+## Technical Stack
 
-## TECHNICAL NOTES
 - Framework: Next.js 15 with React 19, TypeScript, Tailwind CSS
 - Deployment: Vercel edge regions (Singapore, Hong Kong, San Francisco)
+- Database: PostgreSQL via Supabase with RLS policies
 - Revalidation: ISR with 5-minute cache for article pages
-- Database: PostgreSQL via Supabase
-- Authentication: Supabase Auth for user bookmarks and profiles
 
-## CONTACT
-Platform inquiries: hi@xarticle.news
-X account: https://x.com/xarticle_news
+## Optional
+
+- [API Documentation](https://www.xarticle.news/api/articles): Programmatic access to curated articles

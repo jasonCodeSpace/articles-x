@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Article } from '@/components/article-card'
@@ -63,14 +64,13 @@ export function ArticleNavigation({ previousArticle, nextArticle }: ArticleNavig
   }
 
   return (
-    <div className="flex justify-between items-center mt-4 pt-8 border-t border-border">
+    <nav className="flex justify-between items-center mt-4 pt-8 border-t border-border" aria-label="Article navigation">
       {/* Previous Article */}
       <div className="flex-1">
         {previousArticle ? (
-          <Button
-            variant="ghost"
-            onClick={handlePreviousClick}
-            className="flex items-center gap-2 p-4 h-auto text-left hover:bg-accent/50 transition-colors group"
+          <Link
+            href={`/article/${previousArticle.slug}`}
+            className="flex items-center gap-2 p-4 text-left hover:bg-accent/50 transition-colors group rounded-lg"
           >
             <ChevronLeft className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
             <div className="flex flex-col items-start">
@@ -79,7 +79,7 @@ export function ArticleNavigation({ previousArticle, nextArticle }: ArticleNavig
                 {truncateTitle(previousArticle.title_english || previousArticle.title)}
               </span>
             </div>
-          </Button>
+          </Link>
         ) : (
           <div></div>
         )}
@@ -88,10 +88,9 @@ export function ArticleNavigation({ previousArticle, nextArticle }: ArticleNavig
       {/* Next Article */}
       <div className="flex-1 flex justify-end">
         {nextArticle ? (
-          <Button
-            variant="ghost"
-            onClick={handleNextClick}
-            className="flex items-center gap-2 p-4 h-auto text-right hover:bg-accent/50 transition-colors group"
+          <Link
+            href={`/article/${nextArticle.slug}`}
+            className="flex items-center gap-2 p-4 text-right hover:bg-accent/50 transition-colors group rounded-lg"
           >
             <div className="flex flex-col items-end">
               <span className="text-sm text-muted-foreground mb-1">Next Article</span>
@@ -100,11 +99,11 @@ export function ArticleNavigation({ previousArticle, nextArticle }: ArticleNavig
               </span>
             </div>
             <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
-          </Button>
+          </Link>
         ) : (
           <div></div>
         )}
       </div>
-    </div>
+    </nav>
   )
 }

@@ -1,8 +1,9 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronLeft } from 'lucide-react'
-import { getArticleBySlug, getPreviousArticle, getNextArticle, getRelatedArticles } from '@/lib/articles'
+import Image from 'next/image'
+import { ChevronLeft, ArrowRight } from 'lucide-react'
+import { getArticleBySlug, getPreviousArticle, getNextArticle, getRelatedArticles, fetchArticles } from '@/lib/articles'
 import { ArticleContent } from '@/components/article-content'
 import { ArticleNavigation } from '@/components/article-navigation'
 import dynamic from 'next/dynamic'
@@ -78,10 +79,11 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   }
 
   // Get previous and next articles, and related articles
-  const [previousArticle, nextArticle, relatedArticles] = await Promise.all([
+  const [previousArticle, nextArticle, relatedArticles, moreArticles] = await Promise.all([
     getPreviousArticle(article.id),
     getNextArticle(article.id),
-    getRelatedArticles(article.id, 2)
+    getRelatedArticles(article.id, 4),
+    fetchArticles({ limit: 6, sort: 'newest' })
   ])
 
   // Get first sentence from summary_english for description
@@ -237,6 +239,60 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           <div className="mt-12 pt-8 border-t border-white/5">
             <ArticleComments articleId={article.id} />
           </div>
+
+          {/* More Articles Section */}
+          {moreArticles.length > 0 && (
+            <div className="mt-16 pt-8 border-t border-white/5">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-sm uppercase tracking-[0.2em] font-bold text-white/30">
+                  More Articles
+                </h3>
+                <Link
+                  href="/trending"
+                  className="inline-flex items-center gap-1 text-sm text-white/40 hover:text-white/70 transition-colors"
+                >
+                  View All
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {moreArticles
+                  .filter(a => a.id !== article.id)
+                  .slice(0, 4)
+                  .map((moreArticle) => {
+                    const displayTitle = moreArticle.title_english || moreArticle.title
+                    return (
+                      <Link
+                        key={moreArticle.id}
+                        href={`/article/${moreArticle.slug}`}
+                        className="group flex gap-4 p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.05] hover:border-white/10 transition-all duration-300"
+                      >
+                        {moreArticle.image && (
+                          <div className="flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden bg-white/5">
+                            <Image
+                              src={moreArticle.image}
+                              alt={displayTitle}
+                              width={80}
+                              height={80}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                              referrerPolicy="no-referrer"
+                            />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0 flex flex-col justify-center">
+                          <h4 className="text-sm font-medium text-white/80 group-hover:text-white transition-colors line-clamp-2 mb-1">
+                            {displayTitle}
+                          </h4>
+                          <div className="text-[10px] text-white/30">
+                            <span>@{moreArticle.author_handle}</span>
+                          </div>
+                        </div>
+                      </Link>
+                    )
+                  })}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Scroll to Top Button */}

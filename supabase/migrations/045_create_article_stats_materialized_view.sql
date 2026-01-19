@@ -4,9 +4,9 @@
 CREATE MATERIALIZED VIEW IF NOT EXISTS public.article_stats AS
 SELECT
   1 as id,
-  (SELECT count(*) FROM public.articles WHERE status = 'published') as total_published,
-  (SELECT count(*) FROM public.articles WHERE status = 'published' AND language = 'en') as total_english,
-  (SELECT count(*) FROM public.articles WHERE status = 'published' AND article_published_at >= now() - interval '7 days') as published_last_7days,
+  (SELECT count(*) FROM public.articles) as total_published,
+  (SELECT count(*) FROM public.articles WHERE language = 'en') as total_english,
+  (SELECT count(*) FROM public.articles WHERE article_published_at >= now() - interval '7 days') as published_last_7days,
   now() as updated_at;
 
 -- Create unique index on id for fast lookups

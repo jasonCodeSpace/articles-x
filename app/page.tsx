@@ -68,7 +68,7 @@ export default async function HomePage() {
       .limit(3)
   ])
 
-  const totalArticles = statsResult.data?.total_published ?? 2500
+  const totalArticles = statsResult.data?.total_published ?? 100
   const trendingArticles = articlesResult.data
 
   const faqSchema = {

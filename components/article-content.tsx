@@ -215,7 +215,7 @@ export function ArticleContent({
       </FadeIn>
 
       <FadeIn delay={0.5} className="mt-4 pt-4 border-t border-white/5">
-        <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div className="flex items-center gap-4">
             <span className="text-xs uppercase tracking-widest text-white/20 font-bold">Source</span>
             {article.article_url && (
@@ -232,6 +232,21 @@ export function ArticleContent({
                 <ExternalLink size={12} className="opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
               </a>
             )}
+          </div>
+
+          {/* Author attribution for EEAT */}
+          <div className="flex items-center gap-3">
+            <span className="text-xs uppercase tracking-widest text-white/20 font-bold">By</span>
+            <div
+              className="flex items-center gap-2 group cursor-pointer"
+              onClick={() => router.push(`/author/${authorHandle}`)}
+            >
+              <Avatar className="h-8 w-8 border border-white/10 transition-transform duration-300 group-hover:scale-110">
+                {avatarUrl && <AvatarImage src={avatarUrl} referrerPolicy="no-referrer" />}
+                <AvatarFallback className="bg-white/5 text-white/30 text-[10px] font-bold">{authorInitials}</AvatarFallback>
+              </Avatar>
+              <span className="text-sm font-medium text-white/50 group-hover:text-white/80 transition-colors">{article.author_name}</span>
+            </div>
           </div>
         </div>
       </FadeIn>

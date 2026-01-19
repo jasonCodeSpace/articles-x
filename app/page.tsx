@@ -55,9 +55,8 @@ export default async function HomePage() {
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
   const sevenDaysAgoISO = sevenDaysAgo.toISOString();
 
-  // Parallel data fetching for better performance
-  const [userResult, countResult, articlesResult] = await Promise.all([
-    supabase.auth.getUser(),
+  // Fetch articles in parallel - skip auth for faster public page load
+  const [countResult, articlesResult] = await Promise.all([
     supabase.from('articles').select('*', { count: 'exact', head: true }),
     supabase.from('articles')
       .select('id, title, slug, summary_english, author_handle, tweet_views')
@@ -69,7 +68,6 @@ export default async function HomePage() {
       .limit(3)
   ])
 
-  const user = userResult.data?.user
   const totalArticles = countResult.count
   const trendingArticles = articlesResult.data
 
@@ -112,7 +110,7 @@ export default async function HomePage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(homePageSchema) }}
       />
       <div className="min-h-screen bg-[#0A0A0A] text-white selection:bg-white/20 font-sans">
-        <ClientNavWrapper initialUser={user} categories={categories} />
+        <ClientNavWrapper categories={categories} />
 
         {/* Decorative background orbs */}
         <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
@@ -266,26 +264,16 @@ export default async function HomePage() {
                 Escape the endless scroll. Start building your personal library today.
               </p>
               <div className="flex flex-col sm:flex-row gap-6 justify-center">
-                {user ? (
-                  <Link href="/trending">
-                    <Button size="lg" className="bg-white text-black hover:bg-white/90 text-sm font-medium px-12 py-7 rounded-full shadow-2xl transition-all duration-500 hover:scale-105">
-                      Go to Feed
-                    </Button>
-                  </Link>
-                ) : (
-                  <>
-                    <Link href="/register">
-                      <Button size="lg" className="bg-white text-black hover:bg-white/90 text-sm font-medium px-12 py-7 rounded-full shadow-2xl transition-all duration-500 hover:scale-105">
-                        Create Free Account
-                      </Button>
-                    </Link>
-                    <Link href="/login">
-                      <Button variant="outline" size="lg" className="border-white/10 hover:bg-white/5 text-sm font-medium px-12 py-7 rounded-full transition-all duration-500">
-                        Sign In
-                      </Button>
-                    </Link>
-                  </>
-                )}
+                <Link href="/register">
+                  <Button size="lg" className="bg-white text-black hover:bg-white/90 text-sm font-medium px-12 py-7 rounded-full shadow-2xl transition-all duration-500 hover:scale-105">
+                    Create Free Account
+                  </Button>
+                </Link>
+                <Link href="/login">
+                  <Button variant="outline" size="lg" className="border-white/10 hover:bg-white/5 text-sm font-medium px-12 py-7 rounded-full transition-all duration-500">
+                    Sign In
+                  </Button>
+                </Link>
               </div>
             </FadeIn>
           </div>

@@ -1,35 +1,14 @@
 'use client'
 
-import { ThemeProvider as NextThemesProvider, useTheme as useNextTheme } from 'next-themes'
 import { ReactNode } from 'react'
 
 interface ThemeProviderProps {
   children: ReactNode
-  attribute?: 'class' | 'data-theme'
-  defaultTheme?: string
-  enableSystem?: boolean
-  disableTransitionOnChange?: boolean
 }
 
-export function ThemeProvider({
-  children,
-  attribute = 'class',
-  defaultTheme = 'dark',
-  enableSystem = false,
-  disableTransitionOnChange = false,
-  ...props
-}: ThemeProviderProps) {
-  return (
-    <NextThemesProvider
-      attribute={attribute}
-      defaultTheme={defaultTheme}
-      enableSystem={enableSystem}
-      disableTransitionOnChange={disableTransitionOnChange}
-      {...props}
-    >
-      {children}
-    </NextThemesProvider>
-  )
+// App is always in dark mode - no need for next-themes overhead
+export function ThemeProvider({ children }: ThemeProviderProps) {
+  return <>{children}</>
 }
 
-export const useTheme = useNextTheme
+export const useTheme = () => ({ theme: 'dark', setTheme: () => {} })

@@ -10,27 +10,19 @@ interface ClientNavWrapperProps {
   categories?: string[]
 }
 
-type UserData = { user: User | null } | { error: Error }
-
 export function ClientNavWrapper({ initialUser, categories }: ClientNavWrapperProps) {
   const [user, setUser] = useState<User | null>(initialUser || null)
+  const [isClient, setIsClient] = useState(false)
 
   useEffect(() => {
-    // Get current user on mount - with timeout protection
+    setIsClient(true)
+
+    // Get current user on mount - non-blocking
     const getCurrentUser = async () => {
       try {
         const supabase = createClient()
-        const timeoutPromise = new Promise<UserData>((_, reject) =>
-          setTimeout(() => reject(new Error('Auth timeout')), 3000)
-        )
-        const result = await Promise.race([
-          supabase.auth.getUser(),
-          timeoutPromise
-        ])
-
-        if ('user' in result) {
-          setUser(result.user)
-        }
+        const { data: { user } } = await supabase.auth.getUser()
+        setUser(user)
       } catch {
         // Silently fail - show nav without user
         setUser(null)
@@ -39,47 +31,36 @@ export function ClientNavWrapper({ initialUser, categories }: ClientNavWrapperPr
 
     getCurrentUser()
 
-    // Listen for auth changes - debounced
-    let authTimer: NodeJS.Timeout | null = null
-    try {
-      const supabase = createClient()
-      const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-        // Debounce rapid auth changes
-        if (authTimer) clearTimeout(authTimer)
-        authTimer = setTimeout(() => {
-          setUser(session?.user ?? null)
+    // Listen for auth changes
+    const supabase = createClient()
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user ?? null)
 
-          if (event === 'SIGNED_OUT') {
-            try {
-              if (typeof localStorage !== 'undefined') {
-                localStorage.removeItem('supabase.auth.token')
-              }
-              if (typeof sessionStorage !== 'undefined') {
-                sessionStorage.clear()
-              }
-            } catch {
-              // Ignore storage errors
-            }
-
-            const currentPath = window.location.pathname
-            if (currentPath !== '/login' && currentPath !== '/register' && currentPath !== '/landing') {
-              window.location.replace('/login')
-            }
+      if (event === 'SIGNED_OUT') {
+        try {
+          if (typeof localStorage !== 'undefined') {
+            localStorage.removeItem('supabase.auth.token')
           }
-        }, 100)
-      })
+          if (typeof sessionStorage !== 'undefined') {
+            sessionStorage.clear()
+          }
+        } catch {
+          // Ignore storage errors
+        }
 
-      return () => {
-        if (authTimer) clearTimeout(authTimer)
-        subscription.unsubscribe()
+        const currentPath = window.location.pathname
+        if (currentPath !== '/login' && currentPath !== '/register' && currentPath !== '/landing') {
+          window.location.replace('/login')
+        }
       }
-    } catch {
-      // If Supabase fails to initialize, just show nav without auth
-      return
+    })
+
+    return () => {
+      subscription.unsubscribe()
     }
   }, [])
 
-  // Always render nav immediately, even during auth check
+  // Always render nav immediately
   return <ModernNav user={user ? {
     id: user.id,
     email: user.email,

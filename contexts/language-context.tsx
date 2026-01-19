@@ -15,21 +15,32 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguage] = useState<Language>('en')
   const [isHydrated, setIsHydrated] = useState(false)
 
-  // Load saved language preference on mount
+  // Defer localStorage access until after hydration to prevent blocking
   useEffect(() => {
-    setIsHydrated(true)
-    const savedLanguage = localStorage.getItem('preferred-language') as Language
-    if (savedLanguage && (savedLanguage === 'en' || savedLanguage === 'original')) {
-      setLanguage(savedLanguage)
-    } else {
-      setLanguage('en')
-    }
+    // Run in next tick to avoid blocking initial render
+    const timer = setTimeout(() => {
+      setIsHydrated(true)
+      try {
+        const savedLanguage = localStorage.getItem('preferred-language') as Language
+        if (savedLanguage && (savedLanguage === 'en' || savedLanguage === 'original')) {
+          setLanguage(savedLanguage)
+        }
+      } catch {
+        // Ignore localStorage errors
+      }
+    }, 0)
+
+    return () => clearTimeout(timer)
   }, [])
 
   // Save language preference to localStorage when it changes (only after hydration)
   useEffect(() => {
     if (isHydrated) {
-      localStorage.setItem('preferred-language', language)
+      try {
+        localStorage.setItem('preferred-language', language)
+      } catch {
+        // Ignore localStorage errors
+      }
     }
   }, [language, isHydrated])
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useMemo, useTransition } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Article } from '@/components/article-card'
 import { SortOption } from '@/lib/articles'
 import { calculatePagination } from '@/components/pagination'
@@ -69,6 +69,7 @@ export function useArticleFeed({
   initialLanguage = 'en',
   itemsPerPage = 15
 }: UseArticleFeedProps): UseArticleFeedReturn {
+  const router = useRouter()
   const searchParams = useSearchParams()
 
   // State
@@ -82,16 +83,30 @@ export function useArticleFeed({
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
-  // Monitor URL parameter changes and reload page if filter changes
+  // Sync URL with search query - non-blocking, no page reload
   useEffect(() => {
     if (typeof window === 'undefined') return
 
-    const currentFilter = searchParams.get('filter')
-    const urlFilter = new URLSearchParams(window.location.search).get('filter')
-    if (urlFilter !== currentFilter) {
-      window.location.reload()
+    const urlFilter = searchParams.get('search')
+    if (urlFilter && urlFilter !== searchQuery) {
+      setSearchQuery(urlFilter)
     }
   }, [searchParams])
+
+  // Update URL when search changes - non-blocking
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const params = new URLSearchParams(window.location.search)
+    if (searchQuery) {
+      params.set('search', searchQuery)
+    } else {
+      params.delete('search')
+    }
+
+    const newUrl = `${window.location.pathname}${params.toString() ? '?' + params.toString() : ''}`
+    router.replace(newUrl, { scroll: false })
+  }, [searchQuery, router])
 
   // Filter and sort articles client-side (time filtering happens BEFORE pagination)
   const filteredArticles = useMemo(() => {

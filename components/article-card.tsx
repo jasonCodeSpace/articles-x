@@ -115,6 +115,7 @@ export function ArticleCard({ article, className, index = 0, priority = false, d
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               className="object-cover transition-transform duration-700 group-hover:scale-105"
               priority={priority}
+              loading={priority ? undefined : "lazy"}
               unoptimized
               referrerPolicy="no-referrer"
             />

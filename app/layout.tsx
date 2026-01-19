@@ -134,9 +134,10 @@ export default function RootLayout({
       <head>
         {/* Preconnect to critical external domains for performance */}
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://pbs.twimg.com" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://images.unsplash.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://pskhqphqikghdyqmgsud.supabase.co" crossOrigin="anonymous" />
+        {/* DNS prefetch for non-critical domains */}
+        <link rel="dns-prefetch" href="https://pbs.twimg.com" />
+        <link rel="dns-prefetch" href="https://images.unsplash.com" />
       </head>
       <body className={`${inter.variable} font-sans antialiased bg-background text-foreground`}>
         <script

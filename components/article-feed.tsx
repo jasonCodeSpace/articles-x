@@ -113,7 +113,7 @@ export function ArticleFeed({
                 <ArticleCardMemo
                   article={article}
                   index={index}
-                  priority={index < 6}
+                  priority={index < 2}
                   displayLanguage={displayLanguage}
                 />
               </div>

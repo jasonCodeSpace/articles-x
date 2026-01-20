@@ -3,16 +3,12 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { ChevronLeft, ArrowRight } from 'lucide-react'
-import { getArticleBySlug, getPreviousArticle, getNextArticle, getRelatedArticles, fetchArticles } from '@/lib/articles'
+import { getArticleBySlug, getPreviousArticle, getNextArticle, fetchArticles } from '@/lib/articles'
 import { ArticleContent } from '@/components/article-content'
 import { ArticleNavigation } from '@/components/article-navigation'
 import dynamic from 'next/dynamic'
 
 // Lazy load non-critical components for better performance
-const RelatedArticles = dynamic(() => import('@/components/related-articles').then(mod => ({ default: mod.RelatedArticles })), {
-  loading: () => <div className="h-32 animate-pulse bg-white/5 rounded-2xl" />
-})
-
 const ArticleComments = dynamic(() => import('@/components/comments').then(mod => ({ default: mod.ArticleComments })), {
   loading: () => <div className="h-64 animate-pulse bg-white/5 rounded-2xl" />
 })
@@ -78,11 +74,10 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     notFound()
   }
 
-  // Get previous and next articles, and related articles
-  const [previousArticle, nextArticle, relatedArticles, moreArticles] = await Promise.all([
+  // Get previous and next articles, and more articles
+  const [previousArticle, nextArticle, moreArticles] = await Promise.all([
     getPreviousArticle(article.id),
     getNextArticle(article.id),
-    getRelatedArticles(article.id, 4),
     fetchArticles({ limit: 6, sort: 'newest' })
   ])
 
@@ -228,14 +223,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             />
           </div>
 
-          {/* Related Articles */}
-          {relatedArticles.length > 0 && (
-            <div className="mt-12 pt-8 border-t border-white/5">
-              <RelatedArticles articles={relatedArticles} />
-            </div>
-          )}
-
-          {/* Comments Section - below related articles */}
+          {/* Comments Section */}
           <div className="mt-12 pt-8 border-t border-white/5">
             <ArticleComments articleId={article.id} />
           </div>

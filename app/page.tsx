@@ -114,8 +114,8 @@ export default async function HomePage() {
 
         {/* Decorative background orbs */}
         <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-          <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-white/[0.03] rounded-full blur-[120px]" />
-          <div className="absolute top-[20%] -right-[10%] w-[30%] h-[30%] bg-white/[0.03] rounded-full blur-[120px]" />
+          <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-[radial-gradient(circle,rgba(255,255,255,0.03)_0%,transparent_70%)]" />
+          <div className="absolute top-[20%] -right-[10%] w-[30%] h-[30%] bg-[radial-gradient(circle,rgba(255,255,255,0.03)_0%,transparent_70%)]" />
         </div>
 
         <section className="relative pt-40 pb-20 px-6 z-10">

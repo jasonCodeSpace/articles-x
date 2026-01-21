@@ -150,8 +150,8 @@ export default async function TrendingPage({ searchParams }: PageProps) {
       <div className="min-h-screen bg-[#0A0A0A] text-white selection:bg-white/20">
         {/* Decorative background orbs */}
         <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-          <div className="absolute -top-[10%] left-[10%] w-[30%] h-[30%] bg-white/[0.02] rounded-full blur-[120px]" />
-          <div className="absolute bottom-[20%] right-[10%] w-[25%] h-[25%] bg-white/[0.02] rounded-full blur-[120px]" />
+          <div className="absolute -top-[10%] left-[10%] w-[30%] h-[30%] bg-[radial-gradient(circle,rgba(255,255,255,0.02)_0%,transparent_70%)]" />
+          <div className="absolute bottom-[20%] right-[10%] w-[25%] h-[25%] bg-[radial-gradient(circle,rgba(255,255,255,0.02)_0%,transparent_70%)]" />
         </div>
 
         <main className="relative z-10 mx-auto max-w-7xl px-6 pt-32 pb-20">

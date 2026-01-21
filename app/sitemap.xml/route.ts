@@ -166,7 +166,7 @@ ${Array.from(uniqueAuthors.values()).map((author: { author_handle: string; updat
     <loc>${escapeXml(baseUrl + '/author/' + encodeURIComponent(author.author_handle))}</loc>
     <lastmod>${escapeXml(normalizeTimestamp(author.updated_at))}</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.4</priority>
   </url>`).join('\n') || ''}
 </urlset>`
 

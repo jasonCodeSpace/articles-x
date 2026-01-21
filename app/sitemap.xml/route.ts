@@ -160,13 +160,13 @@ ${validArticles?.map((article: { slug: string; article_published_at?: string; up
     <loc>${escapeXml(baseUrl + '/article/' + encodeURIComponent(article.slug))}</loc>
     <lastmod>${escapeXml(normalizeTimestamp(article.updated_at || article.article_published_at))}</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
+    <priority>0.8</priority>
   </url>`).join('\n') || ''}
 ${Array.from(uniqueAuthors.values()).map((author: { author_handle: string; updated_at?: string }) => `  <url>
     <loc>${escapeXml(baseUrl + '/author/' + encodeURIComponent(author.author_handle))}</loc>
     <lastmod>${escapeXml(normalizeTimestamp(author.updated_at))}</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.4</priority>
+    <priority>0.6</priority>
   </url>`).join('\n') || ''}
 </urlset>`
 

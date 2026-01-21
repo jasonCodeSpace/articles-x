@@ -78,6 +78,31 @@ export async function GET() {
       return new NextResponse('Error generating sitemap', { status: 500 })
     }
 
+    // Fetch unique authors for author pages
+    const { data: authors, error: authorsError } = await supabase
+      .from('articles')
+      .select('author_handle, author_name, updated_at')
+      .not('author_handle', 'is', null)
+      .neq('author_handle', '')
+      .order('author_name', { ascending: true })
+
+    if (authorsError) {
+      console.error('Error fetching authors for sitemap:', authorsError)
+    }
+
+    // Get unique authors by handle (in case there are duplicates)
+    const uniqueAuthors = new Map()
+    if (authors) {
+      authors.forEach(author => {
+        if (!author.author_handle) return
+        if (!uniqueAuthors.has(author.author_handle)) {
+          uniqueAuthors.set(author.author_handle, author)
+        }
+      })
+    }
+
+    console.log(`[Sitemap] Found ${uniqueAuthors.size} unique authors`)
+
     // Filter articles with valid slugs
     const allArticles = articles || []
     console.log(`[Sitemap] Found ${allArticles.length} total articles in database`)
@@ -137,11 +162,17 @@ ${validArticles?.map((article: { slug: string; article_published_at?: string; up
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>`).join('\n') || ''}
+${Array.from(uniqueAuthors.values()).map((author: { author_handle: string; updated_at?: string }) => `  <url>
+    <loc>${escapeXml(baseUrl + '/author/' + encodeURIComponent(author.author_handle))}</loc>
+    <lastmod>${escapeXml(normalizeTimestamp(author.updated_at))}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>`).join('\n') || ''}
 </urlset>`
 
     // Validate sitemap size constraints
     const sitemapSize = Buffer.byteLength(sitemap, 'utf8')
-    const urlCount = validArticles.length + staticPages.length
+    const urlCount = validArticles.length + staticPages.length + uniqueAuthors.size
 
     if (sitemapSize > 50 * 1024 * 1024) { // 50MB limit
       console.error(`Sitemap too large: ${sitemapSize} bytes`)
@@ -152,7 +183,7 @@ ${validArticles?.map((article: { slug: string; article_published_at?: string; up
       console.warn(`Sitemap has ${urlCount} URLs, consider splitting into multiple sitemaps`)
     }
 
-    console.log(`Generated sitemap with ${urlCount} URLs (${Math.round(sitemapSize / 1024)}KB)`)
+    console.log(`Generated sitemap with ${urlCount} URLs (${validArticles.length} articles, ${uniqueAuthors.size} authors, ${staticPages.length} static, ${Math.round(sitemapSize / 1024)}KB)`)
 
     return new NextResponse(sitemap, {
       headers: {

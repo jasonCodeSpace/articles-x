@@ -5,7 +5,7 @@
  */
 import { createStep, StepResult, WorkflowContext } from '../engine'
 import { HarvestedArticle } from '@/lib/services/article'
-import { generateEnglishAnalysis, translateToChinese, callDeepSeek } from '@/lib/deepseek'
+import { generateReadingGuide, translateToChinese, callDeepSeek } from '@/lib/deepseek'
 import { isEnglish } from '@/lib/url-utils'
 import { countWords, getSummaryRequirement } from '@/lib/word-count'
 import { createClient } from '@supabase/supabase-js'
@@ -161,14 +161,12 @@ export const generateSummariesStep = createStep<GenerateSummariesInput, Generate
             continue
           }
 
-          const needsTitleTranslation = !isEnglish(dbArticle.title)
-          const detectedLanguage = needsTitleTranslation ? 'zh' : 'en'
+          const detectedLanguage = !isEnglish(dbArticle.title) ? 'zh' : 'en'
 
-          // Call 1: English analysis (with word count context in prompt)
-          const englishResult = await generateEnglishAnalysis(
+          // Call 1: English reading guide (detailed format with Opening Hook, Core Thesis, Key Insights)
+          const englishResult = await generateReadingGuide(
             content,
-            dbArticle.title,
-            needsTitleTranslation
+            dbArticle.title
           )
 
           // Call 2: Chinese translation
@@ -177,7 +175,7 @@ export const generateSummariesStep = createStep<GenerateSummariesInput, Generate
           const analysis: ArticleAnalysisResult = {
             summary_english: englishResult.summary_english,
             summary_chinese: summary_chinese,
-            title_english: needsTitleTranslation ? englishResult.title_english : dbArticle.title,
+            title_english: englishResult.title_english,
             language: detectedLanguage,
             word_count: wordCount,
             summary_skipped: false

@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAnonClient } from '@/lib/supabase/server'
 import { Article } from '@/components/article-card'
 
 export type SortOption = 'newest' | 'oldest' | 'views_high' | 'views_low'
@@ -24,7 +24,8 @@ export async function fetchArticles(options: FetchArticlesOptions = {}): Promise
   } = options
 
   try {
-    const supabase = await createClient()
+    // Use anon client for ISR caching (doesn't require cookies)
+    const supabase = createAnonClient()
 
     // Only select columns needed for article cards to reduce payload size
     let query = supabase
@@ -150,7 +151,8 @@ export async function getArticleCategories(): Promise<string[]> {
  */
 export async function getArticleBySlug(slug: string): Promise<Article | null> {
   try {
-    const supabase = await createClient()
+    // Use anon client for ISR caching (doesn't require cookies)
+    const supabase = createAnonClient()
 
     // First try direct slug lookup (new format)
     const { data, error } = await supabase
@@ -198,7 +200,8 @@ export async function getArticleBySlug(slug: string): Promise<Article | null> {
  */
 export async function getArticleStats() {
   try {
-    const supabase = await createClient()
+    // Use anon client for ISR caching (doesn't require cookies)
+    const supabase = createAnonClient()
     
     const { count, error } = await supabase
       .from('articles')
@@ -223,7 +226,8 @@ export async function getArticleStats() {
  */
 export async function getPreviousArticle(currentArticleId: string): Promise<Article | null> {
   try {
-    const supabase = await createClient()
+    // Use anon client for ISR caching (doesn't require cookies)
+    const supabase = createAnonClient()
 
     // First try to get the current article's published date
     const { data: currentArticle, error: currentError } = await supabase
@@ -285,7 +289,8 @@ export async function getPreviousArticle(currentArticleId: string): Promise<Arti
  */
 export async function getNextArticle(currentArticleId: string): Promise<Article | null> {
   try {
-    const supabase = await createClient()
+    // Use anon client for ISR caching (doesn't require cookies)
+    const supabase = createAnonClient()
 
     // First try to get the current article's published date
     const { data: currentArticle, error: currentError } = await supabase
@@ -346,7 +351,8 @@ export async function getNextArticle(currentArticleId: string): Promise<Article 
  */
 export async function getRelatedArticles(articleId: string, limit: number = 4): Promise<Article[]> {
   try {
-    const supabase = await createClient()
+    // Use anon client for ISR caching (doesn't require cookies)
+    const supabase = createAnonClient()
 
     const { data, error } = await supabase
       .from('articles')

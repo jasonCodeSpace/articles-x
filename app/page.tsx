@@ -3,7 +3,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { ArrowRight, BookOpen, Globe, Sparkles, Shield, TrendingUp, Bookmark, Eye } from 'lucide-react'
 import { ClientNavWrapper } from '@/components/client-nav-wrapper'
-import { createClient } from '@/lib/supabase/server'
+import { createAnonClient } from '@/lib/supabase/server'
 import { Button } from '@/components/ui/button'
 import { FadeIn } from '@/components/motion-wrapper'
 
@@ -41,7 +41,7 @@ export const metadata: Metadata = {
 export const revalidate = 300
 
 export default async function HomePage() {
-  const supabase = await createClient()
+  const supabase = createAnonClient()
 
   const categories = [
     'Hardware', 'Gaming', 'Health', 'Environment', 'Personal Story',

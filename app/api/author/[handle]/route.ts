@@ -55,11 +55,11 @@ export async function GET(
       )
     }
 
-    // Fetch articles by the author with pagination
+    // Fetch articles by the author with pagination - using only columns that exist in DB
     const { data: articlesData, error: articlesError } = await supabase
       .from('articles')
       .select(
-        'id, title, article_preview_text, image, author_name, author_handle, author_avatar, article_published_at, tweet_id, language, category, slug, tweet_likes, tweet_retweets, tweet_replies'
+        'id, title, image, author_name, author_handle, author_avatar, article_published_at, tweet_id, language, slug, tweet_likes, tweet_replies'
       )
       .eq('author_handle', decodedHandle)
       .order('article_published_at', { ascending: false })
@@ -100,16 +100,16 @@ export async function GET(
       author_avatar: article.author_avatar,
       image: article.image,
       article_published_at: article.article_published_at,
-      created_at: article.article_published_at, // Use published date as created date
-      tags: [], // Default empty tags array
-      category: article.category,
+      created_at: article.article_published_at,
+      tags: [],
+      category: undefined,
       tweet_id: article.tweet_id,
-      tweet_views: 0, // Default value
+      tweet_views: 0,
       tweet_replies: article.tweet_replies || 0,
-      tweet_retweets: article.tweet_retweets || 0,
+      tweet_retweets: 0,
       tweet_likes: article.tweet_likes || 0,
-      tweet_bookmarks: 0, // Default value
-      article_preview_text: article.article_preview_text,
+      tweet_bookmarks: 0,
+      article_preview_text: undefined,
       language: article.language
     }))
 

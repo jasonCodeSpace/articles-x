@@ -23,11 +23,11 @@ async function getAuthorData(handle: string, page: number = 1, limit: number = 9
     .select('*', { count: 'exact', head: true })
     .eq('author_handle', handle)
 
-  // Fetch articles
+  // Fetch articles - using only columns that exist in DB
   const { data: articlesData, error } = await supabase
     .from('articles')
     .select(
-      'id, title, article_preview_text, image, author_name, author_handle, author_avatar, article_published_at, tweet_id, language, category, slug, tweet_likes, tweet_retweets, tweet_replies'
+      'id, title, image, author_name, author_handle, author_avatar, article_published_at, tweet_id, language, slug, tweet_likes, tweet_replies'
     )
     .eq('author_handle', handle)
     .order('article_published_at', { ascending: false })
@@ -56,14 +56,14 @@ async function getAuthorData(handle: string, page: number = 1, limit: number = 9
     article_published_at: article.article_published_at,
     created_at: article.article_published_at,
     tags: [],
-    category: article.category,
+    category: undefined,
     tweet_id: article.tweet_id,
     tweet_views: 0,
     tweet_replies: article.tweet_replies || 0,
-    tweet_retweets: article.tweet_retweets || 0,
+    tweet_retweets: 0,
     tweet_likes: article.tweet_likes || 0,
     tweet_bookmarks: 0,
-    article_preview_text: article.article_preview_text,
+    article_preview_text: undefined,
     language: article.language
   }))
 

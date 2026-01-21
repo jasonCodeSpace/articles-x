@@ -57,11 +57,11 @@ export async function fetchArticles(options: FetchArticlesOptions = {}): Promise
     }
 
     // Apply category filter (server-side)
-    // Skip filter if category is "All Category" or "All" to show all articles
-    if (category && category.trim() && category.trim() !== 'All Category' && category.trim() !== 'All') {
-      // Use ilike to match category within comma-separated values
-      query = query.ilike('category', `%${category.trim()}%`)
-    }
+    // NOTE: Category column doesn't exist in database, filtering is disabled
+    // Skip filter - category filtering is not available
+    // if (category && category.trim() && category.trim() !== 'All Category' && category.trim() !== 'All') {
+    //   query = query.ilike('category', `%${category.trim()}%`)
+    // }
 
     // Apply language filter
     if (language && language.trim() && language !== 'all') {

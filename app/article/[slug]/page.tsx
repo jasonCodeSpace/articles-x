@@ -6,6 +6,7 @@ import { ChevronLeft, ArrowRight } from 'lucide-react'
 import { getArticleBySlug, getPreviousArticle, getNextArticle, fetchArticles } from '@/lib/articles'
 import { ArticleContent } from '@/components/article-content'
 import { ArticleNavigation } from '@/components/article-navigation'
+import { Article } from '@/components/article-card'
 import dynamic from 'next/dynamic'
 
 // Lazy load non-critical components for better performance
@@ -271,9 +272,11 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                           <h4 className="text-sm font-medium text-white/80 group-hover:text-white transition-colors line-clamp-2 mb-1">
                             {displayTitle}
                           </h4>
-                          <div className="text-[10px] text-white/30">
-                            <span>@{moreArticle.author_handle}</span>
-                          </div>
+                          {moreArticle.author_handle && (
+                            <div className="text-[10px] text-white/30">
+                              <span>@{moreArticle.author_handle}</span>
+                            </div>
+                          )}
                         </div>
                       </Link>
                     )

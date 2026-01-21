@@ -39,6 +39,31 @@ const nextConfig = {
   
   // Headers for security and caching
   async headers() {
+    // Get Supabase URL from environment for CSP
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || 'https://pskhqphqikghdyqmgsud.supabase.co';
+    const isDev = process.env.NODE_ENV === 'development';
+
+    // Build CSP - remove upgrade-insecure-requests in development to support local HTTP testing
+    const cspBase = [
+      `default-src 'self'`,
+      `img-src 'self' https://pbs.twimg.com https://images.unsplash.com data: blob:`,
+      `script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://va.vercel-scripts.com`,
+      `connect-src 'self' ${supabaseUrl} ${supabaseUrl.replace('https://', 'wss://')} https://api.twitter.com https://www.google-analytics.com https://analytics.google.com`,
+      `style-src 'self' 'unsafe-inline'`,
+      `style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com`,
+      `font-src 'self' data: https://fonts.gstatic.com`,
+      `frame-src 'self'`,
+      `object-src 'none'`,
+      `base-uri 'self'`,
+      `form-action 'self'`,
+      `frame-ancestors 'none'`,
+    ];
+
+    // Only add upgrade-insecure-requests in production
+    if (!isDev) {
+      cspBase.push('upgrade-insecure-requests');
+    }
+
     return [
       {
         source: '/(.*)',
@@ -57,7 +82,7 @@ const nextConfig = {
           },
           {
             key: 'Content-Security-Policy',
-            value: "default-src 'self'; img-src 'self' https://pbs.twimg.com https://images.unsplash.com data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://va.vercel-scripts.com; connect-src 'self' https://api.twitter.com https://www.google-analytics.com https://analytics.google.com https://pskhqphqikghdyqmgsud.supabase.co; style-src 'self' 'unsafe-inline'; style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; frame-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests;"
+            value: cspBase.join('; ')
           },
           {
             key: 'X-Frame-Options',

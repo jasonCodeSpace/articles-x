@@ -8,12 +8,14 @@ export async function GET(
 ) {
   try {
     const { handle } = await params
+    // Decode handle since it's URL-encoded in the link (e.g., %40 for @)
+    const decodedHandle = decodeURIComponent(handle)
     const { searchParams } = new URL(request.url)
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '9')
     const offset = (page - 1) * limit
 
-    if (!handle) {
+    if (!decodedHandle) {
       return NextResponse.json(
         { message: 'Author handle is required' },
         { status: 400 }
@@ -43,7 +45,7 @@ export async function GET(
     const { count: totalCount, error: countError } = await supabase
       .from('articles')
       .select('*', { count: 'exact', head: true })
-      .eq('author_handle', handle)
+      .eq('author_handle', decodedHandle)
 
     if (countError) {
       console.error('Error counting articles:', countError)
@@ -59,7 +61,7 @@ export async function GET(
       .select(
         'id, title, article_preview_text, image, author_name, author_handle, author_avatar, article_published_at, tweet_id, language, category, slug, tweet_likes, tweet_retweets, tweet_replies'
       )
-      .eq('author_handle', handle)
+      .eq('author_handle', decodedHandle)
       .order('article_published_at', { ascending: false })
       .range(offset, offset + limit - 1)
 

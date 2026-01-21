@@ -105,7 +105,9 @@ async function getCategories() {
 
 export async function generateMetadata({ params }: AuthorPageProps): Promise<Metadata> {
   const { handle } = await params
-  const data = await getAuthorData(handle)
+  // Decode handle since it's URL-encoded in the link (e.g., %40 for @)
+  const decodedHandle = decodeURIComponent(handle)
+  const data = await getAuthorData(decodedHandle)
 
   if (!data) {
     return {
@@ -150,8 +152,10 @@ export async function generateMetadata({ params }: AuthorPageProps): Promise<Met
 
 export default async function AuthorPage({ params }: AuthorPageProps) {
   const { handle } = await params
+  // Decode handle since it's URL-encoded in the link (e.g., %40 for @)
+  const decodedHandle = decodeURIComponent(handle)
   const [data, categories] = await Promise.all([
-    getAuthorData(handle),
+    getAuthorData(decodedHandle),
     getCategories()
   ])
 
@@ -223,7 +227,7 @@ export default async function AuthorPage({ params }: AuthorPageProps) {
           </div>
 
           <AuthorArticlesClient
-            handle={handle}
+            handle={decodedHandle}
             initialArticles={articles}
             initialPagination={pagination}
           />

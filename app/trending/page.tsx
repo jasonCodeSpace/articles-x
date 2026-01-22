@@ -77,7 +77,6 @@ async function getArticles(search?: string): Promise<Article[]> {
       full_article_content
     `)
     .order('article_published_at', { ascending: false, nullsFirst: false })
-    .limit(100)
 
   if (search && search.trim()) {
     // Search in title and full_article_content only (NOT in summaries)

@@ -75,8 +75,7 @@ async function getArticles(search?: string): Promise<Article[]> {
       summary_chinese,
       summary_generated_at,
       full_article_content,
-      score,
-      category
+      score
     `)
     .eq('indexed', true) // Only show indexed articles
     .gte('score', 65) // Only show high-quality articles (score >= 65)

@@ -1,7 +1,7 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { Clock, TrendingUp, Calendar, Globe } from 'lucide-react'
+import { Clock, TrendingUp, Calendar, Globe, Folder } from 'lucide-react'
 import { SearchBar } from './search-bar'
 import { FilterDropdown } from './filter-dropdown'
 import { ActiveFilters } from './active-filters'
@@ -72,7 +72,7 @@ export function FeedToolbar({
           {/* Category Filter */}
           {onCategoryChange && (
             <FilterDropdown
-              icon={<TrendingUp className="h-3.5 w-3.5 shrink-0" />}
+              icon={<Folder className="h-3.5 w-3.5 shrink-0" />}
               label="Category"
               selectedValue={selectedCategory}
               options={[{ value: 'all', label: 'All' }, ...CATEGORIES.map(c => ({ value: c.id, label: c.name }))]}

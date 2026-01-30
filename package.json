@@ -17,6 +17,7 @@
     "update-article-tags": "tsx scripts/update-article-tags.ts",
     "re-categorize": "tsx scripts/re-categorize-articles.ts",
     "test-categorization": "tsx scripts/test-categorization.ts",
+    "categorize:ai": "tsx scripts/categorize-articles.ts",
     "lighthouse": "lhci autorun",
     "lighthouse:collect": "lhci collect",
     "lighthouse:assert": "lhci assert",

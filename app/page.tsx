@@ -288,6 +288,8 @@ export default async function HomePage() {
             </div>
 
             <div className="flex gap-10 text-[10px] text-white/30 uppercase tracking-[0.2em] font-medium">
+              <Link href="/trending" className="hover:text-white transition-colors">Trending</Link>
+              <Link href="/archive" className="hover:text-white transition-colors">Archive</Link>
               <Link href="/terms" className="hover:text-white transition-colors">Terms</Link>
               <Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link>
               <a href="https://x.com" className="hover:text-white transition-colors">X.com</a>

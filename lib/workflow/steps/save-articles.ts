@@ -15,6 +15,7 @@ export interface SaveArticlesOutput {
   inserted: number
   updated: number
   skipped: number
+  deleted: number
 }
 
 export const saveArticlesStep = createStep<SaveArticlesInput, SaveArticlesOutput>(
@@ -29,7 +30,7 @@ export const saveArticlesStep = createStep<SaveArticlesInput, SaveArticlesOutput
         timestamp: new Date(),
         level: 'info',
         step: 'save-articles',
-        message: `Saved articles: ${result.inserted} inserted, ${result.updated} updated, ${result.skipped} skipped`
+        message: `Saved articles: ${result.inserted} inserted, ${result.updated} updated, ${result.skipped} skipped, ${result.deleted} deleted (too short)`
       })
 
       // 如果没有新文章插入，跳过后续步骤

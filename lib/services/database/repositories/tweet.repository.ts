@@ -70,7 +70,7 @@ export class TweetRepository {
    * Batch upsert tweets
    */
   async batchUpsert(tweetDataArray: TweetData[], dryRun = false): Promise<BatchResult> {
-    const result: BatchResult = { inserted: 0, updated: 0, skipped: 0 }
+    const result: BatchResult = { inserted: 0, updated: 0, skipped: 0, deleted: 0 }
 
     if (dryRun) {
       console.log(`[DRY RUN] Would process ${tweetDataArray.length} tweets`)

@@ -1,4 +1,5 @@
 import type { HarvestedArticle } from './types'
+import type { BatchResult } from './types'
 import { harvestedToDatabase } from './mapper'
 import { ArticleRepository } from '../database'
 
@@ -8,9 +9,9 @@ import { ArticleRepository } from '../database'
 export async function batchUpsertArticles(
   harvestedArticles: HarvestedArticle[],
   dryRun = false
-): Promise<{ inserted: number; updated: number; skipped: number }> {
+): Promise<BatchResult> {
   if (harvestedArticles.length === 0) {
-    return { inserted: 0, updated: 0, skipped: 0 }
+    return { inserted: 0, updated: 0, skipped: 0, deleted: 0 }
   }
 
   // Group by article_url to handle duplicates
@@ -26,7 +27,7 @@ export async function batchUpsertArticles(
     for (const [url, article] of uniqueArticles) {
       console.log(`  - ${article.title} (${url})`)
     }
-    return { inserted: uniqueArticles.size, updated: 0, skipped: 0 }
+    return { inserted: uniqueArticles.size, updated: 0, skipped: 0, deleted: 0 }
   }
 
   // Convert to database format

@@ -15,6 +15,7 @@ export interface GenerateSummariesInput {
   inserted: number
   updated: number
   skipped: number
+  deleted: number
 }
 
 export interface ArticleAnalysisResult {

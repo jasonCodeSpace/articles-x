@@ -41,7 +41,7 @@ export interface TweetData {
  * Article data for storage in articles table
  */
 export interface DatabaseArticle {
-  id: string
+  id?: string // Optional for insert
   title: string
   slug: string
   full_article_content: string
@@ -58,6 +58,8 @@ export interface DatabaseArticle {
   tweet_likes?: number
   article_published_at?: string
   article_url?: string
+  indexed?: boolean
+  score?: number
 }
 
 /**
@@ -82,4 +84,5 @@ export interface BatchResult {
   inserted: number
   updated: number
   skipped: number
+  deleted: number
 }

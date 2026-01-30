@@ -1,4 +1,5 @@
 import { Suspense } from 'react'
+import Link from 'next/link'
 import { ArticleFeed } from '@/components/article-feed'
 import { FeedLoading } from '@/components/feed-loading'
 import { createAnonClient } from '@/lib/supabase/server'
@@ -6,12 +7,12 @@ import { Article } from '@/components/article-card'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Trending Articles From X | Xarticle',
-  description: 'High-quality curated articles from leading voices on (score ≥ 65). Explore tech, business, crypto, and culture with our premium selection.',
+  title: 'Article Archive | Xarticle',
+  description: 'Browse the archive of articles with score below 65. These articles are still indexed but receive lower priority for search engines.',
   openGraph: {
-    title: 'Trending Articles From X | Xarticle',
-    description: 'High-quality curated articles from leading voices on X (score ≥ 65). Premium selection across tech, business, crypto, and more.',
-    url: 'https://www.xarticle.news/trending',
+    title: 'Article Archive | Xarticle',
+    description: 'Archive of articles with score below 65 from X.',
+    url: 'https://www.xarticle.news/archive',
     siteName: 'Xarticle',
     type: 'website',
     images: [
@@ -19,7 +20,7 @@ export const metadata: Metadata = {
         url: '/og-image.webp',
         width: 1200,
         height: 630,
-        alt: 'Xarticle — Trending Articles From X',
+        alt: 'Xarticle — Article Archive',
         type: 'image/webp'
       },
     ],
@@ -27,16 +28,12 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Trending Articles From X | Xarticle',
-    description: 'High-quality curated articles from leading voices on X (score ≥ 65).',
+    title: 'Article Archive | Xarticle',
+    description: 'Archive of articles with score below 65 from leading voices on X.',
     images: ['/og-image.webp'],
   },
   alternates: {
-    canonical: 'https://www.xarticle.news/trending',
-    languages: {
-      'x-default': 'https://www.xarticle.news/trending',
-      'en': 'https://www.xarticle.news/trending',
-    }
+    canonical: 'https://www.xarticle.news/archive',
   },
   robots: { index: true, follow: true },
 }
@@ -48,11 +45,11 @@ interface PageProps {
   searchParams: Promise<{ search?: string; page?: string }>
 }
 
-// Fetch articles directly (without cache to ensure fresh data)
-async function getArticles(search?: string): Promise<Article[]> {
+// Fetch articles with score < 65 for archive
+async function getArchivedArticles(search?: string): Promise<Article[]> {
   const supabase = createAnonClient()
 
-  // Select all columns needed for display, including summaries for both languages
+  // Select all columns needed for display
   let query = supabase
     .from('articles')
     .select(`
@@ -75,25 +72,24 @@ async function getArticles(search?: string): Promise<Article[]> {
       summary_chinese,
       summary_generated_at,
       full_article_content,
+      indexed,
       score
     `)
     .eq('indexed', true) // Only show indexed articles
-    .gte('score', 65) // Only show high-quality articles (score >= 65)
-    .order('score', { ascending: false, nullsFirst: false }) // Sort by score (highest first)
+    .lt('score', 65) // Only show articles with score < 65
+    .order('score', { ascending: false, nullsFirst: false }) // Sort by score (high to low)
 
   if (search && search.trim()) {
-    // Search in title and full_article_content only (NOT in summaries)
     query = query.or(`title.ilike.%${search.trim()}%,title_english.ilike.%${search.trim()}%,full_article_content.ilike.%${search.trim()}%`)
   }
 
   const { data, error } = await query
 
   if (error) {
-    console.error('Error fetching articles:', error)
+    console.error('Error fetching archived articles:', error)
     return []
   }
 
-  // Map database fields to Article interface
   return (data || []).map(item => ({
     ...item,
     tags: [],
@@ -101,28 +97,44 @@ async function getArticles(search?: string): Promise<Article[]> {
   })) as Article[]
 }
 
-// Fetch all articles from database
-async function fetchAllArticles(options: {
-  search?: string
-}): Promise<Article[]> {
-  return getArticles(options.search)
+// Fetch stats for low-score articles
+async function getArchiveStats(): Promise<{ total: number; avgScore: number }> {
+  const supabase = createAnonClient()
+
+  const { data, error } = await supabase
+    .from('articles')
+    .select('score')
+    .eq('indexed', true)
+    .lt('score', 65) // Only count articles with score < 65
+
+  if (error || !data || data.length === 0) {
+    return { total: 0, avgScore: 0 }
+  }
+
+  const total = data.length
+  const avgScore = data.reduce((sum, item) => sum + (item.score || 0), 0) / total
+
+  return { total, avgScore: Math.round(avgScore) }
 }
 
-export default async function TrendingPage({ searchParams }: PageProps) {
+export default async function ArchivePage({ searchParams }: PageProps) {
   const { search } = await searchParams
 
-  // Fetch all articles
-  const articles = await fetchAllArticles({ search })
+  const articles = await getArchivedArticles(search)
+  const stats = await getArchiveStats()
 
-  // Generate JSON-LD structured data for articles
+  // Generate JSON-LD structured data
+
+  // Generate JSON-LD structured data
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
-    "name": "Trending X Posts & News",
-    "description": "Latest curated X posts and trending news from leading voices",
-    "url": "https://xarticle.news/trending",
+    "name": "X Article Archive",
+    "description": "Archive of articles with score below 65 from leading voices on X",
+    "url": "https://xarticle.news/archive",
     "mainEntity": {
       "@type": "ItemList",
+      "numberOfItems": articles.length,
       "itemListElement": articles.slice(0, 10).map((article, index) => ({
         "@type": "NewsArticle",
         "position": index + 1,
@@ -157,20 +169,40 @@ export default async function TrendingPage({ searchParams }: PageProps) {
         </div>
 
         <main className="relative z-10 mx-auto max-w-7xl px-6 pt-32 pb-20">
-          <header className="mb-16 flex flex-col lg:flex-row justify-between items-start lg:items-end gap-10">
-            <div className="space-y-4">
-              <h1 className="text-5xl md:text-7xl font-bold tracking-tighter">
-                Trending <span className="text-white/40">reads.</span>
-              </h1>
-              <p className="text-white/40 text-lg font-light max-w-lg">
-                High-quality articles from X (score ≥ 65). Premium curated content.
-              </p>
+          <header className="mb-16">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+              <div className="space-y-4">
+                <h1 className="text-5xl md:text-7xl font-bold tracking-tighter">
+                  Archive <span className="text-white/40">vault.</span>
+                </h1>
+                <p className="text-white/40 text-lg font-light max-w-lg">
+                  Articles with score below 65. Sorted by score (highest first).
+                </p>
+              </div>
+              <div className="flex gap-8 text-sm">
+                <div className="text-center">
+                  <div className="text-3xl font-bold">{stats.total}</div>
+                  <div className="text-white/40">Total</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold">{stats.avgScore}</div>
+                  <div className="text-white/40">Avg Score</div>
+                </div>
+              </div>
+              <Link
+                href="/"
+                className="px-6 py-3 bg-white/10 hover:bg-white/20 transition-colors rounded-lg text-sm font-medium flex items-center gap-2"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Back to Home
+              </Link>
             </div>
-
           </header>
 
-          <section aria-labelledby="feed">
-            <h2 id="feed" className="sr-only">Article Feed</h2>
+          <section aria-labelledby="archive">
+            <h2 id="archive" className="sr-only">Article Archive</h2>
             <Suspense fallback={<FeedLoading />}>
               <ArticleFeed
                 initialArticles={articles}

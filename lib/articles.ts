@@ -47,8 +47,11 @@ export async function fetchArticles(options: FetchArticlesOptions = {}): Promise
         article_url,
         language,
         summary_english,
-        summary_generated_at
+        summary_generated_at,
+        indexed,
+        score
       `)
+      .eq('indexed', true) // Only show indexed articles
       .limit(limit)
 
     // Apply search filter

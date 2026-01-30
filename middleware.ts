@@ -6,11 +6,15 @@ export async function middleware(request: NextRequest) {
   const url = request.nextUrl.clone()
   const hostname = request.headers.get('host') || ''
 
-  // Redirect http to https
-  if (request.headers.get('x-forwarded-proto') !== 'https') {
-    url.protocol = 'https:'
-    url.host = hostname || 'www.xarticle.news'
-    return NextResponse.redirect(url, 301)
+  // Skip HTTPS redirect for localhost development
+  const isLocal = hostname.includes('localhost') || hostname.includes('127.0.0.1')
+  if (!isLocal) {
+    // Redirect http to https for production
+    if (request.headers.get('x-forwarded-proto') !== 'https') {
+      url.protocol = 'https:'
+      url.host = hostname || 'www.xarticle.news'
+      return NextResponse.redirect(url, 301)
+    }
   }
 
   // Redirect non-www to www
@@ -60,6 +64,8 @@ export async function middleware(request: NextRequest) {
                         pathname === '/landing' ||
                         pathname === '/trending' ||
                         pathname.startsWith('/trending') ||
+                        pathname === '/archive' ||
+                        pathname.startsWith('/archive') ||
                         pathname.startsWith('/category/') ||
                         pathname.startsWith('/author/') ||
                         pathname.startsWith('/article/') ||

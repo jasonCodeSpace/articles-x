@@ -1,5 +1,6 @@
 import { createServiceRoleClient } from '../client'
 import type { DatabaseArticle, BatchResult } from '../../article/types'
+import { calculateArticleScore, meetsMinimumWordCount, shouldIndexArticle } from '@/lib/article-score'
 
 /**
  * Article Repository
@@ -33,7 +34,26 @@ export class ArticleRepository {
   async insert(article: DatabaseArticle): Promise<boolean> {
     const { error } = await this.client
       .from('articles')
-      .insert([article])
+      .insert([{
+        title: article.title,
+        slug: article.slug,
+        full_article_content: article.full_article_content,
+        author_name: article.author_name,
+        author_handle: article.author_handle,
+        author_avatar: article.author_avatar,
+        image: article.image,
+        category: article.category,
+        tweet_published_at: article.tweet_published_at,
+        tweet_id: article.tweet_id,
+        tweet_text: article.tweet_text,
+        tweet_views: article.tweet_views,
+        tweet_replies: article.tweet_replies,
+        tweet_likes: article.tweet_likes,
+        article_published_at: article.article_published_at,
+        article_url: article.article_url,
+        indexed: article.indexed ?? false,
+        score: article.score ?? 0,
+      }])
 
     if (error) {
       if (error.code === '23505' && error.message?.includes('articles_title_url_unique')) {
@@ -44,7 +64,7 @@ export class ArticleRepository {
       return false
     }
 
-    console.log(`Inserted article: ${article.title}`)
+    console.log(`Inserted article: ${article.title} (score: ${article.score}, indexed: ${article.indexed})`)
     return true
   }
 
@@ -69,6 +89,8 @@ export class ArticleRepository {
         tweet_likes: article.tweet_likes,
         article_published_at: article.article_published_at,
         article_url: article.article_url,
+        indexed: article.indexed ?? false,
+        score: article.score ?? 0,
       })
       .eq('id', id)
 
@@ -77,7 +99,7 @@ export class ArticleRepository {
       return false
     }
 
-    console.log(`Updated article: ${article.title}`)
+    console.log(`Updated article: ${article.title} (score: ${article.score}, indexed: ${article.indexed})`)
     return true
   }
 
@@ -85,36 +107,74 @@ export class ArticleRepository {
    * Batch upsert articles
    */
   async batchUpsert(articles: DatabaseArticle[], dryRun = false): Promise<BatchResult> {
-    const result: BatchResult = { inserted: 0, updated: 0, skipped: 0 }
+    const result: BatchResult = { inserted: 0, updated: 0, skipped: 0, deleted: 0 }
 
     if (articles.length === 0) {
       return result
     }
 
+    // Filter out articles with insufficient word count first
+    const validArticles = []
+    const deletedArticles = []
+
+    for (const article of articles) {
+      if (meetsMinimumWordCount(article.full_article_content || '')) {
+        validArticles.push(article)
+      } else {
+        deletedArticles.push(article)
+        result.deleted++
+        console.log(`Skipped article (too short): ${article.title} (${article.full_article_content?.length || 0} chars)`)
+      }
+    }
+
     if (dryRun) {
-      console.log(`[DRY RUN] Would process ${articles.length} articles`)
-      return { inserted: articles.length, updated: 0, skipped: 0 }
+      console.log(`[DRY RUN] Would process ${validArticles.length} valid articles, skip ${deletedArticles.length} too short articles`)
+      return {
+        inserted: validArticles.length,
+        updated: 0,
+        skipped: 0,
+        deleted: deletedArticles.length
+      }
     }
 
     // Process in batches of 10
     const batchSize = 10
 
-    for (let i = 0; i < articles.length; i += batchSize) {
-      const batch = articles.slice(i, i + batchSize)
-      console.log(`Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(articles.length / batchSize)}`)
+    for (let i = 0; i < validArticles.length; i += batchSize) {
+      const batch = validArticles.slice(i, i + batchSize)
+      console.log(`Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(validArticles.length / batchSize)}`)
 
       for (const article of batch) {
         const existing = await this.findByTitleAndUrl(article.title, article.article_url || '')
 
+        // Calculate article score
+        const score = calculateArticleScore({
+          tweet_views: article.tweet_views,
+          tweet_likes: article.tweet_likes,
+          tweet_replies: article.tweet_replies,
+          full_article_content: article.full_article_content
+        })
+
+        // Determine if article should be indexed
+        const indexed = shouldIndexArticle(score)
+
         if (existing) {
-          const success = await this.update(existing.id, article)
+          const success = await this.update(existing.id, {
+            ...article,
+            score,
+            indexed
+          })
           if (success) {
             result.updated++
           } else {
             result.skipped++
           }
         } else {
-          const success = await this.insert(article)
+          const success = await this.insert({
+            ...article,
+            score,
+            indexed
+          })
           if (success) {
             result.inserted++
           } else {
@@ -124,12 +184,12 @@ export class ArticleRepository {
       }
 
       // Small delay between batches
-      if (i + batchSize < articles.length) {
+      if (i + batchSize < validArticles.length) {
         await new Promise(resolve => setTimeout(resolve, 1000))
       }
     }
 
-    console.log(`Batch upsert completed: ${result.inserted} inserted, ${result.updated} updated, ${result.skipped} skipped`)
+    console.log(`Batch upsert completed: ${result.inserted} inserted, ${result.updated} updated, ${result.skipped} skipped, ${result.deleted} deleted (too short)`)
     return result
   }
 }

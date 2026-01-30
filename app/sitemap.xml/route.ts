@@ -65,11 +65,12 @@ export async function GET() {
     const supabase = createServiceClient()
     const currentDate = new Date().toISOString()
 
-    // Fetch articles with valid slugs and score
+    // Fetch articles with valid slugs and score >= 65 (only high-quality articles in sitemap)
     const { data: articles, error: articlesError } = await supabase
       .from('articles')
       .select('slug, article_published_at, updated_at, score')
       .eq('indexed', true) // Only include indexed articles
+      .gte('score', 65) // Only include articles with score >= 65
       .not('slug', 'is', null)
       .neq('slug', '')
       .order('article_published_at', { ascending: false })
@@ -127,12 +128,7 @@ export async function GET() {
     })
 
     console.log(`[Sitemap] ${validArticles.length} articles passed validation`)
-
-    // Log high/low score article counts
-    const highScoreArticles = validArticles.filter((a: { score?: number | null }) => (a.score || 0) >= 65)
-    const lowScoreArticles = validArticles.filter((a: { score?: number | null }) => (a.score || 0) < 65)
-    console.log(`[Sitemap] High-score (≥65): ${highScoreArticles.length} (priority 0.9, daily)`)
-    console.log(`[Sitemap] Low-score (<65): ${lowScoreArticles.length} (priority 0.3, monthly)`)
+    console.log(`[Sitemap] All included articles have score >= 65 (priority 0.9, daily)`)
 
     const baseUrl = 'https://www.xarticle.news'
 
@@ -163,16 +159,12 @@ ${staticPages.map(page => {
   </url>`
       }
     }).join('\n')}
-${validArticles?.map((article: { slug: string; article_published_at?: string; updated_at?: string; score?: number | null }) => {
-      const score = article.score || 0
-      const isHighQuality = score >= 65
-      const priority = isHighQuality ? '0.9' : '0.3'
-      const changefreq = isHighQuality ? 'daily' : 'monthly'
+${validArticles?.map((article: { slug: string; article_published_at?: string; updated_at?: string }) => {
       return `  <url>
     <loc>${escapeXml(baseUrl + '/article/' + encodeURIComponent(article.slug))}</loc>
     <lastmod>${escapeXml(normalizeTimestamp(article.updated_at || article.article_published_at))}</lastmod>
-    <changefreq>${changefreq}</changefreq>
-    <priority>${priority}</priority>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
   </url>`
     }).join('\n') || ''}
 ${Array.from(uniqueAuthors.values()).map((author: { author_handle: string; updated_at?: string }) => `  <url>

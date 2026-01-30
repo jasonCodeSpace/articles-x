@@ -1,13 +1,14 @@
 #!/usr/bin/env npx tsx
 /**
  * Categorize articles using AI based on title
- * Analyzes article titles and assigns categories
+ * 2-level category system: 5 main categories with 23 sub-categories
  */
 import dotenv from 'dotenv'
 import path from 'path'
 dotenv.config({ path: path.join(process.cwd(), '.env.local') })
 
 import { createClient } from '@supabase/supabase-js'
+import { CATEGORIES, ALL_SUBCATEGORIES, getMainCategory } from '../lib/categories'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -19,26 +20,23 @@ if (!supabaseUrl || !serviceKey) {
 
 const supabase = createClient(supabaseUrl, serviceKey)
 
-// Predefined categories
-const CATEGORIES = [
-  'Hardware', 'Gaming', 'Health', 'Environment',
-  'Personal Story', 'Culture', 'Philosophy', 'History',
-  'Education', 'Design', 'Marketing', 'AI',
-  'Crypto', 'Tech', 'Data', 'Startups',
-  'Business', 'Markets', 'Product', 'Security',
-  'Policy', 'Science', 'Media'
-]
+// Format categories for AI prompt
+const SUBCATEGORY_LIST = ALL_SUBCATEGORIES.map(s => s.name).join(', ')
+const CATEGORY_LIST = CATEGORIES.map(c => `${c.name}: ${c.subcategories.map(s => s.name).join(', ')}`).join('\n')
 
 /**
  * Use AI to categorize an article based on its title
+ * Returns subcategory name
  */
-async function categorizeTitle(title: string): Promise<string> {
+async function categorizeTitle(title: string): Promise<{ subcategory: string; mainCategory: string }> {
   try {
-    const prompt = `Categorize this article title into ONE of these categories: ${CATEGORIES.join(', ')}
+    const prompt = `Categorize this article title into ONE of these subcategories:
+
+${CATEGORY_LIST}
 
 Title: "${title}"
 
-Respond with ONLY the category name, nothing else.`
+Respond with ONLY the subcategory name, nothing else.`
 
     const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
       method: 'POST',
@@ -56,26 +54,30 @@ Respond with ONLY the category name, nothing else.`
 
     if (!response.ok) {
       console.error('AI API error:', await response.text())
-      return 'Tech' // Default fallback
+      return { subcategory: 'Tech', mainCategory: 'Technology' }
     }
 
     const data = await response.json()
-    const category = data.choices?.[0]?.message?.content?.trim() || 'Tech'
+    const aiResult = data.choices?.[0]?.message?.content?.trim() || 'Tech'
 
-    // Validate category is in our list
-    if (!CATEGORIES.includes(category)) {
-      // Try to find a close match or default to Tech
-      const upperCategory = category.charAt(0).toUpperCase() + category.slice(1).toLowerCase()
-      if (CATEGORIES.includes(upperCategory)) {
-        return upperCategory
+    // Validate and find the subcategory
+    const subcat = ALL_SUBCATEGORIES.find(s =>
+      s.name.toLowerCase() === aiResult.toLowerCase()
+    )
+
+    if (subcat) {
+      const mainCat = CATEGORIES.find(c => c.id === subcat.mainCategory)
+      return {
+        subcategory: subcat.name,
+        mainCategory: mainCat?.name || 'Technology'
       }
-      return 'Tech'
     }
 
-    return category
+    // Default fallback
+    return { subcategory: 'AI', mainCategory: 'Technology' }
   } catch (error) {
     console.error('Error categorizing:', error)
-    return 'Tech' // Default fallback
+    return { subcategory: 'Tech', mainCategory: 'Technology' }
   }
 }
 
@@ -83,18 +85,21 @@ async function categorizeArticles() {
   console.log('========================================')
   console.log('Article Categorization with AI')
   console.log('========================================')
+  console.log(`Categories: ${CATEGORIES.length} main, ${ALL_SUBCATEGORIES.length} subcategories`)
 
-  // First, ensure category column exists
-  console.log('\n1. Ensuring category column exists...')
+  // First, ensure category columns exist
+  console.log('\n1. Ensuring category columns exist...')
   try {
     await supabase.rpc('exec', {
       sql: `ALTER TABLE articles
-             ADD COLUMN IF NOT EXISTS category TEXT;
-             CREATE INDEX IF NOT EXISTS articles_category_idx ON articles (category);`
+             ADD COLUMN IF NOT EXISTS category TEXT,
+             ADD COLUMN IF NOT EXISTS main_category TEXT;
+             CREATE INDEX IF NOT EXISTS articles_category_idx ON articles (category);
+             CREATE INDEX IF NOT EXISTS articles_main_category_idx ON articles (main_category);`
     })
-    console.log('   Column verified')
+    console.log('   Columns verified')
   } catch (error: any) {
-    console.log('   Column may already exist:', error.message)
+    console.log('   Columns may already exist:', error.message)
   }
 
   // Get articles without categories
@@ -103,6 +108,7 @@ async function categorizeArticles() {
     .from('articles')
     .select('id, title, category')
     .or('category.is.null,category.eq.')
+    .limit(500)
 
   if (error) {
     console.error('   Error:', error)
@@ -120,21 +126,23 @@ async function categorizeArticles() {
   console.log('\n3. Categorizing articles...')
   let categorized = 0
   const categoryCounts: Record<string, number> = {}
+  const mainCategoryCounts: Record<string, number> = {}
 
   for (const article of articles) {
-    const category = await categorizeTitle(article.title)
+    const { subcategory, mainCategory } = await categorizeTitle(article.title)
 
     const { error: updateError } = await supabase
       .from('articles')
-      .update({ category })
+      .update({ category: subcategory, main_category: mainCategory })
       .eq('id', article.id)
 
     if (!updateError) {
       categorized++
-      categoryCounts[category] = (categoryCounts[category] || 0) + 1
+      categoryCounts[subcategory] = (categoryCounts[subcategory] || 0) + 1
+      mainCategoryCounts[mainCategory] = (mainCategoryCounts[mainCategory] || 0) + 1
 
       if (categorized <= 20) {
-        console.log(`   [${category}] ${article.title.substring(0, 60)}...`)
+        console.log(`   [${mainCategory}/${subcategory}] ${article.title.substring(0, 50)}...`)
       }
     }
 
@@ -145,11 +153,21 @@ async function categorizeArticles() {
   console.log('\n4. Results:')
   console.log(`   Categorized: ${categorized} articles`)
 
-  // Show category distribution
-  console.log('\n5. Category Distribution:')
-  const sortedCategories = Object.entries(categoryCounts).sort((a, b) => b[1] - a[1])
-  for (const [category, count] of sortedCategories) {
-    const bar = '█'.repeat(Math.floor(count / Math.max(...Object.values(categoryCounts)) * 20))
+  // Show main category distribution
+  console.log('\n5. Main Category Distribution:')
+  const sortedMain = Object.entries(mainCategoryCounts).sort((a, b) => b[1] - a[1])
+  for (const [category, count] of sortedMain) {
+    const maxCount = Math.max(...Object.values(mainCategoryCounts))
+    const bar = '█'.repeat(Math.floor(count / maxCount * 20))
+    console.log(`   ${category.padEnd(15)} ${count.toString().padStart(3)} ${bar}`)
+  }
+
+  // Show subcategory distribution
+  console.log('\n6. Subcategory Distribution (top 10):')
+  const sortedSub = Object.entries(categoryCounts).sort((a, b) => b[1] - a[1]).slice(0, 10)
+  for (const [category, count] of sortedSub) {
+    const maxCount = Math.max(...Object.values(categoryCounts))
+    const bar = '█'.repeat(Math.floor(count / maxCount * 20))
     console.log(`   ${category.padEnd(15)} ${count.toString().padStart(3)} ${bar}`)
   }
 

@@ -27,7 +27,8 @@
     "workflow:articles": "tsx scripts/run-article-pipeline.ts",
     "workflow:daily-report": "tsx scripts/run-daily-report.ts",
     "workflow:daily-indexing": "tsx scripts/run-daily-indexing.ts",
-    "workflow:daily-quota": "tsx scripts/run-daily-quota.ts"
+    "workflow:daily-quota": "tsx scripts/run-daily-quota.ts",
+    "workflow:cleanup-low-score": "tsx scripts/run-cleanup-low-score.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

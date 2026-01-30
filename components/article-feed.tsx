@@ -22,6 +22,7 @@ interface ArticleFeedProps {
   initialArticles: Article[]
   initialSearchQuery?: string
   initialTimePeriod?: TimePeriod
+  initialCategory?: string
   initialLanguage?: DisplayLanguage
 }
 
@@ -29,6 +30,7 @@ export function ArticleFeed({
   initialArticles,
   initialSearchQuery = '',
   initialTimePeriod = 'all',
+  initialCategory = 'all',
   initialLanguage = 'en'
 }: ArticleFeedProps) {
   const {
@@ -38,6 +40,7 @@ export function ArticleFeed({
     searchQuery,
     sortOption,
     selectedTimePeriod,
+    selectedCategory,
     displayLanguage,
     currentPage,
     totalPages,
@@ -45,6 +48,7 @@ export function ArticleFeed({
     handleSearch,
     handleSort,
     handleTimePeriodChange,
+    handleCategoryChange,
     handleLanguageChange,
     handlePageChange,
     clearFilters,
@@ -53,6 +57,7 @@ export function ArticleFeed({
     initialArticles,
     initialSearchQuery,
     initialTimePeriod,
+    initialCategory,
     initialLanguage,
     itemsPerPage: 12
   })
@@ -82,6 +87,8 @@ export function ArticleFeed({
           onSortChange={handleSortByChange}
           selectedTimePeriod={selectedTimePeriod}
           onTimePeriodChange={handleTimePeriodChange}
+          selectedCategory={selectedCategory}
+          onCategoryChange={handleCategoryChange}
           displayLanguage={displayLanguage}
           onLanguageChange={handleLanguageChange}
           totalItems={totalItems}

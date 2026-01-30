@@ -541,14 +541,14 @@ export async function generateReadingGuide(
   // Determine scope based on article length
   let scopeInstructions = ''
   if (wordCount > 3000) {
-    scopeInstructions = `Provide a concise but comprehensive summary (250-400 words) covering the main arguments and key insights.`
+    scopeInstructions = `Provide a concise but comprehensive reading guide (250-400 words) that highlights the main arguments and key insights, encouraging readers to explore the full article.`
   } else if (wordCount > 1000) {
-    scopeInstructions = `Provide a concise summary (150-250 words) covering the main points.`
+    scopeInstructions = `Provide a concise reading guide (150-250 words) that previews the main points and sparks interest in the full article.`
   } else {
-    scopeInstructions = `Provide a brief summary (100-150 words) capturing the essence.`
+    scopeInstructions = `Provide a brief reading guide (100-150 words) that captures the essence of the article and invites readers to read it in full.`
   }
 
-  const prompt = `You are an expert editorial assistant. Create a clean, flowing summary of this article.
+  const prompt = `You are an expert editorial assistant. Create a clean, flowing reading guide for this article.
 
 ${scopeInstructions}
 
@@ -559,17 +559,17 @@ ${content}
 
 OUTPUT FORMAT (FOLLOW EXACTLY):
 TITLE_ENGLISH: [Translate title to English if needed]
-SUMMARY: [Your summary in 2-3 flowing paragraphs]
+SUMMARY: [Your reading guide in 2-3 flowing paragraphs]
 
 REQUIREMENTS:
-- NO section headers (no "Opening Hook", "Core Thesis", etc.)
+- NO section headers (no "Opening Hook", "Core Thesis", "Key Insights", etc.)
 - NO bullet points or numbered lists
 - Write in natural, flowing paragraphs
-- Start with what the article is about
-- Cover the main points and insights
-- End with key takeaways
+- Start with what the article is about and why it's worth reading
+- Highlight the main points and insights without giving everything away
+- End with a call to action to read the full article
 - DO NOT use asterisks (**), bold markdown, or special formatting
-- Simply write well-structured prose`
+- Simply write well-structured prose that encourages readers to engage with the full content`
 
   const response = await callDeepSeek(prompt, 4000)
   const parsed = parseEnglishResponseWithGuide(response, title)

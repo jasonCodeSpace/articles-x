@@ -15,6 +15,7 @@ interface UseArticleFeedProps {
   initialSearchQuery?: string
   initialTimePeriod?: TimePeriod
   initialLanguage?: DisplayLanguage
+  initialCategory?: string
   itemsPerPage?: number
 }
 
@@ -27,6 +28,7 @@ interface UseArticleFeedReturn {
   searchQuery: string
   sortOption: SortOption
   selectedTimePeriod: TimePeriod
+  selectedCategory: string
   displayLanguage: DisplayLanguage
   currentPage: number
   totalPages: number
@@ -34,6 +36,7 @@ interface UseArticleFeedReturn {
   handleSearch: (query: string) => void
   handleSort: (sort: SortOption) => void
   handleTimePeriodChange: (period: TimePeriod) => void
+  handleCategoryChange: (category: string) => void
   handleLanguageChange: (language: DisplayLanguage) => void
   handlePageChange: (page: number) => void
   handleTimeSort: () => void
@@ -67,6 +70,7 @@ export function useArticleFeed({
   initialSearchQuery = '',
   initialTimePeriod = 'all',
   initialLanguage = 'en',
+  initialCategory = 'all',
   itemsPerPage = 15
 }: UseArticleFeedProps): UseArticleFeedReturn {
   const router = useRouter()
@@ -76,6 +80,7 @@ export function useArticleFeed({
   const [articles] = useState<Article[]>(initialArticles)
   const [searchQuery, setSearchQuery] = useState(initialSearchQuery)
   const [selectedTimePeriod, setSelectedTimePeriod] = useState<TimePeriod>(initialTimePeriod)
+  const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory)
   const [displayLanguage, setDisplayLanguage] = useState<DisplayLanguage>(initialLanguage)
   const [sortOption, setSortOption] = useState<SortOption>('newest')
   const [currentPage, setCurrentPage] = useState(1)
@@ -119,6 +124,11 @@ export function useArticleFeed({
         const articleDate = new Date(article.article_published_at || article.created_at)
         return articleDate >= dateThreshold
       })
+    }
+
+    // Apply category filter
+    if (selectedCategory !== 'all') {
+      filtered = filtered.filter(article => article.category === selectedCategory)
     }
 
     // Apply search filter
@@ -193,6 +203,14 @@ export function useArticleFeed({
     })
   }, [])
 
+  const handleCategoryChange = useCallback((category: string) => {
+    startTransition(() => {
+      setSelectedCategory(category)
+      setCurrentPage(1)
+      setError(null)
+    })
+  }, [])
+
   const handleLanguageChange = useCallback((language: DisplayLanguage) => {
     setDisplayLanguage(language)
   }, [])
@@ -213,6 +231,7 @@ export function useArticleFeed({
     startTransition(() => {
       setSearchQuery('')
       setSelectedTimePeriod('all')
+      setSelectedCategory('all')
       setCurrentPage(1)
       setError(null)
     })
@@ -263,6 +282,7 @@ export function useArticleFeed({
     searchQuery,
     sortOption,
     selectedTimePeriod,
+    selectedCategory,
     displayLanguage,
     currentPage,
     totalPages: paginationInfo.totalPages,
@@ -270,6 +290,7 @@ export function useArticleFeed({
     handleSearch,
     handleSort,
     handleTimePeriodChange,
+    handleCategoryChange,
     handleLanguageChange,
     handlePageChange,
     handleTimeSort,

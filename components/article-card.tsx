@@ -47,6 +47,7 @@ export interface Article {
   language?: string
   title_english?: string
   article_preview_text_english?: string
+  category?: string
 }
 
 interface ArticleCardProps {

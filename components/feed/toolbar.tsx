@@ -15,10 +15,14 @@ export interface FeedToolbarProps {
   onSortChange: (sort: 'latest' | 'hot') => void
   selectedTimePeriod?: TimePeriod
   onTimePeriodChange?: (period: TimePeriod) => void
+  selectedCategory?: string
+  onCategoryChange?: (category: string) => void
   displayLanguage?: DisplayLanguage
   onLanguageChange?: (language: DisplayLanguage) => void
   totalItems?: number
 }
+
+import { CATEGORIES } from '@/lib/categories'
 
 export function FeedToolbar({
   onSearchChange,
@@ -28,6 +32,8 @@ export function FeedToolbar({
   onSortChange,
   selectedTimePeriod = 'all',
   onTimePeriodChange,
+  selectedCategory = 'all',
+  onCategoryChange,
   displayLanguage = 'en',
   onLanguageChange,
   totalItems
@@ -36,7 +42,7 @@ export function FeedToolbar({
     onSortChange(sortBy === 'latest' ? 'hot' : 'latest')
   }
 
-  const hasActiveFilters = selectedTimePeriod !== 'all'
+  const hasActiveFilters = selectedTimePeriod !== 'all' || selectedCategory !== 'all'
 
   return (
     <div className="space-y-4">
@@ -60,6 +66,19 @@ export function FeedToolbar({
               options={LANGUAGES.map(l => ({ value: l.value as string, label: l.label }))}
               onSelect={(val) => onLanguageChange(val as DisplayLanguage)}
               width="w-32"
+            />
+          )}
+
+          {/* Category Filter */}
+          {onCategoryChange && (
+            <FilterDropdown
+              icon={<TrendingUp className="h-3.5 w-3.5 shrink-0" />}
+              label="Category"
+              selectedValue={selectedCategory}
+              options={[{ value: 'all', label: 'All' }, ...CATEGORIES.map(c => ({ value: c.id, label: c.name }))]}
+              onSelect={(val) => onCategoryChange(val)}
+              onClear={() => onCategoryChange('all')}
+              width="w-44"
             />
           )}
 
@@ -110,10 +129,12 @@ export function FeedToolbar({
                 {totalItems} {totalItems === 1 ? 'article' : 'articles'}
               </span>
             )}
-            {onTimePeriodChange && (
+            {(onTimePeriodChange || onCategoryChange) && (
               <ActiveFilters
                 selectedTimePeriod={selectedTimePeriod}
+                selectedCategory={selectedCategory}
                 onClearTimePeriod={() => onTimePeriodChange?.('all')}
+                onClearCategory={() => onCategoryChange?.('all')}
               />
             )}
           </div>

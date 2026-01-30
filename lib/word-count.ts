@@ -4,6 +4,12 @@
  */
 
 /**
+ * Minimum word count requirement for publishing articles
+ * Articles with fewer words will be rejected
+ */
+export const MIN_WORD_COUNT = 200
+
+/**
  * Simplified CJK pattern for performance (covers 99%+ of usage)
  * Includes basic CJK Unified Ideographs + Extension A + common symbols
  */
@@ -138,4 +144,37 @@ export function detectLanguage(text: string): Language {
   if (stats.cjkPercentage > 70) return 'zh'
   if (stats.cjkPercentage < 30) return 'en'
   return 'mixed'
+}
+
+/**
+ * Check if content meets the minimum word count requirement for publishing
+ * @param content - The content to check
+ * @returns true if content meets minimum word count, false otherwise
+ */
+export function meetsMinimumWordCount(content: string): boolean {
+  return countWords(content) >= MIN_WORD_COUNT
+}
+
+/**
+ * Get the word count category for an article
+ * @param wordCount - The word count to categorize
+ * @returns The category label and whether it's publishable
+ */
+export function getWordCountCategory(wordCount: number): {
+  category: string
+  publishable: boolean
+} {
+  if (wordCount < MIN_WORD_COUNT) {
+    return { category: 'too-short', publishable: false }
+  }
+  if (wordCount < 500) {
+    return { category: 'short', publishable: true }
+  }
+  if (wordCount < 1000) {
+    return { category: 'medium', publishable: true }
+  }
+  if (wordCount < 2000) {
+    return { category: 'long', publishable: true }
+  }
+  return { category: 'comprehensive', publishable: true }
 }

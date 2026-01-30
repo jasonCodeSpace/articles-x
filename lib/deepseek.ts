@@ -526,8 +526,8 @@ ${summaryEnglish}`
 }
 
 /**
- * Generate comprehensive reading guide (professional article analysis)
- * This creates a detailed, structured guide that helps readers fully understand the article
+ * Generate simple article summary (no structured sections)
+ * Creates a clean, flowing summary without headers or bullet points
  */
 export async function generateReadingGuide(
   content: string,
@@ -541,42 +541,35 @@ export async function generateReadingGuide(
   // Determine scope based on article length
   let scopeInstructions = ''
   if (wordCount > 3000) {
-    scopeInstructions = `This is a LONG article (${wordCount} words). Provide a concise but comprehensive guide (250-400 words) covering the main arguments and key insights.`
+    scopeInstructions = `Provide a concise but comprehensive summary (250-400 words) covering the main arguments and key insights.`
   } else if (wordCount > 1000) {
-    scopeInstructions = `This is a medium-length article (${wordCount} words). Provide a concise guide (150-250 words) covering the main points.`
+    scopeInstructions = `Provide a concise summary (150-250 words) covering the main points.`
   } else {
-    scopeInstructions = `This is a short article (${wordCount} words). Provide a brief guide (100-150 words) capturing the essence.`
+    scopeInstructions = `Provide a brief summary (100-150 words) capturing the essence.`
   }
 
-  const prompt = `You are an expert editorial assistant. Your task is to create a COMPREHENSIVE READING GUIDE for this article.
-
-A reading guide is NOT a brief summary. It should:
-- Help readers understand what they will gain from reading the full article
-- Capture the nuance, arguments, and key insights
-- Be detailed enough to serve as a standalone professional analysis
+  const prompt = `You are an expert editorial assistant. Create a clean, flowing summary of this article.
 
 ${scopeInstructions}
 
 ARTICLE TITLE: ${title}
 
-ARTICLE CONTENT (FULL TEXT):
+ARTICLE CONTENT:
 ${content}
 
 OUTPUT FORMAT (FOLLOW EXACTLY):
 TITLE_ENGLISH: [Translate title to English if needed]
-READING_GUIDE: [Your comprehensive reading guide in English]
-
-READING GUIDE STRUCTURE (3 parts):
-• Opening Hook - What makes this article worth reading?
-• Core Thesis & Framework - What is the main argument or model presented?
-• Key Insights - 3-5 bullet points covering the main ideas and takeaways
+SUMMARY: [Your summary in 2-3 flowing paragraphs]
 
 REQUIREMENTS:
-- Use bullet points (•) for the Key Insights section
-- You may use numbered lists like "1." "2." for structured content
-- DO NOT use asterisks (**), bold markdown, or any special formatting symbols
-- Be specific with concrete details from the article
-- Preserve the author's voice and key terminology`
+- NO section headers (no "Opening Hook", "Core Thesis", etc.)
+- NO bullet points or numbered lists
+- Write in natural, flowing paragraphs
+- Start with what the article is about
+- Cover the main points and insights
+- End with key takeaways
+- DO NOT use asterisks (**), bold markdown, or special formatting
+- Simply write well-structured prose`
 
   const response = await callDeepSeek(prompt, 4000)
   const parsed = parseEnglishResponseWithGuide(response, title)
@@ -584,7 +577,7 @@ REQUIREMENTS:
 }
 
 /**
- * Parse English analysis response with reading guide format
+ * Parse English summary response
  */
 function parseEnglishResponseWithGuide(
   text: string,
@@ -598,31 +591,37 @@ function parseEnglishResponseWithGuide(
   for (const line of lines) {
     if (line.startsWith('TITLE_ENGLISH:')) {
       title_english = line.replace('TITLE_ENGLISH:', '').trim()
-    } else if (line.startsWith('READING_GUIDE:')) {
-      summary_english = line.replace('READING_GUIDE:', '').trim()
     } else if (line.startsWith('SUMMARY:')) {
       summary_english = line.replace('SUMMARY:', '').trim()
     }
   }
 
-  // If no label found, use remaining text
+  // If no label found, extract remaining text after TITLE_ENGLISH
   if (!summary_english) {
-    const guideStart = text.indexOf('READING_GUIDE:')
-    if (guideStart !== -1) {
-      summary_english = text.substring(guideStart + 14).trim()
+    const summaryStart = text.indexOf('SUMMARY:')
+    if (summaryStart !== -1) {
+      summary_english = text.substring(summaryStart + 8).trim()
     } else {
-      const summaryStart = text.indexOf('SUMMARY:')
-      if (summaryStart !== -1) {
-        summary_english = text.substring(summaryStart + 8).trim()
-      } else {
-        // Last resort: use the whole response
-        summary_english = text
+      // Extract everything after TITLE_ENGLISH line
+      const titleEnd = text.indexOf('TITLE_ENGLISH:')
+      if (titleEnd !== -1) {
+        const afterTitle = text.indexOf('\n', titleEnd)
+        if (afterTitle !== -1) {
+          summary_english = text.substring(afterTitle + 1).trim()
+        }
       }
     }
   }
 
-  // Clean up any asterisks that might appear
-  summary_english = summary_english.replace(/\*\*/g, '').replace(/\*/g, '')
+  // Clean up any formatting artifacts
+  summary_english = summary_english
+    .replace(/\*\*/g, '')
+    .replace(/\*/g, '')
+    .replace(/^Opening Hook\s*[-:]\s*/gim, '')
+    .replace(/^Core Thesis\s*[-:]\s*/gim, '')
+    .replace(/^Key Insights\s*[-:]\s*/gim, '')
+    .replace(/^Reading Guide\s*[-:]\s*/gim, '')
+    .trim()
 
   return {
     summary_english,

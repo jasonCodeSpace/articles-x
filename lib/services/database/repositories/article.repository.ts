@@ -1,6 +1,31 @@
 import { createServiceRoleClient } from '../client'
 import type { DatabaseArticle, BatchResult } from '../../article/types'
 import { calculateArticleScore, meetsMinimumWordCount, shouldIndexArticle } from '@/lib/article-score'
+import { CATEGORIES, ALL_SUBCATEGORIES } from '@/lib/categories'
+
+/**
+ * Get category ID from article content (simple keyword matching)
+ */
+function detectCategoryFromContent(title: string, content: string): { mainCategory: string | null, subcategory: string | null } {
+  const combinedText = `${title} ${content}`.toLowerCase()
+
+  // Check for subcategory matches first
+  for (const sub of ALL_SUBCATEGORIES) {
+    if (combinedText.includes(sub.name.toLowerCase()) || combinedText.includes(sub.id.toLowerCase())) {
+      const mainCat = CATEGORIES.find(c => c.id === sub.mainCategory)
+      return { mainCategory: mainCat?.id || null, subcategory: sub.id }
+    }
+  }
+
+  // If no subcategory match, try main category
+  for (const cat of CATEGORIES) {
+    if (combinedText.includes(cat.name.toLowerCase()) || combinedText.includes(cat.id.toLowerCase())) {
+      return { mainCategory: cat.id, subcategory: cat.subcategories[0]?.id || null }
+    }
+  }
+
+  return { mainCategory: null, subcategory: null }
+}
 
 /**
  * Article Repository
@@ -32,6 +57,16 @@ export class ArticleRepository {
    * Insert a new article
    */
   async insert(article: DatabaseArticle): Promise<boolean> {
+    // Auto-detect categories if not provided
+    let mainCategory = article.main_category
+    let subcategory = article.subcategory
+
+    if (!mainCategory || !subcategory) {
+      const detected = detectCategoryFromContent(article.title, article.full_article_content || '')
+      mainCategory = article.main_category || detected.mainCategory
+      subcategory = article.subcategory || detected.subcategory
+    }
+
     const { error } = await this.client
       .from('articles')
       .insert([{
@@ -43,6 +78,8 @@ export class ArticleRepository {
         author_avatar: article.author_avatar,
         image: article.image,
         category: article.category,
+        main_category: mainCategory,
+        subcategory: subcategory,
         tweet_published_at: article.tweet_published_at,
         tweet_id: article.tweet_id,
         tweet_text: article.tweet_text,

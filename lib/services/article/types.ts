@@ -50,6 +50,8 @@ export interface DatabaseArticle {
   author_avatar?: string
   image?: string
   category?: string
+  main_category?: string
+  subcategory?: string
   tweet_published_at?: string
   tweet_id?: string
   tweet_text?: string

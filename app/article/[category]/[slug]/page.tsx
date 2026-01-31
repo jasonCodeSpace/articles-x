@@ -3,7 +3,7 @@ import { notFound, permanentRedirect } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { ChevronLeft, ArrowRight } from 'lucide-react'
-import { getArticleBySlug, getPreviousArticle, getNextArticle, fetchArticles, getArticleCategories } from '@/lib/articles'
+import { getArticleBySlug, getPreviousArticle, getNextArticle, fetchArticles, getArticleCategoriesById } from '@/lib/articles'
 import { categorySlugToId, getCategoryName } from '@/lib/categories'
 import { categoryIdToSlug } from '@/lib/url-utils'
 import { ArticleContent } from '@/components/article-content'
@@ -82,7 +82,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   }
 
   // Get the article's categories to validate the URL
-  const articleCategories = await getArticleCategories(article.id)
+  const articleCategories = await getArticleCategoriesById(article.id)
   const categoryId = categorySlugToId(category)
 
   // If the category in URL doesn't match the article's categories, redirect to the primary category

@@ -199,9 +199,9 @@ export async function getArticleBySlug(slug: string): Promise<Article | null> {
 }
 
 /**
- * Get article categories from the junction table
+ * Get article categories from the junction table for a specific article
  */
-export async function getArticleCategories(articleId: string): Promise<string[]> {
+export async function getArticleCategoriesById(articleId: string): Promise<string[]> {
   try {
     const supabase = createAnonClient()
 

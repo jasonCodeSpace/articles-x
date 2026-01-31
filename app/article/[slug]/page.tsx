@@ -1,5 +1,5 @@
 import { Metadata } from 'next'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { ChevronLeft, ArrowRight } from 'lucide-react'
@@ -78,7 +78,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   // 301 redirect to new URL format with category
   if (article.category) {
     const categorySlug = article.category.replace(':', '-')
-    permanentRedirect(`/article/${categorySlug}/${slug}`)
+    redirect(`/article/${categorySlug}/${slug}`)
   }
 
   // Get previous and next articles, and more articles

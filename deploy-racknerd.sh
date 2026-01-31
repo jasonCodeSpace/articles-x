@@ -1,7 +1,7 @@
 #!/bin/bash
 # Deployment script for Racknerd server
 
-SERVER="root@149.28.156.236"
+SERVER="root@148.135.5.76"
 REMOTE_DIR="/root/xarticle-full"
 LOCAL_DIR="/Users/haochengwang/Desktop/claude/xarticle"
 

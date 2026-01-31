@@ -7,7 +7,7 @@ import { formatDistanceToNow } from '@/lib/date-utils'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState, useEffect, memo } from 'react'
-import { generateArticleUrl } from '@/lib/url-utils'
+import { generateArticleUrlWithCategory, categoryIdToSlug } from '@/lib/url-utils'
 import { cn } from '@/lib/utils'
 import { FadeIn } from './motion-wrapper'
 import { DisplayLanguage } from '@/hooks/use-article-feed'
@@ -107,7 +107,9 @@ export function ArticleCard({ article, className, index = 0, priority = false, d
                    article.article_image ||
                    article.featured_image_url ||
                    article.image
-  const articleUrl = generateArticleUrl(article.title, article.id, article.slug)
+  // Use category-aware URL generation
+  const category = article.category || 'tech:ai'
+  const articleUrl = generateArticleUrlWithCategory(article.title, article.slug, category)
 
   return (
     <FadeIn delay={index * 0.05} direction="up" distance={20} className="h-full">

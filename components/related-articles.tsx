@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { Article } from '@/components/article-card'
+import { categoryIdToSlug } from '@/lib/url-utils'
 
 interface RelatedArticlesProps {
   articles: Article[]
@@ -20,11 +21,12 @@ export function RelatedArticles({ articles }: RelatedArticlesProps) {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {articles.map((article) => {
           const displayTitle = article.title_english || article.title
+          const categorySlug = article.category ? categoryIdToSlug(article.category) : 'tech'
 
           return (
             <Link
               key={article.id}
-              href={`/article/${article.slug}`}
+              href={`/article/${categorySlug}/${article.slug}`}
               className="group flex gap-4 p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.05] hover:border-white/10 transition-all duration-300"
             >
               {/* Thumbnail */}

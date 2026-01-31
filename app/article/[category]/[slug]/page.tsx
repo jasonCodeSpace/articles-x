@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { ChevronLeft, ArrowRight } from 'lucide-react'
 import { getArticleBySlug, getPreviousArticle, getNextArticle, fetchArticles, getArticleCategories } from '@/lib/articles'
 import { categorySlugToId, getCategoryName } from '@/lib/categories'
+import { categoryIdToSlug } from '@/lib/url-utils'
 import { ArticleContent } from '@/components/article-content'
 import { ArticleNavigation } from '@/components/article-navigation'
 import dynamic from 'next/dynamic'
@@ -269,10 +270,11 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                   .slice(0, 4)
                   .map((moreArticle) => {
                     const displayTitle = moreArticle.title_english || moreArticle.title
+                    const categorySlug = moreArticle.category ? categoryIdToSlug(moreArticle.category) : 'tech'
                     return (
                       <Link
                         key={moreArticle.id}
-                        href={`/article/${moreArticle.slug}`}
+                        href={`/article/${categorySlug}/${moreArticle.slug}`}
                         className="group flex gap-4 p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.05] hover:border-white/10 transition-all duration-300"
                       >
                         {moreArticle.image && (

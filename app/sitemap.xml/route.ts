@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/service'
+import { categoryIdToSlug } from '@/lib/url-utils'
 
 // Function to escape XML special characters
 function escapeXml(text: string): string {
@@ -68,7 +69,7 @@ export async function GET() {
     // Fetch articles with valid slugs (include both auto-fetched and manually inserted articles)
     const { data: articles, error: articlesError } = await supabase
       .from('articles')
-      .select('slug, article_published_at, updated_at, score')
+      .select('slug, article_published_at, updated_at, score, category')
       .not('slug', 'is', null)
       .neq('slug', '')
       .order('article_published_at', { ascending: false })
@@ -157,9 +158,10 @@ ${staticPages.map(page => {
   </url>`
       }
     }).join('\n')}
-${validArticles?.map((article: { slug: string; article_published_at?: string; updated_at?: string }) => {
+${validArticles?.map((article: { slug: string; article_published_at?: string; updated_at?: string; category?: string }) => {
+      const categorySlug = article.category ? categoryIdToSlug(article.category) : 'tech'
       return `  <url>
-    <loc>${escapeXml(baseUrl + '/article/' + encodeURIComponent(article.slug))}</loc>
+    <loc>${escapeXml(baseUrl + '/article/' + categorySlug + '/' + encodeURIComponent(article.slug))}</loc>
     <lastmod>${escapeXml(normalizeTimestamp(article.updated_at || article.article_published_at))}</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>

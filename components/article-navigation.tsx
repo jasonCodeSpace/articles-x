@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Article } from '@/components/article-card'
+import { categoryIdToSlug } from '@/lib/url-utils'
 
 interface ArticleNavigationProps {
   previousArticle?: Article | null
@@ -34,10 +35,12 @@ export function ArticleNavigation({ previousArticle, nextArticle }: ArticleNavig
 
       if (event.key === 'ArrowLeft' && previousArticle) {
         event.preventDefault()
-        router.push(`/article/${previousArticle.slug}`)
+        const categorySlug = previousArticle.category ? categoryIdToSlug(previousArticle.category) : 'tech'
+        router.push(`/article/${categorySlug}/${previousArticle.slug}`)
       } else if (event.key === 'ArrowRight' && nextArticle) {
         event.preventDefault()
-        router.push(`/article/${nextArticle.slug}`)
+        const categorySlug = nextArticle.category ? categoryIdToSlug(nextArticle.category) : 'tech'
+        router.push(`/article/${categorySlug}/${nextArticle.slug}`)
       }
     }
 
@@ -56,7 +59,7 @@ export function ArticleNavigation({ previousArticle, nextArticle }: ArticleNavig
       <div className="flex-1">
         {previousArticle ? (
           <Link
-            href={`/article/${previousArticle.slug}`}
+            href={`/article/${previousArticle.category ? categoryIdToSlug(previousArticle.category) : 'tech'}/${previousArticle.slug}`}
             className="flex items-center gap-2 p-4 text-left hover:bg-accent/50 transition-colors group rounded-lg"
           >
             <ChevronLeft className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
@@ -76,7 +79,7 @@ export function ArticleNavigation({ previousArticle, nextArticle }: ArticleNavig
       <div className="flex-1 flex justify-end">
         {nextArticle ? (
           <Link
-            href={`/article/${nextArticle.slug}`}
+            href={`/article/${nextArticle.category ? categoryIdToSlug(nextArticle.category) : 'tech'}/${nextArticle.slug}`}
             className="flex items-center gap-2 p-4 text-right hover:bg-accent/50 transition-colors group rounded-lg"
           >
             <div className="flex flex-col items-end">

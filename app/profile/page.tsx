@@ -8,6 +8,7 @@ import { Calendar, Bookmark, ChevronLeft, ChevronRight } from 'lucide-react'
 import { redirect } from 'next/navigation'
 import { formatDistanceToNow } from '@/lib/date-utils'
 import Link from 'next/link'
+import { ManualArticleSubmit } from '@/components/manual-article-submit'
 
 export default async function ProfilePage({
   searchParams,
@@ -184,7 +185,8 @@ export default async function ProfilePage({
           </Card>
         </div>
 
-        
+        {/* Manual Article Insert (Admin Only) */}
+        <ManualArticleSubmit />
 
         {/* Bookmarked Articles Section */}
         <div className="mt-12">

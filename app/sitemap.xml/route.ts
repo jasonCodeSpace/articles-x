@@ -65,12 +65,10 @@ export async function GET() {
     const supabase = createServiceClient()
     const currentDate = new Date().toISOString()
 
-    // Fetch articles with valid slugs and score >= 65 (only high-quality articles in sitemap)
+    // Fetch articles with valid slugs (include both auto-fetched and manually inserted articles)
     const { data: articles, error: articlesError } = await supabase
       .from('articles')
       .select('slug, article_published_at, updated_at, score')
-      .eq('indexed', true) // Only include indexed articles
-      .gte('score', 65) // Only include articles with score >= 65
       .not('slug', 'is', null)
       .neq('slug', '')
       .order('article_published_at', { ascending: false })

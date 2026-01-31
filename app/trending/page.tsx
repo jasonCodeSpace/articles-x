@@ -52,7 +52,7 @@ interface PageProps {
 async function getArticles(search?: string): Promise<Article[]> {
   const supabase = createAnonClient()
 
-  // Select all columns needed for display, including summaries for both languages
+  // Select all columns needed for display, including summaries for both languages and media
   let query = supabase
     .from('articles')
     .select(`
@@ -75,7 +75,9 @@ async function getArticles(search?: string): Promise<Article[]> {
       summary_chinese,
       summary_generated_at,
       full_article_content,
-      score
+      score,
+      article_images,
+      article_videos
     `)
     .eq('indexed', true) // Only show indexed articles
     .gte('score', 65) // Only show high-quality articles (score >= 65)

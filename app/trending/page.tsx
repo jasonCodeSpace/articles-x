@@ -7,10 +7,10 @@ import { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Trending Articles From X | Xarticle',
-  description: 'High-quality curated articles from leading voices on (score ≥ 65). Explore tech, business, crypto, and culture with our premium selection.',
+  description: 'Discover the most engaging articles and insights shared on X. Our curated collection features thought-provoking pieces from technology leaders, entrepreneurs, and industry experts across AI, business, crypto, and culture.',
   openGraph: {
     title: 'Trending Articles From X | Xarticle',
-    description: 'High-quality curated articles from leading voices on X (score ≥ 65). Premium selection across tech, business, crypto, and more.',
+    description: 'Discover the most engaging articles and insights shared on X. Our curated collection features thought-provoking pieces from technology leaders, entrepreneurs, and industry experts across AI, business, crypto, and culture.',
     url: 'https://www.xarticle.news/trending',
     siteName: 'Xarticle',
     type: 'website',
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Trending Articles From X | Xarticle',
-    description: 'High-quality curated articles from leading voices on X (score ≥ 65).',
+    description: 'Discover the most engaging articles and insights shared on X. Curated from technology leaders, entrepreneurs, and industry experts across AI, business, crypto, and culture.',
     images: ['/og-image.webp'],
   },
   alternates: {
@@ -163,7 +163,7 @@ export default async function TrendingPage({ searchParams }: PageProps) {
                 Trending <span className="text-white/40">reads.</span>
               </h1>
               <p className="text-white/40 text-lg font-light max-w-lg">
-                High-quality articles from X (score ≥ 65). Premium curated content.
+                Discover thought-provoking articles and insights shared by industry leaders on X. From breakthrough technologies to emerging market trends, explore curated content that sparks ideas and drives meaningful discussions.
               </p>
             </div>
 

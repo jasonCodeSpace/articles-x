@@ -92,7 +92,7 @@ export function ModernNav({ user, className }: ModernNavProps) {
                 <ChevronDown size={12} className="text-white/30 group-hover:text-white/50 transition-colors" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 mt-4 bg-[#0A0A0A]/95 backdrop-blur-none md:backdrop-blur-xl border border-white/10 rounded-2xl p-2">
+            <DropdownMenuContent align="end" className="w-56 mt-4 !bg-[#0A0A0A] border border-white/10 rounded-2xl p-2">
               <div className="px-3 py-2 mb-2">
                 <p className="text-[10px] uppercase tracking-[0.2em] text-white/30 font-bold mb-1">Authenticated as</p>
                 <p className="text-sm font-medium text-white/90 truncate">{userDisplayName}</p>

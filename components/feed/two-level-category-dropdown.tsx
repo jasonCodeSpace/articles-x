@@ -60,7 +60,7 @@ export function TwoLevelCategoryDropdown({
       </Button>
 
       {isOpen && (
-        <div className="absolute left-0 top-full mt-2 z-50 min-w-[200px] max-h-[400px] overflow-y-auto bg-[#0A0A0A] border border-white/10 rounded-2xl p-2 shadow-2xl">
+        <div className="absolute left-0 top-full mt-2 z-50 min-w-[200px] max-h-[400px] overflow-y-auto !bg-[#0A0A0A] border border-white/10 rounded-2xl p-2 shadow-2xl">
           {/* Option: All Categories */}
           <button
             onClick={() => {

@@ -1,9 +1,17 @@
 /**
  * Step: Generate Article Categories
- * Uses keyword matching + DeepSeek fallback
+ * Uses DeepSeek AI for intelligent categorization based on title and summary
+ *
+ * Categories include 18 subtypes across 5 main categories:
+ * - Tech: AI, Crypto, Data & Code, Security, Hardware
+ * - Business: Startups, Markets & Finance, Marketing
+ * - Product: Product Management, Design, Gaming
+ * - Science: Science, Health, Education, Environment
+ * - Culture: Media, Culture, Philosophy, History, Policy, Personal Story
  */
 import { createStep, StepResult, WorkflowContext } from '../engine'
 import { createClient } from '@supabase/supabase-js'
+import { categorizeWithDeepSeek } from '@/lib/services/deepseek-categorizer'
 
 export interface CategoryAssignment {
   main_category: string
@@ -517,7 +525,7 @@ export const generateCategoriesStep = createStep<GenerateCategoriesInput, Genera
         timestamp: new Date(),
         level: 'info',
         step: 'generate-categories',
-        message: `Categorizing ${articles.length} articles...`
+        message: `Using DeepSeek AI to categorize ${articles.length} articles...`
       })
 
       let processed = 0
@@ -526,7 +534,8 @@ export const generateCategoriesStep = createStep<GenerateCategoriesInput, Genera
 
       for (const article of articles) {
         try {
-          const categoryAssignment = generateCategoriesByKeywords(
+          // Use DeepSeek AI for intelligent categorization
+          const categoryAssignment = await categorizeWithDeepSeek(
             article.title,
             article.title_english,
             article.summary_english,
@@ -575,11 +584,12 @@ export const generateCategoriesStep = createStep<GenerateCategoriesInput, Genera
 
             processed++
             const categoryList = categoryAssignment.categories.join(', ')
+            const reasoning = categoryAssignment.reasoning ? ` (${categoryAssignment.reasoning.substring(0, 50)}...)` : ''
             ctx.logs.push({
               timestamp: new Date(),
               level: 'info',
               step: 'generate-categories',
-              message: `Categorized ${article.title.substring(0, 40)}... -> [${categoryList}]`
+              message: `AI: ${article.title.substring(0, 30)}... -> [${categoryList}]${reasoning}`
             })
           }
         } catch (error) {

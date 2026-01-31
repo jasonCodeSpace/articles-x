@@ -41,7 +41,31 @@ const CATEGORY_PATTERNS: Record<string, { main: string; sub: string; keywords: R
   'tech:data': {
     main: 'tech',
     sub: 'data',
-    keywords: [/python/i, /javascript/i, /typescript/i, /code/i, /programming/i, /developer/i, /coding/i, /data science/i, /analytics/i]
+    keywords: [
+      /python/i,
+      /javascript/i,
+      /typescript/i,
+      /\bcode\b/i,
+      /programming/i,
+      /developer/i,
+      /coding/i,
+      /data science/i,
+      /analytics/i,
+      /guide/i,
+      /tutorial/i,
+      /how to/i,
+      /plugin/i,
+      /extension/i,
+      /tool/i,
+      /framework/i,
+      /library/i,
+      /api/i,
+      /software/i,
+      /app/i,
+      /platform/i,
+      /agentic/i,
+      /automation/i
+    ]
   },
   'tech:security': {
     main: 'tech',
@@ -61,7 +85,29 @@ const CATEGORY_PATTERNS: Record<string, { main: string; sub: string; keywords: R
   'business:markets': {
     main: 'business',
     sub: 'markets',
-    keywords: [/market/i, /stock/i, /trading/i, /investing/i, /economy/i, /inflation/i, /recession/i, /fed/i, /dividend/i]
+    keywords: [
+      /market/i,
+      /stock/i,
+      /trading/i,
+      /investing/i,
+      /economy/i,
+      /inflation/i,
+      /recession/i,
+      /fed/i,
+      /dividend/i,
+      /money/i,
+      /wealth/i,
+      /financial/i,
+      /finance/i,
+      /\bbroke\b/i,
+      /poor/i,
+      /rich/i,
+      /income/i,
+      /salary/i,
+      /earn/i,
+      /saving/i,
+      /debt/i
+    ]
   },
   'business:marketing': {
     main: 'business',
@@ -86,17 +132,60 @@ const CATEGORY_PATTERNS: Record<string, { main: string; sub: string; keywords: R
   'science:science': {
     main: 'science',
     sub: 'science',
-    keywords: [/research/i, /study/i, /physics/i, /chemistry/i, /biology/i, /scientific/i, /paper/i, /journal/i]
+    keywords: [
+      /physics/i,
+      /chemistry/i,
+      /biology/i,
+      /\bscientific\b/i,
+      /science/i,
+      /experiment/i,
+      /laboratory/i,
+      /hypothesis/i,
+      /quantum/i,
+      /molecule/i,
+      /genome/i,
+      /neuron science/i,
+      /astrophysics/i,
+      /microscope/i
+    ]
   },
   'science:health': {
     main: 'science',
     sub: 'health',
-    keywords: [/health/i, /medical/i, /medicine/i, /wellness/i, /mental health/i, /doctor/i, /hospital/i, /fitness/i]
+    keywords: [
+      /medical/i,
+      /medicine/i,
+      /doctor/i,
+      /hospital/i,
+      /disease/i,
+      /treatment/i,
+      /patient/i,
+      /clinical/i,
+      /drug trial/i,
+      /healthcare/i,
+      /diagnosis/i,
+      /symptom/i,
+      /virus/i,
+      /bacteria/i
+    ]
   },
   'science:education': {
     main: 'science',
     sub: 'education',
-    keywords: [/education/i, /learning/i, /school/i, /university/i, /course/i, /tutorial/i]
+    keywords: [
+      /education/i,
+      /school/i,
+      /university/i,
+      /college/i,
+      /student/i,
+      /teacher/i,
+      /professor/i,
+      /classroom/i,
+      /curriculum/i,
+      /academic/i,
+      /degree/i,
+      /scholarship/i
+    ]
   },
   'science:environment': {
     main: 'science',
@@ -116,7 +205,33 @@ const CATEGORY_PATTERNS: Record<string, { main: string; sub: string; keywords: R
   'culture:philosophy': {
     main: 'culture',
     sub: 'philosophy',
-    keywords: [/philosophy/i, /ethics/i, /thinking/i, /mindset/i, /wisdom/i, /\blife\b/i, /fix your/i, /habit/i, /productivity/i, /happiness/i, /meaning/i, /purpose/i, /goal/i, /motivation/i, /self.?improvement/i, /love/i, /relationship/i, /emotion/i, /feeling/i, /personal/i, /story/i, /memoir/i, /ending/i, /death/i, /trauma/i, /healing/i]
+    keywords: [
+      /philosophy/i,
+      /ethics/i,
+      /thinking/i,
+      /mindset/i,
+      /wisdom/i,
+      /shame/i,
+      /moral/i,
+      /survival/i,
+      /human nature/i,
+      /society/i,
+      /social/i,
+      /gratitude/i,
+      /\blife\b/i,
+      /habit/i,
+      /productivity/i,
+      /happiness/i,
+      /meaning/i,
+      /purpose/i,
+      /goal/i,
+      /motivation/i,
+      /love/i,
+      /relationship/i,
+      /emotion/i,
+      /feeling/i,
+      /healing/i
+    ]
   },
   'culture:history': {
     main: 'culture',

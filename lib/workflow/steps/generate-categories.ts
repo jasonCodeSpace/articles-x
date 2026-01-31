@@ -27,7 +27,7 @@ export interface GenerateCategoriesOutput {
 }
 
 // Category keyword patterns
-const CATEGORY_PATTERNS = {
+const CATEGORY_PATTERNS: Record<string, { main: string; sub: string; keywords: RegExp[] }> = {
   'tech:ai': {
     main: 'tech',
     sub: 'ai',

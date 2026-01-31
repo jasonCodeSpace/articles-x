@@ -6,25 +6,25 @@ import { CATEGORIES, ALL_SUBCATEGORIES } from '@/lib/categories'
 /**
  * Get category ID from article content (simple keyword matching)
  */
-function detectCategoryFromContent(title: string, content: string): { mainCategory: string | null, subcategory: string | null } {
+function detectCategoryFromContent(title: string, content: string): { mainCategory: string | undefined, subcategory: string | undefined } {
   const combinedText = `${title} ${content}`.toLowerCase()
 
   // Check for subcategory matches first
   for (const sub of ALL_SUBCATEGORIES) {
     if (combinedText.includes(sub.name.toLowerCase()) || combinedText.includes(sub.id.toLowerCase())) {
       const mainCat = CATEGORIES.find(c => c.id === sub.mainCategory)
-      return { mainCategory: mainCat?.id || null, subcategory: sub.id }
+      return { mainCategory: mainCat?.id, subcategory: sub.id }
     }
   }
 
   // If no subcategory match, try main category
   for (const cat of CATEGORIES) {
     if (combinedText.includes(cat.name.toLowerCase()) || combinedText.includes(cat.id.toLowerCase())) {
-      return { mainCategory: cat.id, subcategory: cat.subcategories[0]?.id || null }
+      return { mainCategory: cat.id, subcategory: cat.subcategories[0]?.id }
     }
   }
 
-  return { mainCategory: null, subcategory: null }
+  return { mainCategory: undefined, subcategory: undefined }
 }
 
 /**

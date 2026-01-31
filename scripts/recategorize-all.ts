@@ -3,6 +3,9 @@
  * Run with: npx tsx scripts/recategorize-all.ts
  */
 
+import { config } from 'dotenv'
+config({ path: '.env.local' })
+
 import { createClient } from '@supabase/supabase-js'
 import { categorizeWithDeepSeek } from '../lib/services/deepseek-categorizer'
 

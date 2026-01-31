@@ -44,7 +44,7 @@ const CATEGORY_PATTERNS = {
   'science:environment': [/climate/i, /environment/i, /sustainability/i],
   'culture:media': [/journalism/i, /media/i, /news/i, /twitter/i],
   'culture:culture': [/culture/i, /society/i, /trend/i],
-  'culture:philosophy': [/philosophy/i, /ethics/i, /thinking/i],
+  'culture:philosophy': [/philosophy/i, /ethics/i, /thinking/i, /mindset/i, /wisdom/i, /\blife\b/i, /fix your/i, /improve/i, /habit/i, /productivity/i, /success/i, /happiness/i, /meaning/i, /purpose/i, /goal/i, /motivation/i, /self.?improvement/i],
   'culture:history': [/history/i, /historical/i],
   'culture:policy': [/policy/i, /politics/i, /government/i],
   'culture:personal-story': [/my story/i, /personal/i]
@@ -63,8 +63,8 @@ function generateCategoryByKeywords(title: string, titleEnglish: string | null) 
     }
   }
 
-  // Default fallback
-  return { main_category: 'tech', sub_category: 'ai', category_combined: 'tech:ai' }
+  // Default fallback - use general culture category for unclassified articles
+  return { main_category: 'culture', sub_category: 'culture', category_combined: 'culture:culture' }
 }
 
 export const saveSummariesStep = createStep<SaveSummariesInput, SaveSummariesOutput>(

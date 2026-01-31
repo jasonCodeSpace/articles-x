@@ -111,7 +111,7 @@ const CATEGORY_PATTERNS = {
   'culture:philosophy': {
     main: 'culture',
     sub: 'philosophy',
-    keywords: [/philosophy/i, /ethics/i, /thinking/i, /mindset/i, /wisdom/i]
+    keywords: [/philosophy/i, /ethics/i, /thinking/i, /mindset/i, /wisdom/i, /\blife\b/i, /fix your/i, /improve/i, /habit/i, /productivity/i, /success/i, /happiness/i, /meaning/i, /purpose/i, /goal/i, /motivation/i, /self.?improvement/i]
   },
   'culture:history': {
     main: 'culture',
@@ -159,11 +159,11 @@ function generateCategoryByKeywords(title: string, titleEnglish: string | null):
     }
   }
 
-  // Default fallback
+  // Default fallback - use general culture category for unclassified articles
   return {
-    main_category: 'tech',
-    sub_category: 'ai',
-    category_combined: 'tech:ai'
+    main_category: 'culture',
+    sub_category: 'culture',
+    category_combined: 'culture:culture'
   }
 }
 

@@ -83,7 +83,14 @@ export const saveSummariesStep = createStep<SaveSummariesInput, SaveSummariesOut
           const category = generateCategoryByKeywords(article.title, analysis.title_english)
 
           if (analysis.summary_skipped) {
-            const updateData: any = {
+            const updateData: {
+              title_english: string | null
+              slug: string
+              language: string
+              category: string
+              main_category: string
+              sub_category: string
+            } = {
               title_english: analysis.title_english,
               slug: newSlug,
               language: analysis.language,
@@ -109,7 +116,17 @@ export const saveSummariesStep = createStep<SaveSummariesInput, SaveSummariesOut
             continue
           }
 
-          const updateData: any = {
+          const updateData: {
+            summary_chinese: string
+            summary_english: string
+            title_english: string | null
+            language: string
+            slug: string
+            summary_generated_at: string
+            category: string
+            main_category: string
+            sub_category: string
+          } = {
             summary_chinese: analysis.summary_chinese,
             summary_english: analysis.summary_english,
             title_english: analysis.title_english,

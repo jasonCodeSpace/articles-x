@@ -216,7 +216,7 @@ export const generateCategoriesStep = createStep<GenerateCategoriesInput, Genera
 
       let processed = 0
       let failed = 0
-      let skipped = 0
+      const skipped = 0
 
       for (const article of articles) {
         try {

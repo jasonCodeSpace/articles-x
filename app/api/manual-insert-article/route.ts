@@ -162,7 +162,7 @@ export async function POST(request: NextRequest) {
         title: tweetText.substring(0, 200) || 'Manual Insert',
         slug: uniqueSlug,
         content: tweetText || '',
-        author_name,
+        author_name: authorName,
         author_handle: authorUsername,
         author_avatar: authorAvatar,
         language: 'en',

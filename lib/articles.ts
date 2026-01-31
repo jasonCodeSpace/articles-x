@@ -199,6 +199,73 @@ export async function getArticleBySlug(slug: string): Promise<Article | null> {
 }
 
 /**
+ * Get article categories from the junction table
+ */
+export async function getArticleCategories(articleId: string): Promise<string[]> {
+  try {
+    const supabase = createAnonClient()
+
+    const { data, error } = await supabase
+      .from('article_categories')
+      .select('category')
+      .eq('article_id', articleId)
+      .order('is_primary', { ascending: false })
+
+    if (error) {
+      console.error('Error fetching article categories:', error)
+      return []
+    }
+
+    return (data || []).map(item => item.category)
+  } catch (error) {
+    console.error('Unexpected error fetching article categories:', error)
+    return []
+  }
+}
+
+/**
+ * Get primary category for an article (from junction table or fallback to article.category)
+ */
+export async function getArticlePrimaryCategory(articleId: string, fallbackCategory?: string): Promise<string> {
+  try {
+    const supabase = createAnonClient()
+
+    // First try to get from junction table
+    const { data, error } = await supabase
+      .from('article_categories')
+      .select('category')
+      .eq('article_id', articleId)
+      .eq('is_primary', true)
+      .maybeSingle()
+
+    if (!error && data) {
+      return data.category
+    }
+
+    // Fallback to article.category
+    if (fallbackCategory) {
+      return fallbackCategory
+    }
+
+    // Get the article to find its category
+    const { data: article, error: articleError } = await supabase
+      .from('articles')
+      .select('category')
+      .eq('id', articleId)
+      .maybeSingle()
+
+    if (!articleError && article?.category) {
+      return article.category
+    }
+
+    return 'tech:ai' // Default fallback
+  } catch (error) {
+    console.error('Unexpected error fetching primary category:', error)
+    return fallbackCategory || 'tech:ai'
+  }
+}
+
+/**
  * Get article statistics
  */
 export async function getArticleStats() {

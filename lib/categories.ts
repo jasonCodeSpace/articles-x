@@ -101,3 +101,39 @@ export const ALL_CATEGORY_IDS = [
 
 // Default category for unclassified articles
 export const DEFAULT_CATEGORY = 'tech'
+
+/**
+ * Convert category ID (e.g., 'tech:ai') to URL-friendly slug (e.g., 'tech-ai')
+ */
+export function categoryIdToSlug(categoryId: string): string {
+  return categoryId.replace(':', '-')
+}
+
+/**
+ * Convert URL slug back to category ID (e.g., 'tech-ai' -> 'tech:ai')
+ * Handles both main categories (e.g., 'tech' -> 'tech') and subcategories
+ */
+export function categorySlugToId(slug: string): string {
+  // If it's a main category (no hyphen), return as is
+  if (!slug.includes('-')) {
+    return slug
+  }
+  // Otherwise convert hyphen back to colon
+  return slug.replace('-', ':')
+}
+
+/**
+ * Get the short slug for URL generation from category ID
+ * For subcategories: 'tech:ai' -> 'tech-ai'
+ * For main categories: 'tech' -> 'tech'
+ */
+export function getCategorySlug(categoryId: string): string {
+  return categoryId.replace(':', '-')
+}
+
+/**
+ * Check if a category ID is valid
+ */
+export function isValidCategoryId(categoryId: string): boolean {
+  return ALL_CATEGORY_IDS.includes(categoryId) || CATEGORIES.some(c => c.id === categoryId)
+}

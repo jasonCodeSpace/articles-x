@@ -92,6 +92,7 @@ export function generateShortId(uuid: string): string {
 /**
  * Generate article URL with slug (no ID suffix)
  * Format: /article/title-slug
+ * @deprecated Use generateArticleUrlWithCategory for new URL format
  */
 export function generateArticleUrl(title: string, _id: string, slug?: string): string {
   // Use existing slug from database if available (preferred)
@@ -102,6 +103,52 @@ export function generateArticleUrl(title: string, _id: string, slug?: string): s
   // Fallback: generate from title
   const titleSlug = generateSlugFromTitle(title)
   return `/article/${titleSlug}`
+}
+
+/**
+ * Convert category ID (e.g., 'tech:ai') to URL-friendly slug (e.g., 'tech-ai')
+ */
+export function categoryIdToSlug(categoryId: string): string {
+  return categoryId.replace(':', '-')
+}
+
+/**
+ * Convert URL slug back to category ID (e.g., 'tech-ai' -> 'tech:ai')
+ */
+export function categorySlugToId(slug: string): string {
+  return slug.replace('-', ':')
+}
+
+/**
+ * Generate article URL with category prefix
+ * Format: /article/category-slug/article-slug
+ * Example: /article/tech-ai/networking-at-crypto-events
+ */
+export function generateArticleUrlWithCategory(
+  title: string,
+  slug: string,
+  categoryId: string
+): string {
+  const categorySlug = categoryIdToSlug(categoryId)
+  const articleSlug = slug && slug.trim() ? slug : generateSlugFromTitle(title)
+  return `/article/${categorySlug}/${articleSlug}`
+}
+
+/**
+ * Generate article URL with category prefix - main category version
+ * Format: /article/category-slug/article-slug
+ * Uses main category if categoryId contains colon
+ */
+export function generateArticleUrlWithMainCategory(
+  title: string,
+  slug: string,
+  categoryId: string
+): string {
+  // For main category URLs (just the main category part)
+  const mainCategory = categoryId.split(':')[0]
+  const categorySlug = mainCategory
+  const articleSlug = slug && slug.trim() ? slug : generateSlugFromTitle(title)
+  return `/article/${categorySlug}/${articleSlug}`
 }
 
 /**

@@ -1,5 +1,48 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { createAnonClient } from '@/lib/supabase/server'
+
+/**
+ * Get article category for redirect purposes
+ * Returns the primary category slug for an article
+ */
+async function getArticleCategorySlug(slug: string): Promise<string | null> {
+  try {
+    const supabase = createAnonClient()
+
+    // First try to get from junction table
+    const { data: article, error } = await supabase
+      .from('articles')
+      .select('id, category')
+      .eq('slug', slug)
+      .maybeSingle()
+
+    if (error || !article) {
+      return null
+    }
+
+    // Try to get primary category from junction table
+    const { data: primaryCategory } = await supabase
+      .from('article_categories')
+      .select('category')
+      .eq('article_id', article.id)
+      .eq('is_primary', true)
+      .maybeSingle()
+
+    if (primaryCategory?.category) {
+      return primaryCategory.category.replace(':', '-')
+    }
+
+    // Fallback to article.category
+    if (article.category) {
+      return article.category.replace(':', '-')
+    }
+
+    return null
+  } catch {
+    return null
+  }
+}
 
 export async function middleware(request: NextRequest) {
   // Domain canonicalization: redirect non-www to www and http to https
@@ -37,6 +80,21 @@ export async function middleware(request: NextRequest) {
       const url = request.nextUrl.clone()
       url.pathname = `/category/${categoryPart.toLowerCase()}`
       return NextResponse.redirect(url, 301)
+    }
+  }
+
+  // Handle old article URL format redirect: /article/{slug} -> /article/{category}/{slug}
+  // Only redirect if the path matches /article/{slug} (no second segment)
+  if (pathname.match(/^\/article\/[^\/]+$/)) {
+    const slug = pathname.split('/article/')[1]
+
+    // Skip if this is already the new format (contains hyphen converted from colon)
+    // We'll check if the article exists and get its category
+    const categorySlug = await getArticleCategorySlug(slug)
+
+    if (categorySlug) {
+      const newUrl = new URL(`/article/${categorySlug}/${slug}`, request.url)
+      return NextResponse.redirect(newUrl, 301)
     }
   }
 

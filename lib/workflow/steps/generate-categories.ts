@@ -11,6 +11,11 @@ export interface CategoryAssignment {
   category_combined: string
 }
 
+export interface MultiCategoryAssignment {
+  primary: CategoryAssignment
+  categories: string[]  // All matching categories, e.g., ['tech:ai', 'tech:data']
+}
+
 export interface GenerateCategoriesInput {
   articleIds?: string[]
 }
@@ -140,31 +145,96 @@ function createServiceRoleClient() {
 }
 
 /**
- * Generate category for a single article using keyword matching
+ * Generate all matching categories for a single article using keyword matching
+ * Uses title AND summary (AI-generated) for more accurate classification
+ * Returns multiple categories with the first match as primary
  */
-function generateCategoryByKeywords(title: string, titleEnglish: string | null): CategoryAssignment {
+function generateCategoriesByKeywords(
+  title: string,
+  titleEnglish: string | null,
+  summaryEnglish: string | null = null,
+  summaryChinese: string | null = null
+): MultiCategoryAssignment {
   const titleToUse = titleEnglish || title
-  const lowerTitle = titleToUse.toLowerCase()
 
-  // Find matching category by keywords
+  // Combine title and summaries for better matching
+  // Summary gives more context about the actual content
+  const searchContent = [
+    titleToUse,
+    summaryEnglish || '',
+    summaryChinese || ''
+  ].join(' ').toLowerCase()
+
+  const matchedCategories: Array<{combined: string, score: number, titleMatch: boolean}> = []
+
+  // Find all matching categories by keywords
   for (const [combined, pattern] of Object.entries(CATEGORY_PATTERNS)) {
+    let matchCount = 0
+    let hasTitleMatch = false
+
     for (const regex of pattern.keywords) {
-      if (regex.test(lowerTitle)) {
-        return {
-          main_category: pattern.main,
-          sub_category: pattern.sub,
-          category_combined: combined
+      if (regex.test(searchContent)) {
+        matchCount++
+        // Check if match was in title (higher weight)
+        if (regex.test(titleToUse.toLowerCase())) {
+          hasTitleMatch = true
         }
       }
     }
+
+    if (matchCount > 0) {
+      // Bonus score for title matches
+      const finalScore = matchCount + (hasTitleMatch ? 1 : 0)
+      matchedCategories.push({ combined, score: finalScore, titleMatch: hasTitleMatch })
+    }
   }
 
-  // Default fallback - use general culture category for unclassified articles
-  return {
-    main_category: 'culture',
-    sub_category: 'culture',
-    category_combined: 'culture:culture'
+  // Sort by score (more specific matches first), prioritize title matches
+  matchedCategories.sort((a, b) => {
+    if (a.titleMatch && !b.titleMatch) return -1
+    if (!a.titleMatch && b.titleMatch) return 1
+    return b.score - a.score
+  })
+
+  // If no matches, use default culture category
+  if (matchedCategories.length === 0) {
+    const defaultCategory = 'culture:culture'
+    return {
+      primary: {
+        main_category: 'culture',
+        sub_category: 'culture',
+        category_combined: defaultCategory
+      },
+      categories: [defaultCategory]
+    }
   }
+
+  // Extract category IDs from matches
+  const categoryIds = matchedCategories.map(m => m.combined)
+
+  // Get primary category details
+  const primaryPattern = CATEGORY_PATTERNS[matchedCategories[0].combined]
+
+  return {
+    primary: {
+      main_category: primaryPattern.main,
+      sub_category: primaryPattern.sub,
+      category_combined: matchedCategories[0].combined
+    },
+    categories: categoryIds
+  }
+}
+
+/**
+ * Generate category for a single article using keyword matching (legacy function for backwards compatibility)
+ */
+function generateCategoryByKeywords(
+  title: string,
+  titleEnglish: string | null,
+  summaryEnglish: string | null = null
+): CategoryAssignment {
+  const result = generateCategoriesByKeywords(title, titleEnglish, summaryEnglish)
+  return result.primary
 }
 
 export const generateCategoriesStep = createStep<GenerateCategoriesInput, GenerateCategoriesOutput>(
@@ -172,18 +242,18 @@ export const generateCategoriesStep = createStep<GenerateCategoriesInput, Genera
   async (input: GenerateCategoriesInput, ctx: WorkflowContext): Promise<StepResult<GenerateCategoriesOutput>> => {
     try {
       const supabase = createServiceRoleClient()
-      
+
       let query
-      
+
       if (input.articleIds && input.articleIds.length > 0) {
         query = supabase
           .from('articles')
-          .select('id, title, title_english, category')
+          .select('id, title, title_english, category, summary_english, summary_chinese')
           .in('id', input.articleIds)
       } else {
         query = supabase
           .from('articles')
-          .select('id, title, title_english, category')
+          .select('id, title, title_english, category, summary_english, summary_chinese')
           .eq('indexed', true)
           .is('category', null)
           .order('updated_at', { ascending: false })
@@ -220,17 +290,20 @@ export const generateCategoriesStep = createStep<GenerateCategoriesInput, Genera
 
       for (const article of articles) {
         try {
-          const categoryAssignment = generateCategoryByKeywords(
+          const categoryAssignment = generateCategoriesByKeywords(
             article.title,
-            article.title_english
+            article.title_english,
+            article.summary_english,
+            (article as any).summary_chinese
           )
 
+          // Update the article with primary category
           const { error: updateError } = await supabase
             .from('articles')
             .update({
-              category: categoryAssignment.category_combined,
-              main_category: categoryAssignment.main_category,
-              sub_category: categoryAssignment.sub_category,
+              category: categoryAssignment.primary.category_combined,
+              main_category: categoryAssignment.primary.main_category,
+              sub_category: categoryAssignment.primary.sub_category,
               updated_at: new Date().toISOString()
             })
             .eq('id', article.id)
@@ -244,12 +317,33 @@ export const generateCategoriesStep = createStep<GenerateCategoriesInput, Genera
             })
             failed++
           } else {
+            // Insert all categories into article_categories junction table
+            const categoryInserts = categoryAssignment.categories.map((cat, index) => ({
+              article_id: article.id,
+              category: cat,
+              is_primary: index === 0  // First category is primary
+            }))
+
+            const { error: junctionError } = await supabase
+              .from('article_categories')
+              .upsert(categoryInserts, { onConflict: 'article_id,category' })
+
+            if (junctionError) {
+              ctx.logs.push({
+                timestamp: new Date(),
+                level: 'warn',
+                step: 'generate-categories',
+                message: `Failed to save junction categories for ${article.title}: ${junctionError.message}`
+              })
+            }
+
             processed++
+            const categoryList = categoryAssignment.categories.join(', ')
             ctx.logs.push({
               timestamp: new Date(),
               level: 'info',
               step: 'generate-categories',
-              message: `Categorized ${article.title.substring(0, 40)}... -> ${categoryAssignment.category_combined}`
+              message: `Categorized ${article.title.substring(0, 40)}... -> [${categoryList}]`
             })
           }
         } catch (error) {

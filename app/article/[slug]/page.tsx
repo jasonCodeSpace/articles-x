@@ -71,16 +71,14 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   const { slug } = await params
   const article = await getArticleBySlug(slug)
 
-  // 301 redirect to new URL format with category
-  if (article && article.category) {
-    const categorySlug = article.category.replace(':', '-')
-    const newUrl = `/article/${categorySlug}/${slug}`
-    // Use permanentRedirect for 301 status
-    permanentRedirect(newUrl)
-  }
-
   if (!article) {
     notFound()
+  }
+
+  // 301 redirect to new URL format with category
+  if (article.category) {
+    const categorySlug = article.category.replace(':', '-')
+    permanentRedirect(`/article/${categorySlug}/${slug}`)
   }
 
   // Get previous and next articles, and more articles

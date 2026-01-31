@@ -30,10 +30,12 @@ export function extractMediaUrls(articleResult: ArticleResult): { images: string
           const url = media.media_url_https || media.media_url || media.url || media.expanded_url
           const mediaType = media.type || ''
 
-          if (mediaType.includes('video') || url?.includes('video')) {
-            addUrl(url, 'video')
-          } else {
-            addUrl(url, 'image')
+          if (url) {
+            if (mediaType.includes('video') || url.includes('video')) {
+              addUrl(url, 'video')
+            } else {
+              addUrl(url, 'image')
+            }
           }
         }
       }
@@ -44,10 +46,12 @@ export function extractMediaUrls(articleResult: ArticleResult): { images: string
           const url = media.media_url_https || media.media_url || media.url || media.expanded_url
           const mediaType = media.type || ''
 
-          if (mediaType.includes('video') || url?.includes('video')) {
-            addUrl(url, 'video')
-          } else {
-            addUrl(url, 'image')
+          if (url) {
+            if (mediaType.includes('video') || url.includes('video')) {
+              addUrl(url, 'video')
+            } else {
+              addUrl(url, 'image')
+            }
           }
         }
       }

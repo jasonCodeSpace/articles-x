@@ -1,6 +1,9 @@
 /**
  * Article Category System
  * 5 main categories with 23 sub-categories
+ *
+ * Note: Subcategory IDs use the format "main:sub" (e.g., "tech:ai")
+ * to match the database category column format.
  */
 
 export interface Category {
@@ -10,7 +13,7 @@ export interface Category {
 }
 
 export interface Subcategory {
-  id: string
+  id: string // Format: "main:sub" e.g., "tech:ai"
   name: string
   mainCategory: string
 }
@@ -21,51 +24,51 @@ export const CATEGORIES: Category[] = [
     id: 'tech',
     name: 'Technology',
     subcategories: [
-      { id: 'ai', name: 'AI', mainCategory: 'tech' },
-      { id: 'crypto', name: 'Crypto', mainCategory: 'tech' },
-      { id: 'data', name: 'Data', mainCategory: 'tech' },
-      { id: 'security', name: 'Security', mainCategory: 'tech' },
-      { id: 'hardware', name: 'Hardware', mainCategory: 'tech' },
+      { id: 'tech:ai', name: 'AI', mainCategory: 'tech' },
+      { id: 'tech:crypto', name: 'Crypto', mainCategory: 'tech' },
+      { id: 'tech:data', name: 'Data', mainCategory: 'tech' },
+      { id: 'tech:security', name: 'Security', mainCategory: 'tech' },
+      { id: 'tech:hardware', name: 'Hardware', mainCategory: 'tech' },
     ]
   },
   {
     id: 'business',
     name: 'Business & Finance',
     subcategories: [
-      { id: 'startups', name: 'Startups', mainCategory: 'business' },
-      { id: 'markets', name: 'Markets', mainCategory: 'business' },
-      { id: 'marketing', name: 'Marketing', mainCategory: 'business' },
+      { id: 'business:startups', name: 'Startups', mainCategory: 'business' },
+      { id: 'business:markets', name: 'Markets', mainCategory: 'business' },
+      { id: 'business:marketing', name: 'Marketing', mainCategory: 'business' },
     ]
   },
   {
     id: 'product',
     name: 'Product & Design',
     subcategories: [
-      { id: 'product', name: 'Product', mainCategory: 'product' },
-      { id: 'design', name: 'Design', mainCategory: 'product' },
-      { id: 'gaming', name: 'Gaming', mainCategory: 'product' },
+      { id: 'product:product', name: 'Product', mainCategory: 'product' },
+      { id: 'product:design', name: 'Design', mainCategory: 'product' },
+      { id: 'product:gaming', name: 'Gaming', mainCategory: 'product' },
     ]
   },
   {
     id: 'science',
     name: 'Science & Learning',
     subcategories: [
-      { id: 'science', name: 'Science', mainCategory: 'science' },
-      { id: 'health', name: 'Health', mainCategory: 'science' },
-      { id: 'education', name: 'Education', mainCategory: 'science' },
-      { id: 'environment', name: 'Environment', mainCategory: 'science' },
+      { id: 'science:science', name: 'Science', mainCategory: 'science' },
+      { id: 'science:health', name: 'Health', mainCategory: 'science' },
+      { id: 'science:education', name: 'Education', mainCategory: 'science' },
+      { id: 'science:environment', name: 'Environment', mainCategory: 'science' },
     ]
   },
   {
     id: 'culture',
     name: 'Culture & Society',
     subcategories: [
-      { id: 'media', name: 'Media', mainCategory: 'culture' },
-      { id: 'culture', name: 'Culture', mainCategory: 'culture' },
-      { id: 'philosophy', name: 'Philosophy', mainCategory: 'culture' },
-      { id: 'history', name: 'History', mainCategory: 'culture' },
-      { id: 'policy', name: 'Policy', mainCategory: 'culture' },
-      { id: 'personal-story', name: 'Personal Story', mainCategory: 'culture' },
+      { id: 'culture:media', name: 'Media', mainCategory: 'culture' },
+      { id: 'culture:culture', name: 'Culture', mainCategory: 'culture' },
+      { id: 'culture:philosophy', name: 'Philosophy', mainCategory: 'culture' },
+      { id: 'culture:history', name: 'History', mainCategory: 'culture' },
+      { id: 'culture:policy', name: 'Policy', mainCategory: 'culture' },
+      { id: 'culture:personal-story', name: 'Personal Story', mainCategory: 'culture' },
     ]
   }
 ]

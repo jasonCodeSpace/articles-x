@@ -1,10 +1,11 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { Clock, TrendingUp, Calendar, Globe, Folder } from 'lucide-react'
+import { Clock, TrendingUp, Calendar, Globe } from 'lucide-react'
 import { SearchBar } from './search-bar'
 import { FilterDropdown } from './filter-dropdown'
 import { ActiveFilters } from './active-filters'
+import { TwoLevelCategoryDropdown } from './two-level-category-dropdown'
 import { TIME_PERIODS, LANGUAGES, type TimePeriod, type DisplayLanguage } from './constants'
 
 export interface FeedToolbarProps {
@@ -21,8 +22,6 @@ export interface FeedToolbarProps {
   onLanguageChange?: (language: DisplayLanguage) => void
   totalItems?: number
 }
-
-import { CATEGORIES } from '@/lib/categories'
 
 export function FeedToolbar({
   onSearchChange,
@@ -69,16 +68,12 @@ export function FeedToolbar({
             />
           )}
 
-          {/* Category Filter */}
+          {/* Category Filter - Two Level Dropdown */}
           {onCategoryChange && (
-            <FilterDropdown
-              icon={<Folder className="h-3.5 w-3.5 shrink-0" />}
-              label="Category"
-              selectedValue={selectedCategory}
-              options={[{ value: 'all', label: 'All' }, ...CATEGORIES.map(c => ({ value: c.id, label: c.name }))]}
-              onSelect={(val) => onCategoryChange(val)}
+            <TwoLevelCategoryDropdown
+              selectedCategory={selectedCategory || 'all'}
+              onCategoryChange={(val) => onCategoryChange(val)}
               onClear={() => onCategoryChange('all')}
-              width="w-44"
             />
           )}
 

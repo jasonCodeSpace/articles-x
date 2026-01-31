@@ -174,7 +174,7 @@ export function useArticleFeed({
     })
 
     return filtered
-  }, [articles, selectedTimePeriod, searchQuery, sortOption])
+  }, [articles, selectedTimePeriod, selectedCategory, searchQuery, sortOption])
 
   // Calculate pagination
   const paginationInfo = useMemo(() => {

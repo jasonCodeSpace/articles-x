@@ -48,6 +48,8 @@ export interface Article {
   title_english?: string
   article_preview_text_english?: string
   category?: string
+  main_category?: string
+  sub_category?: string
   article_images?: string[]
   article_videos?: string[]
   source_type?: 'auto' | 'manual'

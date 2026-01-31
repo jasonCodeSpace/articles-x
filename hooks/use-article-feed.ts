@@ -128,7 +128,15 @@ export function useArticleFeed({
 
     // Apply category filter
     if (selectedCategory !== 'all') {
-      filtered = filtered.filter(article => article.category === selectedCategory)
+      filtered = filtered.filter(article => {
+        const articleCategory = article.category || article.main_category
+        // If category contains ':', it's a specific subcategory (e.g., 'tech:ai')
+        if (selectedCategory.includes(':')) {
+          return article.category === selectedCategory
+        }
+        // Otherwise filter by main_category (e.g., 'tech' matches all 'tech:*' articles)
+        return article.main_category === selectedCategory
+      })
     }
 
     // Apply search filter

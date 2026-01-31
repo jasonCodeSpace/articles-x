@@ -45,11 +45,11 @@ export const metadata: Metadata = {
 export const revalidate = 300
 
 interface PageProps {
-  searchParams: Promise<{ search?: string; page?: string }>
+  searchParams: Promise<{ search?: string; page?: string; category?: string }>
 }
 
 // Fetch articles directly (without cache to ensure fresh data)
-async function getArticles(search?: string): Promise<Article[]> {
+async function getArticles(search?: string, category?: string): Promise<Article[]> {
   const supabase = createAnonClient()
 
   // Select all columns needed for display, including summaries for both languages and media
@@ -77,11 +77,26 @@ async function getArticles(search?: string): Promise<Article[]> {
       full_article_content,
       score,
       article_images,
-      article_videos
+      article_videos,
+      category,
+      main_category,
+      sub_category
     `)
     .eq('indexed', true) // Only show indexed articles
     .gte('score', 65) // Only show high-quality articles (score >= 65)
     .order('score', { ascending: false, nullsFirst: false }) // Sort by score (highest first)
+
+  // Category filtering - support both main category and subcategory
+  if (category && category !== 'all') {
+    // If category contains ':', it's a specific subcategory (e.g., 'tech:ai')
+    // Otherwise it's a main category (e.g., 'tech')
+    if (category.includes(':')) {
+      query = query.eq('category', category)
+    } else {
+      // Filter by main_category (e.g., 'tech' matches all 'tech:*' articles)
+      query = query.eq('main_category', category)
+    }
+  }
 
   if (search && search.trim()) {
     // Search in title and full_article_content only (NOT in summaries)
@@ -106,15 +121,16 @@ async function getArticles(search?: string): Promise<Article[]> {
 // Fetch all articles from database
 async function fetchAllArticles(options: {
   search?: string
+  category?: string
 }): Promise<Article[]> {
-  return getArticles(options.search)
+  return getArticles(options.search, options.category)
 }
 
 export default async function TrendingPage({ searchParams }: PageProps) {
-  const { search } = await searchParams
+  const { search, category } = await searchParams
 
   // Fetch all articles
-  const articles = await fetchAllArticles({ search })
+  const articles = await fetchAllArticles({ search, category })
 
   // Generate JSON-LD structured data for articles
   const structuredData = {
@@ -177,6 +193,7 @@ export default async function TrendingPage({ searchParams }: PageProps) {
               <ArticleFeed
                 initialArticles={articles}
                 initialSearchQuery={search || ''}
+                initialCategory={category || 'all'}
               />
             </Suspense>
           </section>

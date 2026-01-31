@@ -73,18 +73,8 @@ export async function middleware(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname
 
-  // URL normalization: redirect uppercase category URLs to lowercase
-  if (pathname.startsWith('/category/')) {
-    const categoryPart = pathname.split('/category/')[1]
-    if (categoryPart && categoryPart !== categoryPart.toLowerCase()) {
-      const url = request.nextUrl.clone()
-      url.pathname = `/category/${categoryPart.toLowerCase()}`
-      return NextResponse.redirect(url, 301)
-    }
-  }
-
-  // Handle old article URL format redirect: /article/{slug} -> /article/{category}/{slug}
-  // Only redirect if the path matches /article/{slug} (no second segment)
+  // Handle old article URL format redirect FIRST!
+  // Must be before the fast path check to ensure it's executed
   if (pathname.match(/^\/article\/[^\/]+$/)) {
     const slug = pathname.split('/article/')[1]
 
@@ -95,6 +85,16 @@ export async function middleware(request: NextRequest) {
     if (categorySlug) {
       const newUrl = new URL(`/article/${categorySlug}/${slug}`, request.url)
       return NextResponse.redirect(newUrl, 301)
+    }
+  }
+
+  // URL normalization: redirect uppercase category URLs to lowercase
+  if (pathname.startsWith('/category/')) {
+    const categoryPart = pathname.split('/category/')[1]
+    if (categoryPart && categoryPart !== categoryPart.toLowerCase()) {
+      const url = request.nextUrl.clone()
+      url.pathname = `/category/${categoryPart.toLowerCase()}`
+      return NextResponse.redirect(url, 301)
     }
   }
 

@@ -294,7 +294,7 @@ export const generateCategoriesStep = createStep<GenerateCategoriesInput, Genera
             article.title,
             article.title_english,
             article.summary_english,
-            (article as any).summary_chinese
+            article.summary_chinese || null
           )
 
           // Update the article with primary category

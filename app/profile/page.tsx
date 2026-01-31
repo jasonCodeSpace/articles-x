@@ -186,7 +186,7 @@ export default async function ProfilePage({
         </div>
 
         {/* Manual Article Insert (Admin Only) */}
-        <ManualArticleSubmit />
+        <ManualArticleSubmit userEmail={user.email} />
 
         {/* Bookmarked Articles Section */}
         <div className="mt-12">

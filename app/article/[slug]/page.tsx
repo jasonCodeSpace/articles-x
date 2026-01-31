@@ -6,7 +6,6 @@ import { ChevronLeft, ArrowRight } from 'lucide-react'
 import { getArticleBySlug, getPreviousArticle, getNextArticle, fetchArticles } from '@/lib/articles'
 import { ArticleContent } from '@/components/article-content'
 import { ArticleNavigation } from '@/components/article-navigation'
-import { Article } from '@/components/article-card'
 import dynamic from 'next/dynamic'
 
 // Lazy load non-critical components for better performance

@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
 import { createTwitterClient } from '@/lib/services/twitter/client'
+import type { TwitterTweet } from '@/lib/services/twitter/types'
 
 // Verify password for manual article insertion
 const MANUAL_INSERT_PASSWORD = '091919$'
@@ -111,7 +112,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Fetch tweet data from Twitter API
-    let tweetData: any = null
+    let tweetData: TwitterTweet | null = null
     try {
       const twitterClient = createTwitterClient()
       tweetData = await twitterClient.fetchTweet(tweetId)
@@ -130,12 +131,25 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Extract article URL from tweet if it contains a link
-    const articleUrl = tweetData.entities?.urls?.[0]?.expanded_url || url
+    // Extract data from tweet - handle both legacy and new API formats
+    const legacy = tweetData.legacy
+    const userResult = tweetData.core?.user_results?.result
+    const authorName = legacy?.user?.name || userResult?.legacy?.name || 'Unknown'
+    const authorUsername = legacy?.user?.screen_name || userResult?.legacy?.screen_name || url.match(/x\.com\/([^\/]+)/)?.[1] || 'unknown'
+    const authorAvatar = legacy?.user?.profile_image_url_https || userResult?.avatar?.image_url || null
+    const tweetText = legacy?.full_text || legacy?.text || 'Manual Insert'
+    const createdAt = legacy?.created_at || new Date().toISOString()
+
+    // Extract article URL from tweet entities if it contains a link
+    const firstUrl = legacy?.entities?.urls?.[0]
+    const articleUrl = firstUrl?.expanded_url || url
 
     // Generate slug from title
-    const baseSlug = generateSlug(tweetData.text?.substring(0, 100) || `manual-${tweetId}`)
+    const baseSlug = generateSlug(tweetText.substring(0, 100) || `manual-${tweetId}`)
     const uniqueSlug = `${baseSlug}-${tweetId.substring(0, 8)}`
+
+    // Get view count
+    const viewCount = tweetData.views?.count ? parseInt(tweetData.views.count, 10) : 0
 
     // Create article with fetched data
     const { data: newArticle, error: insertError } = await supabase
@@ -145,22 +159,22 @@ export async function POST(request: NextRequest) {
         article_url: articleUrl,
         source_type: 'manual',
         manually_inserted_at: new Date().toISOString(),
-        title: tweetData.text?.substring(0, 200) || 'Manual Insert',
+        title: tweetText.substring(0, 200) || 'Manual Insert',
         slug: uniqueSlug,
-        content: tweetData.text || '',
-        author_name: tweetData.author?.name || 'Unknown',
-        author_handle: tweetData.author?.username || url.match(/x\.com\/([^\/]+)/)?.[1] || 'unknown',
-        author_avatar: tweetData.author?.profile_image_url_https || null,
+        content: tweetText || '',
+        author_name,
+        author_handle: authorUsername,
+        author_avatar: authorAvatar,
         language: 'en',
         indexed: true, // Allow indexing
-        tweet_published_at: tweetData.created_at || new Date().toISOString(),
-        article_published_at: tweetData.created_at || new Date().toISOString(),
-        tweet_views: tweetData.public_metrics?.view_count || 0,
-        tweet_likes: tweetData.public_metrics?.like_count || 0,
-        tweet_retweets: tweetData.public_metrics?.retweet_count || 0,
-        tweet_replies: tweetData.public_metrics?.reply_count || 0,
-        tweet_bookmarks: tweetData.public_metrics?.bookmark_count || 0,
-        tweet_text: tweetData.text || '',
+        tweet_published_at: createdAt,
+        article_published_at: createdAt,
+        tweet_views: viewCount || 0,
+        tweet_likes: legacy?.favorite_count || 0,
+        tweet_retweets: legacy?.retweet_count || 0,
+        tweet_replies: legacy?.reply_count || 0,
+        tweet_bookmarks: legacy?.bookmark_count || 0,
+        tweet_text: tweetText || '',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       })

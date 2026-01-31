@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Loader2, PlusCircle, CheckCircle2, XCircle } from 'lucide-react'
@@ -9,42 +9,22 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
-export function ManualArticleSubmit() {
+interface ManualArticleSubmitProps {
+  userEmail?: string | null
+}
+
+export function ManualArticleSubmit({ userEmail }: ManualArticleSubmitProps) {
   const [url, setUrl] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
-  const [isAuthorized, setIsAuthorized] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
 
-  // Check if user is authorized
-  useEffect(() => {
-    const supabase = createClient(supabaseUrl, supabaseAnonKey)
+  // Check if user is authorized (from prop)
+  const isAuthorized = userEmail === 'jcwang0919@gmail.com'
 
-    // Initial check
-    const checkAuthorization = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-
-      if (session?.user?.email === 'jcwang0919@gmail.com') {
-        setIsAuthorized(true)
-      }
-      setIsLoading(false)
-    }
-
-    checkAuthorization()
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user?.email === 'jcwang0919@gmail.com') {
-        setIsAuthorized(true)
-      } else {
-        setIsAuthorized(false)
-      }
-      setIsLoading(false)
-    })
-
-    return () => subscription.unsubscribe()
-  }, [])
+  if (!isAuthorized) {
+    return null
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -79,15 +59,11 @@ export function ManualArticleSubmit() {
       } else {
         setMessage({ type: 'error', text: data.error || 'Failed to submit article' })
       }
-    } catch (error) {
+    } catch {
       setMessage({ type: 'error', text: 'Network error. Please try again.' })
     } finally {
       setLoading(false)
     }
-  }
-
-  if (!isAuthorized) {
-    return null
   }
 
   return (

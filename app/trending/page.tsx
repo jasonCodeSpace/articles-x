@@ -162,7 +162,7 @@ export default async function TrendingPage({ searchParams }: PageProps) {
               <h1 className="text-5xl md:text-7xl font-bold tracking-tighter">
                 Trending <span className="text-white/40">reads.</span>
               </h1>
-              <p className="text-white/40 text-lg font-light max-w-lg">
+              <p className="text-white/40 text-lg font-light max-w-2xl">
                 Discover thought-provoking articles and insights shared by industry leaders on X. From breakthrough technologies to emerging market trends, explore curated content that sparks ideas and drives meaningful discussions.
               </p>
             </div>

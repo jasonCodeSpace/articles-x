@@ -112,22 +112,86 @@ const CATEGORY_PATTERNS: Record<string, { main: string; sub: string; keywords: R
   'business:marketing': {
     main: 'business',
     sub: 'marketing',
-    keywords: [/marketing/i, /promotion/i, /seo/i, /social media marketing/i, /growth hacking/i, /sales funnel/i, /conversion/i, /campaign/i, /audience/i]
+    keywords: [
+      /marketing/i,
+      /promotion/i,
+      /seo/i,
+      /social media marketing/i,
+      /growth hacking/i,
+      /sales funnel/i,
+      /conversion/i,
+      /campaign/i,
+      /audience/i,
+      /brand/i,
+      /advertising/i,
+      /advertisement/i,
+      /lead generation/i,
+      /customer acquisition/i,
+      /email marketing/i,
+      /content marketing/i
+    ]
   },
   'product:product': {
     main: 'product',
     sub: 'product',
-    keywords: [/product management/i, /\bpm\b/i, /ux research/i, /product strategy/i, /roadmap/i, /kpi/i, /metrics/i]
+    keywords: [
+      /product management/i,
+      /\bpm\b/i,
+      /ux research/i,
+      /product strategy/i,
+      /roadmap/i,
+      /kpi/i,
+      /metrics/i,
+      /user research/i,
+      /feature/i,
+      /mvp/i,
+      /product launch/i,
+      /iteration/i,
+      /\bokr/i,
+      /data driven/i,
+      /user feedback/i
+    ]
   },
   'product:design': {
     main: 'product',
     sub: 'design',
-    keywords: [/design/i, /\bui\b.*\bux\b/i, /ux design/i, /figma/i, /design system/i, /typography/i, /branding/i]
+    keywords: [
+      /ux/i,
+      /ui/i,
+      /design/i,
+      /figma/i,
+      /design system/i,
+      /typography/i,
+      /branding/i,
+      /wireframe/i,
+      /prototype/i,
+      /user interface/i,
+      /user experience/i,
+      /visual design/i,
+      /interaction/i,
+      /usability/i
+    ]
   },
   'product:gaming': {
     main: 'product',
     sub: 'gaming',
-    keywords: [/gaming/i, /game/i, /esports/i, /playstation/i, /xbox/i, /nintendo/i]
+    keywords: [
+      /gaming/i,
+      /game/i,
+      /esports/i,
+      /playstation/i,
+      /xbox/i,
+      /nintendo/i,
+      /steam/i,
+      /player/i,
+      /gameplay/i,
+      /rpg/i,
+      /fps/i,
+      /console/i,
+      /nintendo/i,
+      /mobile game/i,
+      /indie game/i
+    ]
   },
   'science:science': {
     main: 'science',
@@ -190,7 +254,24 @@ const CATEGORY_PATTERNS: Record<string, { main: string; sub: string; keywords: R
   'science:environment': {
     main: 'science',
     sub: 'environment',
-    keywords: [/climate/i, /environment/i, /sustainability/i, /carbon/i, /green energy/i]
+    keywords: [
+      /climate/i,
+      /environment/i,
+      /sustainability/i,
+      /carbon/i,
+      /green energy/i,
+      /pollution/i,
+      /renewable/i,
+      /fossil fuel/i,
+      /global warming/i,
+      /emission/i,
+      /solar/i,
+      /wind energy/i,
+      /ecosystem/i,
+      /biodiversity/i,
+      /conservation/i,
+      /recycling/i
+    ]
   },
   'culture:media': {
     main: 'culture',
@@ -200,7 +281,19 @@ const CATEGORY_PATTERNS: Record<string, { main: string; sub: string; keywords: R
   'culture:culture': {
     main: 'culture',
     sub: 'culture',
-    keywords: [/culture/i, /society/i, /trend/i, /generation/i]
+    keywords: [
+      /pop culture/i,
+      /cultural/i,
+      /trend/i,
+      /generation/i,
+      /social media/i,
+      /internet culture/i,
+      /meme/i,
+      /viral/i,
+      /influencer/i,
+      /celebrity/i,
+      /entertainment/i
+    ]
   },
   'culture:philosophy': {
     main: 'culture',
@@ -236,7 +329,23 @@ const CATEGORY_PATTERNS: Record<string, { main: string; sub: string; keywords: R
   'culture:history': {
     main: 'culture',
     sub: 'history',
-    keywords: [/history/i, /historical/i, /past/i, /lesson/i]
+    keywords: [
+      /history/i,
+      /historical/i,
+      /\bin the past\b/i,
+      /century/i,
+      /decade/i,
+      /era/i,
+      /ancient/i,
+      /medieval/i,
+      /war/i,
+      /revolution/i,
+      /empire/i,
+      /civilization/i,
+      /heritage/i,
+      /legacy/i,
+      /origin/i
+    ]
   },
   'culture:policy': {
     main: 'culture',
@@ -246,7 +355,19 @@ const CATEGORY_PATTERNS: Record<string, { main: string; sub: string; keywords: R
   'culture:personal-story': {
     main: 'culture',
     sub: 'personal-story',
-    keywords: [/my story/i, /personal/i, / memoir/i, /autobiography/i]
+    keywords: [
+      /my story/i,
+      /my journey/i,
+      /personal/i,
+      /memoir/i,
+      /autobiography/i,
+      /i learned/i,
+      /my experience/i,
+      /life story/i,
+      /personal essay/i,
+      /reflect/i,
+      /my life/i
+    ]
   }
 }
 

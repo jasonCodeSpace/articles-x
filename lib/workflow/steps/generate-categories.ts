@@ -66,7 +66,7 @@ const CATEGORY_PATTERNS: Record<string, { main: string; sub: string; keywords: R
   'business:marketing': {
     main: 'business',
     sub: 'marketing',
-    keywords: [/marketing/i, /promotion/i, /seo/i, /social media/i, /growth/i, /\bad\b/i, /funnel/i]
+    keywords: [/marketing/i, /promotion/i, /seo/i, /social media marketing/i, /growth hacking/i, /sales funnel/i, /conversion/i, /campaign/i, /audience/i]
   },
   'product:product': {
     main: 'product',
@@ -116,7 +116,7 @@ const CATEGORY_PATTERNS: Record<string, { main: string; sub: string; keywords: R
   'culture:philosophy': {
     main: 'culture',
     sub: 'philosophy',
-    keywords: [/philosophy/i, /ethics/i, /thinking/i, /mindset/i, /wisdom/i, /\blife\b/i, /fix your/i, /improve/i, /habit/i, /productivity/i, /success/i, /happiness/i, /meaning/i, /purpose/i, /goal/i, /motivation/i, /self.?improvement/i]
+    keywords: [/philosophy/i, /ethics/i, /thinking/i, /mindset/i, /wisdom/i, /\blife\b/i, /fix your/i, /habit/i, /productivity/i, /happiness/i, /meaning/i, /purpose/i, /goal/i, /motivation/i, /self.?improvement/i, /love/i, /relationship/i, /emotion/i, /feeling/i, /personal/i, /story/i, /memoir/i, /ending/i, /death/i, /trauma/i, /healing/i]
   },
   'culture:history': {
     main: 'culture',

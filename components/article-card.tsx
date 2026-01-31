@@ -48,6 +48,9 @@ export interface Article {
   title_english?: string
   article_preview_text_english?: string
   category?: string
+  article_images?: string[]
+  article_videos?: string[]
+  source_type?: 'auto' | 'manual'
 }
 
 interface ArticleCardProps {
@@ -97,7 +100,11 @@ export function ArticleCard({ article, className, index = 0, priority = false, d
     : null
 
   const avatarUrl = article.author_profile_image || article.author_avatar
-  const coverUrl = article.article_image || article.featured_image_url || article.image
+  // Use extracted images first, fallback to article_image, then featured_image_url, then image
+  const coverUrl = (article.article_images && article.article_images.length > 0 ? article.article_images[0] : null) ||
+                   article.article_image ||
+                   article.featured_image_url ||
+                   article.image
   const articleUrl = generateArticleUrl(article.title, article.id, article.slug)
 
   return (

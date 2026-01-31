@@ -38,6 +38,8 @@ interface ArticleContentProps {
     summary_english?: string
     summary_chinese?: string
     summary_generated_at?: string
+    article_images?: string[]
+    article_videos?: string[]
   }
   authorInitials: string
   authorHandle: string
@@ -190,6 +192,77 @@ export function ArticleContent({
           </div>
         </FadeIn>
       )}
+
+      {/* Article Media Gallery */}
+      {(article.article_images?.length || 0) > 0 || (article.article_videos?.length || 0) > 0 ? (
+        <FadeIn delay={0.4} distance={20} className="mb-8">
+          <div className="p-6 rounded-2xl bg-white/[0.03] border border-white/5">
+            <h3 className="text-xs uppercase tracking-widest text-white/30 font-bold mb-4">
+              Article Media
+            </h3>
+
+            {/* Videos */}
+            {(article.article_videos?.length || 0) > 0 && (
+              <div className="mb-6 space-y-4">
+                {(article.article_videos || []).map((videoUrl, idx) => (
+                  <div key={idx} className="rounded-xl overflow-hidden bg-black">
+                    {videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be') ? (
+                      // YouTube embed
+                      <iframe
+                        src={`https://www.youtube.com/embed/${videoUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/)?.[1] || videoUrl.split('/').pop()}`}
+                        className="w-full aspect-video"
+                        allowFullScreen
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      />
+                    ) : videoUrl.includes('vimeo.com') ? (
+                      // Vimeo embed
+                      <iframe
+                        src={`https://player.vimeo.com/video/${videoUrl.split('/').pop()}`}
+                        className="w-full aspect-video"
+                        allowFullScreen
+                        allow="autoplay; fullscreen; picture-in-picture"
+                      />
+                    ) : (
+                      // Direct video
+                      <video
+                        src={videoUrl}
+                        controls
+                        className="w-full max-h-[400px]"
+                        preload="metadata"
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Images Grid */}
+            {(article.article_images?.length || 0) > 0 && (
+              <div className={`grid gap-4 ${article.article_images!.length === 1 ? 'grid-cols-1' : article.article_images!.length === 2 ? 'grid-cols-2' : 'grid-cols-2 md:grid-cols-3'}`}>
+                {(article.article_images || []).map((imageUrl, idx) => (
+                  <div key={idx} className="group relative rounded-xl overflow-hidden bg-white/5 aspect-video">
+                    <img
+                      src={imageUrl}
+                      alt={`Article image ${idx + 1}`}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      loading="lazy"
+                      referrerPolicy="no-referrer"
+                    />
+                    <a
+                      href={imageUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <ExternalLink size={24} className="text-white" />
+                    </a>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </FadeIn>
+      ) : null}
 
       <FadeIn delay={0.3} distance={20}>
         <article className="prose prose-invert prose-lg max-w-none">

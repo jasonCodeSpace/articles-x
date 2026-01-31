@@ -1,8 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
-import { createTwitterClient } from '@/lib/services/twitter/client'
-import type { TwitterTweet } from '@/lib/services/twitter/types'
 
 // Verify password for manual article insertion
 const MANUAL_INSERT_PASSWORD = '091919$'
@@ -11,19 +9,6 @@ const ALLOWED_EMAIL = 'jcwang0919@gmail.com'
 interface ArticleSubmission {
   url: string
   password: string
-}
-
-// Generate slug from title (copied from url-utils)
-function generateSlug(title: string): string {
-  if (!title) return 'untitled'
-
-  return title
-    .toLowerCase()
-    .replace(/[\s\u3000-\u303f\u3040-\u309f\u30a0-\u30ff\uff00-\uffef]+/g, '-')
-    .replace(/[^\p{L}\p{N}-]/gu, '')
-    .replace(/-+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .substring(0, 80)
 }
 
 export async function POST(request: NextRequest) {
@@ -91,6 +76,7 @@ export async function POST(request: NextRequest) {
     }
 
     const tweetId = urlMatch[1]
+    const authorHandle = url.match(/x\.com\/([^\/]+)/)?.[1] || 'unknown'
 
     // Check if article already exists
     const { data: existingArticle } = await supabase
@@ -111,74 +97,26 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Fetch tweet data from Twitter API
-    let tweetData: TwitterTweet | null = null
-    try {
-      const twitterClient = createTwitterClient()
-      tweetData = await twitterClient.fetchTweet(tweetId)
-    } catch (twitterError) {
-      console.error('Failed to fetch tweet:', twitterError)
-      return NextResponse.json(
-        { error: 'Failed to fetch article from Twitter. Please try again.' },
-        { status: 500 }
-      )
-    }
-
-    if (!tweetData) {
-      return NextResponse.json(
-        { error: 'Tweet not found or private' },
-        { status: 404 }
-      )
-    }
-
-    // Extract data from tweet - handle both legacy and new API formats
-    const legacy = tweetData.legacy
-    const userResult = tweetData.core?.user_results?.result
-    const authorName = legacy?.user?.name || userResult?.legacy?.name || 'Unknown'
-    const authorUsername = legacy?.user?.screen_name || userResult?.legacy?.screen_name || url.match(/x\.com\/([^\/]+)/)?.[1] || 'unknown'
-    const authorAvatar = legacy?.user?.profile_image_url_https || userResult?.avatar?.image_url || null
-    const tweetText = legacy?.full_text || legacy?.text || 'Manual Insert'
-    const createdAt = legacy?.created_at || new Date().toISOString()
-
-    // Extract article URL from tweet entities if it contains a link
-    const firstUrl = legacy?.entities?.urls?.[0]
-    const articleUrl = firstUrl?.expanded_url || url
-
-    // Generate slug from title
-    const baseSlug = generateSlug(tweetText.substring(0, 100) || `manual-${tweetId}`)
-    const uniqueSlug = `${baseSlug}-${tweetId.substring(0, 8)}`
-
-    // Get view count
-    const viewCount = tweetData.views?.count ? parseInt(tweetData.views.count, 10) : 0
-
-    // Create article with fetched data
+    // Create a placeholder article for Racknerd to process
     const { data: newArticle, error: insertError } = await supabase
       .from('articles')
       .insert({
         tweet_id: tweetId,
-        article_url: articleUrl,
+        article_url: url,
         source_type: 'manual',
         manually_inserted_at: new Date().toISOString(),
-        title: tweetText.substring(0, 200) || 'Manual Insert',
-        slug: uniqueSlug,
-        content: tweetText || '',
-        author_name: authorName,
-        author_handle: authorUsername,
-        author_avatar: authorAvatar,
+        status: 'pending',
+        title: 'Processing...',
+        slug: `manual-${tweetId}`,
+        content: '',
+        author_name: 'Unknown',
+        author_handle: authorHandle,
         language: 'en',
-        indexed: true, // Allow indexing
-        tweet_published_at: createdAt,
-        article_published_at: createdAt,
-        tweet_views: viewCount || 0,
-        tweet_likes: legacy?.favorite_count || 0,
-        tweet_retweets: legacy?.retweet_count || 0,
-        tweet_replies: legacy?.reply_count || 0,
-        tweet_bookmarks: legacy?.bookmark_count || 0,
-        tweet_text: tweetText || '',
+        indexed: false, // Will be indexed after processing
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       })
-      .select('id, slug')
+      .select('id')
       .single()
 
     if (insertError) {
@@ -192,14 +130,12 @@ export async function POST(request: NextRequest) {
     // Revalidate pages
     revalidatePath('/trending')
     revalidatePath('/')
-    revalidatePath(`/article/${uniqueSlug}`)
 
     return NextResponse.json({
       success: true,
       articleId: newArticle.id,
-      slug: newArticle.slug,
       tweetId,
-      message: 'Article inserted successfully'
+      message: 'Article submitted for processing'
     })
 
   } catch (error) {

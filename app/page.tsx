@@ -56,6 +56,7 @@ export default async function HomePage() {
   const sevenDaysAgoISO = sevenDaysAgo.toISOString();
 
   // Fetch articles in parallel - use materialized view for fast stats lookup
+  // Exclude manually inserted articles (source_type = 'manual') from homepage highlights
   const [statsResult, articlesResult] = await Promise.all([
     supabase.from('article_stats').select('total_published').eq('id', 1).single(),
     supabase.from('articles')
@@ -64,6 +65,7 @@ export default async function HomePage() {
       .gte('article_published_at', sevenDaysAgoISO)
       .not('summary_english', 'is', null)
       .neq('summary_english', '')
+      .filter('source_type', 'is', null) // Only auto-fetched articles
       .order('tweet_views', { ascending: false })
       .limit(3)
   ])

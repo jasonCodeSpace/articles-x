@@ -53,7 +53,7 @@ export function ManualArticleSubmit({ userEmail }: ManualArticleSubmitProps) {
       const data = await response.json()
 
       if (response.ok) {
-        setMessage({ type: 'success', text: 'Article inserted successfully! You can now access it.' })
+        setMessage({ type: 'success', text: 'Article submitted! It will be processed shortly.' })
         setUrl('')
         setPassword('')
       } else {

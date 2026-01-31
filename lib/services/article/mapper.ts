@@ -1,7 +1,7 @@
 import type { TwitterTweet } from '../twitter'
 import type { HarvestedArticle, TweetData, DatabaseArticle } from './types'
 import { HarvestedArticleSchema } from './types'
-import { extractFullArticleContent } from './extractor'
+import { extractFullArticleContent, extractMediaUrls } from './extractor'
 import { generateSlug, generateShortId } from '@/lib/url-utils'
 import { randomUUID } from 'crypto'
 import { parseTwitterDate } from '../utils/date'
@@ -55,6 +55,9 @@ export function mapTweetToArticle(tweet: TwitterTweet): HarvestedArticle | null 
     // Extract full content
     const fullContent = extractFullArticleContent(articleResult as Record<string, unknown>) || excerpt || title
 
+    // Extract media URLs (images and videos)
+    const { images: articleImages, videos: articleVideos } = extractMediaUrls(articleResult as Record<string, unknown>)
+
     // Parse metrics that might be strings like "1.2k"
     const parseMetric = (val: string | number | undefined): number => {
       if (val === undefined || val === null) return 0
@@ -98,6 +101,8 @@ export function mapTweetToArticle(tweet: TwitterTweet): HarvestedArticle | null 
       featured_image_url: featuredImageUrl,
       full_article_content: fullContent,
       tweet_text: tweetText,
+      article_images: articleImages.length > 0 ? articleImages : undefined,
+      article_videos: articleVideos.length > 0 ? articleVideos : undefined,
       metrics: {
         views: views,
         replies: replyCount,
@@ -156,6 +161,8 @@ export function harvestedToDatabase(harvested: HarvestedArticle): DatabaseArticl
     tweet_likes: harvested.metrics?.likes || 0,
     article_published_at: publishedAt,
     article_url: harvested.article_url,
+    article_images: harvested.article_images,
+    article_videos: harvested.article_videos,
   }
 
   return result

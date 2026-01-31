@@ -17,6 +17,8 @@ export const HarvestedArticleSchema = z.object({
   featured_image_url: z.string().optional(),
   full_article_content: z.string().optional(),
   tweet_text: z.string().optional(),
+  article_images: z.array(z.string()).optional(),
+  article_videos: z.array(z.string()).optional(),
   metrics: z.object({
     views: z.number().int(),
     replies: z.number().int(),
@@ -60,6 +62,8 @@ export interface DatabaseArticle {
   tweet_likes?: number
   article_published_at?: string
   article_url?: string
+  article_images?: string[]
+  article_videos?: string[]
   indexed?: boolean
   score?: number
 }

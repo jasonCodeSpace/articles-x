@@ -1,4 +1,84 @@
 /**
+ * Extract all media URLs from article result
+ * Returns arrays of image and video URLs
+ */
+export function extractMediaUrls(articleResult: ArticleResult): { images: string[], videos: string[] } {
+  const images: string[] = []
+  const videos: string[] = []
+  const seenUrls = new Set<string>()
+
+  const addUrl = (url: string, type: 'image' | 'video') => {
+    if (url && !seenUrls.has(url)) {
+      seenUrls.add(url)
+      if (type === 'image') {
+        images.push(url)
+      } else {
+        videos.push(url)
+      }
+    }
+  }
+
+  // Process blocks from both content_state and content
+  const contentState = articleResult?.content_state
+  const content = articleResult?.content
+
+  const processBlocks = (blocks: Block[]) => {
+    for (const block of blocks) {
+      // Extract from media array
+      if (block.media && Array.isArray(block.media)) {
+        for (const media of block.media) {
+          const url = media.media_url_https || media.media_url || media.url || media.expanded_url
+          const mediaType = media.type || ''
+
+          if (mediaType.includes('video') || url?.includes('video')) {
+            addUrl(url, 'video')
+          } else {
+            addUrl(url, 'image')
+          }
+        }
+      }
+
+      // Extract from entities.media
+      if (block.entities?.media && Array.isArray(block.entities.media)) {
+        for (const media of block.entities.media) {
+          const url = media.media_url_https || media.media_url || media.url || media.expanded_url
+          const mediaType = media.type || ''
+
+          if (mediaType.includes('video') || url?.includes('video')) {
+            addUrl(url, 'video')
+          } else {
+            addUrl(url, 'image')
+          }
+        }
+      }
+
+      // Extract from entities.urls (video URLs might be here)
+      if (block.entities?.urls && Array.isArray(block.entities.urls)) {
+        for (const urlObj of block.entities.urls) {
+          const url = urlObj.expanded_url || urlObj.url
+          if (url) {
+            // Check if it's a video URL (YouTube, Vimeo, etc.)
+            if (url.includes('youtube.com') || url.includes('youtu.be') || url.includes('vimeo.com') || url.includes('video')) {
+              addUrl(url, 'video')
+            }
+          }
+        }
+      }
+    }
+  }
+
+  if (contentState?.blocks && Array.isArray(contentState.blocks)) {
+    processBlocks(contentState.blocks)
+  }
+
+  if (content?.blocks && Array.isArray(content.blocks)) {
+    processBlocks(content.blocks)
+  }
+
+  return { images, videos }
+}
+
+/**
  * Extract full article content from Twitter article result
  *
  * Twitter stores article content in content_state.blocks format

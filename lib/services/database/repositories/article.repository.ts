@@ -88,6 +88,8 @@ export class ArticleRepository {
         tweet_likes: article.tweet_likes,
         article_published_at: article.article_published_at,
         article_url: article.article_url,
+        article_images: article.article_images || [],
+        article_videos: article.article_videos || [],
         indexed: article.indexed ?? false,
         score: article.score ?? 0,
       }])
@@ -126,6 +128,8 @@ export class ArticleRepository {
         tweet_likes: article.tweet_likes,
         article_published_at: article.article_published_at,
         article_url: article.article_url,
+        article_images: article.article_images || [],
+        article_videos: article.article_videos || [],
         indexed: article.indexed ?? false,
         score: article.score ?? 0,
       })

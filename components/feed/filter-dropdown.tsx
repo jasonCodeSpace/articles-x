@@ -64,7 +64,8 @@ export function FilterDropdown({
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align={align}
-        className={`${width} max-h-80 overflow-y-auto !bg-[#0A0A0A] border border-white/10 rounded-2xl p-2`}
+        className={`${width} max-h-80 overflow-y-auto border border-white/10 rounded-2xl p-2`}
+        style={{ backgroundColor: '#0A0A0A', opacity: 1 }}
       >
         <DropdownMenuLabel className="text-[10px] uppercase tracking-widest text-white/30 px-2 py-1">
           {label}

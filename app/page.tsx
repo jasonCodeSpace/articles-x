@@ -1,7 +1,7 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
 import Image from 'next/image'
-import { ArrowRight, BookOpen, Globe, Sparkles, Shield, TrendingUp, Bookmark, Eye, Star, Users, Zap, Filter, Clock, Award } from 'lucide-react'
+import { ArrowRight, BookOpen, Sparkles, Shield, TrendingUp, Bookmark, Eye, Star, Users, Zap, Filter, Award } from 'lucide-react'
 import { ClientNavWrapper } from '@/components/client-nav-wrapper'
 import { createAnonClient } from '@/lib/supabase/server'
 import { Button } from '@/components/ui/button'
@@ -255,13 +255,13 @@ export default async function HomePage() {
 
               <FadeIn delay={0.2}>
                 <p className="text-lg text-white/60 leading-relaxed text-center">
-                  The problem with X is simple: the signal-to-noise ratio is abysmal. Between the hot takes, the self-promotion, and the algorithmic outrage bait, the genuinely valuable content gets buried. That essay about a founder's hardest-learned lesson? The research paper that could change how you think about AI? The personal story that might actually shift your perspective? They're there, but finding them means scrolling through hours of mediocrity.
+                  The problem with X is simple: the signal-to-noise ratio is abysmal. Between the hot takes, the self-promotion, and the algorithmic outrage bait, the genuinely valuable content gets buried. That essay about a founder&apos;s hardest-learned lesson? The research paper that could change how you think about AI? The personal story that might actually shift your perspective? They&apos;re there, but finding them means scrolling through hours of mediocrity.
                 </p>
               </FadeIn>
 
               <FadeIn delay={0.25}>
                 <p className="text-lg text-white/60 leading-relaxed text-center">
-                  Xarticle fixes this by doing the heavy lifting for you. We've built a system that knows who's worth listening to, what qualifies as substantive content, and how to separate insight from noise. Every article we feature has been evaluated against multiple quality dimensions and scored accordingly. This isn't about engagement farming—it's about identifying content that actually delivers value.
+                  Xarticle fixes this by doing the heavy lifting for you. We&apos;ve built a system that knows who&apos;s worth listening to, what qualifies as substantive content, and how to separate insight from noise. Every article we feature has been evaluated against multiple quality dimensions and scored accordingly. This isn&apos;t about engagement farming—it&apos;s about identifying content that actually delivers value.
                 </p>
               </FadeIn>
 
@@ -279,7 +279,7 @@ export default async function HomePage() {
 
               <FadeIn delay={0.4}>
                 <p className="text-lg text-white/60 leading-relaxed text-center">
-                  This is not another aggregator that simply reposts everything. This is a curated platform with editorial standards applied at scale. The articles you see on Xarticle have been read, evaluated, and summarized by AI systems specifically trained to recognize depth, originality, and substantive argumentation. We're here to help you discover content that makes you smarter, not just content that keeps you scrolling.
+                  This is not another aggregator that simply reposts everything. This is a curated platform with editorial standards applied at scale. The articles you see on Xarticle have been read, evaluated, and summarized by AI systems specifically trained to recognize depth, originality, and substantive argumentation. We&apos;re here to help you discover content that makes you smarter, not just content that keeps you scrolling.
                 </p>
               </FadeIn>
             </div>
@@ -481,7 +481,7 @@ export default async function HomePage() {
                     X has become a noisy feed where engagement optimization beats substance. The algorithm promotes outrage, repetition, and shallow takes over deep thinking. As a result, genuinely valuable content—thoughtful essays, rigorous analysis, personal stories with real insight—gets buried under layers of hot takes and engagement bait.
                   </p>
                   <p className="text-white/50 leading-relaxed mt-4">
-                    Most users either give up on finding good content or accept the noise as inevitable. We built Xarticle because we believe there's a better way: a platform that filters for quality first, optimizes for learning over engagement, and respects your time as a reader.
+                    Most users either give up on finding good content or accept the noise as inevitable. We built Xarticle because we believe there&apos;s a better way: a platform that filters for quality first, optimizes for learning over engagement, and respects your time as a reader.
                   </p>
                 </div>
                 <div className="p-8 rounded-[2rem] bg-card border border-border">
@@ -504,7 +504,7 @@ export default async function HomePage() {
                 <div className="order-1 md:order-2">
                   <h4 className="text-2xl font-semibold mb-4">Your time is worth more than endless scrolling</h4>
                   <p className="text-white/50 leading-relaxed">
-                    Every hour you spend scrolling X in search of good content is an hour lost. The opportunity cost isn't just time—it's the mental energy burned on filtering noise that leaves you less capacity for deep work and actual learning.
+                    Every hour you spend scrolling X in search of good content is an hour lost. The opportunity cost isn&apos;t just time—it&apos;s the mental energy burned on filtering noise that leaves you less capacity for deep work and actual learning.
                   </p>
                   <p className="text-white/50 leading-relaxed mt-4">
                     Xarticle returns that time to you. Instead of hunting for signal in a sea of noise, you get a curated feed of articles that have already passed a quality threshold. Read summaries, pick what interests you, and spend your time on content that actually moves the needle.
@@ -516,7 +516,7 @@ export default async function HomePage() {
                 <div className="p-8 rounded-[2rem] bg-gradient-to-br from-white/[0.05] to-transparent border border-border text-center">
                   <h4 className="text-2xl font-semibold mb-4">Built for learners, not consumers</h4>
                   <p className="text-white/50 leading-relaxed max-w-2xl mx-auto">
-                    Xarticle isn't designed to maximize your time on site. It's designed to maximize the value you get from the time you spend. We want you to read fewer articles but better ones—to encounter ideas that challenge your thinking, teach you something new, or help you see things differently. When you find an article worth reading, read it deeply. When you've learned what you came for, close the tab and get back to building.
+                    Xarticle isn&apos;t designed to maximize your time on site. It&apos;s designed to maximize the value you get from the time you spend. We want you to read fewer articles but better ones—to encounter ideas that challenge your thinking, teach you something new, or help you see things differently. When you find an article worth reading, read it deeply. When you&apos;ve learned what you came for, close the tab and get back to building.
                   </p>
                 </div>
               </FadeIn>

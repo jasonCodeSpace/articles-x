@@ -6,6 +6,7 @@ import { ClientNavWrapper } from '@/components/client-nav-wrapper'
 import { createAnonClient } from '@/lib/supabase/server'
 import { Button } from '@/components/ui/button'
 import { FadeIn } from '@/components/motion-wrapper'
+import { categoryIdToSlug } from '@/lib/url-utils'
 
 export const metadata: Metadata = {
   title: 'Xarticle — The Best Articles from X, Curated & Scored',
@@ -267,10 +268,12 @@ export default async function HomePage() {
                 const scoreInfo = formatScore(article.score)
                 const summaryText = article.summary_english || article.summary_chinese || 'A high-quality article from a trusted source on X. Read the full piece for deep insights and valuable perspectives.'
                 const shortSummary = summaryText.slice(0, 180) + (summaryText.length > 180 ? '...' : '')
+                const categorySlug = categoryIdToSlug(article.category || 'tech:ai')
+                const articleUrl = `/article/${categorySlug}/${article.slug}`
 
                 return (
                   <FadeIn key={article.id} delay={0.1 * index} direction="up">
-                    <Link href={`/article/${article.main_category}/${article.sub_category}/${article.slug}`} className="block group">
+                    <Link href={articleUrl} className="block group">
                       <div className="relative h-full rounded-[2rem] bg-card border border-border hover:border-white/20 transition-all duration-500 overflow-hidden">
                         {/* Article Image */}
                         <div className="relative h-48 overflow-hidden">

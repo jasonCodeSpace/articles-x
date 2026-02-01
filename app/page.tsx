@@ -71,14 +71,19 @@ export default async function HomePage() {
     'Science', 'Media'
   ]
 
-  // Fetch top 3 articles by score
+  // Get date from 7 days ago for weekly top articles
+  const sevenDaysAgo = new Date()
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+  const sevenDaysAgoISO = sevenDaysAgo.toISOString()
+
+  // Fetch top 3 articles from the past week by views
   const [statsResult, topArticlesResult] = await Promise.all([
     supabase.from('article_stats').select('total_published').eq('id', 1).single(),
     supabase.from('articles')
       .select('id, title, title_english, slug, image, author_name, author_handle, author_avatar, article_published_at, tweet_views, tweet_likes, score, summary_english, summary_chinese, category, main_category, sub_category')
       .eq('indexed', true)
-      .gte('score', 85)
-      .order('score', { ascending: false })
+      .gte('score', 60)
+      .gte('article_published_at', sevenDaysAgoISO)
       .order('tweet_views', { ascending: false })
       .limit(3)
   ])
@@ -103,7 +108,7 @@ export default async function HomePage() {
         "name": "How does Xarticle score articles?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Each article is rated on a 0-100 scale based on multiple factors: engagement metrics (views, likes, replies), content quality, source credibility, and relevance. Only articles scoring 65 or higher are included in our trending feed, ensuring you see only the most valuable content."
+          "text": "Each article is rated on a 0-100 scale based on multiple factors: engagement metrics (views, likes, replies), content quality, source credibility, and relevance. Only articles scoring 60 or higher are included in our trending feed, ensuring you see only the most valuable content."
         }
       },
       {
@@ -219,7 +224,7 @@ export default async function HomePage() {
                       <div className="text-xs tracking-widest uppercase text-white/30">Curated Articles</div>
                     </div>
                     <div className="p-6 rounded-[2rem] bg-card border border-border hover:bg-white/[0.05] transition-all duration-500">
-                      <div className="text-4xl font-bold tracking-tighter mb-1">65+</div>
+                      <div className="text-4xl font-bold tracking-tighter mb-1">60+</div>
                       <div className="text-xs tracking-widest uppercase text-white/30">Min Score</div>
                     </div>
                     <div className="p-6 rounded-[2rem] bg-card border border-border hover:bg-white/[0.05] transition-all duration-500">
@@ -237,62 +242,13 @@ export default async function HomePage() {
           </div>
         </section>
 
-        {/* What is Xarticle Section */}
-        <section className="py-20 px-6 relative z-10 border-y border-border">
-          <div className="max-w-5xl mx-auto">
-            <FadeIn>
-              <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-12 text-center">
-                What is <span className="text-white/40">Xarticle?</span>
-              </h2>
-            </FadeIn>
-
-            <div className="prose prose-invert max-w-none space-y-8">
-              <FadeIn delay={0.1}>
-                <p className="text-xl text-white/70 leading-relaxed text-center">
-                  Xarticle is an intelligent content discovery platform that monitors thousands of X accounts from founders, venture capitalists, researchers, and thought leaders. When these accounts share long-form articles—essays, blog posts, research papers, and in-depth analyses—our system captures them and uses AI to evaluate, summarize, and organize the content for serious readers.
-                </p>
-              </FadeIn>
-
-              <FadeIn delay={0.2}>
-                <p className="text-lg text-white/60 leading-relaxed text-center">
-                  The problem with X is simple: the signal-to-noise ratio is abysmal. Between the hot takes, the self-promotion, and the algorithmic outrage bait, the genuinely valuable content gets buried. That essay about a founder&apos;s hardest-learned lesson? The research paper that could change how you think about AI? The personal story that might actually shift your perspective? They&apos;re there, but finding them means scrolling through hours of mediocrity.
-                </p>
-              </FadeIn>
-
-              <FadeIn delay={0.25}>
-                <p className="text-lg text-white/60 leading-relaxed text-center">
-                  Xarticle fixes this by doing the heavy lifting for you. We&apos;ve built a system that knows who&apos;s worth listening to, what qualifies as substantive content, and how to separate insight from noise. Every article we feature has been evaluated against multiple quality dimensions and scored accordingly. This isn&apos;t about engagement farming—it&apos;s about identifying content that actually delivers value.
-                </p>
-              </FadeIn>
-
-              <FadeIn delay={0.3}>
-                <p className="text-lg text-white/60 leading-relaxed text-center">
-                  Every article receives a quality score from 0 to 100 based on multiple signals: engagement metrics, source credibility, content depth, and relevance to trending topics. Only articles scoring 65 or higher make it to our curated feed, ensuring you spend your reading time on content that truly matters. The scoring system adapts over time, learning from engagement patterns and user feedback to continuously improve the quality threshold.
-                </p>
-              </FadeIn>
-
-              <FadeIn delay={0.35}>
-                <p className="text-lg text-white/60 leading-relaxed text-center">
-                  Our AI generates intelligent summaries in both English and Chinese, giving you quick context before you commit to reading the full piece. Each summary captures the key insights, main arguments, and takeaways—so you can decide whether an article is worth your time before you click through. Browse by category, search by topic, or explore author pages to build your personal knowledge library.
-                </p>
-              </FadeIn>
-
-              <FadeIn delay={0.4}>
-                <p className="text-lg text-white/60 leading-relaxed text-center">
-                  This is not another aggregator that simply reposts everything. This is a curated platform with editorial standards applied at scale. The articles you see on Xarticle have been read, evaluated, and summarized by AI systems specifically trained to recognize depth, originality, and substantive argumentation. We&apos;re here to help you discover content that makes you smarter, not just content that keeps you scrolling.
-                </p>
-              </FadeIn>
-            </div>
-          </div>
-        </section>
-
         {/* Top Articles Section */}
         <section id="top-articles" className="py-20 px-6 relative z-10">
           <div className="max-w-7xl mx-auto">
             <FadeIn>
-              <div className="flex items-center justify-between mb-12">
+              <div className="flex items-center justify-between mb-4">
                 <h2 className="text-4xl md:text-5xl font-bold tracking-tight">
-                  Top <span className="text-white/40">Articles.</span>
+                  Top <span className="text-white/40">This Week.</span>
                 </h2>
                 <Link href="/trending">
                   <Button variant="ghost" className="text-white/40 hover:text-white hover:bg-white/5">
@@ -301,6 +257,9 @@ export default async function HomePage() {
                   </Button>
                 </Link>
               </div>
+              <p className="text-white/40 text-center max-w-2xl mx-auto mb-12">
+                The most read articles from the past 7 days. All scored 60+ and curated for quality.
+              </p>
             </FadeIn>
 
             <div className="grid lg:grid-cols-3 gap-6">
@@ -404,6 +363,55 @@ export default async function HomePage() {
           </div>
         </section>
 
+        {/* What is Xarticle Section */}
+        <section className="py-20 px-6 relative z-10 border-y border-border">
+          <div className="max-w-5xl mx-auto">
+            <FadeIn>
+              <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-12 text-center">
+                What is <span className="text-white/40">Xarticle?</span>
+              </h2>
+            </FadeIn>
+
+            <div className="prose prose-invert max-w-none space-y-8">
+              <FadeIn delay={0.1}>
+                <p className="text-xl text-white/70 leading-relaxed text-center">
+                  Xarticle is an intelligent content discovery platform that monitors thousands of X accounts from founders, venture capitalists, researchers, and thought leaders. When these accounts share long-form articles—essays, blog posts, research papers, and in-depth analyses—our system captures them and uses AI to evaluate, summarize, and organize the content for serious readers.
+                </p>
+              </FadeIn>
+
+              <FadeIn delay={0.2}>
+                <p className="text-lg text-white/60 leading-relaxed text-center">
+                  The problem with X is simple: the signal-to-noise ratio is abysmal. Between the hot takes, the self-promotion, and the algorithmic outrage bait, the genuinely valuable content gets buried. That essay about a founder&apos;s hardest-learned lesson? The research paper that could change how you think about AI? The personal story that might actually shift your perspective? They&apos;re there, but finding them means scrolling through hours of mediocrity.
+                </p>
+              </FadeIn>
+
+              <FadeIn delay={0.25}>
+                <p className="text-lg text-white/60 leading-relaxed text-center">
+                  Xarticle fixes this by doing the heavy lifting for you. We&apos;ve built a system that knows who&apos;s worth listening to, what qualifies as substantive content, and how to separate insight from noise. Every article we feature has been evaluated against multiple quality dimensions and scored accordingly. This isn&apos;t about engagement farming—it&apos;s about identifying content that actually delivers value.
+                </p>
+              </FadeIn>
+
+              <FadeIn delay={0.3}>
+                <p className="text-lg text-white/60 leading-relaxed text-center">
+                  Every article receives a quality score from 0 to 100 based on multiple signals: engagement metrics, source credibility, content depth, and relevance to trending topics. Only articles scoring 60 or higher make it to our curated feed, ensuring you spend your reading time on content that truly matters. The scoring system adapts over time, learning from engagement patterns and user feedback to continuously improve the quality threshold.
+                </p>
+              </FadeIn>
+
+              <FadeIn delay={0.35}>
+                <p className="text-lg text-white/60 leading-relaxed text-center">
+                  Our AI generates intelligent summaries in both English and Chinese, giving you quick context before you commit to reading the full piece. Each summary captures the key insights, main arguments, and takeaways—so you can decide whether an article is worth your time before you click through. Browse by category, search by topic, or explore author pages to build your personal knowledge library.
+                </p>
+              </FadeIn>
+
+              <FadeIn delay={0.4}>
+                <p className="text-lg text-white/60 leading-relaxed text-center">
+                  This is not another aggregator that simply reposts everything. This is a curated platform with editorial standards applied at scale. The articles you see on Xarticle have been read, evaluated, and summarized by AI systems specifically trained to recognize depth, originality, and substantive argumentation. We&apos;re here to help you discover content that makes you smarter, not just content that keeps you scrolling.
+                </p>
+              </FadeIn>
+            </div>
+          </div>
+        </section>
+
         {/* How It Works Section */}
         <section className="py-20 px-6 relative z-10 border-y border-border">
           <div className="max-w-7xl mx-auto">
@@ -439,7 +447,7 @@ export default async function HomePage() {
                   step: '03',
                   icon: Award,
                   title: 'Score & Filter',
-                  description: 'Each article is evaluated on a 0-100 scale based on engagement quality, source credibility, content depth, and topic relevance. Only content scoring 65+ makes the cut.',
+                  description: 'Each article is evaluated on a 0-100 scale based on engagement quality, source credibility, content depth, and topic relevance. Only content scoring 60+ makes the cut.',
                   detail: 'The scoring algorithm weights substance over virality. An article with 10K reads but original insights scores higher than one with 1M reads of clichéd advice. We learn from user engagement patterns to continuously refine the model.'
                 },
                 {
@@ -620,7 +628,7 @@ export default async function HomePage() {
             <FadeIn delay={0.5}>
               <div className="p-8 rounded-[2rem] bg-gradient-to-br from-white/[0.05] to-transparent border border-border text-center">
                 <p className="text-white/50 leading-relaxed max-w-2xl mx-auto">
-                  Only articles scoring 65 or higher on our 100-point scale make it to the trending feed. This means approximately 99% of content shared on X gets filtered out before you ever see it. We do the filtering so you can do the reading.
+                  Only articles scoring 60 or higher on our 100-point scale make it to the trending feed. This means approximately 99% of content shared on X gets filtered out before you ever see it. We do the filtering so you can do the reading.
                 </p>
               </div>
             </FadeIn>

@@ -5,7 +5,60 @@
  * Old structure: block.media, block.entities.media
  * New structure: block.entityRanges + contentState.entityMap (with MEDIA type entities)
  */
-export function extractMediaUrls(articleResult: any): { images: string[], videos: string[] } {
+
+interface EntityMediaItem {
+  mediaId?: string
+  url?: string
+  mediaCategory?: string
+}
+
+interface EntityData {
+  mediaItems?: EntityMediaItem[]
+}
+
+interface Entity {
+  type?: string
+  data?: EntityData
+  value?: {
+    type?: string
+    data?: EntityData
+  }
+}
+
+interface EntityRange {
+  key: string
+  offset: number
+  length: number
+}
+
+interface ContentBlock {
+  text?: string
+  media?: Media[]
+  entities?: {
+    media?: Media[]
+    urls?: Array<{ url: string; expanded_url?: string }>
+  }
+  entityRanges?: EntityRange[]
+}
+
+interface ContentState {
+  blocks?: ContentBlock[]
+  entityMap?: Record<string, Entity>
+}
+
+interface ArticleResultData {
+  content_state?: ContentState
+  content?: ContentState
+  preview_text?: string
+  description?: string
+  cover_media?: {
+    media_info?: {
+      original_img_url?: string
+    }
+  }
+}
+
+export function extractMediaUrls(articleResult: ArticleResultData): { images: string[], videos: string[] } {
   const images: string[] = []
   const videos: string[] = []
   const seenUrls = new Set<string>()
@@ -25,7 +78,7 @@ export function extractMediaUrls(articleResult: any): { images: string[], videos
   const contentState = articleResult?.content_state
   const content = articleResult?.content
 
-  const processBlocks = (blocks: any[], entityMap?: Record<string, any>) => {
+  const processBlocks = (blocks: ContentBlock[], entityMap?: Record<string, Entity>) => {
     for (const block of blocks) {
       // New structure: entityRanges + entityMap
       if (block.entityRanges && Array.isArray(block.entityRanges) && entityMap) {
@@ -131,38 +184,13 @@ interface Media {
   expanded_url?: string
 }
 
-interface Block {
-  text?: string
-  media?: Media[]
-  entities?: {
-    media?: Media[]
-    urls?: Array<{ url: string; expanded_url?: string }>
-  }
-  entityRanges?: Array<{ key: string; offset: number; length: number }>
-}
-
-interface ArticleResult {
-  content_state?: {
-    blocks?: Block[]
-    entityMap?: Record<string, any>
-  }
-  content?: {
-    blocks?: Block[]
-    entityMap?: Record<string, any>
-  }
-  preview_text?: string
-  description?: string
-  cover_media?: {
-    media_info?: {
-      original_img_url?: string
-    }
-  }
-}
+// Re-export ContentBlock as Block for compatibility
+type Block = ContentBlock
 
 /**
  * Extract media URL from a block
  */
-function extractMediaFromBlock(block: Block, entityMap?: Record<string, any>): string[] {
+function extractMediaFromBlock(block: Block, entityMap?: Record<string, Entity>): string[] {
   const mediaUrls: string[] = []
 
   // New structure: entityRanges + entityMap
@@ -213,7 +241,7 @@ function extractMediaFromBlock(block: Block, entityMap?: Record<string, any>): s
  * This is the structure Twitter uses for article content
  * Preserves images and other media in HTML format
  */
-export function extractFullArticleContent(articleResult: ArticleResult): string {
+export function extractFullArticleContent(articleResult: ArticleResultData): string {
   try {
     // Collect all media URLs from the article
     const allMediaUrls: string[] = []
@@ -238,7 +266,7 @@ export function extractFullArticleContent(articleResult: ArticleResult): string 
 
       for (const block of contentState.blocks) {
         // Check if this block has media entity
-        const hasMedia = block.entityRanges && block.entityRanges.some((range: any) => {
+        const hasMedia = block.entityRanges && block.entityRanges.some((range: EntityRange) => {
           const entity = contentState.entityMap?.[range.key]
           const entityType = entity?.type || entity?.value?.type
           return entityType === 'MEDIA'

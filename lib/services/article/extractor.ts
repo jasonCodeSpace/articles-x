@@ -1,8 +1,11 @@
 /**
  * Extract all media URLs from article result
- * Returns arrays of image and video URLs
+ * Supports both old and new Twitter/X article structures
+ *
+ * Old structure: block.media, block.entities.media
+ * New structure: block.entityRanges + contentState.entityMap (with MEDIA type entities)
  */
-export function extractMediaUrls(articleResult: ArticleResult): { images: string[], videos: string[] } {
+export function extractMediaUrls(articleResult: any): { images: string[], videos: string[] } {
   const images: string[] = []
   const videos: string[] = []
   const seenUrls = new Set<string>()
@@ -22,9 +25,35 @@ export function extractMediaUrls(articleResult: ArticleResult): { images: string
   const contentState = articleResult?.content_state
   const content = articleResult?.content
 
-  const processBlocks = (blocks: Block[]) => {
+  const processBlocks = (blocks: any[], entityMap?: Record<string, any>) => {
     for (const block of blocks) {
-      // Extract from media array
+      // New structure: entityRanges + entityMap
+      if (block.entityRanges && Array.isArray(block.entityRanges) && entityMap) {
+        for (const range of block.entityRanges) {
+          const entityKey = range.key
+          const entity = entityMap[entityKey]
+
+          // Handle both old structure (entity.type) and new structure (entity.value.type)
+          const entityType = entity?.type || entity?.value?.type
+          const entityData = entity?.data || entity?.value?.data
+
+          if (entityType === 'MEDIA' && entityData?.mediaItems) {
+            // This is a MEDIA entity - extract image URLs
+            for (const item of entityData.mediaItems) {
+              // Note: entityMap mediaId is an internal ID (e.g., "2016815983437168640")
+              // that cannot be directly converted to a valid image URL
+              // Valid image URLs use hash IDs (e.g., "G_0jmh9bUAQ82Ga")
+              // We rely on cover_media for valid image URLs instead
+              if (item.url) {
+                addUrl(item.url, item.mediaCategory?.includes('video') ? 'video' : 'image')
+              }
+              // Skip item.mediaId as it's not a valid image URL
+            }
+          }
+        }
+      }
+
+      // Old structure: media array
       if (block.media && Array.isArray(block.media)) {
         for (const media of block.media) {
           const url = media.media_url_https || media.media_url || media.url || media.expanded_url
@@ -40,7 +69,7 @@ export function extractMediaUrls(articleResult: ArticleResult): { images: string
         }
       }
 
-      // Extract from entities.media
+      // Old structure: entities.media
       if (block.entities?.media && Array.isArray(block.entities.media)) {
         for (const media of block.entities.media) {
           const url = media.media_url_https || media.media_url || media.url || media.expanded_url
@@ -72,11 +101,16 @@ export function extractMediaUrls(articleResult: ArticleResult): { images: string
   }
 
   if (contentState?.blocks && Array.isArray(contentState.blocks)) {
-    processBlocks(contentState.blocks)
+    processBlocks(contentState.blocks, contentState.entityMap)
   }
 
   if (content?.blocks && Array.isArray(content.blocks)) {
-    processBlocks(content.blocks)
+    processBlocks(content.blocks, content.entityMap)
+  }
+
+  // Also check for cover_media
+  if (articleResult?.cover_media?.media_info?.original_img_url) {
+    addUrl(articleResult.cover_media.media_info.original_img_url, 'image')
   }
 
   return { images, videos }
@@ -104,24 +138,52 @@ interface Block {
     media?: Media[]
     urls?: Array<{ url: string; expanded_url?: string }>
   }
+  entityRanges?: Array<{ key: string; offset: number; length: number }>
 }
 
 interface ArticleResult {
   content_state?: {
     blocks?: Block[]
+    entityMap?: Record<string, any>
   }
   content?: {
     blocks?: Block[]
+    entityMap?: Record<string, any>
   }
   preview_text?: string
   description?: string
+  cover_media?: {
+    media_info?: {
+      original_img_url?: string
+    }
+  }
 }
 
 /**
  * Extract media URL from a block
  */
-function extractMediaFromBlock(block: Block): string[] {
+function extractMediaFromBlock(block: Block, entityMap?: Record<string, any>): string[] {
   const mediaUrls: string[] = []
+
+  // New structure: entityRanges + entityMap
+  if (block.entityRanges && Array.isArray(block.entityRanges) && entityMap) {
+    for (const range of block.entityRanges) {
+      const entity = entityMap[range.key]
+      // Handle both old structure (entity.type) and new structure (entity.value.type)
+      const entityType = entity?.type || entity?.value?.type
+      const entityData = entity?.data || entity?.value?.data
+
+      if (entityType === 'MEDIA' && entityData?.mediaItems) {
+        for (const item of entityData.mediaItems) {
+          if (item.mediaId) {
+            mediaUrls.push(`https://pbs.twimg.com/media/${item.mediaId}`)
+          } else if (item.url) {
+            mediaUrls.push(item.url)
+          }
+        }
+      }
+    }
+  }
 
   // Try media array directly
   if (block.media && Array.isArray(block.media)) {
@@ -153,22 +215,48 @@ function extractMediaFromBlock(block: Block): string[] {
  */
 export function extractFullArticleContent(articleResult: ArticleResult): string {
   try {
-    // First try content_state.blocks (the correct structure for X Articles)
+    // Collect all media URLs from the article
+    const allMediaUrls: string[] = []
+
+    // First, add cover_media image if available (this is the main image)
+    const coverImageUrl = articleResult?.cover_media?.media_info?.original_img_url
+    if (coverImageUrl) {
+      allMediaUrls.push(coverImageUrl)
+    }
+
+    // Extract media from entityMap
     const contentState = articleResult?.content_state
+    if (contentState?.entityMap) {
+      const mediaUrls = extractMediaUrls(articleResult)
+      allMediaUrls.push(...mediaUrls.images)
+    }
+
+    // First try content_state.blocks (the correct structure for X Articles)
     if (contentState?.blocks && Array.isArray(contentState.blocks)) {
       const contentParts: string[] = []
+      let mediaIndex = 0
 
       for (const block of contentState.blocks) {
-        const mediaUrls = extractMediaFromBlock(block)
+        // Check if this block has media entity
+        const hasMedia = block.entityRanges && block.entityRanges.some((range: any) => {
+          const entity = contentState.entityMap?.[range.key]
+          const entityType = entity?.type || entity?.value?.type
+          return entityType === 'MEDIA'
+        })
 
         // Add text if present
         if (block.text && block.text.trim()) {
           contentParts.push(block.text.trim())
-        }
 
-        // Add media as HTML img tags
-        for (const url of mediaUrls) {
-          contentParts.push(`<img src="${url}" alt="Article image" />`)
+          // If this block has a media entity, add the image after the text
+          if (hasMedia && mediaIndex < allMediaUrls.length) {
+            const imgUrl = allMediaUrls[mediaIndex]
+            // Only add if not already added from cover_media
+            if (!contentParts.some(p => p.includes(imgUrl))) {
+              contentParts.push(`<img src="${imgUrl}" alt="Article image" />`)
+            }
+            mediaIndex++
+          }
         }
       }
 
@@ -185,7 +273,7 @@ export function extractFullArticleContent(articleResult: ArticleResult): string 
       const contentParts: string[] = []
 
       for (const block of content.blocks) {
-        const mediaUrls = extractMediaFromBlock(block)
+        const mediaUrls = extractMediaFromBlock(block, content.entityMap)
 
         // Add text if present
         if (block.text && block.text.trim()) {

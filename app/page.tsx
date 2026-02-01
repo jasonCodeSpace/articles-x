@@ -415,7 +415,7 @@ export default async function HomePage() {
 
             <FadeIn delay={0.1}>
               <p className="text-lg text-white/50 leading-relaxed text-center max-w-3xl mx-auto mb-16">
-                Xarticle operates as a continuous intelligence system, working around the clock to discover, evaluate, and organize the most valuable long-form content shared on X. Here's the breakdown:
+                Xarticle operates as a continuous intelligence system, working around the clock to discover, evaluate, and organize the most valuable long-form content shared on X. Here&apos;s the breakdown:
               </p>
             </FadeIn>
 

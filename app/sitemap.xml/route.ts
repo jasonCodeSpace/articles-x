@@ -66,10 +66,11 @@ export async function GET() {
     const supabase = createServiceClient()
     const currentDate = new Date().toISOString()
 
-    // Fetch articles with valid slugs (include both auto-fetched and manually inserted articles)
+    // Fetch articles with valid slugs - ONLY indexed articles
     const { data: articles, error: articlesError } = await supabase
       .from('articles')
       .select('slug, article_published_at, updated_at, score, category')
+      .eq('indexed', true) // Only include indexed articles in sitemap
       .not('slug', 'is', null)
       .neq('slug', '')
       .order('article_published_at', { ascending: false })
@@ -79,10 +80,11 @@ export async function GET() {
       return new NextResponse('Error generating sitemap', { status: 500 })
     }
 
-    // Fetch unique authors for author pages
+    // Fetch unique authors for author pages - ONLY from indexed articles
     const { data: authors, error: authorsError } = await supabase
       .from('articles')
       .select('author_handle, author_name, updated_at')
+      .eq('indexed', true) // Only include authors of indexed articles
       .not('author_handle', 'is', null)
       .neq('author_handle', '')
       .order('author_name', { ascending: true })

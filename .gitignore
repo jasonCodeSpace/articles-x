@@ -78,6 +78,9 @@ coverage/
 *.backup
 *.orig
 
+# Archive folder (backup files)
+_archive/
+
 # Cache directories
 .cache/
 .parcel-cache/

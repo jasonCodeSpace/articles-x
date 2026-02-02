@@ -88,6 +88,7 @@ _archive/
 
 # Archived scripts (debug/one-off scripts)
 scripts/_archive/
+app/api/_archive/
 
 # Claude Code skills (development only)
 skills/

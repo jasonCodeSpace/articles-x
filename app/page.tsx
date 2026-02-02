@@ -738,14 +738,15 @@ export default async function HomePage() {
         <footer className="py-16 px-6 border-t border-border z-10 relative">
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8 text-center md:text-left">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
-                <span className="text-sm font-bold">X</span>
+              <div className="relative w-8 h-8">
+                <Image src="/logo.svg" alt="Xarticle" fill className="object-contain" />
               </div>
               <span className="text-sm font-medium tracking-tighter text-white/50 uppercase">Xarticle</span>
             </div>
 
             <div className="flex gap-8 text-[10px] text-white/30 uppercase tracking-[0.2em] font-medium">
               <Link href="/trending" className="hover:text-white transition-colors">Trending</Link>
+              <Link href="/archive" className="hover:text-white transition-colors">Archive</Link>
               <Link href="/terms" className="hover:text-white transition-colors">Terms</Link>
               <Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link>
               <a href="https://x.com" className="hover:text-white transition-colors">X.com</a>

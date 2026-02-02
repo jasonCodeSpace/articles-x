@@ -39,6 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+tsconfig.tsbuildinfo
 
 # IDE and editor files
 .vscode/
@@ -81,3 +82,9 @@ coverage/
 .cache/
 .parcel-cache/
 .eslintcache
+
+# Archived scripts (debug/one-off scripts)
+scripts/_archive/
+
+# Claude Code skills (development only)
+skills/

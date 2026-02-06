@@ -1,21 +1,22 @@
 /**
- * Article Score Calculation (Balanced Version)
- * Calculates article score based on engagement metrics and word count
+ * Article Score Calculation (Content-First Version)
+ * Calculates article score based on engagement metrics and content quality
  * Score range: 0-100
  *
- * Balanced: Only top-quality articles get indexed, but not impossible
+ * Content-First: Prioritizes actual article content over Twitter metrics
  */
 
 import { countWords } from './word-count'
 
 /**
- * Calculate article score based on engagement metrics and word count
+ * Calculate article score based on engagement metrics and content quality
  *
  * Metrics weighted as follows:
- * - Views: 35% - 100K+ views for good score, 1M+ for excellent
- * - Likes: 30% - 1K+ likes for good score, 10K+ for excellent
- * - Replies: 20% - 50+ replies for good score, 200+ for excellent
- * - Word count: 15% - 500+ words for good score, 1500+ for excellent
+ * - Views: 25% - 100K+ views for good score, 1M+ for excellent (reduced from 35%)
+ * - Likes: 20% - 1K+ likes for good score, 10K+ for excellent (reduced from 30%)
+ * - Replies: 15% - 50+ replies for good score, 200+ for excellent (reduced from 20%)
+ * - Content Quality: 35% - Word count + structure + completeness (increased from 15%)
+ * - Bonus: +5 points for having both full content and summary
  *
  * @param article - Article data with metrics
  * @returns Score between 0 and 100
@@ -25,6 +26,7 @@ export interface ArticleMetrics {
   tweet_likes?: number
   tweet_replies?: number
   full_article_content?: string
+  has_summary?: boolean
 }
 
 export function calculateArticleScore(metrics: ArticleMetrics): number {
@@ -32,45 +34,57 @@ export function calculateArticleScore(metrics: ArticleMetrics): number {
     tweet_views = 0,
     tweet_likes = 0,
     tweet_replies = 0,
-    full_article_content = ''
+    full_article_content = '',
+    has_summary = false
   } = metrics
 
   // Calculate word count
   const wordCount = countWords(full_article_content)
 
-  // Views score - 100K views = ~60 points, 1M views = ~90 points
+  // Views score - 100K views = ~60 points, 1M views = ~90 points (weight reduced)
   const viewsScore = tweet_views > 0
     ? Math.min(Math.log10(tweet_views + 1) * 20, 100)
     : 0
 
-  // Likes score - 1K likes = ~60 points, 10K likes = ~80 points
+  // Likes score - 1K likes = ~60 points, 10K likes = ~80 points (weight reduced)
   const likesScore = tweet_likes > 0
     ? Math.min(Math.log10(tweet_likes + 1) * 25, 100)
     : 0
 
-  // Replies score - 50 replies = ~60 points, 200 replies = ~75 points
+  // Replies score - 50 replies = ~60 points, 200 replies = ~75 points (weight reduced)
   const repliesScore = tweet_replies > 0
     ? Math.min(Math.log10(tweet_replies + 1) * 30, 100)
     : 0
 
-  // Word count score - simplified
-  let wordCountScore: number
-  if (wordCount < 200) {
-    wordCountScore = 0
-  } else if (wordCount <= 500) {
-    wordCountScore = ((wordCount - 200) / 300) * 40
-  } else if (wordCount <= 1500) {
-    wordCountScore = 40 + ((wordCount - 500) / 1000) * 40
+  // Content Quality Score - increased weight and improved calculation
+  let contentScore: number
+  if (wordCount < 100) {
+    // Very short or no content
+    contentScore = 0
+  } else if (wordCount < 300) {
+    // Short content - partial credit
+    contentScore = ((wordCount - 100) / 200) * 30
+  } else if (wordCount < 800) {
+    // Medium content - good score
+    contentScore = 30 + ((wordCount - 300) / 500) * 40
+  } else if (wordCount < 2000) {
+    // Long content - excellent score
+    contentScore = 70 + ((wordCount - 800) / 1200) * 25
   } else {
-    wordCountScore = 80 + Math.min((wordCount - 1500) / 500 * 20, 20)
+    // Very long content - maximum score
+    contentScore = 95 + Math.min((wordCount - 2000) / 1000 * 5, 5)
   }
 
-  // Calculate weighted average
+  // Bonus for having both content and summary (indicates well-processed article)
+  const completenessBonus = (wordCount >= 300 && has_summary) ? 5 : 0
+
+  // Calculate weighted average with new weights (content-first)
   const totalScore = (
-    viewsScore * 0.35 +
-    likesScore * 0.30 +
-    repliesScore * 0.20 +
-    wordCountScore * 0.15
+    viewsScore * 0.25 +
+    likesScore * 0.20 +
+    repliesScore * 0.15 +
+    contentScore * 0.35 +
+    completenessBonus
   )
 
   return Math.max(0, Math.min(100, Math.round(totalScore)))
@@ -80,7 +94,7 @@ export function calculateArticleScore(metrics: ArticleMetrics): number {
  * Determine if an article should be indexed based on its score
  */
 export function shouldIndexArticle(score: number): boolean {
-  return score >= 65 // Threshold for dynamic daily adjustment
+  return score >= 60 // Lowered from 65 to be more inclusive of quality content
 }
 
 /**

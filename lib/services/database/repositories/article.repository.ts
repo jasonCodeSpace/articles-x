@@ -79,7 +79,7 @@ export class ArticleRepository {
         image: article.image,
         category: article.category,
         main_category: mainCategory,
-        subcategory: subcategory,
+        sub_category: subcategory,
         tweet_published_at: article.tweet_published_at,
         tweet_id: article.tweet_id,
         tweet_text: article.tweet_text,

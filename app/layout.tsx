@@ -138,6 +138,21 @@ export default function RootLayout({
         {/* DNS prefetch for non-critical domains */}
         <link rel="dns-prefetch" href="https://pbs.twimg.com" />
         <link rel="dns-prefetch" href="https://images.unsplash.com" />
+        {/* Google Analytics */}
+        <script
+          async
+          src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}
+        />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', '${process.env.NEXT_PUBLIC_GA_ID}');
+            `,
+          }}
+        />
       </head>
       <body className={`${inter.variable} font-sans antialiased bg-background text-foreground`}>
         <script

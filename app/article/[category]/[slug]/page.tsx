@@ -86,9 +86,9 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   const categoryId = categorySlugToId(category)
 
   // If the category in URL doesn't match the article's categories, redirect to the primary category
-  // Only redirect if articleCategories is not empty and the category doesn't match
-  if (articleCategories.length > 0 && !articleCategories.includes(categoryId) && article.category) {
-    const primaryCategorySlug = article.category.replace(':', '-')
+  // Use articleCategories[0] as the primary category (from junction table, is_primary=true)
+  if (articleCategories.length > 0 && !articleCategories.includes(categoryId)) {
+    const primaryCategorySlug = articleCategories[0].replace(':', '-')
     return permanentRedirect(`/article/${primaryCategorySlug}/${slug}`)
   }
 

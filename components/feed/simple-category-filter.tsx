@@ -1,19 +1,9 @@
 'use client'
 
-import { Folder } from 'lucide-react'
+import { Folder, ChevronDown, X } from 'lucide-react'
 import { useState } from 'react'
-
-// Main categories only - simplified for performance
-const MAIN_CATEGORIES = [
-  { id: 'all', name: 'All' },
-  { id: 'ai', name: 'AI' },
-  { id: 'crypto', name: 'Crypto' },
-  { id: 'tech', name: 'Tech' },
-  { id: 'business', name: 'Business' },
-  { id: 'startup', name: 'Startups' },
-  { id: 'gaming', name: 'Gaming' },
-  { id: 'health', name: 'Health' },
-]
+import * as DropdownMenu from '@/components/ui/dropdown-menu'
+import { CATEGORIES } from '@/lib/categories'
 
 interface SimpleCategoryFilterProps {
   selectedCategory: string
@@ -23,45 +13,87 @@ interface SimpleCategoryFilterProps {
 export function SimpleCategoryFilter({ selectedCategory, onCategoryChange }: SimpleCategoryFilterProps) {
   const [isOpen, setIsOpen] = useState(false)
 
-  const selectedCat = MAIN_CATEGORIES.find(c => c.id === selectedCategory)
-  const displayName = selectedCat?.name || 'Category'
+  // Find selected category info
+  const selectedSub = CATEGORIES.flatMap(cat =>
+    cat.subcategories.map(sub => ({ ...sub, mainCategoryId: cat.id }))
+  ).find(c => c.id === selectedCategory)
+
+  const selectedMain = selectedSub ? CATEGORIES.find(c => c.id === selectedSub?.mainCategoryId) : null
+  const selectedMainDirect = CATEGORIES.find(c => c.id === selectedCategory)
+
+  const displayName = selectedSub
+    ? `${selectedMain?.name} / ${selectedSub.name}`
+    : selectedMainDirect?.name || 'Category'
+
+  const hasSelection = selectedCategory !== 'all'
+
+  const handleClear = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    onCategoryChange('all')
+  }
 
   return (
-    <div className="relative">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 rounded-xl text-white/50 hover:text-white hover:bg-white/5 transition-all px-4 h-10"
-      >
-        <Folder className="h-3.5 w-3.5" />
-        <span className="text-[11px] uppercase tracking-wider font-bold">{displayName}</span>
-      </button>
+    <DropdownMenu.DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+      <DropdownMenu.DropdownMenuTrigger asChild>
+        <button className="flex items-center gap-2 rounded-xl text-white/50 hover:text-white hover:bg-white/5 transition-all px-4 h-10">
+          <Folder className="h-3.5 w-3.5" />
+          <span className="text-[11px] uppercase tracking-wider font-bold">{displayName}</span>
+          {hasSelection ? (
+            <X className="h-3 w-3 opacity-50 hover:opacity-100" onClick={handleClear} />
+          ) : (
+            <ChevronDown className="h-3 w-3 opacity-50" />
+          )}
+        </button>
+      </DropdownMenu.DropdownMenuTrigger>
 
-      {isOpen && (
-        <>
-          <div
-            className="fixed inset-0 z-10"
-            onClick={() => setIsOpen(false)}
-          />
-          <div className="absolute top-full left-0 mt-2 z-20 bg-[#0A0A0A] border border-white/10 rounded-xl p-2 min-w-[150px] shadow-xl">
-            {MAIN_CATEGORIES.map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => {
-                  onCategoryChange(cat.id)
-                  setIsOpen(false)
-                }}
-                className={`block w-full text-left px-3 py-2 rounded-lg text-[11px] uppercase tracking-wider transition-colors ${
-                  selectedCategory === cat.id
-                    ? 'text-white bg-white/10'
-                    : 'text-white/50 hover:text-white hover:bg-white/5'
-                }`}
+      <DropdownMenu.DropdownMenuContent
+        align="start"
+        className="min-w-[220px] max-h-[400px] overflow-y-auto border border-white/10 rounded-2xl p-2"
+        style={{ backgroundColor: '#0A0A0A' }}
+      >
+        {/* All Categories */}
+        <DropdownMenu.DropdownMenuItem
+          onClick={() => { onCategoryChange('all'); setIsOpen(false); }}
+          className="rounded-lg text-[11px] uppercase tracking-wider cursor-pointer transition-colors text-white/50 hover:text-white hover:bg-white/5"
+        >
+          All Categories
+        </DropdownMenu.DropdownMenuItem>
+
+        {/* Category Groups with Submenus */}
+        {CATEGORIES.map((category) => (
+          <DropdownMenu.DropdownMenuSub key={category.id}>
+            <DropdownMenu.DropdownMenuSubTrigger className="rounded-lg text-[10px] uppercase font-bold tracking-wider cursor-pointer transition-colors text-white/70 hover:text-white hover:bg-white/5">
+              {category.name}
+            </DropdownMenu.DropdownMenuSubTrigger>
+
+            <DropdownMenu.DropdownMenuSubContent
+              className="min-w-[180px] border border-white/10 rounded-xl p-1"
+              style={{ backgroundColor: '#0A0A0A' }}
+            >
+              {/* Main category option */}
+              <DropdownMenu.DropdownMenuItem
+                onClick={() => { onCategoryChange(category.id); setIsOpen(false); }}
+                className="rounded-lg text-[11px] cursor-pointer transition-colors text-white/50 hover:text-white hover:bg-white/5"
               >
-                {cat.name}
-              </button>
-            ))}
-          </div>
-        </>
-      )}
-    </div>
+                All {category.name}
+              </DropdownMenu.DropdownMenuItem>
+
+              <DropdownMenu.DropdownMenuSeparator className="my-1 bg-white/10" />
+
+              {/* Subcategories */}
+              {category.subcategories.map((sub) => (
+                <DropdownMenu.DropdownMenuItem
+                  key={sub.id}
+                  onClick={() => { onCategoryChange(sub.id); setIsOpen(false); }}
+                  className="rounded-lg text-[11px] cursor-pointer transition-colors text-white/50 hover:text-white hover:bg-white/5"
+                >
+                  {sub.name}
+                </DropdownMenu.DropdownMenuItem>
+              ))}
+            </DropdownMenu.DropdownMenuSubContent>
+          </DropdownMenu.DropdownMenuSub>
+        ))}
+      </DropdownMenu.DropdownMenuContent>
+    </DropdownMenu.DropdownMenu>
   )
 }

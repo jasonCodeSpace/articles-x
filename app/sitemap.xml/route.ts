@@ -2,6 +2,39 @@ import { NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { categoryIdToSlug } from '@/lib/url-utils'
 
+/**
+ * Get the primary category slug for an article from article_categories junction table
+ * This ensures the sitemap uses the same category as the middleware redirect logic
+ */
+async function getPrimaryCategorySlug(article: { id: string; category?: string | null }): Promise<string> {
+  try {
+    const supabase = createServiceClient()
+
+    // First try to get primary category from junction table (same logic as middleware)
+    const { data: primaryCategory } = await supabase
+      .from('article_categories')
+      .select('category')
+      .eq('article_id', article.id)
+      .eq('is_primary', true)
+      .maybeSingle()
+
+    if (primaryCategory?.category) {
+      return categoryIdToSlug(primaryCategory.category)
+    }
+
+    // Fallback to article.category
+    if (article.category) {
+      return categoryIdToSlug(article.category)
+    }
+
+    // Final fallback to 'tech'
+    return 'tech'
+  } catch {
+    // Fallback on error
+    return article.category ? categoryIdToSlug(article.category) : 'tech'
+  }
+}
+
 // Function to escape XML special characters
 function escapeXml(text: string): string {
   return text
@@ -69,7 +102,7 @@ export async function GET() {
     // Fetch articles with valid slugs - ONLY indexed articles
     const { data: articles, error: articlesError } = await supabase
       .from('articles')
-      .select('slug, article_published_at, updated_at, score, category')
+      .select('id, slug, article_published_at, updated_at, score, category')
       .eq('indexed', true) // Only include indexed articles in sitemap
       .not('slug', 'is', null)
       .neq('slug', '')
@@ -142,6 +175,17 @@ export async function GET() {
       { url: '/terms', priority: '0.3', changefreq: 'yearly' }
     ]
 
+    // Get primary category slugs for all articles to match middleware redirect logic
+    const articlesWithCategorySlugs = await Promise.all(
+      validArticles.map(async (article: { id: string; slug: string; article_published_at?: string; updated_at?: string; category?: string }) => {
+        const categorySlug = await getPrimaryCategorySlug(article)
+        return {
+          ...article,
+          categorySlug
+        }
+      })
+    )
+
     // Generate optimized sitemap XML
     const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
@@ -160,10 +204,9 @@ ${staticPages.map(page => {
   </url>`
       }
     }).join('\n')}
-${validArticles?.map((article: { slug: string; article_published_at?: string; updated_at?: string; category?: string }) => {
-      const categorySlug = article.category ? categoryIdToSlug(article.category) : 'tech'
+${articlesWithCategorySlugs.map((article: { slug: string; article_published_at?: string; updated_at?: string; categorySlug: string }) => {
       return `  <url>
-    <loc>${escapeXml(baseUrl + '/article/' + categorySlug + '/' + encodeURIComponent(article.slug))}</loc>
+    <loc>${escapeXml(baseUrl + '/article/' + article.categorySlug + '/' + encodeURIComponent(article.slug))}</loc>
     <lastmod>${escapeXml(normalizeTimestamp(article.updated_at || article.article_published_at))}</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>

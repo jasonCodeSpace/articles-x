@@ -106,39 +106,15 @@ export default function RootLayout({
     "@context": "https://schema.org",
     "@type": "WebSite",
     "name": "Xarticle",
-    "url": "https://www.xarticle.news/",
-    "description": "Curated articles from X (Twitter) with AI-powered summaries",
-    "potentialAction": {
-      "@type": "SearchAction",
-      "target": "https://www.xarticle.news/search?q={search_term_string}",
-      "query-input": "required name=search_term_string"
-    },
-    "publisher": {
-      "@type": "Organization",
-      "name": "Xarticle",
-      "url": "https://www.xarticle.news",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://www.xarticle.news/og-image.webp",
-        "width": 1200,
-        "height": 630
-      },
-      "sameAs": [
-        "https://twitter.com/xarticle_news"
-      ]
-    }
+    "url": "https://www.xarticle.news/"
   };
 
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
       <head>
-        {/* Preconnect to critical external domains for performance */}
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://pskhqphqikghdyqmgsud.supabase.co" crossOrigin="anonymous" />
-        {/* DNS prefetch for non-critical domains */}
         <link rel="dns-prefetch" href="https://pbs.twimg.com" />
-        <link rel="dns-prefetch" href="https://images.unsplash.com" />
-        {/* Google Analytics */}
         <script
           async
           src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}

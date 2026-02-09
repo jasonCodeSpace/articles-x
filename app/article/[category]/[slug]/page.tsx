@@ -10,9 +10,9 @@ import { ArticleContent } from '@/components/article-content'
 import { ArticleNavigation } from '@/components/article-navigation'
 import dynamic from 'next/dynamic'
 
-// Lazy load non-critical components for better performance
+// Lazy load non-critical components
 const ArticleComments = dynamic(() => import('@/components/comments').then(mod => ({ default: mod.ArticleComments })), {
-  loading: () => <div className="h-64 animate-pulse bg-white/5 rounded-2xl" />
+  loading: () => <div className="h-64 bg-white/5 rounded-2xl animate-pulse" />
 })
 
 const ScrollToTopButton = dynamic(() => import('@/components/scroll-to-top-button').then(mod => ({ default: mod.ScrollToTopButton })))
@@ -44,9 +44,18 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
     ? firstSentence.substring(0, 160) + '...'
     : firstSentence
 
-  // Use category in URL for canonical
-  const categoryId = categorySlugToId(category)
-  const canonicalUrl = `https://www.xarticle.news/article/${category}/${slug}`
+  // Get the article's primary category from the junction table
+  // This ensures all category variants point to the same canonical URL
+  const articleCategories = await getArticleCategoriesById(article.id)
+  const primaryCategoryId = articleCategories.length > 0 ? articleCategories[0] : categorySlugToId(category)
+  const primaryCategorySlug = categoryIdToSlug(primaryCategoryId)
+
+  // Always use the primary category for canonical URL to avoid duplicate content
+  const canonicalUrl = `https://www.xarticle.news/article/${primaryCategorySlug}/${slug}`
+
+  // Check if current URL is the canonical one
+  const currentCategoryId = categorySlugToId(category)
+  const isCanonicalUrl = currentCategoryId === primaryCategoryId
 
   return {
     title: `${title} | XArticle`,
@@ -64,12 +73,15 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
       type: 'article',
       publishedTime: article.article_published_at || article.updated_at,
       authors: [article.author_name],
+      url: canonicalUrl,
     },
     twitter: {
       card: 'summary_large_image',
       title,
       description,
-    }
+    },
+    // Only index the canonical URL, not category variants
+    robots: isCanonicalUrl ? { index: true, follow: true } : { index: false, follow: true },
   }
 }
 
@@ -155,57 +167,21 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   // Get category name for display
   const categoryName = getCategoryName(categoryId) || categoryId
 
-  // JSON-LD structured data for SEO
+  // Simplified structured data
   const articleSchema = {
     "@context": "https://schema.org",
     "@type": "NewsArticle",
     "headline": article.title_english || article.title,
     "datePublished": article.article_published_at || article.updated_at,
-    "dateModified": article.updated_at,
     "author": {
       "@type": "Person",
-      "name": article.author_name,
-      "url": `https://x.com/${authorHandle}`
+      "name": article.author_name
     },
     "publisher": {
       "@type": "Organization",
-      "name": "Xarticle",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://www.xarticle.news/logo.svg"
-      }
+      "name": "Xarticle"
     },
-    "image": article.image || "https://www.xarticle.news/og-image.webp",
-    "description": description,
-    "mainEntityOfPage": {
-      "@type": "WebPage",
-      "@id": `https://www.xarticle.news/article/${category}/${slug}`
-    },
-    "articleSection": categoryName
-  }
-
-  const breadcrumbSchema = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    "itemListElement": [
-      {
-        "@type": "ListItem",
-        "position": 1,
-        "name": "Home",
-        "item": "https://www.xarticle.news"
-      },
-      {
-        "@type": "ListItem",
-        "position": 2,
-        "name": categoryName,
-        "item": `https://www.xarticle.news/category/${category}`
-      },
-      {
-        "@type": "ListItem",
-        "position": 3,
-        "name": article.title_english || article.title
-      }
-    ]
+    "description": description
   }
 
   return (
@@ -214,18 +190,8 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
       />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
-      />
       <div className="min-h-screen bg-[#0A0A0A] text-white selection:bg-white/20">
-        {/* Decorative background orbs */}
-        <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-          <div className="absolute top-[10%] -left-[10%] w-[40%] h-[40%] bg-[radial-gradient(circle,rgba(255,255,255,0.02)_0%,transparent_70%)]" />
-          <div className="absolute top-[40%] -right-[10%] w-[30%] h-[30%] bg-[radial-gradient(circle,rgba(255,255,255,0.02)_0%,transparent_70%)]" />
-        </div>
-
-        <div className="relative z-10 max-w-3xl mx-auto px-6 pt-24 pb-20">
+        <div className="max-w-3xl mx-auto px-6 pt-24 pb-20">
           {/* Back button */}
           <Link
             href="/trending"
@@ -248,7 +214,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           />
 
           {/* Previous/Next Navigation */}
-          <div className="mt-2 pt-4">
+          <div className="mt-8 pt-6">
             <ArticleNavigation
               previousArticle={previousArticle}
               nextArticle={nextArticle}
@@ -262,9 +228,9 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
           {/* More Articles Section */}
           {moreArticles.length > 0 && (
-            <div className="mt-16 pt-8 border-t border-white/5">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-sm uppercase tracking-[0.2em] font-bold text-white/30">
+            <div className="mt-12 pt-8 border-t border-white/5">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm uppercase tracking-wider font-bold text-white/30">
                   More Articles
                 </h3>
                 <Link
@@ -275,7 +241,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                   <ArrowRight className="w-4 h-4" />
                 </Link>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {moreArticles
                   .filter(a => a.id !== article.id)
                   .slice(0, 4)
@@ -286,27 +252,27 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                       <Link
                         key={moreArticle.id}
                         href={`/article/${categorySlug}/${moreArticle.slug}`}
-                        className="group flex gap-4 p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.05] hover:border-white/10 transition-all duration-300"
+                        className="group flex gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.05] hover:border-white/10 transition-colors"
                       >
                         {moreArticle.image && (
-                          <div className="flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden bg-white/5">
+                          <div className="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden bg-white/5">
                             <Image
                               src={moreArticle.image}
                               alt={displayTitle}
-                              width={80}
-                              height={80}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                              width={64}
+                              height={64}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                               referrerPolicy="no-referrer"
                             />
                           </div>
                         )}
                         <div className="flex-1 min-w-0 flex flex-col justify-center">
-                          <h4 className="text-sm font-medium text-white/80 group-hover:text-white transition-colors line-clamp-2 mb-1">
+                          <h4 className="text-sm font-medium text-white/80 group-hover:text-white transition-colors line-clamp-2">
                             {displayTitle}
                           </h4>
                           {moreArticle.author_handle && (
-                            <div className="text-[10px] text-white/30">
-                              <span>@{moreArticle.author_handle}</span>
+                            <div className="text-[10px] text-white/30 mt-1">
+                              @{moreArticle.author_handle}
                             </div>
                           )}
                         </div>
@@ -318,7 +284,6 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           )}
         </div>
 
-        {/* Scroll to Top Button */}
         <ScrollToTopButton />
       </div>
     </>

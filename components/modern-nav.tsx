@@ -16,15 +16,15 @@ import {
 } from '@/components/ui/dropdown-menu'
 
 
+interface SimpleUser {
+  id: string
+  email?: string
+  avatar_url?: string
+  full_name?: string
+}
+
 interface ModernNavProps {
-  user?: {
-    id: string
-    email?: string
-    user_metadata?: {
-      avatar_url?: string
-      full_name?: string
-    }
-  }
+  user?: SimpleUser | null
   categories?: string[]
   className?: string
 }
@@ -32,7 +32,7 @@ interface ModernNavProps {
 export function ModernNav({ user, className }: ModernNavProps) {
   const router = useRouter()
 
-  const userDisplayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User'
+  const userDisplayName = user?.full_name || user?.email?.split('@')[0] || 'User'
   const userInitial = userDisplayName.charAt(0).toUpperCase()
 
   const handleLogout = async () => {
@@ -84,7 +84,7 @@ export function ModernNav({ user, className }: ModernNavProps) {
             <DropdownMenuTrigger asChild>
               <button className="flex items-center gap-2 pl-2 pr-1.5 py-1.5 rounded-full hover:bg-white/5 transition-colors group">
                 <Avatar className="w-7 h-7 border border-white/10">
-                  {user?.user_metadata?.avatar_url && <AvatarImage src={user.user_metadata.avatar_url} />}
+                  {user?.avatar_url && <AvatarImage src={user.avatar_url} />}
                   <AvatarFallback className="bg-white/5 text-white/50 text-[10px] font-bold">
                     {userInitial}
                   </AvatarFallback>

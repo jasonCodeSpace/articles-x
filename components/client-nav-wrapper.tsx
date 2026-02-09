@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { User } from '@supabase/supabase-js'
 import { ModernNav } from './modern-nav'
@@ -10,48 +10,59 @@ interface ClientNavWrapperProps {
   categories?: string[]
 }
 
+// Simple user state shape to reduce payload
+type SimpleUser = {
+  id: string
+  email?: string
+  avatar_url?: string
+  full_name?: string
+} | null
+
 export function ClientNavWrapper({ initialUser, categories }: ClientNavWrapperProps) {
-  const [user, setUser] = useState<User | null>(initialUser || null)
-  const [isClient, setIsClient] = useState(false)
+  const [user, setUser] = useState<SimpleUser>(
+    initialUser ? {
+      id: initialUser.id,
+      email: initialUser.email,
+      avatar_url: initialUser.user_metadata?.avatar_url,
+      full_name: initialUser.user_metadata?.full_name,
+    } : null
+  )
+
+  // Use transition for non-critical auth state updates
+  const [isPending, startTransition] = useTransition()
 
   useEffect(() => {
-    setIsClient(true)
-
-    // Get current user on mount - non-blocking
-    const getCurrentUser = async () => {
+    // Non-blocking auth check
+    startTransition(async () => {
       try {
         const supabase = createClient()
         const { data: { user } } = await supabase.auth.getUser()
-        setUser(user)
+
+        if (user) {
+          setUser({
+            id: user.id,
+            email: user.email,
+            avatar_url: user.user_metadata?.avatar_url,
+            full_name: user.user_metadata?.full_name,
+          })
+        }
       } catch {
         // Silently fail - show nav without user
-        setUser(null)
       }
-    }
-
-    getCurrentUser()
+    })
 
     // Listen for auth changes
     const supabase = createClient()
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user ?? null)
-
-      if (event === 'SIGNED_OUT') {
-        try {
-          if (typeof localStorage !== 'undefined') {
-            localStorage.removeItem('supabase.auth.token')
-          }
-          if (typeof sessionStorage !== 'undefined') {
-            sessionStorage.clear()
-          }
-        } catch {
-          // Ignore storage errors
-        }
-
-        const currentPath = window.location.pathname
-        if (currentPath !== '/login' && currentPath !== '/register' && currentPath !== '/landing') {
-          window.location.replace('/login')
-        }
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        setUser({
+          id: session.user.id,
+          email: session.user.email,
+          avatar_url: session.user.user_metadata?.avatar_url,
+          full_name: session.user.user_metadata?.full_name,
+        })
+      } else {
+        setUser(null)
       }
     })
 
@@ -60,10 +71,5 @@ export function ClientNavWrapper({ initialUser, categories }: ClientNavWrapperPr
     }
   }, [])
 
-  // Always render nav immediately
-  return <ModernNav user={user ? {
-    id: user.id,
-    email: user.email,
-    user_metadata: user.user_metadata
-  } : undefined} categories={categories} />
+  return <ModernNav user={user} categories={categories} />
 }

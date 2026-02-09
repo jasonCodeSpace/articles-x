@@ -6,6 +6,7 @@ export type { FeedToolbarProps } from './toolbar'
 export { SearchBar } from './search-bar'
 export { FilterDropdown } from './filter-dropdown'
 export { ActiveFilters } from './active-filters'
+export { SimpleCategoryFilter } from './simple-category-filter'
 
 // Constants
 export { TIME_PERIODS, LANGUAGES, type TimePeriod, type DisplayLanguage } from './constants'

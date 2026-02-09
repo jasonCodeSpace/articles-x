@@ -1,22 +1,12 @@
 'use client'
 
-import dynamic from 'next/dynamic'
 import { ArticleCardMemo, Article } from '@/components/article-card'
 import { FeedEmptyState } from '@/components/feed-empty-state'
 import { useArticleFeed } from '@/hooks/use-article-feed'
 import { FeedLoading } from '@/components/feed-loading'
+import { FeedToolbar } from '@/components/feed/toolbar'
+import { Pagination } from '@/components/pagination'
 import type { TimePeriod, DisplayLanguage } from '@/components/feed'
-
-// Dynamic import for non-critical components
-const FeedToolbar = dynamic(() => import('@/components/feed').then(mod => ({ default: mod.FeedToolbar })), {
-  ssr: false,
-  loading: () => <div className="h-16 bg-white/5 rounded-2xl animate-pulse" />
-})
-
-const Pagination = dynamic(() => import('@/components/pagination').then(mod => ({ default: mod.Pagination })), {
-  ssr: false,
-  loading: () => <div className="h-12 bg-white/5 rounded-full animate-pulse mx-auto max-w-xs" />
-})
 
 interface ArticleFeedProps {
   initialArticles: Article[]
@@ -59,10 +49,9 @@ export function ArticleFeed({
     initialTimePeriod,
     initialCategory,
     initialLanguage,
-    itemsPerPage: 12
+    itemsPerPage: 9  // Reduced from 12 to improve performance
   })
 
-  // Convert sortOption to sortBy for toolbar
   const sortBy = sortOption === 'views_high' ? 'hot' : 'latest'
 
   const handleSortByChange = (newSortBy: 'latest' | 'hot') => {
@@ -76,24 +65,21 @@ export function ArticleFeed({
   const hasActiveFilters = searchQuery || selectedTimePeriod !== 'all'
 
   return (
-    <div className="space-y-12">
-      {/* Feed Toolbar */}
-      <section className="transition-all duration-300">
-        <FeedToolbar
-          onSearchChange={handleSearch}
-          searchValue={searchQuery}
-          isLoading={feedLoading}
-          sortBy={sortBy}
-          onSortChange={handleSortByChange}
-          selectedTimePeriod={selectedTimePeriod}
-          onTimePeriodChange={handleTimePeriodChange}
-          selectedCategory={selectedCategory}
-          onCategoryChange={handleCategoryChange}
-          displayLanguage={displayLanguage}
-          onLanguageChange={handleLanguageChange}
-          totalItems={totalItems}
-        />
-      </section>
+    <div className="space-y-8">
+      <FeedToolbar
+        onSearchChange={handleSearch}
+        searchValue={searchQuery}
+        isLoading={feedLoading}
+        sortBy={sortBy}
+        onSortChange={handleSortByChange}
+        selectedTimePeriod={selectedTimePeriod}
+        onTimePeriodChange={handleTimePeriodChange}
+        selectedCategory={selectedCategory}
+        onCategoryChange={handleCategoryChange}
+        displayLanguage={displayLanguage}
+        onLanguageChange={handleLanguageChange}
+        totalItems={totalItems}
+      />
 
       {error === 'no-results' || paginatedArticles.length === 0 ? (
         <FeedEmptyState
@@ -109,14 +95,10 @@ export function ArticleFeed({
           onRetry={retry}
         />
       ) : (
-        <div className="space-y-20">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="space-y-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {paginatedArticles.map((article: Article, index: number) => (
-              <div
-                key={article.id}
-                className="animate-fade-in-up"
-                style={{ animationDelay: `${Math.min(index * 0.05, 0.3)}s` } as React.CSSProperties}
-              >
+              <div key={article.id}>
                 <ArticleCardMemo
                   article={article}
                   index={index}
@@ -127,9 +109,8 @@ export function ArticleFeed({
             ))}
           </div>
 
-          {/* Pagination */}
           {totalPages > 1 && (
-            <div className="pt-10 border-t border-white/5">
+            <div className="pt-8 border-t border-white/5">
               <Pagination
                 currentPage={currentPage}
                 totalPages={totalPages}

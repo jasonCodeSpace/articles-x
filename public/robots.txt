@@ -1,5 +1,6 @@
 # robots.txt for Xarticle (www.xarticle.news)
-# Last updated: 2025-01-18
+# Last updated: 2025-02-09
+# Policy: ALLOW ALL AI SEARCH BOTS for maximum visibility
 
 # =====================================================
 # SITEMAP
@@ -12,92 +13,101 @@ Sitemap: https://www.xarticle.news/rss.xml
 # =====================================================
 User-agent: Googlebot
 Allow: /
-Allow: /_next/
 Crawl-delay: 1
 
 User-agent: Googlebot-Image
 Allow: /
-Allow: /_next/
+
+User-agent: Google-Extended
+Allow: /
 
 User-agent: Bingbot
 Allow: /
-Allow: /_next/
 Crawl-delay: 1
 
 User-agent: BingPreview
 Allow: /
-Allow: /_next/
 
 User-agent: Slurp
 Allow: /
-Allow: /_next/
 Crawl-delay: 1
 
 User-agent: DuckDuckBot
 Allow: /
-Allow: /_next/
 Crawl-delay: 1
 
 User-agent: YandexBot
 Allow: /
-Allow: /_next/
 Crawl-delay: 1
 
 User-agent: Yandex
 Allow: /
-Allow: /_next/
 Crawl-delay: 1
+
+# =====================================================
+# AI SEARCH BOTS - FULL ACCESS (Recommended for AI Search)
+# =====================================================
+# ChatGPT / OpenAI Search
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ChatGPT-User/1.0
+Allow: /
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: OAI-SearchBot/1.0
+Allow: /
+
+# Google AI Overview / Gemini
+User-agent: Google-Extended
+Allow: /
+
+# Perplexity AI
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: PerplexityBot/1.0
+Allow: /
+
+# Anthropic Claude
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+# Other AI crawlers
+User-agent: omgili
+Allow: /
+
+User-agent: omgilibot
+Allow: /
 
 # =====================================================
 # SOCIAL MEDIA CRAWLERS - Full Access for Open Graph
 # =====================================================
 User-agent: Twitterbot
 Allow: /
-Allow: /_next/
 
 User-agent: facebookexternalhit
 Allow: /
-Allow: /_next/
-Crawl-delay: 1
 
 User-agent: LinkedInBot
 Allow: /
-Allow: /_next/
-Crawl-delay: 1
 
 User-agent: WhatsApp
 Allow: /
-Allow: /_next/
 
 # =====================================================
-# AI/ML TRAINING CRAWLERS - Blocked
-# =====================================================
-User-agent: ChatGPT-User
-Disallow: /
-
-User-agent: ChatGPT-User/1.0
-Disallow: /
-
-User-agent: GPTBot
-Disallow: /
-
-User-agent: Google-Extended
-Disallow: /
-
-User-agent: anthropic-ai
-Disallow: /
-
-User-agent: Claude-Web
-Disallow: /
-
-User-agent: omgili
-Disallow: /
-
-User-agent: omgilibot
-Disallow: /
-
-# =====================================================
-# ARCHIVE/SCRAPER CRAWLERS - Blocked
+# ARCHIVE/SCRAPER CRAWLERS - Blocked (optional)
 # =====================================================
 User-agent: archive.org_bot
 Disallow: /
@@ -116,16 +126,6 @@ Disallow: /
 # =====================================================
 User-agent: *
 Allow: /
-Allow: /article/
-Allow: /trending
-Allow: /author/
-Allow: /summary
-Allow: /summaries
-Allow: /about
-Allow: /contact
-Allow: /privacy
-Allow: /terms
-Allow: /rss.xml
 
 # Block authentication and user areas
 Disallow: /login
@@ -143,7 +143,6 @@ Disallow: /admin/
 Disallow: /dev/
 Disallow: /test/
 Disallow: /debug/
-Disallow: /_next/
 
 # Block tracking parameters (prevent duplicate content)
 Disallow: /*?utm_*
@@ -151,14 +150,9 @@ Disallow: /*&utm_*
 Disallow: /*?fbclid=*
 Disallow: /*&fbclid=*
 Disallow: /*?gclid=*
-Disallow: /*&gclid=*
-
-# Legacy redirect - point to home
-Disallow: /landing
+Disallow: /*&gclid=
 
 # =====================================================
-# CRAWL DELAY FOR ALL BOTS
+# CRAWL DELAY
 # =====================================================
-# Rate limiting: 1 second between requests
-# Prevents server overload while ensuring fresh content indexing
 Crawl-delay: 1

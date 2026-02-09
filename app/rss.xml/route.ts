@@ -10,7 +10,7 @@ export async function GET() {
   try {
     const supabase = createServiceClient()
 
-    // Fetch recent articles (last 100)
+    // Fetch recent articles (last 100) - ONLY indexed articles
     const { data: articles, error } = await supabase
       .from('articles')
       .select(`
@@ -29,6 +29,7 @@ export async function GET() {
         language,
         image
       `)
+      .eq('indexed', true) // Only include indexed articles in RSS feed
       .not('slug', 'is', null)
       .neq('slug', '')
       .order('article_published_at', { ascending: false })

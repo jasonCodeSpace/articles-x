@@ -3,7 +3,7 @@ import { notFound, permanentRedirect } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { ChevronLeft, ArrowRight } from 'lucide-react'
-import { getArticleBySlug, getPreviousArticle, getNextArticle, fetchArticles, getArticleCategoriesById } from '@/lib/articles'
+import { getArticleBySlug, getPreviousArticle, getNextArticle, fetchArticles, getArticleCategoriesById, findArchivePageForArticle } from '@/lib/articles'
 import { categorySlugToId, getCategoryName } from '@/lib/categories'
 import { categoryIdToSlug } from '@/lib/url-utils'
 import { ArticleContent } from '@/components/article-content'
@@ -79,6 +79,16 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
   if (!article) {
     notFound()
+  }
+
+  // If article is not indexed, redirect to archive page with the article's page
+  if (article.indexed === false) {
+    const archivePage = await findArchivePageForArticle(article.id)
+    if (archivePage) {
+      return permanentRedirect(`/archive?page=${archivePage}`)
+    }
+    // Fallback to archive page 1 if page calculation fails
+    return permanentRedirect('/archive')
   }
 
   // Get the article's categories to validate the URL

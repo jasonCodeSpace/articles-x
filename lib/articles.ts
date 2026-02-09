@@ -151,6 +151,9 @@ export async function getArticleCategories(): Promise<string[]> {
  * Handles both formats:
  * - New: title-only (e.g., "networking-at-crypto-events")
  * - Old: title--shortId (e.g., "networking-at-crypto-events--a1b2c3")
+ *
+ * Returns the article regardless of indexed status - the calling code should check
+ * the `indexed` field and handle redirect for non-indexed articles.
  */
 export async function getArticleBySlug(slug: string): Promise<Article | null> {
   try {
@@ -158,6 +161,7 @@ export async function getArticleBySlug(slug: string): Promise<Article | null> {
     const supabase = createAnonClient()
 
     // First try direct slug lookup (new format)
+    // Fetch all articles - the calling code will handle redirect for non-indexed ones
     const { data, error } = await supabase
       .from('articles')
       .select('*')
@@ -194,6 +198,52 @@ export async function getArticleBySlug(slug: string): Promise<Article | null> {
 
   } catch (error) {
     console.error('Unexpected error fetching article by slug:', error)
+    return null
+  }
+}
+
+/**
+ * Find the page number where an article appears in the archive
+ * Archive is sorted by score descending, with PAGE_SIZE = 50
+ */
+export async function findArchivePageForArticle(articleId: string): Promise<number | null> {
+  try {
+    const supabase = createAnonClient()
+    const PAGE_SIZE = 50
+
+    // First get the article's score
+    const { data: article, error: articleError } = await supabase
+      .from('articles')
+      .select('id, score')
+      .eq('id', articleId)
+      .maybeSingle()
+
+    if (articleError || !article) {
+      return null
+    }
+
+    // Only articles with score < 65 are in archive
+    if (article.score >= 65) {
+      return null
+    }
+
+    // Count how many articles have a higher score (come before this article)
+    const { count, error: countError } = await supabase
+      .from('articles')
+      .select('id', { count: 'exact', head: true })
+      .lt('score', 65)
+      .gt('score', article.score)
+
+    if (countError) {
+      return null
+    }
+
+    // Page number is (number of articles before / PAGE_SIZE) + 1
+    const pageNumber = Math.floor((count || 0) / PAGE_SIZE) + 1
+    return pageNumber
+
+  } catch (error) {
+    console.error('Error finding archive page for article:', error)
     return null
   }
 }
@@ -328,6 +378,7 @@ export async function getPreviousArticle(currentArticleId: string): Promise<Arti
         article_published_at,
         updated_at
       `)
+      .eq('indexed', true)
       .lt('article_published_at', currentDate)
       .order('article_published_at', { ascending: false })
       .limit(1)
@@ -391,6 +442,7 @@ export async function getNextArticle(currentArticleId: string): Promise<Article 
         article_published_at,
         updated_at
       `)
+      .eq('indexed', true)
       .gt('article_published_at', currentDate)
       .order('article_published_at', { ascending: true })
       .limit(1)
@@ -439,6 +491,7 @@ export async function getRelatedArticles(articleId: string, limit: number = 4): 
         updated_at,
         tweet_views
       `)
+      .eq('indexed', true)
       .neq('id', articleId)
       .order('article_published_at', { ascending: false })
       .limit(limit)

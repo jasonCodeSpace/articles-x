@@ -53,6 +53,8 @@ export interface Article {
   article_images?: string[]
   article_videos?: string[]
   source_type?: 'auto' | 'manual'
+  indexed?: boolean
+  score?: number
 }
 
 interface ArticleCardProps {

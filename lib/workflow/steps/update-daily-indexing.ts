@@ -1,28 +1,31 @@
 /**
- * Step: Update Global Top Indexing
- * Selects the global top 5 articles by score (all-time, not daily)
- * Only the top 5 highest-scoring articles are indexed for trending
+ * Step: Update Daily Indexing
+ * Indexes NEW high-quality articles published within the lookback period
+ * - Only indexes articles that are NOT already indexed
+ * - Does NOT unindex any previously indexed articles
+ * - Limited to maxDailyIndex articles per run to avoid spam detection
  */
 import { createStep, StepResult, WorkflowContext } from '../engine'
 import { createClient } from '@supabase/supabase-js'
 
 export interface UpdateIndexingInput {
-  topN?: number // How many articles to index (default: 5)
-  minScore?: number // Minimum score to consider (default: 60)
+  maxDailyIndex?: number // Max new articles to index per run (default: 10)
+  minScore?: number // Minimum score to consider (default: 65)
+  lookbackDays?: number // How many days back to look for new articles (default: 7)
 }
 
 export interface UpdateIndexingOutput {
-  totalArticles: number
-  indexedArticles: number
-  unindexedArticles: number
-  topScores: Array<{ title: string; score: number; author: string }>
+  totalCandidates: number
+  newlyIndexed: number
+  skipped: number
+  indexedArticles: Array<{ title: string; score: number; author: string; publishedAt: string }>
 }
 
 export const updateDailyIndexingStep = createStep<UpdateIndexingInput, UpdateIndexingOutput>(
   'update-daily-indexing',
   async (input: UpdateIndexingInput, ctx: WorkflowContext): Promise<StepResult<UpdateIndexingOutput>> => {
     try {
-      const { topN = 5, minScore = 70 } = input
+      const { maxDailyIndex = 10, minScore = 65, lookbackDays = 7 } = input
 
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL
       const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -33,36 +36,49 @@ export const updateDailyIndexingStep = createStep<UpdateIndexingInput, UpdateInd
 
       const supabase = createClient(supabaseUrl, serviceKey)
 
+      // Calculate the cutoff date for new articles
+      const cutoffDate = new Date()
+      cutoffDate.setDate(cutoffDate.getDate() - lookbackDays)
+      const cutoffIso = cutoffDate.toISOString()
+
       ctx.logs.push({
         timestamp: new Date(),
         level: 'info',
         step: 'update-daily-indexing',
-        message: `Updating global top ${topN} indexing (min score: ${minScore})`
+        message: `Looking for new articles to index (score >= ${minScore}, published since ${cutoffIso}, max ${maxDailyIndex})`
       })
 
-      // Get ALL articles with scores, ordered by score (no date filter)
-      const { data: articles, error: fetchError } = await supabase
+      // Get NEW articles that are NOT already indexed, within lookback period, meeting score threshold
+      const { data: candidates, error: fetchError } = await supabase
         .from('articles')
         .select('id, title, author_handle, score, article_published_at')
+        .eq('indexed', false) // Only get articles that are NOT already indexed
         .not('score', 'is', null)
-        .gte('score', minScore)  // Only consider articles above minimum score
+        .gte('score', minScore)
+        .gte('article_published_at', cutoffIso) // Only recent articles
         .order('score', { ascending: false })
-        .order('article_published_at', { ascending: false })  // Tie-break by recency
+        .order('article_published_at', { ascending: false })
+        .limit(maxDailyIndex)
 
       if (fetchError) {
         throw new Error(`Failed to fetch articles: ${fetchError.message}`)
       }
 
-      if (!articles || articles.length === 0) {
+      if (!candidates || candidates.length === 0) {
+        ctx.logs.push({
+          timestamp: new Date(),
+          level: 'info',
+          step: 'update-daily-indexing',
+          message: `No new articles found meeting criteria`
+        })
+
         return {
           success: true,
-          skip: true,
-          message: `No articles found with score >= ${minScore}`,
           data: {
-            totalArticles: 0,
-            indexedArticles: 0,
-            unindexedArticles: 0,
-            topScores: []
+            totalCandidates: 0,
+            newlyIndexed: 0,
+            skipped: 0,
+            indexedArticles: []
           }
         }
       }
@@ -71,73 +87,45 @@ export const updateDailyIndexingStep = createStep<UpdateIndexingInput, UpdateInd
         timestamp: new Date(),
         level: 'info',
         step: 'update-daily-indexing',
-        message: `Found ${articles.length} articles with score >= ${minScore} (evaluating globally)`
+        message: `Found ${candidates.length} candidate articles to index`
       })
 
-      // Separate top N articles from the rest
-      const topArticles = articles.slice(0, topN)
-      const remainingArticles = articles.slice(topN)
+      // Get IDs for batch update
+      const idsToIndex = candidates.map(a => a.id)
 
-      // Get IDs for batch updates
-      const topIds = topArticles.map(a => a.id)
-      const remainingIds = remainingArticles.map(a => a.id)
+      // Update these articles to indexed=true
+      const { error: indexError } = await supabase
+        .from('articles')
+        .update({ indexed: true })
+        .in('id', idsToIndex)
 
-      // Update top articles to indexed=true
-      let indexedCount = 0
-      if (topIds.length > 0) {
-        const { error: indexError } = await supabase
-          .from('articles')
-          .update({ indexed: true })
-          .in('id', topIds)
-
-        if (indexError) {
-          ctx.logs.push({
-            timestamp: new Date(),
-            level: 'warn',
-            step: 'update-daily-indexing',
-            message: `Failed to index top articles: ${indexError.message}`
-          })
-        } else {
-          indexedCount = topIds.length
-        }
+      if (indexError) {
+        ctx.logs.push({
+          timestamp: new Date(),
+          level: 'error',
+          step: 'update-daily-indexing',
+          message: `Failed to index articles: ${indexError.message}`
+        })
+        throw new Error(`Failed to index articles: ${indexError.message}`)
       }
 
-      // Update remaining articles to indexed=false
-      let unindexedCount = 0
-      if (remainingIds.length > 0) {
-        const { error: unindexError } = await supabase
-          .from('articles')
-          .update({ indexed: false })
-          .in('id', remainingIds)
-
-        if (unindexError) {
-          ctx.logs.push({
-            timestamp: new Date(),
-            level: 'warn',
-            step: 'update-daily-indexing',
-            message: `Failed to unindex remaining articles: ${unindexError.message}`
-          })
-        } else {
-          unindexedCount = remainingIds.length
-        }
-      }
-
-      // Prepare top scores for output
-      const topScores = topArticles.map(a => ({
+      // Prepare output
+      const indexedArticles = candidates.map(a => ({
         title: a.title,
         score: a.score || 0,
-        author: a.author_handle || 'unknown'
+        author: a.author_handle || 'unknown',
+        publishedAt: a.article_published_at || ''
       }))
 
       ctx.logs.push({
         timestamp: new Date(),
         level: 'info',
         step: 'update-daily-indexing',
-        message: `Indexed ${indexedCount} articles, unindexed ${unindexedCount} articles`
+        message: `Successfully indexed ${candidates.length} new articles`
       })
 
-      // Log top articles
-      for (const article of topScores) {
+      // Log indexed articles
+      for (const article of indexedArticles) {
         ctx.logs.push({
           timestamp: new Date(),
           level: 'info',
@@ -149,10 +137,10 @@ export const updateDailyIndexingStep = createStep<UpdateIndexingInput, UpdateInd
       return {
         success: true,
         data: {
-          totalArticles: articles.length,
-          indexedArticles: indexedCount,
-          unindexedArticles: unindexedCount,
-          topScores
+          totalCandidates: candidates.length,
+          newlyIndexed: candidates.length,
+          skipped: 0,
+          indexedArticles
         }
       }
     } catch (error) {
